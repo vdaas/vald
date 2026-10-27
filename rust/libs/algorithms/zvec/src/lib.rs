@@ -20,8 +20,8 @@ use std::collections::HashMap;
 use std::path::Path;
 use std::sync::OnceLock;
 use zvec_rust::{
-    Collection, CollectionSchema, DataType, Doc, ErrorCode, Fts, IndexParams, MetricType,
-    MultiQuery, SearchQuery, SubQuery,
+    Collection, CollectionSchema, DataType, Doc, ErrorCode, Fts, HnswQueryParams, IndexParams,
+    MetricType, MultiQuery, SearchQuery, SubQuery,
 };
 
 const VECTOR_FIELD: &str = "embedding";
@@ -394,6 +394,56 @@ impl ANN for Service {
         })
     }
 
+    fn linear_search_with_options(
+        &self,
+        vector: Vec<f32>,
+        k: u32,
+        options: &[Any],
+    ) -> Result<search::Response, Error> {
+        self.validate_dimension("", &vector)?;
+        let options = decode_any::<z_vec::SearchOptions>(options)?;
+        let mut query = SearchQuery::new(VECTOR_FIELD, &vector, k as i32).map_err(backend_error)?;
+        query
+            .set_hnsw_params(HnswQueryParams::new(100, 0.0, true, false))
+            .map_err(backend_error)?;
+        if let Some(options) = options {
+            if !options.hybrid_queries.is_empty() {
+                return Err(Error::Backend {
+                    message: "hybrid queries are unsupported for linear search".into(),
+                });
+            }
+            if !options.pre_filter.is_empty() {
+                query
+                    .set_filter(&options.pre_filter)
+                    .map_err(backend_error)?;
+            }
+        }
+        let docs = self.collection.query(&query).map_err(backend_error)?;
+        Ok(search::Response {
+            request_id: String::new(),
+            results: docs
+                .into_iter()
+                .filter_map(|doc| {
+                    doc.get_pk().map(|id| Distance {
+                        id: id.to_string(),
+                        distance: doc.get_score(),
+                    })
+                })
+                .collect(),
+        })
+    }
+
+    fn index_property(&self) -> proto::payload::v1::info::index::Property {
+        proto::payload::v1::info::index::Property {
+            dimension: self.dimension as i32,
+            object_type: "Float".into(),
+            distance_type: "L2".into(),
+            index_type: "HNSW".into(),
+            database_type: "Zvec".into(),
+            ..Default::default()
+        }
+    }
+
     fn get_object(&self, uuid: String) -> Result<(Vec<f32>, i64), Error> {
         let mut docs = self
             .collection
@@ -616,6 +666,42 @@ mod tests {
                 .expect("filtered search must succeed");
             assert_eq!(filtered.results.len(), 1);
             assert_eq!(filtered.results[0].id, "first");
+
+            for (name, options, expected) in [
+                ("all documents", vec![], vec!["first", "second"]),
+                (
+                    "scalar filter",
+                    vec![search_options(z_vec::SearchOptions {
+                        pre_filter: "category = 'news'".into(),
+                        ..Default::default()
+                    })],
+                    vec!["first"],
+                ),
+                (
+                    "no matches",
+                    vec![search_options(z_vec::SearchOptions {
+                        pre_filter: "category = 'missing'".into(),
+                        ..Default::default()
+                    })],
+                    vec![],
+                ),
+            ] {
+                let response = service
+                    .linear_search_with_options(vec![0.0, 0.0, 0.0], 2, &options)
+                    .expect(name);
+                assert_eq!(
+                    response
+                        .results
+                        .iter()
+                        .map(|hit| hit.id.as_str())
+                        .collect::<Vec<_>>(),
+                    expected,
+                    "{name}"
+                );
+            }
+            let property = service.index_property();
+            assert_eq!(property.dimension, 3);
+            assert_eq!(property.database_type, "Zvec");
 
             let full_text = service
                 .search_with_options(

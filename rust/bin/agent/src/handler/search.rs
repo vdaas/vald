@@ -29,6 +29,7 @@ async fn search(
     name: &str,
     ip: &str,
     request: &search::Request,
+    linear: bool,
 ) -> Result<search::Response, Status> {
     let config = match request.config.clone() {
         Some(cfg) => cfg,
@@ -62,13 +63,17 @@ async fn search(
             warn!("{:?}", status);
             return Err(status);
         }
-        let result = s.search_with_options(
-            request.vector.clone(),
-            config.num,
-            config.epsilon,
-            config.radius,
-            &config.options,
-        );
+        let result = if linear {
+            s.linear_search_with_options(request.vector.clone(), config.num, &config.options)
+        } else {
+            s.search_with_options(
+                request.vector.clone(),
+                config.num,
+                config.epsilon,
+                config.radius,
+                &config.options,
+            )
+        };
         match result {
             Err(err) => {
                 let resource_type = format!("{}/qbg.Search", resource_type);
@@ -179,6 +184,45 @@ async fn search(
     }
 }
 
+async fn resolve_id(
+    s: &Arc<RwLock<Box<dyn algorithm::ANN>>>,
+    resource_type: &str,
+    api_name: &str,
+    name: &str,
+    ip: &str,
+    request: search::IdRequest,
+) -> Result<search::Request, Status> {
+    let result = if request.id.is_empty() {
+        Err(Error::InvalidUUID {
+            uuid: request.id.clone(),
+        })
+    } else {
+        s.read().await.get_object(request.id.clone())
+    };
+    let (vector, _) = result.map_err(|err| {
+        let code = match &err {
+            Error::InvalidUUID { .. } => Code::InvalidArgument,
+            Error::ObjectIDNotFound { .. } | Error::UUIDNotFound { .. } => Code::NotFound,
+            _ => Code::Internal,
+        };
+        let message = err.to_string();
+        let details = build_error_details(
+            err,
+            &super::common::get_hostname(),
+            &request.id,
+            request.encode_to_vec(),
+            &format!("{resource_type}/SearchByID"),
+            &format!("{api_name}: {name}({ip})"),
+            None,
+        );
+        Status::with_error_details(code, message, details)
+    })?;
+    Ok(search::Request {
+        vector,
+        config: request.config,
+    })
+}
+
 #[tonic::async_trait]
 impl search_server::Search for super::Agent {
     async fn search(
@@ -192,7 +236,7 @@ impl search_server::Search for super::Agent {
         let name = self.name.clone();
         let ip = self.ip.clone();
         let api_name = self.api_name.clone();
-        match search(s, &resource_type, &api_name, &name, &ip, request).await {
+        match search(s, &resource_type, &api_name, &name, &ip, request, false).await {
             Ok(response) => Ok(tonic::Response::new(response)),
             Err(e) => Err(e),
         }
@@ -201,9 +245,18 @@ impl search_server::Search for super::Agent {
     #[doc = " A method to search indexed vectors by ID.\n"]
     async fn search_by_id(
         &self,
-        _request: tonic::Request<search::IdRequest>,
-    ) -> Result<tonic::Response<search::Response>, tonic::Status> {
-        todo!()
+        request: tonic::Request<search::IdRequest>,
+    ) -> Result<tonic::Response<search::Response>, Status> {
+        let req = resolve_id(
+            &self.s,
+            &self.resource_type,
+            &self.api_name,
+            &self.name,
+            &self.ip,
+            request.into_inner(),
+        )
+        .await?;
+        self.search(tonic::Request::new(req)).await
     }
 
     #[doc = " Server streaming response type for the StreamSearch method."]
@@ -232,7 +285,7 @@ impl search_server::Search for super::Agent {
             let ip = ip.clone();
             let api_name = api_name.clone();
             async move {
-                match search(s, &resource_type, &api_name, &name, &ip, &req).await {
+                match search(s, &resource_type, &api_name, &name, &ip, &req, false).await {
                     Ok(response) => Ok(search::StreamResponse {
                         payload: Some(search::stream_response::Payload::Response(response)),
                     }),
@@ -250,9 +303,31 @@ impl search_server::Search for super::Agent {
     #[doc = " A method to search indexed vectors by multiple IDs.\n"]
     async fn stream_search_by_id(
         &self,
-        _request: tonic::Request<tonic::Streaming<search::IdRequest>>,
-    ) -> std::result::Result<tonic::Response<Self::StreamSearchByIDStream>, tonic::Status> {
-        todo!()
+        request: tonic::Request<tonic::Streaming<search::IdRequest>>,
+    ) -> Result<tonic::Response<Self::StreamSearchByIDStream>, Status> {
+        let s = self.s.clone();
+        let resource_type = self.resource_type.clone();
+        let api_name = self.api_name.clone();
+        let name = self.name.clone();
+        let ip = self.ip.clone();
+        let process_fn = move |req: search::IdRequest| {
+            let (s, resource_type, api_name, name, ip) = (
+                s.clone(),
+                resource_type.clone(),
+                api_name.clone(),
+                name.clone(),
+                ip.clone(),
+            );
+            async move {
+                let req = resolve_id(&s, &resource_type, &api_name, &name, &ip, req).await?;
+                let response =
+                    search(s, &resource_type, &api_name, &name, &ip, &req, false).await?;
+                Ok(search::StreamResponse {
+                    payload: Some(search::stream_response::Payload::Response(response)),
+                })
+            }
+        };
+        bidirectional_stream(request, self.stream_concurrency, process_fn).await
     }
 
     #[doc = " A method to search indexed vectors by multiple vectors in a single request.\n"]
@@ -275,25 +350,52 @@ impl search_server::Search for super::Agent {
     #[doc = " A method to search indexed vectors by multiple IDs in a single request.\n"]
     async fn multi_search_by_id(
         &self,
-        _request: tonic::Request<search::MultiIdRequest>,
-    ) -> std::result::Result<tonic::Response<search::Responses>, tonic::Status> {
-        todo!()
+        request: tonic::Request<search::MultiIdRequest>,
+    ) -> Result<tonic::Response<search::Responses>, Status> {
+        let mut responses = Vec::new();
+        for req in request.into_inner().requests {
+            responses.push(
+                self.search_by_id(tonic::Request::new(req))
+                    .await?
+                    .into_inner(),
+            );
+        }
+        Ok(tonic::Response::new(search::Responses { responses }))
     }
 
     #[doc = " A method to linear search indexed vectors by a raw vector.\n"]
     async fn linear_search(
         &self,
-        _request: tonic::Request<search::Request>,
-    ) -> std::result::Result<tonic::Response<search::Response>, tonic::Status> {
-        todo!()
+        request: tonic::Request<search::Request>,
+    ) -> Result<tonic::Response<search::Response>, Status> {
+        search(
+            self.s.clone(),
+            &self.resource_type,
+            &self.api_name,
+            &self.name,
+            &self.ip,
+            request.get_ref(),
+            true,
+        )
+        .await
+        .map(tonic::Response::new)
     }
 
     #[doc = " A method to linear search indexed vectors by ID.\n"]
     async fn linear_search_by_id(
         &self,
-        _request: tonic::Request<search::IdRequest>,
-    ) -> std::result::Result<tonic::Response<search::Response>, tonic::Status> {
-        todo!()
+        request: tonic::Request<search::IdRequest>,
+    ) -> Result<tonic::Response<search::Response>, Status> {
+        let req = resolve_id(
+            &self.s,
+            &self.resource_type,
+            &self.api_name,
+            &self.name,
+            &self.ip,
+            request.into_inner(),
+        )
+        .await?;
+        self.linear_search(tonic::Request::new(req)).await
     }
 
     #[doc = " Server streaming response type for the StreamLinearSearch method."]
@@ -302,9 +404,29 @@ impl search_server::Search for super::Agent {
     #[doc = " A method to linear search indexed vectors by multiple vectors.\n"]
     async fn stream_linear_search(
         &self,
-        _request: tonic::Request<tonic::Streaming<search::Request>>,
-    ) -> std::result::Result<tonic::Response<Self::StreamLinearSearchStream>, tonic::Status> {
-        todo!()
+        request: tonic::Request<tonic::Streaming<search::Request>>,
+    ) -> Result<tonic::Response<Self::StreamLinearSearchStream>, Status> {
+        let s = self.s.clone();
+        let resource_type = self.resource_type.clone();
+        let api_name = self.api_name.clone();
+        let name = self.name.clone();
+        let ip = self.ip.clone();
+        let process_fn = move |req: search::Request| {
+            let (s, resource_type, api_name, name, ip) = (
+                s.clone(),
+                resource_type.clone(),
+                api_name.clone(),
+                name.clone(),
+                ip.clone(),
+            );
+            async move {
+                let response = search(s, &resource_type, &api_name, &name, &ip, &req, true).await?;
+                Ok(search::StreamResponse {
+                    payload: Some(search::stream_response::Payload::Response(response)),
+                })
+            }
+        };
+        bidirectional_stream(request, self.stream_concurrency, process_fn).await
     }
 
     #[doc = " Server streaming response type for the StreamLinearSearchByID method."]
@@ -313,25 +435,235 @@ impl search_server::Search for super::Agent {
     #[doc = " A method to linear search indexed vectors by multiple IDs.\n"]
     async fn stream_linear_search_by_id(
         &self,
-        _request: tonic::Request<tonic::Streaming<search::IdRequest>>,
-    ) -> std::result::Result<tonic::Response<Self::StreamLinearSearchByIDStream>, tonic::Status>
-    {
-        todo!()
+        request: tonic::Request<tonic::Streaming<search::IdRequest>>,
+    ) -> Result<tonic::Response<Self::StreamLinearSearchByIDStream>, Status> {
+        let s = self.s.clone();
+        let resource_type = self.resource_type.clone();
+        let api_name = self.api_name.clone();
+        let name = self.name.clone();
+        let ip = self.ip.clone();
+        let process_fn = move |req: search::IdRequest| {
+            let (s, resource_type, api_name, name, ip) = (
+                s.clone(),
+                resource_type.clone(),
+                api_name.clone(),
+                name.clone(),
+                ip.clone(),
+            );
+            async move {
+                let req = resolve_id(&s, &resource_type, &api_name, &name, &ip, req).await?;
+                let response = search(s, &resource_type, &api_name, &name, &ip, &req, true).await?;
+                Ok(search::StreamResponse {
+                    payload: Some(search::stream_response::Payload::Response(response)),
+                })
+            }
+        };
+        bidirectional_stream(request, self.stream_concurrency, process_fn).await
     }
 
     #[doc = " A method to linear search indexed vectors by multiple vectors in a single\n request.\n"]
     async fn multi_linear_search(
         &self,
-        _request: tonic::Request<search::MultiRequest>,
-    ) -> std::result::Result<tonic::Response<search::Responses>, tonic::Status> {
-        todo!()
+        request: tonic::Request<search::MultiRequest>,
+    ) -> Result<tonic::Response<search::Responses>, Status> {
+        let mut responses = Vec::new();
+        for req in request.into_inner().requests {
+            responses.push(
+                self.linear_search(tonic::Request::new(req))
+                    .await?
+                    .into_inner(),
+            );
+        }
+        Ok(tonic::Response::new(search::Responses { responses }))
     }
 
     #[doc = " A method to linear search indexed vectors by multiple IDs in a single\n request.\n"]
     async fn multi_linear_search_by_id(
         &self,
-        _request: tonic::Request<search::MultiIdRequest>,
-    ) -> std::result::Result<tonic::Response<search::Responses>, tonic::Status> {
-        todo!()
+        request: tonic::Request<search::MultiIdRequest>,
+    ) -> Result<tonic::Response<search::Responses>, Status> {
+        let mut responses = Vec::new();
+        for req in request.into_inner().requests {
+            responses.push(
+                self.linear_search_by_id(tonic::Request::new(req))
+                    .await?
+                    .into_inner(),
+            );
+        }
+        Ok(tonic::Response::new(search::Responses { responses }))
+    }
+}
+
+#[cfg(all(test, feature = "zvec"))]
+mod tests {
+    use super::*;
+    use algorithm::ANN;
+    use proto::payload::v1::{Empty, info};
+    use proto::vald::v1::{index_server::Index, search_server::Search};
+
+    #[tokio::test]
+    async fn zvec_search_modes_and_property() {
+        let path = std::env::temp_dir().join(format!(
+            "vald-agent-search-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("clock")
+                .as_nanos()
+        ));
+        let mut service = zvec::Service::new(path.to_str().expect("UTF-8 path"), 3, vec![], vec![])
+            .expect("service");
+        service
+            .insert("first".into(), vec![0.0, 0.0, 0.0], 1)
+            .expect("insert first");
+        service
+            .insert("second".into(), vec![1.0, 1.0, 1.0], 2)
+            .expect("insert second");
+        let agent = Arc::new(super::super::Agent::new(
+            Box::new(service),
+            "test-agent",
+            "127.0.0.1",
+            "test",
+            "test",
+            2,
+        ));
+        let property: info::index::PropertyDetail = agent
+            .index_property(tonic::Request::new(Empty {}))
+            .await
+            .expect("property")
+            .into_inner();
+        assert_eq!(property.details["test-agent"].dimension, 3);
+        assert_eq!(property.details["test-agent"].database_type, "Zvec");
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
+            .await
+            .expect("listener");
+        let address = listener.local_addr().expect("address");
+        let (shutdown_tx, shutdown_rx) = tokio::sync::oneshot::channel();
+        let server = tokio::spawn(
+            tonic::transport::Server::builder()
+                .add_service(proto::vald::v1::search_server::SearchServer::from_arc(
+                    agent.clone(),
+                ))
+                .serve_with_incoming_shutdown(
+                    tokio_stream::wrappers::TcpListenerStream::new(listener),
+                    async {
+                        shutdown_rx.await.expect("shutdown");
+                    },
+                ),
+        );
+        let mut client =
+            proto::vald::v1::search_client::SearchClient::connect(format!("http://{address}"))
+                .await
+                .expect("connect");
+        let config = Some(search::Config {
+            num: 2,
+            ..Default::default()
+        });
+        let request = search::Request {
+            vector: vec![0.0, 0.0, 0.0],
+            config: config.clone(),
+        };
+        let id_request = search::IdRequest {
+            id: "first".into(),
+            config,
+        };
+        let check = |response: search::Response| {
+            assert_eq!(
+                response
+                    .results
+                    .iter()
+                    .map(|hit| hit.id.as_str())
+                    .collect::<Vec<_>>(),
+                vec!["first", "second"]
+            );
+        };
+        check(
+            client
+                .linear_search(request.clone())
+                .await
+                .expect("unary linear")
+                .into_inner(),
+        );
+        check(
+            client
+                .search_by_id(id_request.clone())
+                .await
+                .expect("unary by ID")
+                .into_inner(),
+        );
+        check(
+            client
+                .linear_search_by_id(id_request.clone())
+                .await
+                .expect("unary linear by ID")
+                .into_inner(),
+        );
+        for response in client
+            .multi_linear_search(search::MultiRequest {
+                requests: vec![request.clone(); 2],
+            })
+            .await
+            .expect("multi linear")
+            .into_inner()
+            .responses
+        {
+            check(response);
+        }
+        for response in client
+            .multi_search_by_id(search::MultiIdRequest {
+                requests: vec![id_request.clone(); 2],
+            })
+            .await
+            .expect("multi by ID")
+            .into_inner()
+            .responses
+        {
+            check(response);
+        }
+        for response in client
+            .multi_linear_search_by_id(search::MultiIdRequest {
+                requests: vec![id_request.clone(); 2],
+            })
+            .await
+            .expect("multi linear by ID")
+            .into_inner()
+            .responses
+        {
+            check(response);
+        }
+        let mut streams = vec![
+            client
+                .stream_linear_search(tokio_stream::iter(vec![request; 2]))
+                .await
+                .expect("stream linear")
+                .into_inner(),
+            client
+                .stream_search_by_id(tokio_stream::iter(vec![id_request.clone(); 2]))
+                .await
+                .expect("stream by ID")
+                .into_inner(),
+            client
+                .stream_linear_search_by_id(tokio_stream::iter(vec![id_request; 2]))
+                .await
+                .expect("stream linear by ID")
+                .into_inner(),
+        ];
+        for stream in &mut streams {
+            let mut count = 0;
+            while let Some(response) = stream.message().await.expect("stream message") {
+                match response.payload.expect("payload") {
+                    search::stream_response::Payload::Response(response) => check(response),
+                    search::stream_response::Payload::Status(status) => {
+                        panic!("unexpected stream status: {status:?}")
+                    }
+                }
+                count += 1;
+            }
+            assert_eq!(count, 2);
+        }
+        shutdown_tx.send(()).expect("send shutdown");
+        server.await.expect("server task").expect("server shutdown");
+        drop(agent);
+        std::fs::remove_dir_all(path).expect("cleanup");
     }
 }

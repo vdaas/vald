@@ -183,6 +183,22 @@ pub trait ANN: Send + Sync {
     ) -> Result<search::Response, Error> {
         self.search(vector, k, epsilon, radius)
     }
+    fn linear_search_with_options(
+        &self,
+        _vector: Vec<f32>,
+        _k: u32,
+        _options: &[Any],
+    ) -> Result<search::Response, Error> {
+        Err(Error::Backend {
+            message: "linear search is unsupported by this backend".into(),
+        })
+    }
+    fn index_property(&self) -> proto::payload::v1::info::index::Property {
+        proto::payload::v1::info::index::Property {
+            dimension: self.get_dimension_size() as i32,
+            ..Default::default()
+        }
+    }
     fn get_object(&self, uuid: String) -> Result<(Vec<f32>, i64), Error>;
     fn get_dimension_size(&self) -> usize;
     fn len(&self) -> u32;

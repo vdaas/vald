@@ -230,7 +230,7 @@ test/rust/zvec:
 ## run tests for agent
 test/rust/agent:
 	$(CC_ENV_VARS) \
-	cargo test --manifest-path rust/Cargo.toml --package agent --no-default-features --features "$(RUST_AGENT_FEATURES)" -- handler::common::tests --show-output
+	cargo test --manifest-path rust/Cargo.toml --package agent --no-default-features --features "$(RUST_AGENT_FEATURES)" -- handler:: --show-output
 
 .PHONY: test/hack
 ## run tests for hack
