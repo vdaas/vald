@@ -99,6 +99,8 @@ message Search {
     uint32 nprobe = 11;
     // Search edge size
     int32 edge_size = 12;
+    // Algorithm-specific search options.
+    repeated google.protobuf.Any options = 13;
   }
 
   // AggregationAlgorithm is enum of each aggregation algorithms
@@ -152,6 +154,50 @@ message Filter {
   }
 }
 
+// ZVec related messages.
+message ZVec {
+  // Represent ZVec document options.
+  message DocumentOptions {
+    // Scalar or text fields stored with the vector.
+    map<string, string> fields = 1;
+  }
+
+  // Represent ZVec search options.
+  message SearchOptions {
+    // Scalar pre-filter expression.
+    string pre_filter = 1;
+    // Hybrid recall queries.
+    repeated Query hybrid_queries = 2;
+    // Per-query weights used by weighted hybrid reranking.
+    repeated float hybrid_weights = 3;
+  }
+
+  // Represent a ZVec hybrid recall query.
+  message Query {
+    // Target field name.
+    string field_name = 1;
+    oneof query {
+      // Vector recall query.
+      Vector vector = 2;
+      // Full-text recall query.
+      FTS fts = 3;
+    }
+  }
+
+  // Represent a ZVec vector recall query.
+  message Vector {
+    repeated float values = 1;
+  }
+
+  // Represent a ZVec full-text recall query.
+  message FTS {
+    // Natural-language match string.
+    string match_string = 1;
+    // Explicit full-text query string.
+    string query_string = 2;
+  }
+}
+
 // Insert related messages.
 message Insert {
   // Represent the insert request.
@@ -192,6 +238,8 @@ message Insert {
     Filter.Config filters = 2;
     // Insert timestamp.
     int64 timestamp = 3;
+    // Algorithm-specific insert options.
+    repeated google.protobuf.Any options = 4;
   }
 }
 
