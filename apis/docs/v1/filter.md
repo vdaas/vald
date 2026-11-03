@@ -53,6 +53,7 @@ SearchObject RPC is the method to search object(s) similar to request object.
     google.protobuf.FloatValue ratio = 10;
     uint32 nprobe = 11;
     int32 edge_size = 12;
+    repeated google.protobuf.Any options = 13;
   }
 
   message Filter.Target {
@@ -84,20 +85,21 @@ SearchObject RPC is the method to search object(s) similar to request object.
 
   - Search.Config
 
-    |         field         | type                        | label | description                                  |
-    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
-    |      request_id       | string                      |       | Unique request ID.                           |
-    |          num          | uint32                      |       | Maximum number of result to be returned.     |
-    |        radius         | float                       |       | Search radius.                               |
-    |        epsilon        | float                       |       | Search coefficient.                          |
-    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
-    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
-    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
-    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
-    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
-    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
-    |        nprobe         | uint32                      |       | Search nprobe.                               |
-    |       edge_size       | int32                       |       | Search edge size                             |
+    |         field         | type                        | label    | description                                  |
+    | :-------------------: | :-------------------------- | :------- | :------------------------------------------- |
+    |      request_id       | string                      |          | Unique request ID.                           |
+    |          num          | uint32                      |          | Maximum number of result to be returned.     |
+    |        radius         | float                       |          | Search radius.                               |
+    |        epsilon        | float                       |          | Search coefficient.                          |
+    |        timeout        | int64                       |          | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |          | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |          | Egress filter configurations.                |
+    |        min_num        | uint32                      |          | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |          | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |          | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |          | Search nprobe.                               |
+    |       edge_size       | int32                       |          | Search edge size                             |
+    |        options        | google.protobuf.Any         | repeated | Algorithm-specific search options.           |
 
   - Filter.Target
 
@@ -190,6 +192,7 @@ Each Search request and response are independent.
     google.protobuf.FloatValue ratio = 10;
     uint32 nprobe = 11;
     int32 edge_size = 12;
+    repeated google.protobuf.Any options = 13;
   }
 
   message Filter.Target {
@@ -227,20 +230,21 @@ Each Search request and response are independent.
 
   - Search.Config
 
-    |         field         | type                        | label | description                                  |
-    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
-    |      request_id       | string                      |       | Unique request ID.                           |
-    |          num          | uint32                      |       | Maximum number of result to be returned.     |
-    |        radius         | float                       |       | Search radius.                               |
-    |        epsilon        | float                       |       | Search coefficient.                          |
-    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
-    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
-    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
-    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
-    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
-    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
-    |        nprobe         | uint32                      |       | Search nprobe.                               |
-    |       edge_size       | int32                       |       | Search edge size                             |
+    |         field         | type                        | label    | description                                  |
+    | :-------------------: | :-------------------------- | :------- | :------------------------------------------- |
+    |      request_id       | string                      |          | Unique request ID.                           |
+    |          num          | uint32                      |          | Maximum number of result to be returned.     |
+    |        radius         | float                       |          | Search radius.                               |
+    |        epsilon        | float                       |          | Search coefficient.                          |
+    |        timeout        | int64                       |          | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |          | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |          | Egress filter configurations.                |
+    |        min_num        | uint32                      |          | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |          | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |          | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |          | Search nprobe.                               |
+    |       edge_size       | int32                       |          | Search edge size                             |
+    |        options        | google.protobuf.Any         | repeated | Algorithm-specific search options.           |
 
   - Filter.Target
 
@@ -342,6 +346,7 @@ Please be careful that the size of the request exceeds the limit.
     google.protobuf.FloatValue ratio = 10;
     uint32 nprobe = 11;
     int32 edge_size = 12;
+    repeated google.protobuf.Any options = 13;
   }
 
   message Filter.Target {
@@ -373,20 +378,21 @@ Please be careful that the size of the request exceeds the limit.
 
   - Search.Config
 
-    |         field         | type                        | label | description                                  |
-    | :-------------------: | :-------------------------- | :---- | :------------------------------------------- |
-    |      request_id       | string                      |       | Unique request ID.                           |
-    |          num          | uint32                      |       | Maximum number of result to be returned.     |
-    |        radius         | float                       |       | Search radius.                               |
-    |        epsilon        | float                       |       | Search coefficient.                          |
-    |        timeout        | int64                       |       | Search timeout in nanoseconds.               |
-    |    ingress_filters    | Filter.Config               |       | Ingress filter configurations.               |
-    |    egress_filters     | Filter.Config               |       | Egress filter configurations.                |
-    |        min_num        | uint32                      |       | Minimum number of result to be returned.     |
-    | aggregation_algorithm | Search.AggregationAlgorithm |       | Aggregation Algorithm                        |
-    |         ratio         | google.protobuf.FloatValue  |       | Search ratio for agent return result number. |
-    |        nprobe         | uint32                      |       | Search nprobe.                               |
-    |       edge_size       | int32                       |       | Search edge size                             |
+    |         field         | type                        | label    | description                                  |
+    | :-------------------: | :-------------------------- | :------- | :------------------------------------------- |
+    |      request_id       | string                      |          | Unique request ID.                           |
+    |          num          | uint32                      |          | Maximum number of result to be returned.     |
+    |        radius         | float                       |          | Search radius.                               |
+    |        epsilon        | float                       |          | Search coefficient.                          |
+    |        timeout        | int64                       |          | Search timeout in nanoseconds.               |
+    |    ingress_filters    | Filter.Config               |          | Ingress filter configurations.               |
+    |    egress_filters     | Filter.Config               |          | Egress filter configurations.                |
+    |        min_num        | uint32                      |          | Minimum number of result to be returned.     |
+    | aggregation_algorithm | Search.AggregationAlgorithm |          | Aggregation Algorithm                        |
+    |         ratio         | google.protobuf.FloatValue  |          | Search ratio for agent return result number. |
+    |        nprobe         | uint32                      |          | Search nprobe.                               |
+    |       edge_size       | int32                       |          | Search edge size                             |
+    |        options        | google.protobuf.Any         | repeated | Algorithm-specific search options.           |
 
   - Filter.Target
 
@@ -481,6 +487,7 @@ InsertObject RPC is the method to insert object through Vald Filter Gateway.
     bool skip_strict_exist_check = 1;
     Filter.Config filters = 2;
     int64 timestamp = 3;
+    repeated google.protobuf.Any options = 4;
   }
 
   message Filter.Target {
@@ -511,11 +518,12 @@ InsertObject RPC is the method to insert object through Vald Filter Gateway.
 
   - Insert.Config
 
-    |          field          | type          | label | description                                         |
-    | :---------------------: | :------------ | :---- | :-------------------------------------------------- |
-    | skip_strict_exist_check | bool          |       | A flag to skip exist check during insert operation. |
-    |         filters         | Filter.Config |       | Filter configurations.                              |
-    |        timestamp        | int64         |       | Insert timestamp.                                   |
+    |          field          | type                | label    | description                                         |
+    | :---------------------: | :------------------ | :------- | :-------------------------------------------------- |
+    | skip_strict_exist_check | bool                |          | A flag to skip exist check during insert operation. |
+    |         filters         | Filter.Config       |          | Filter configurations.                              |
+    |        timestamp        | int64               |          | Insert timestamp.                                   |
+    |         options         | google.protobuf.Any | repeated | Algorithm-specific insert options.                  |
 
   - Filter.Target
 
@@ -592,6 +600,7 @@ It's the recommended method to insert a large number of objects.
     bool skip_strict_exist_check = 1;
     Filter.Config filters = 2;
     int64 timestamp = 3;
+    repeated google.protobuf.Any options = 4;
   }
 
   message Filter.Target {
@@ -622,11 +631,12 @@ It's the recommended method to insert a large number of objects.
 
   - Insert.Config
 
-    |          field          | type          | label | description                                         |
-    | :---------------------: | :------------ | :---- | :-------------------------------------------------- |
-    | skip_strict_exist_check | bool          |       | A flag to skip exist check during insert operation. |
-    |         filters         | Filter.Config |       | Filter configurations.                              |
-    |        timestamp        | int64         |       | Insert timestamp.                                   |
+    |          field          | type                | label    | description                                         |
+    | :---------------------: | :------------------ | :------- | :-------------------------------------------------- |
+    | skip_strict_exist_check | bool                |          | A flag to skip exist check during insert operation. |
+    |         filters         | Filter.Config       |          | Filter configurations.                              |
+    |        timestamp        | int64               |          | Insert timestamp.                                   |
+    |         options         | google.protobuf.Any | repeated | Algorithm-specific insert options.                  |
 
   - Filter.Target
 
@@ -715,6 +725,7 @@ MultiInsertObject RPC is the method to add multiple new objects in **1** request
     bool skip_strict_exist_check = 1;
     Filter.Config filters = 2;
     int64 timestamp = 3;
+    repeated google.protobuf.Any options = 4;
   }
 
   message Filter.Target {
@@ -751,11 +762,12 @@ MultiInsertObject RPC is the method to add multiple new objects in **1** request
 
   - Insert.Config
 
-    |          field          | type          | label | description                                         |
-    | :---------------------: | :------------ | :---- | :-------------------------------------------------- |
-    | skip_strict_exist_check | bool          |       | A flag to skip exist check during insert operation. |
-    |         filters         | Filter.Config |       | Filter configurations.                              |
-    |        timestamp        | int64         |       | Insert timestamp.                                   |
+    |          field          | type                | label    | description                                         |
+    | :---------------------: | :------------------ | :------- | :-------------------------------------------------- |
+    | skip_strict_exist_check | bool                |          | A flag to skip exist check during insert operation. |
+    |         filters         | Filter.Config       |          | Filter configurations.                              |
+    |        timestamp        | int64               |          | Insert timestamp.                                   |
+    |         options         | google.protobuf.Any | repeated | Algorithm-specific insert options.                  |
 
   - Filter.Target
 

@@ -5505,6 +5505,9 @@ impl serde::Serialize for insert::Config {
         if self.timestamp != 0 {
             len += 1;
         }
+        if !self.options.is_empty() {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("payload.v1.Insert.Config", len)?;
         if self.skip_strict_exist_check {
             struct_ser.serialize_field("skipStrictExistCheck", &self.skip_strict_exist_check)?;
@@ -5517,6 +5520,9 @@ impl serde::Serialize for insert::Config {
             #[allow(clippy::needless_borrows_for_generic_args)]
             struct_ser
                 .serialize_field("timestamp", ToString::to_string(&self.timestamp).as_str())?;
+        }
+        if !self.options.is_empty() {
+            struct_ser.serialize_field("options", &self.options)?;
         }
         struct_ser.end()
     }
@@ -5532,6 +5538,7 @@ impl<'de> serde::Deserialize<'de> for insert::Config {
             "skipStrictExistCheck",
             "filters",
             "timestamp",
+            "options",
         ];
 
         #[allow(clippy::enum_variant_names)]
@@ -5539,6 +5546,7 @@ impl<'de> serde::Deserialize<'de> for insert::Config {
             SkipStrictExistCheck,
             Filters,
             Timestamp,
+            Options,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -5568,6 +5576,7 @@ impl<'de> serde::Deserialize<'de> for insert::Config {
                             }
                             "filters" => Ok(GeneratedField::Filters),
                             "timestamp" => Ok(GeneratedField::Timestamp),
+                            "options" => Ok(GeneratedField::Options),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -5590,6 +5599,7 @@ impl<'de> serde::Deserialize<'de> for insert::Config {
                 let mut skip_strict_exist_check__ = None;
                 let mut filters__ = None;
                 let mut timestamp__ = None;
+                let mut options__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::SkipStrictExistCheck => {
@@ -5615,12 +5625,19 @@ impl<'de> serde::Deserialize<'de> for insert::Config {
                                     .0,
                             );
                         }
+                        GeneratedField::Options => {
+                            if options__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("options"));
+                            }
+                            options__ = Some(map_.next_value()?);
+                        }
                     }
                 }
                 Ok(insert::Config {
                     skip_strict_exist_check: skip_strict_exist_check__.unwrap_or_default(),
                     filters: filters__,
                     timestamp: timestamp__.unwrap_or_default(),
+                    options: options__.unwrap_or_default(),
                 })
             }
         }
@@ -9661,6 +9678,9 @@ impl serde::Serialize for search::Config {
         if self.edge_size != 0 {
             len += 1;
         }
+        if !self.options.is_empty() {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("payload.v1.Search.Config", len)?;
         if !self.request_id.is_empty() {
             struct_ser.serialize_field("requestId", &self.request_id)?;
@@ -9708,6 +9728,9 @@ impl serde::Serialize for search::Config {
         if self.edge_size != 0 {
             struct_ser.serialize_field("edgeSize", &self.edge_size)?;
         }
+        if !self.options.is_empty() {
+            struct_ser.serialize_field("options", &self.options)?;
+        }
         struct_ser.end()
     }
 }
@@ -9736,6 +9759,7 @@ impl<'de> serde::Deserialize<'de> for search::Config {
             "nprobe",
             "edge_size",
             "edgeSize",
+            "options",
         ];
 
         #[allow(clippy::enum_variant_names)]
@@ -9752,6 +9776,7 @@ impl<'de> serde::Deserialize<'de> for search::Config {
             Ratio,
             Nprobe,
             EdgeSize,
+            Options,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -9792,6 +9817,7 @@ impl<'de> serde::Deserialize<'de> for search::Config {
                             "ratio" => Ok(GeneratedField::Ratio),
                             "nprobe" => Ok(GeneratedField::Nprobe),
                             "edgeSize" | "edge_size" => Ok(GeneratedField::EdgeSize),
+                            "options" => Ok(GeneratedField::Options),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -9823,6 +9849,7 @@ impl<'de> serde::Deserialize<'de> for search::Config {
                 let mut ratio__ = None;
                 let mut nprobe__ = None;
                 let mut edge_size__ = None;
+                let mut options__ = None;
                 while let Some(k) = map_.next_key()? {
                     match k {
                         GeneratedField::RequestId => {
@@ -9921,6 +9948,12 @@ impl<'de> serde::Deserialize<'de> for search::Config {
                                     .0,
                             );
                         }
+                        GeneratedField::Options => {
+                            if options__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("options"));
+                            }
+                            options__ = Some(map_.next_value()?);
+                        }
                     }
                 }
                 Ok(search::Config {
@@ -9936,6 +9969,7 @@ impl<'de> serde::Deserialize<'de> for search::Config {
                     ratio: ratio__,
                     nprobe: nprobe__.unwrap_or_default(),
                     edge_size: edge_size__.unwrap_or_default(),
+                    options: options__.unwrap_or_default(),
                 })
             }
         }
@@ -12370,5 +12404,642 @@ impl<'de> serde::Deserialize<'de> for upsert::Request {
             }
         }
         deserializer.deserialize_struct("payload.v1.Upsert.Request", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for ZVec {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let len = 0;
+        let struct_ser = serializer.serialize_struct("payload.v1.ZVec", len)?;
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for ZVec {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {}
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(
+                        &self,
+                        formatter: &mut std::fmt::Formatter<'_>,
+                    ) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        Err(serde::de::Error::unknown_field(value, FIELDS))
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = ZVec;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct payload.v1.ZVec")
+            }
+
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<ZVec, V::Error>
+            where
+                V: serde::de::MapAccess<'de>,
+            {
+                while map_.next_key::<GeneratedField>()?.is_some() {
+                    let _ = map_.next_value::<serde::de::IgnoredAny>()?;
+                }
+                Ok(ZVec {})
+            }
+        }
+        deserializer.deserialize_struct("payload.v1.ZVec", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for z_vec::DocumentOptions {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if !self.fields.is_empty() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("payload.v1.ZVec.DocumentOptions", len)?;
+        if !self.fields.is_empty() {
+            struct_ser.serialize_field("fields", &self.fields)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for z_vec::DocumentOptions {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &["fields"];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            Fields,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(
+                        &self,
+                        formatter: &mut std::fmt::Formatter<'_>,
+                    ) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "fields" => Ok(GeneratedField::Fields),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = z_vec::DocumentOptions;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct payload.v1.ZVec.DocumentOptions")
+            }
+
+            fn visit_map<V>(
+                self,
+                mut map_: V,
+            ) -> std::result::Result<z_vec::DocumentOptions, V::Error>
+            where
+                V: serde::de::MapAccess<'de>,
+            {
+                let mut fields__ = None;
+                while let Some(k) = map_.next_key()? {
+                    match k {
+                        GeneratedField::Fields => {
+                            if fields__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("fields"));
+                            }
+                            fields__ = Some(map_.next_value::<std::collections::HashMap<_, _>>()?);
+                        }
+                    }
+                }
+                Ok(z_vec::DocumentOptions {
+                    fields: fields__.unwrap_or_default(),
+                })
+            }
+        }
+        deserializer.deserialize_struct("payload.v1.ZVec.DocumentOptions", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for z_vec::Fts {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if !self.match_string.is_empty() {
+            len += 1;
+        }
+        if !self.query_string.is_empty() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("payload.v1.ZVec.FTS", len)?;
+        if !self.match_string.is_empty() {
+            struct_ser.serialize_field("matchString", &self.match_string)?;
+        }
+        if !self.query_string.is_empty() {
+            struct_ser.serialize_field("queryString", &self.query_string)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for z_vec::Fts {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &["match_string", "matchString", "query_string", "queryString"];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            MatchString,
+            QueryString,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(
+                        &self,
+                        formatter: &mut std::fmt::Formatter<'_>,
+                    ) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "matchString" | "match_string" => Ok(GeneratedField::MatchString),
+                            "queryString" | "query_string" => Ok(GeneratedField::QueryString),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = z_vec::Fts;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct payload.v1.ZVec.FTS")
+            }
+
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<z_vec::Fts, V::Error>
+            where
+                V: serde::de::MapAccess<'de>,
+            {
+                let mut match_string__ = None;
+                let mut query_string__ = None;
+                while let Some(k) = map_.next_key()? {
+                    match k {
+                        GeneratedField::MatchString => {
+                            if match_string__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("matchString"));
+                            }
+                            match_string__ = Some(map_.next_value()?);
+                        }
+                        GeneratedField::QueryString => {
+                            if query_string__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("queryString"));
+                            }
+                            query_string__ = Some(map_.next_value()?);
+                        }
+                    }
+                }
+                Ok(z_vec::Fts {
+                    match_string: match_string__.unwrap_or_default(),
+                    query_string: query_string__.unwrap_or_default(),
+                })
+            }
+        }
+        deserializer.deserialize_struct("payload.v1.ZVec.FTS", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for z_vec::Query {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if !self.field_name.is_empty() {
+            len += 1;
+        }
+        if self.query.is_some() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("payload.v1.ZVec.Query", len)?;
+        if !self.field_name.is_empty() {
+            struct_ser.serialize_field("fieldName", &self.field_name)?;
+        }
+        if let Some(v) = self.query.as_ref() {
+            match v {
+                z_vec::query::Query::Vector(v) => {
+                    struct_ser.serialize_field("vector", v)?;
+                }
+                z_vec::query::Query::Fts(v) => {
+                    struct_ser.serialize_field("fts", v)?;
+                }
+            }
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for z_vec::Query {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &["field_name", "fieldName", "vector", "fts"];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            FieldName,
+            Vector,
+            Fts,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(
+                        &self,
+                        formatter: &mut std::fmt::Formatter<'_>,
+                    ) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "fieldName" | "field_name" => Ok(GeneratedField::FieldName),
+                            "vector" => Ok(GeneratedField::Vector),
+                            "fts" => Ok(GeneratedField::Fts),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = z_vec::Query;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct payload.v1.ZVec.Query")
+            }
+
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<z_vec::Query, V::Error>
+            where
+                V: serde::de::MapAccess<'de>,
+            {
+                let mut field_name__ = None;
+                let mut query__ = None;
+                while let Some(k) = map_.next_key()? {
+                    match k {
+                        GeneratedField::FieldName => {
+                            if field_name__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("fieldName"));
+                            }
+                            field_name__ = Some(map_.next_value()?);
+                        }
+                        GeneratedField::Vector => {
+                            if query__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("vector"));
+                            }
+                            query__ = map_
+                                .next_value::<::std::option::Option<_>>()?
+                                .map(z_vec::query::Query::Vector);
+                        }
+                        GeneratedField::Fts => {
+                            if query__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("fts"));
+                            }
+                            query__ = map_
+                                .next_value::<::std::option::Option<_>>()?
+                                .map(z_vec::query::Query::Fts);
+                        }
+                    }
+                }
+                Ok(z_vec::Query {
+                    field_name: field_name__.unwrap_or_default(),
+                    query: query__,
+                })
+            }
+        }
+        deserializer.deserialize_struct("payload.v1.ZVec.Query", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for z_vec::SearchOptions {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if !self.pre_filter.is_empty() {
+            len += 1;
+        }
+        if !self.hybrid_queries.is_empty() {
+            len += 1;
+        }
+        if !self.hybrid_weights.is_empty() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("payload.v1.ZVec.SearchOptions", len)?;
+        if !self.pre_filter.is_empty() {
+            struct_ser.serialize_field("preFilter", &self.pre_filter)?;
+        }
+        if !self.hybrid_queries.is_empty() {
+            struct_ser.serialize_field("hybridQueries", &self.hybrid_queries)?;
+        }
+        if !self.hybrid_weights.is_empty() {
+            struct_ser.serialize_field("hybridWeights", &self.hybrid_weights)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for z_vec::SearchOptions {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "pre_filter",
+            "preFilter",
+            "hybrid_queries",
+            "hybridQueries",
+            "hybrid_weights",
+            "hybridWeights",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            PreFilter,
+            HybridQueries,
+            HybridWeights,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(
+                        &self,
+                        formatter: &mut std::fmt::Formatter<'_>,
+                    ) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "preFilter" | "pre_filter" => Ok(GeneratedField::PreFilter),
+                            "hybridQueries" | "hybrid_queries" => Ok(GeneratedField::HybridQueries),
+                            "hybridWeights" | "hybrid_weights" => Ok(GeneratedField::HybridWeights),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = z_vec::SearchOptions;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct payload.v1.ZVec.SearchOptions")
+            }
+
+            fn visit_map<V>(
+                self,
+                mut map_: V,
+            ) -> std::result::Result<z_vec::SearchOptions, V::Error>
+            where
+                V: serde::de::MapAccess<'de>,
+            {
+                let mut pre_filter__ = None;
+                let mut hybrid_queries__ = None;
+                let mut hybrid_weights__ = None;
+                while let Some(k) = map_.next_key()? {
+                    match k {
+                        GeneratedField::PreFilter => {
+                            if pre_filter__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("preFilter"));
+                            }
+                            pre_filter__ = Some(map_.next_value()?);
+                        }
+                        GeneratedField::HybridQueries => {
+                            if hybrid_queries__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("hybridQueries"));
+                            }
+                            hybrid_queries__ = Some(map_.next_value()?);
+                        }
+                        GeneratedField::HybridWeights => {
+                            if hybrid_weights__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("hybridWeights"));
+                            }
+                            hybrid_weights__ = Some(
+                                map_.next_value::<Vec<::pbjson::private::NumberDeserialize<_>>>()?
+                                    .into_iter()
+                                    .map(|x| x.0)
+                                    .collect(),
+                            );
+                        }
+                    }
+                }
+                Ok(z_vec::SearchOptions {
+                    pre_filter: pre_filter__.unwrap_or_default(),
+                    hybrid_queries: hybrid_queries__.unwrap_or_default(),
+                    hybrid_weights: hybrid_weights__.unwrap_or_default(),
+                })
+            }
+        }
+        deserializer.deserialize_struct("payload.v1.ZVec.SearchOptions", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for z_vec::Vector {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if !self.values.is_empty() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("payload.v1.ZVec.Vector", len)?;
+        if !self.values.is_empty() {
+            struct_ser.serialize_field("values", &self.values)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for z_vec::Vector {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &["values"];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            Values,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(
+                        &self,
+                        formatter: &mut std::fmt::Formatter<'_>,
+                    ) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "values" => Ok(GeneratedField::Values),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = z_vec::Vector;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct payload.v1.ZVec.Vector")
+            }
+
+            fn visit_map<V>(self, mut map_: V) -> std::result::Result<z_vec::Vector, V::Error>
+            where
+                V: serde::de::MapAccess<'de>,
+            {
+                let mut values__ = None;
+                while let Some(k) = map_.next_key()? {
+                    match k {
+                        GeneratedField::Values => {
+                            if values__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("values"));
+                            }
+                            values__ = Some(
+                                map_.next_value::<Vec<::pbjson::private::NumberDeserialize<_>>>()?
+                                    .into_iter()
+                                    .map(|x| x.0)
+                                    .collect(),
+                            );
+                        }
+                    }
+                }
+                Ok(z_vec::Vector {
+                    values: values__.unwrap_or_default(),
+                })
+            }
+        }
+        deserializer.deserialize_struct("payload.v1.ZVec.Vector", FIELDS, GeneratedVisitor)
     }
 }
