@@ -194,6 +194,28 @@ LTO_FLAGS ?= $(if $(findstring clang,$(notdir $(CC))),-flto=thin,-flto=auto -ffa
 # lld understands ThinLTO archives natively; only wire it up for clang.
 LLD_FLAGS ?= $(if $(and $(findstring clang,$(notdir $(CC))),$(LLD)),-fuse-ld=lld)
 
+# Native Darwin builds use Homebrew's native dependencies. These variables are
+# intentionally overridable: callers can resolve them as an unprivileged user
+# and pass the values to a build that uses SUDO for installation.
+ifeq ($(GOOS),darwin)
+OPENMP_PREFIX ?= $(shell brew --prefix libomp 2>/dev/null)
+HDF5_PREFIX ?= $(shell brew --prefix hdf5 2>/dev/null)
+ZLIB_PREFIX ?= $(shell brew --prefix zlib 2>/dev/null)
+OPENMP_CFLAGS ?= -I$(OPENMP_PREFIX)/include
+NATIVE_LTO_FLAGS ?= -flto=thin
+
+LDFLAGS = -fPIC -pthread -std=c++17 -lc++ -lm -L$(OPENMP_PREFIX)/lib -Wl,-rpath,$(USR_LOCAL)/lib -Wl,-rpath,$(OPENMP_PREFIX)/lib -lomp -framework Accelerate -lpthread
+NGT_LDFLAGS =
+HDF5_LDFLAGS = -lhdf5 -lhdf5_hl -lz -lm
+CGO_LDFLAGS = -L$(HDF5_PREFIX)/lib -L$(ZLIB_PREFIX)/lib $(HDF5_LDFLAGS)
+FAISS_LDFLAGS =
+FAISS_CMAKE_C_FLAGS = $(CFLAGS)
+FAISS_CMAKE_CXX_FLAGS = $(CXXFLAGS) $(NATIVE_LTO_FLAGS) $(OPENMP_CFLAGS)
+FAISS_CMAKE_EXTRA_FLAGS = -DOpenMP_ROOT=$(OPENMP_PREFIX)
+else
+OPENMP_CFLAGS =
+NATIVE_LTO_FLAGS ?= $(LTO_FLAGS)
+
 # NOTE: -ffast-math must NOT appear here. On the link line the compiler driver
 # pulls in crtfastmath.o, whose global constructor (set_fast_math, sets the
 # MXCSR FTZ/DAZ bits) runs before main and corrupts libgcc's static C++
@@ -202,19 +224,23 @@ LLD_FLAGS ?= $(if $(and $(findstring clang,$(notdir $(CC))),$(LLD)),-fuse-ld=lld
 # reproduced locally). It buys no optimization at link time; per-TU fast-math
 # for the hot C++ code already comes from NGT/faiss's own -Ofast.
 LDFLAGS = -static -fPIC -pthread -std=gnu++23 -lstdc++ -lm -z relro -z now $(LTO_FLAGS) $(LLD_FLAGS) $(if $(MARCH),-march=$(MARCH)) $(if $(MTUNE),-mtune=$(MTUNE)) -fno-plt -O3 -fvisibility=hidden -ffp-contract=fast -fomit-frame-pointer -fmerge-all-constants -funroll-loops -falign-functions=32 -ffunction-sections -fdata-sections -Wl,--whole-archive -lpthread -Wl,--no-whole-archive
-
 NGT_LDFLAGS = -fopenmp -lopenblas -llapack -lgfortran
-FAISS_LDFLAGS = $(NGT_LDFLAGS)
-# Resolves a shared libomp.so path only to satisfy CMake's find_package(OpenMP)
-# configure-time probe when building NGT/faiss (-DOpenMP_omp_LIBRARY, tools.mk).
-# The .so never reaches the shipped binary: NGT/faiss emit static .a archives
-# with unresolved OpenMP symbols, and the final static cgo link resolves them
-# via NGT_LDFLAGS' -fopenmp, which under clang -static pulls in libomp.a.
+# Resolves a shared libomp.so path for CMake's Linux OpenMP probe.
 LIBOMP ?= $(shell ldconfig -p 2>/dev/null | awk '/libomp\.so[^.].*=>/{print $$NF; exit}' | grep -v '^$$' || ls /usr/lib/llvm-*/lib/libomp.so 2>/dev/null | sort -V | tail -1)
 HDF5_LDFLAGS = -lhdf5 -lhdf5_hl -lsz -laec -lz -ldl -lm
 CGO_LDFLAGS = $(FAISS_LDFLAGS) $(HDF5_LDFLAGS)
+FAISS_LDFLAGS = $(NGT_LDFLAGS)
+FAISS_CMAKE_C_FLAGS = $(CFLAGS) $(LTO_FLAGS) $(if $(MARCH),-march=$(MARCH)) $(if $(MTUNE),-mtune=$(MTUNE)) -fopenmp
+FAISS_CMAKE_CXX_FLAGS = $(CXXFLAGS) $(LTO_FLAGS) $(if $(MARCH),-march=$(MARCH)) $(if $(MTUNE),-mtune=$(MTUNE)) -fopenmp
+FAISS_CMAKE_EXTRA_FLAGS = -DBLA_VENDOR=OpenBLAS
+endif
+
 # TEST_LDFLAGS without -static to avoid conflicts with CGO and glibc dynamic linking requirements
+ifeq ($(GOOS),darwin)
+TEST_LDFLAGS_BASE = $(LDFLAGS)
+else
 TEST_LDFLAGS_BASE = -fPIC -pthread -std=gnu++23 -lstdc++ -lm -z relro -z now $(LTO_FLAGS) $(LLD_FLAGS) $(if $(MARCH),-march=$(MARCH)) $(if $(MTUNE),-mtune=$(MTUNE)) -fno-plt -O3 -fvisibility=hidden -ffp-contract=fast -fomit-frame-pointer -fmerge-all-constants -funroll-loops -falign-functions=32 -ffunction-sections -fdata-sections
+endif
 TEST_LDFLAGS = $(TEST_LDFLAGS_BASE) $(CGO_LDFLAGS)
 
 ifeq ($(GOARCH),amd64)
@@ -234,10 +260,6 @@ MARCH ?= armv8-a
 MTUNE ?= generic
 CFLAGS ?=
 ifeq ($(GOOS),darwin)
-HDF5_LDFLAGS = -lhdf5 -lhdf5_hl -lz -ldl -lm
-CFLAGS = -I $(shell brew --prefix hdf5)/include
-CGO_CFLAGS ?= $(CFLAGS)
-CGO_LDFLAGS = -L $(shell brew --prefix hdf5)/lib -L $(shell brew --prefix zlib)/lib $(HDF5_LDFLAGS)
 EXTLDFLAGS ?= -march=armv8-a
 else
 EXTLDFLAGS ?= -march=armv8-a -Wl,--no-keep-memory
@@ -251,6 +273,16 @@ EXTLDFLAGS ?=
 else
 EXTLDFLAGS ?= -Wl,--no-keep-memory
 endif
+endif
+
+ifeq ($(GOOS),darwin)
+# Keep the C++ standard explicit in cgo invocations; Faiss requires it when
+# compiling through Go rather than through its CMake-generated flags.
+CFLAGS := $(CFLAGS) -I$(HDF5_PREFIX)/include -I$(ZLIB_PREFIX)/include
+CXXFLAGS := $(CXXFLAGS) -std=c++17
+CGO_CFLAGS ?= $(CFLAGS) $(OPENMP_CFLAGS)
+CGO_CXXFLAGS ?= $(CXXFLAGS) $(OPENMP_CFLAGS)
+export CGO_CFLAGS CGO_CXXFLAGS
 endif
 
 # Base compile flags (the arch-gated guards above, without the per-build
