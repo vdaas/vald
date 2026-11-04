@@ -110,25 +110,25 @@ func Test_group_Do(t *testing.T) {
 		func() test[string] {
 			// routine1
 			key1 := "req_1"
-			var cnt1 uint32
+			var cnt1 atomic.Uint32
 
 			// the unparam lint rule is disabled here because we need to match the interface to singleflight implementation.
 			// if this rule is not disabled, if will warns that the error will always return null.
 
 			fn1 := func(context.Context) (string, error) {
-				atomic.AddUint32(&cnt1, 1)
+				cnt1.Add(1)
 				return "res_1", nil
 			}
 
 			// routine 2
 			key2 := "req_2"
-			var cnt2 uint32
+			var cnt2 atomic.Uint32
 
 			// the unparam lint rule is disabled here because we need to match the interface to singleflight implementation.
 			// if this rule is not disabled, if will warns that the error will always return null.
 			//nolint:unparam
 			fn2 := func(context.Context) (string, error) {
-				atomic.AddUint32(&cnt2, 1)
+				cnt2.Add(1)
 				return "res_2", nil
 			}
 
@@ -161,10 +161,10 @@ func Test_group_Do(t *testing.T) {
 					return got, gotShared, err
 				},
 				checkFunc: func(w want[string], gotV string, gotShared bool, err error) error {
-					if got, want := int(atomic.LoadUint32(&cnt1)), 1; got != want {
+					if got, want := int(cnt1.Load()), 1; got != want {
 						return errors.Errorf("cnt got = %d, want = %d", got, want)
 					}
-					if got, want := int(atomic.LoadUint32(&cnt2)), 1; got != want {
+					if got, want := int(cnt2.Load()), 1; got != want {
 						return errors.Errorf("cnt got = %d, want = %d", got, want)
 					}
 					if !errors.Is(err, w.err) {
@@ -182,25 +182,25 @@ func Test_group_Do(t *testing.T) {
 		}(),
 		func() test[string] {
 			// routine1
-			var cnt1 uint32
+			var cnt1 atomic.Uint32
 
 			// the unparam lint rule is disabled here because we need to match the interface to singleflight implementation.
 			// if this rule is not disabled, if will warns that the error will always return null.
 			//nolint:unparam
 			fn1 := func(context.Context) (string, error) {
-				atomic.AddUint32(&cnt1, 1)
+				cnt1.Add(1)
 				time.Sleep(time.Millisecond * 500)
 				return "res_1", nil
 			}
 
 			// routine 2
-			var cnt2 uint32
+			var cnt2 atomic.Uint32
 
 			// the unparam lint rule is disabled here because we need to match the interface to singleflight implementation.
 			// if this rule is not disabled, if will warns that the error will always return null.
 			//nolint:unparam
 			fn2 := func(context.Context) (string, error) {
-				atomic.AddUint32(&cnt2, 1)
+				cnt2.Add(1)
 				return "res_2", nil
 			}
 
@@ -211,8 +211,8 @@ func Test_group_Do(t *testing.T) {
 			}
 
 			checkFunc := func(w want[string], gotV string, gotShared bool, err error) error {
-				c1 := int(atomic.LoadUint32(&cnt1))
-				c2 := int(atomic.LoadUint32(&cnt2))
+				c1 := int(cnt1.Load())
+				c2 := int(cnt2.Load())
 				// since there is a chance that the go routine 2 is executed before routine 1, we need to check if either one is executed
 				if !((c1 == 1 && c2 == 0) || (c1 == 0 && c2 == 1)) {
 					return errors.Errorf("cnt1 and cnt2 is executed, %d, %d", c1, c2)
@@ -322,9 +322,9 @@ func TestDoDupSuppress(t *testing.T) {
 	g := New[string]()
 	var wg1, wg2 sync.WaitGroup
 	c := make(chan string, 1)
-	var calls int32
+	var calls atomic.Int32
 	fn := func(context.Context) (string, error) {
-		if atomic.AddInt32(&calls, 1) == 1 {
+		if calls.Add(1) == 1 {
 			// First invocation.
 			wg1.Done()
 		}
@@ -357,7 +357,7 @@ func TestDoDupSuppress(t *testing.T) {
 	// least reached the line before the Do.
 	c <- "bar"
 	wg2.Wait()
-	if got := atomic.LoadInt32(&calls); got <= 0 || got >= n {
+	if got := calls.Load(); got <= 0 || got >= n {
 		t.Errorf("number of calls = %d; want over 0 and less than %d", got, n)
 	}
 }
@@ -651,7 +651,7 @@ func TestDoTimeout(t *testing.T) {
 
 func TestDoMultipleErrors(t *testing.T) {
 	g := New[string]()
-	var calls int32
+	var calls atomic.Int32
 	someErr := errors.New("Some error")
 
 	const n = 10
@@ -659,7 +659,7 @@ func TestDoMultipleErrors(t *testing.T) {
 	for range n {
 		wg.Go(func() {
 			v, _, err := g.Do(t.Context(), "key", func(context.Context) (string, error) {
-				atomic.AddInt32(&calls, 1)
+				calls.Add(1)
 				time.Sleep(10 * time.Millisecond)
 				return "", someErr
 			})
@@ -672,7 +672,7 @@ func TestDoMultipleErrors(t *testing.T) {
 		})
 	}
 	wg.Wait()
-	if got := atomic.LoadInt32(&calls); got != 1 {
+	if got := calls.Load(); got != 1 {
 		t.Errorf("number of calls = %d; want 1", got)
 	}
 }

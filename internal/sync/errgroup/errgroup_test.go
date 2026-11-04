@@ -256,15 +256,15 @@ func TestGoLimit(t *testing.T) {
 
 	g, _ := errgroup.New(t.Context())
 	g.SetLimit(limit)
-	var active int32
+	var active atomic.Int32
 	for i := 0; i <= 1<<10; i++ {
 		g.Go(func() error {
-			n := atomic.AddInt32(&active, 1)
+			n := active.Add(1)
 			if n > limit {
 				return fmt.Errorf("saw %d active goroutines; want ≤ %d", n, limit)
 			}
 			time.Sleep(1 * time.Microsecond) // Give other goroutines a chance to increment active.
-			atomic.AddInt32(&active, -1)
+			active.Add(-1)
 			return nil
 		})
 	}

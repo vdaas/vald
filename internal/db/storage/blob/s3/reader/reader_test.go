@@ -371,7 +371,7 @@ func Test_reader_Open(t *testing.T) {
 			cctx, cancel := context.WithCancel(ctx)
 			eg, _ := errgroup.New(ctx)
 
-			var roopCnt uint64
+			var roopCnt atomic.Uint64
 			return test{
 				name: "returns nil when backoff is disable and multiple reads success",
 				args: args{
@@ -389,10 +389,10 @@ func Test_reader_Open(t *testing.T) {
 						NewReaderWithContextFunc: func(ctx context.Context, r io.Reader) (io.Reader, error) {
 							return &MockReadCloser{
 								ReadFunc: func(p []byte) (n int, err error) {
-									if atomic.CompareAndSwapUint64(&roopCnt, 0, 1) {
+									if roopCnt.CompareAndSwap(0, 1) {
 										return 0, io.EOF
 									}
-									atomic.AddUint64(&roopCnt, 1)
+									roopCnt.Add(1)
 									return 10, io.EOF
 								},
 							}, nil
@@ -423,7 +423,7 @@ func Test_reader_Open(t *testing.T) {
 							case <-cctx.Done():
 								return
 							default:
-								if atomic.LoadUint64(&roopCnt) == 0 {
+								if roopCnt.Load() == 0 {
 									if _, err := r.Read(bytes[0]); errors.Is(err, io.EOF) {
 										return
 									}

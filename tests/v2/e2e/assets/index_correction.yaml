@@ -256,7 +256,7 @@ strategies:
           - name: KillAgent
             type: kubernetes
             mode: other
-            wait: 10s
+            wait: 60s
             kubernetes:
               kind: pod
               namespace: default

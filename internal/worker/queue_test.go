@@ -69,7 +69,7 @@ func TestNewQueue(t *testing.T) {
 			return reflect.DeepEqual(want.Load(), got.Load())
 		}
 		opts := []comparator.Option{
-			comparator.AllowUnexported(*(w.want).(*queue)),
+			comparator.AllowUnexported(*w.want.(*queue)),
 			comparator.Comparer(egComparator),
 			comparator.Comparer(atomicComparator),
 			comparator.Comparer(func(want, got chan JobFunc) bool {

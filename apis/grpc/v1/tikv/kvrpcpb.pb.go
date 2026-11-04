@@ -4010,13 +4010,13 @@ var (
 	file_v1_tikv_kvrpcpb_proto_enumTypes = make([]protoimpl.EnumInfo, 7)
 	file_v1_tikv_kvrpcpb_proto_msgTypes  = make([]protoimpl.MessageInfo, 40)
 	file_v1_tikv_kvrpcpb_proto_goTypes   = []any{
-		(APIVersion)(0),                // 0: tikv.APIVersion
-		(CommandPri)(0),                // 1: tikv.CommandPri
-		(IsolationLevel)(0),            // 2: tikv.IsolationLevel
-		(DiskFullOpt)(0),               // 3: tikv.DiskFullOpt
-		(Op)(0),                        // 4: tikv.Op
-		(Assertion)(0),                 // 5: tikv.Assertion
-		(WriteConflict_Reason)(0),      // 6: tikv.WriteConflict.Reason
+		APIVersion(0),                  // 0: tikv.APIVersion
+		CommandPri(0),                  // 1: tikv.CommandPri
+		IsolationLevel(0),              // 2: tikv.IsolationLevel
+		DiskFullOpt(0),                 // 3: tikv.DiskFullOpt
+		Op(0),                          // 4: tikv.Op
+		Assertion(0),                   // 5: tikv.Assertion
+		WriteConflict_Reason(0),        // 6: tikv.WriteConflict.Reason
 		(*RawGetRequest)(nil),          // 7: tikv.RawGetRequest
 		(*RawGetResponse)(nil),         // 8: tikv.RawGetResponse
 		(*RawBatchGetRequest)(nil),     // 9: tikv.RawBatchGetRequest
