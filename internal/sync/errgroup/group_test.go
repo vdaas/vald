@@ -24,14 +24,15 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
-	"github.com/vdaas/vald/internal/log/logger"
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/semaphore"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestMain(m *testing.M) {
-	log.Init(log.WithLoggerType(logger.NOP.String()))
+	// recLog discards like the NOP logger but records Errorf messages so
+	// tests can assert that global group task errors are logged.
+	log.Init(log.WithLogger(recLog))
 	goleak.VerifyTestMain(m)
 }
 
@@ -74,7 +75,6 @@ func TestNew(t *testing.T) {
 					want: &group{
 						egctx:  egctx,
 						cancel: cancel,
-						emap:   make(map[string]struct{}),
 					},
 					want1: egctx,
 				},
@@ -147,6 +147,48 @@ func TestInit(t *testing.T) {
 				afterFunc: func(t *testing.T, a args) {
 					t.Helper()
 					cancel(context.Canceled)
+					defaultBeforeFunc(a)
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(t.Context())
+
+			return test{
+				name: "returns ctx unchanged and binds the already initialized instance to ctx",
+				args: args{
+					ctx: ctx,
+				},
+				want: want{
+					wantEgctx: ctx,
+				},
+				beforeFunc: func(a args) {
+					defaultBeforeFunc(a)
+					// the instance is created first with context.Background(), as package init does in production.
+					Get()
+				},
+				checkFunc: func(w want, gotEgctx context.Context) error {
+					if err := defaultCheckFunc(w, gotEgctx); err != nil {
+						return err
+					}
+					g, ok := instance.(*group)
+					if !ok {
+						return errors.Errorf("instance type = %T, want *group", instance)
+					}
+					if err := g.egctx.Err(); err != nil {
+						return errors.Errorf("global group ctx is canceled before ctx is canceled: %v", err)
+					}
+					cancel()
+					select {
+					case <-g.egctx.Done():
+						return nil
+					case <-time.After(5 * time.Second):
+						return errors.New("global group ctx is not canceled after ctx is canceled")
+					}
+				},
+				afterFunc: func(t *testing.T, a args) {
+					t.Helper()
+					cancel()
 					defaultBeforeFunc(a)
 				},
 			}
@@ -1516,3 +1558,62 @@ func Test_group_Wait(t *testing.T) {
 // 		})
 // 	}
 // }
+
+// appendErr used to check and insert under separate locks, so concurrent goroutines
+// returning the same error could all record it.
+func Test_group_appendErr_concurrentDuplicates(t *testing.T) {
+	t.Parallel()
+	g := new(group)
+	const workers = 64
+	var wg sync.WaitGroup
+	start := make(chan struct{})
+	for range workers {
+		wg.Go(func() {
+			<-start
+			g.appendErr(errors.New("same"))
+		})
+	}
+	close(start)
+	wg.Wait()
+	if got := len(g.errs); got != 1 {
+		t.Errorf("recorded %d errors, want 1", got)
+	}
+}
+
+// TestNewContinueOnError pins that a task error does not cancel the context of
+// a NewContinueOnError group, so tasks that wait for a slot after the failed
+// one still run, while Wait still returns the error.
+func TestNewContinueOnError(t *testing.T) {
+	t.Parallel()
+	const n = 4
+	errTask := errors.New("task failed")
+	g, egctx := NewContinueOnError(t.Context())
+	// limit 1 runs the failing task inline, so its effect on egctx is settled
+	// when Go returns.
+	g.SetLimit(1)
+	g.Go(func() error { return errTask })
+	if err := egctx.Err(); err != nil {
+		t.Fatalf("egctx.Err() = %v after a task error, want nil", err)
+	}
+	g.SetLimit(2)
+	var ran atomic.Int64
+	for range n {
+		g.Go(func() error {
+			ran.Add(1)
+			return nil
+		})
+	}
+	done := make(chan error, 1)
+	go func() { done <- g.Wait() }()
+	select {
+	case err := <-done:
+		if !errors.Is(err, errTask) {
+			t.Errorf("Wait() = %v, want %v", err, errTask)
+		}
+	case <-time.After(10 * time.Second):
+		t.Fatal("timed out waiting for the group")
+	}
+	if got := ran.Load(); got != n {
+		t.Errorf("ran %d tasks, want all %d", got, n)
+	}
+}

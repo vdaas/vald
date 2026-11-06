@@ -671,7 +671,7 @@ data:
           "type": "timeseries",
           "targets": [
             {
-              "expr": "gc_count{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
+              "expr": "forced_gc_count{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$PodName\"}",
               "format": "time_series",
               "legendFormat": "{{target_pod}}",
               "refId": ""

@@ -13,6 +13,29 @@
 // limitations under the License.
 package metrics
 
+import "testing"
+
+func TestDistributionsStrictlyIncreasing(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name string
+		dist []float64
+	}{
+		{name: "RoughMillisecondsDistribution", dist: RoughMillisecondsDistribution},
+		{name: "DefaultMillisecondsDistribution", dist: DefaultMillisecondsDistribution},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			for i := 1; i < len(tc.dist); i++ {
+				if tc.dist[i-1] >= tc.dist[i] {
+					t.Errorf("boundaries must be strictly increasing: index %d (%v) >= index %d (%v)", i-1, tc.dist[i-1], i, tc.dist[i])
+				}
+			}
+		})
+	}
+}
+
 // NOT IMPLEMENTED BELOW
 //
 // func TestGetMeter(t *testing.T) {

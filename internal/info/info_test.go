@@ -13,6 +13,116 @@
 // limitations under the License.
 package info
 
+import (
+	"testing"
+	"time"
+
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/sync"
+)
+
+// runConcurrently runs f from n goroutines and fails the test if they do not finish in time.
+func runConcurrently(t *testing.T, n int, f func()) {
+	t.Helper()
+	var wg sync.WaitGroup
+	for range n {
+		wg.Go(func() {
+			f()
+		})
+	}
+	done := make(chan struct{})
+	go func() {
+		wg.Wait()
+		close(done)
+	}()
+	select {
+	case <-done:
+	case <-time.After(30 * time.Second):
+		t.Fatal("timed out waiting for goroutines")
+	}
+}
+
+// TestInfo_concurrentStringGet is meaningful under -race: String lazily writes the detail that Get reads.
+func TestInfo_concurrentStringGet(t *testing.T) {
+	t.Parallel()
+
+	const name = "concurrent-test"
+	i, err := New(WithServerName(name))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	runConcurrently(t, 8, func() {
+		for range 20 {
+			if s := i.String(); s == "" {
+				t.Error("String returned an empty string")
+			}
+			if d := i.Get(); d.ServerName != name || len(d.StackTrace) == 0 {
+				t.Errorf("Get returned unexpected detail: server name %q, stack trace length %d", d.ServerName, len(d.StackTrace))
+			}
+		}
+	})
+}
+
+// TestGlobal_concurrentLazyInit is meaningful under -race: the first callers of Get/String lazily
+// initialize the package-level provider concurrently. It resets the package state, so it is not parallel.
+func TestGlobal_concurrentLazyInit(t *testing.T) {
+	reset := func() {
+		once = sync.Once{}
+		infoProvider = nil
+		errInit = nil
+	}
+	reset()
+	t.Cleanup(reset)
+
+	runConcurrently(t, 8, func() {
+		if s := String(); s == "" {
+			t.Error("String returned an empty string")
+		}
+		if d := Get(); d.ServerName == "" {
+			t.Error("Get returned an empty server name")
+		}
+	})
+}
+
+// TestInit_failure checks that a failed initialization is returned to the caller instead of exiting the process,
+// and that Get/String do not dereference the missing provider. It resets the package state, so it is not parallel.
+func TestInit_failure(t *testing.T) {
+	origOpts := defaultOpts
+	reset := func() {
+		once = sync.Once{}
+		infoProvider = nil
+		errInit = nil
+	}
+	reset()
+	t.Cleanup(func() {
+		defaultOpts = origOpts
+		reset()
+	})
+
+	critical := errors.NewErrCriticalOption("test", nil)
+	defaultOpts = append(append([]Option(nil), origOpts...), func(*info) error {
+		return critical
+	})
+
+	err := Init("init-failure-test")
+	if err == nil {
+		t.Fatal("Init returned nil error, want the initialization error")
+	}
+	if !errors.Is(err, critical) {
+		t.Errorf("Init returned %v, want it to wrap %v", err, critical)
+	}
+	if again := Init("init-failure-test"); again == nil || again.Error() != err.Error() {
+		t.Errorf("second Init returned %v, want %v", again, err)
+	}
+	if d := Get(); d.ServerName != "" {
+		t.Errorf("Get returned server name %q, want the zero Detail", d.ServerName)
+	}
+	if s := String(); s != "" {
+		t.Errorf("String returned %q, want an empty string", s)
+	}
+}
+
 // NOT IMPLEMENTED BELOW
 //
 // func TestInit(t *testing.T) {

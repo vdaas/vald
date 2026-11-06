@@ -13,6 +13,38 @@
 // limitations under the License.
 package bbolt
 
+import (
+	"testing"
+
+	bolt "go.etcd.io/bbolt"
+)
+
+func TestWithPreLoadFreelist(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name string
+		arg  bool
+	}{
+		{name: "enabled sets only PreLoadFreelist", arg: true},
+		{name: "disabled leaves both false", arg: false},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			opts := new(bolt.Options)
+			if err := WithPreLoadFreelist(test.arg)(opts); err != nil {
+				tt.Fatalf("unexpected error: %v", err)
+			}
+			if opts.PreLoadFreelist != test.arg {
+				tt.Errorf("PreLoadFreelist = %v, want %v", opts.PreLoadFreelist, test.arg)
+			}
+			if opts.NoFreelistSync {
+				tt.Errorf("NoFreelistSync = true, want false")
+			}
+		})
+	}
+}
+
 // NOT IMPLEMENTED BELOW
 //
 // func TestWithTimeout(t *testing.T) {

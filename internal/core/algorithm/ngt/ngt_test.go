@@ -4922,6 +4922,14 @@ func Test_ngt_Property(t *testing.T) {
 				if p.GraphType != w.want.GraphType {
 					return errors.Errorf("got_graph_type: \"%v\", want_graph_type: \"%v\"", p.GraphType, w.want.GraphType)
 				}
+				// ngt_get_property_info returns these two as dangling c_str() pointers;
+				// reading them yielded leftover C++ stack/heap bytes instead of "".
+				if p.AccuracyTable != "" {
+					return errors.Errorf("got_accuracy_table: %q, want empty", p.AccuracyTable)
+				}
+				if p.SearchType != "" {
+					return errors.Errorf("got_search_type: %q, want empty", p.SearchType)
+				}
 				return nil
 			},
 		},
@@ -4961,5 +4969,43 @@ func Test_ngt_Property(t *testing.T) {
 				tt.Errorf("error = %v", err)
 			}
 		})
+	}
+}
+
+// Search decided "no data stored" from n.cnt, which only counts Insert/Remove in this
+// process and stays 0 after Load, so an empty search on a loaded non-empty index returned
+// ErrSearchResultEmptyButNoDataStored instead of ErrEmptySearchResult.
+func TestSearch_emptyResultAfterLoadWithStoredData(t *testing.T) {
+	t.Parallel()
+	idxPath := idxTempDir(t)
+	opts := []Option{
+		WithDimension(9),
+		WithIndexPath(idxPath),
+		WithObjectType(Float),
+	}
+	n, err := New(opts...)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = n.Insert([]float32{0, 1, 2, 3, 4, 5, 6, 7, 8}); err != nil {
+		n.Close()
+		t.Fatal(err)
+	}
+	if err = n.CreateAndSaveIndex(1); err != nil {
+		n.Close()
+		t.Fatal(err)
+	}
+	n.Close()
+
+	ln, err := Load(opts...)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer ln.Close()
+	// a tiny radius around a far-away query leaves the result empty although an object is stored.
+	far := []float32{1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000}
+	res, err := ln.Search(t.Context(), far, 1, 0, 1e-3, 0)
+	if !errors.Is(err, errors.ErrEmptySearchResult) {
+		t.Errorf("Search() error = %v, want %v (results: %v)", err, errors.ErrEmptySearchResult, res)
 	}
 }

@@ -40,6 +40,8 @@ type info struct {
 	baseURL      string
 	detail       Detail
 	prepOnce     sync.Once
+	// mu guards detail, which String updates and Get reads.
+	mu sync.Mutex
 }
 
 // Detail represents environment information of system and stacktrace information.
@@ -103,6 +105,7 @@ var (
 
 	once         sync.Once
 	infoProvider Info
+	errInit      error
 
 	rt = reflect.TypeFor[Detail]()
 
@@ -119,19 +122,23 @@ const (
 	cgoFalse     = "false"
 	cgoUnknown   = "unknown"
 	googleGolang = "google.golang.org"
+
+	// stackTraceCapHint is the initial capacity of Detail.StackTrace.
+	stackTraceCapHint = 10
 )
 
 // Init initializes Detail object only once.
-func Init(name string) {
+// It returns the error of that first initialization, so the caller can stop the process instead of exiting here.
+func Init(name string) error {
 	once.Do(func() {
 		i, err := New(WithServerName(name))
 		if err != nil {
-			log.Init()
-			// skipcq: RVV-A0003
-			log.Fatal(errors.ErrFailedToInitInfo(err))
+			errInit = errors.ErrFailedToInitInfo(err)
+			return
 		}
 		infoProvider = i
 	})
+	return errInit
 }
 
 // New initializes and returns the info object or any error occurred.
@@ -178,16 +185,19 @@ func New(opts ...Option) (Info, error) {
 
 // String calls String method of global detail object.
 func String() string {
-	if infoProvider == nil {
-		Init(log.Bold("WARNING: uninitialized info provider"))
+	// once.Do in Init orders the infoProvider write before every read below.
+	if err := Init(log.Bold("WARNING: uninitialized info provider")); err != nil {
+		log.Error(err)
+		return ""
 	}
 	return infoProvider.String()
 }
 
 // Get calls Get method of global detail object.
 func Get() Detail {
-	if infoProvider == nil {
-		Init(log.Bold("WARNING: uninitialized info provider"))
+	if err := Init(log.Bold("WARNING: uninitialized info provider")); err != nil {
+		log.Error(err)
+		return Detail{}
 	}
 	return infoProvider.Get()
 }
@@ -195,12 +205,15 @@ func Get() Detail {
 // String returns summary of Detail object.
 // The stacktrace will be initialized when the stacktrace is not initialized yet.
 func (i *info) String() string {
+	i.mu.Lock()
 	if len(i.detail.StackTrace) == 0 {
 		i.prepare()
-		i.detail = i.getDetail()
+		i.detail = i.getDetail(i.detail)
 	}
+	d := i.detail
+	i.mu.Unlock()
 
-	return i.detail.String()
+	return d.String()
 }
 
 // String returns summary of Detail object.
@@ -278,13 +291,21 @@ func (d Detail) String() string {
 
 // Get returns parsed Detail object.
 func (i *info) Get() Detail {
+	// Hold the lock only to copy the detail: Get runs on error paths of every RPC,
+	// and walking the stack under the global lock serialized concurrent failures.
+	// prepare is guarded by prepOnce, and the fields getDetail reads are only
+	// written by prepare and New.
+	i.mu.Lock()
 	i.prepare()
-	return i.getDetail()
+	d := i.detail
+	i.mu.Unlock()
+	return i.getDetail(d)
 }
 
-// skipcq: VET-V0008
-func (i info) getDetail() Detail {
-	i.detail.StackTrace = make([]StackTrace, 0, 10)
+// getDetail returns d with the stack trace filled in. Keep the call depth from
+// Get and String unchanged: the stack walk skips a fixed number of frames.
+func (i *info) getDetail(d Detail) Detail {
+	d.StackTrace = make([]StackTrace, 0, stackTraceCapHint)
 	for j := 3; ; j++ {
 		pc, file, line, ok := i.rtCaller(j)
 		if !ok {
@@ -301,10 +322,10 @@ func (i info) getDetail() Detail {
 		url := i.baseURL
 		var idx int
 		switch {
-		case strings.HasPrefix(file, i.detail.GoRoot+"/src"):
-			url = "https://github.com/golang/go/blob/" + i.detail.GoVersion + strings.TrimPrefix(file, i.detail.GoRoot)
+		case strings.HasPrefix(file, d.GoRoot+"/src"):
+			url = "https://github.com/golang/go/blob/" + d.GoVersion + strings.TrimPrefix(file, d.GoRoot)
 		case strings.HasPrefix(file, "runtime"):
-			url = "https://github.com/golang/go/blob/" + i.detail.GoVersion + "/src/" + file
+			url = "https://github.com/golang/go/blob/" + d.GoVersion + "/src/" + file
 		case strings.HasPrefix(file, googleGolang+"/grpc"):
 			// google.golang.org/grpc@v1.65.0/server.go to https://github.com/grpc/grpc-go/blob/v1.65.0/server.go
 			url = "https://github.com/grpc/grpc-go/blob/"
@@ -349,14 +370,14 @@ func (i info) getDetail() Detail {
 		}
 		url += "#L" + strconv.Itoa(line)
 
-		i.detail.StackTrace = append(i.detail.StackTrace, StackTrace{
+		d.StackTrace = append(d.StackTrace, StackTrace{
 			FuncName: funcName,
 			File:     file,
 			Line:     line,
 			URL:      url,
 		})
 	}
-	return i.detail
+	return d
 }
 
 func (i *info) prepare() {
@@ -381,9 +402,6 @@ func (i *info) prepare() {
 		}
 		if i.detail.GoRoot == "" {
 			i.detail.GoRoot = runtime.GOROOT()
-		}
-		if i.detail.CGOEnabled == "" && CGOEnabled != "" {
-			i.detail.CGOEnabled = CGOEnabled
 		}
 		switch CGOEnabled {
 		case "0", cgoFalse:

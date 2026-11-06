@@ -831,6 +831,72 @@ func Test_bidi_Set(t *testing.T) {
 				fields.uo[i] = new(sync.Map[string, ValueStructUo])
 			}
 
+			var (
+				oldVal uint32 = 10000 // oldVal&mask (272) differs from val&mask (102)
+				oldTs  int64  = 20000
+			)
+
+			var (
+				key        = "45637ec4-c85f-11ea-87d0"
+				val uint32 = 14438
+				ts  int64  = 24438
+			)
+
+			return test{
+				name: "set removes the stale inverse entry of the old val when the key is overwritten and the old and new val are in different shards",
+				args: args{
+					key: key,
+					val: val,
+					ts:  ts,
+				},
+				fields: fields,
+				beforeFunc: func(t *testing.T, a args, b *bidi) {
+					t.Helper()
+					if oldVal&mask == val&mask {
+						t.Fatalf("test precondition violated: oldVal and val must be in different shards, both are %d", oldVal&mask)
+					}
+					b.Set(a.key, oldVal, oldTs)
+				},
+				checkFunc: func(w want, a args, b *bidi) error {
+					if k, _, ok := b.GetInverse(oldVal); ok {
+						return errors.Errorf("stale inverse entry remains for old val %d, key: %s", oldVal, k)
+					}
+					k, tsi, ok := b.GetInverse(a.val)
+					if !ok {
+						return errors.New("key not found for new val")
+					}
+					if k != w.key || tsi != w.ts {
+						return errors.Errorf("inverse is not equals.\twant: %v, %v, but got: %v, %v", w.key, w.ts, k, tsi)
+					}
+					v, tsf, ok := b.Get(a.key)
+					if !ok {
+						return errors.New("val not found")
+					}
+					if v != w.val || tsf != w.ts {
+						return errors.Errorf("forward is not equals.\twant: %v, %v, but got: %v, %v", w.val, w.ts, v, tsf)
+					}
+					if l := b.Len(); l != w.l {
+						return errors.Errorf("l is not equals.\twant: %v, but got: %v", w.l, l)
+					}
+					return nil
+				},
+				want: want{
+					key: key,
+					val: val,
+					ts:  ts,
+					l:   1,
+				},
+			}
+		}(),
+		func() test {
+			f := fields{
+				l: 0,
+			}
+			for i := range slen {
+				f.ou[i] = new(sync.Map[uint32, valueStructOu])
+				f.uo[i] = new(sync.Map[string, ValueStructUo])
+			}
+
 			key := "45637ec4-c85f-11ea-87d0"
 
 			return test{
@@ -838,7 +904,7 @@ func Test_bidi_Set(t *testing.T) {
 				args: args{
 					key: key,
 				},
-				fields: fields,
+				fields: f,
 				want: want{
 					key: key,
 					val: 0,

@@ -28,7 +28,6 @@ import (
 	"github.com/vdaas/vald/internal/observability/metrics/runtime/cgo"
 	"github.com/vdaas/vald/internal/observability/metrics/runtime/goroutine"
 	"github.com/vdaas/vald/internal/observability/metrics/version"
-	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
 type Observability interface {
@@ -38,7 +37,6 @@ type Observability interface {
 }
 
 type observability struct {
-	eg        errgroup.Group
 	exporters []exporter.Exporter
 	metrics   []metrics.Metric
 }
@@ -97,7 +95,7 @@ func NewWithConfig(cfg *config.Observability, ms ...metrics.Metric) (Observabili
 
 func New(opts ...Option) (Observability, error) {
 	o := &observability{}
-	for _, opt := range append(defaultOpts, opts...) {
+	for _, opt := range opts {
 		if err := opt(o); err != nil {
 			oerr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 			e := &errors.ErrCriticalOption{}

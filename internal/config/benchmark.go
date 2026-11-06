@@ -14,6 +14,8 @@
 
 package config
 
+import "github.com/vdaas/vald/internal/encoding/json"
+
 // BenchmarkJob represents the configuration for the internal benchmark search job.
 type BenchmarkJob struct {
 	// RemoveConfig represents the remove configuration.
@@ -228,6 +230,39 @@ func (cfg *FilterTarget) Bind() *FilterTarget {
 type FilterConfig struct {
 	// Targets represents the list of filter targets.
 	Targets []*FilterTarget `json:"target,omitempty" yaml:"target"`
+}
+
+// filterConfigJSON is the wire form of FilterConfig. The ValdBenchmarkJob CRD
+// and the benchmark chart schemas define filter_config as a single
+// {host, port} object, and the API server prunes the undeclared "target"
+// list, so both forms are read and a single target is written as host/port.
+type filterConfigJSON struct {
+	Host    string          `json:"host,omitempty"`
+	Targets []*FilterTarget `json:"target,omitempty"` //nolint:tagliatelle // existing filter_config.target key
+	Port    int32           `json:"port,omitempty"`
+}
+
+// UnmarshalJSON reads the "target" list and the schema's host/port fields; a
+// non-empty host becomes an additional target.
+func (cfg *FilterConfig) UnmarshalJSON(b []byte) error {
+	var v filterConfigJSON
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	cfg.Targets = v.Targets
+	if v.Host != "" {
+		cfg.Targets = append(cfg.Targets, &FilterTarget{Host: v.Host, Port: v.Port})
+	}
+	return nil
+}
+
+// MarshalJSON writes a single target in the schema's host/port form so it
+// survives CRD pruning; other target counts keep the "target" list.
+func (cfg FilterConfig) MarshalJSON() ([]byte, error) {
+	if len(cfg.Targets) == 1 && cfg.Targets[0] != nil {
+		return json.Marshal(filterConfigJSON{Host: cfg.Targets[0].Host, Port: cfg.Targets[0].Port})
+	}
+	return json.Marshal(filterConfigJSON{Targets: cfg.Targets})
 }
 
 func (cfg *FilterConfig) Bind() *FilterConfig {

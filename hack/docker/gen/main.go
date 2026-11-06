@@ -33,7 +33,6 @@ import (
 	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/strings"
-	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"golang.org/x/tools/go/packages"
 	"gopkg.in/yaml.v2"
@@ -668,14 +667,14 @@ func topologicalSort(envMap map[string]string) []string {
 	return result
 }
 
-func appendGoPullRequestPaths(rootDir string, data *Data) {
+func appendGoPullRequestPaths(rootDir string, data *Data) error {
 	mainFile := file.Join(rootDir, "cmd", data.PackageDir, "main.go")
 	if !file.Exists(mainFile) {
-		return
+		return nil
 	}
 	ns, err := buildDependencyTree(rootDir, mainFile)
 	if err != nil {
-		log.Error(err)
+		return errors.Wrapf(err, "failed to build dependency tree for %s", mainFile)
 	}
 	pkgs := make([]string, 0, len(ns)+1)
 	pkgs = append(pkgs, file.Join("cmd", data.PackageDir))
@@ -704,9 +703,10 @@ func appendGoPullRequestPaths(rootDir string, data *Data) {
 		pkgs[i] = pkg
 	}
 	data.PullRequestPaths = append(data.PullRequestPaths, pkgs...)
+	return nil
 }
 
-func setPullRequestPaths(rootDir string, data *Data) {
+func setPullRequestPaths(rootDir string, data *Data) error {
 	switch data.ContainerType {
 	case HelmOperator:
 		data.PullRequestPaths = append(data.PullRequestPaths,
@@ -720,7 +720,9 @@ func setPullRequestPaths(rootDir string, data *Data) {
 		data.PullRequestPaths = append(data.PullRequestPaths,
 			apisProtoPath, goModPath, goSumPath, goVersionPath,
 			excludeTestFilesPath, excludeMockFilesPath)
-		appendGoPullRequestPaths(rootDir, data)
+		if err := appendGoPullRequestPaths(rootDir, data); err != nil {
+			return err
+		}
 	case Rust:
 		data.PullRequestPaths = append(data.PullRequestPaths,
 			apisProtoPath, cargoLockPath, cargoTomlPath, rustBinAgentDirPath,
@@ -740,13 +742,16 @@ func setPullRequestPaths(rootDir string, data *Data) {
 	if !data.AliasImage {
 		data.PullRequestPaths = append(data.PullRequestPaths, makefilePath, makefileDirPath)
 	}
+	return nil
 }
 
 func generateWorkflow(
 	ctx context.Context, rootDir, name, maintainer string, year int, data Data,
 ) error {
 	data.Name = strings.TrimPrefix(name, vald+"-")
-	setPullRequestPaths(rootDir, &data)
+	if err := setPullRequestPaths(rootDir, &data); err != nil {
+		return errors.Wrapf(err, "failed to resolve pull request paths for %s", data.Name)
+	}
 	if data.AliasImage {
 		data.BuildPlatforms = multiPlatforms
 	}
@@ -1218,13 +1223,21 @@ type PackageNode struct {
 }
 
 // ToSlice traverses the dependency tree and returns all dependencies as a slice.
+// Nodes are shared between parents (the tree is a DAG), so each node is visited only once.
 func (n PackageNode) ToSlice() (pkgs []string) {
-	pkgs = make([]string, 0, len(n.Imports)+1)
+	return n.appendTo(nil, make(map[string]struct{}))
+}
+
+func (n PackageNode) appendTo(pkgs []string, seen map[string]struct{}) []string {
+	if _, ok := seen[n.Name]; ok {
+		return pkgs
+	}
+	seen[n.Name] = struct{}{}
 	if n.Name != "command-line-arguments" {
 		pkgs = append(pkgs, n.Name)
 	}
 	for _, node := range n.Imports {
-		pkgs = append(pkgs, node.ToSlice()...)
+		pkgs = node.appendTo(pkgs, seen)
 	}
 	return pkgs
 }
@@ -1243,13 +1256,7 @@ func (n PackageNode) render(depth int) (tree string) {
 }
 
 // processDependencies processes package dependencies while avoiding duplicate processing.
-func processDependencies(
-	pkg *packages.Package,
-	nodes map[string]*PackageNode,
-	mu *sync.Mutex,
-	checkList map[string]*PackageNode,
-	wg *sync.WaitGroup,
-) *PackageNode {
+func processDependencies(pkg *packages.Package, checkList map[string]*PackageNode) *PackageNode {
 	if !strings.Contains(pkg.PkgPath, repository) && pkg.Name != "main" {
 		return nil
 	}
@@ -1258,7 +1265,6 @@ func processDependencies(
 	}
 
 	node := &PackageNode{Name: pkg.PkgPath}
-	nodes[pkg.PkgPath] = node
 	checkList[pkg.PkgPath] = node
 	for _, imp := range pkg.Imports {
 		if !strings.Contains(imp.PkgPath, repository) {
@@ -1268,13 +1274,33 @@ func processDependencies(
 			node.Imports = append(node.Imports, child)
 			continue
 		}
-		child := processDependencies(imp, nodes, mu, checkList, wg)
+		child := processDependencies(imp, checkList)
 		if child != nil {
 			node.Imports = append(node.Imports, child)
 		}
 	}
 
 	return node
+}
+
+// checkLoadedPackages reports what packages.Load does not return as an error.
+// For a .go file pattern a failing `go list` is not an error: Load returns no package at all.
+// Load and import errors are recorded in Package.Errors instead. Only the entry packages and the
+// packages of this repository are checked, because the dependency tree is built from them alone.
+func checkLoadedPackages(entryFile string, pkgs []*packages.Package) error {
+	if len(pkgs) == 0 {
+		return errors.Errorf("no package loaded for %s", entryFile)
+	}
+	var errs []error
+	packages.Visit(pkgs, nil, func(pkg *packages.Package) {
+		if !slices.Contains(pkgs, pkg) && !strings.Contains(pkg.PkgPath, repository) {
+			return
+		}
+		for _, perr := range pkg.Errors {
+			errs = append(errs, errors.Errorf("%s: %s", pkg.PkgPath, perr.Error()))
+		}
+	})
+	return errors.Join(errs...)
 }
 
 // buildDependencyTree constructs a dependency tree for multiple entry packages.
@@ -1289,21 +1315,19 @@ func buildDependencyTree(rootDir, entryFile string) ([]*PackageNode, error) {
 	if err != nil {
 		return nil, err
 	}
+	if err := checkLoadedPackages(entryFile, pkgs); err != nil {
+		return nil, err
+	}
 
-	nodes := make(map[string]*PackageNode)
 	checkList := make(map[string]*PackageNode, len(pkgs)) // Tracks processed packages
-	var mu sync.Mutex
-	var wg sync.WaitGroup
-
 	// Process all entry packages
 	var roots []*PackageNode
 	for _, pkg := range pkgs {
-		root := processDependencies(pkg, nodes, &mu, checkList, &wg)
+		root := processDependencies(pkg, checkList)
 		if root != nil {
 			roots = append(roots, root)
 		}
 	}
-	wg.Wait()
 
 	return roots, nil
 }

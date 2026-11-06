@@ -48,6 +48,11 @@ func (g *LB) Bind() *LB {
 	if g.Discoverer != nil {
 		g.Discoverer = g.Discoverer.Bind()
 	}
+	// A nil ReadReplicaClient.Client means read replica is disabled; binding
+	// it would fill in a default client and enable it.
+	if g.ReadReplicaClient.Client != nil {
+		g.ReadReplicaClient.Bind()
+	}
 	return g
 }
 

@@ -49,7 +49,8 @@ func WithErrorGroup(eg errgroup.Group) Option {
 func WithShutdownDuration(dur string) Option {
 	return func(l *listener) {
 		d, err := timeutil.Parse(dur)
-		if err != nil {
+		if err != nil || dur == "" {
+			// an unset duration must not become an already expired shutdown deadline.
 			d = time.Second * 20
 		}
 		l.sddur = d

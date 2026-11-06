@@ -16,6 +16,7 @@ package file
 
 import (
 	"io/fs"
+	"path/filepath"
 	"reflect"
 	"syscall"
 	"testing"
@@ -2214,3 +2215,247 @@ func TestExistsWithDetail(t *testing.T) {
 // 		})
 // 	}
 // }
+
+func TestOpen_flagHandling(t *testing.T) {
+	t.Parallel()
+	type test struct {
+		wantErr error
+		setup   func(t *testing.T, root string)
+		check   func(t *testing.T, root string)
+		name    string
+		path    string
+		flg     int
+	}
+	tests := []test{
+		{
+			name: "O_CREATE|O_EXCL on a new path in a missing directory succeeds",
+			path: filepath.Join("a", "b", "new"),
+			flg:  os.O_CREATE | os.O_EXCL | os.O_RDWR | os.O_TRUNC,
+			check: func(t *testing.T, root string) {
+				t.Helper()
+				if !Exists(filepath.Join(root, "a", "b", "new")) {
+					t.Error("the file must be created")
+				}
+			},
+		},
+		{
+			name: "O_CREATE|O_EXCL on an existing path fails with ErrExist and keeps the content",
+			path: "exist",
+			flg:  os.O_CREATE | os.O_EXCL | os.O_RDWR,
+			setup: func(t *testing.T, root string) {
+				t.Helper()
+				if err := os.WriteFile(filepath.Join(root, "exist"), []byte("keep"), fs.ModePerm); err != nil {
+					t.Fatal(err)
+				}
+			},
+			wantErr: fs.ErrExist,
+			check: func(t *testing.T, root string) {
+				t.Helper()
+				b, err := os.ReadFile(filepath.Join(root, "exist"))
+				if err != nil {
+					t.Fatal(err)
+				}
+				if string(b) != "keep" {
+					t.Errorf("content = %q, want %q", b, "keep")
+				}
+			},
+		},
+		{
+			name: "O_APPEND without O_CREATE still creates a missing file",
+			path: filepath.Join("dir", "append"),
+			flg:  os.O_APPEND | os.O_WRONLY,
+			check: func(t *testing.T, root string) {
+				t.Helper()
+				if !Exists(filepath.Join(root, "dir", "append")) {
+					t.Error("the file must be created")
+				}
+			},
+		},
+		{
+			name:    "O_RDONLY on a missing path does not create the parent directory",
+			path:    filepath.Join("missing", "file"),
+			flg:     os.O_RDONLY,
+			wantErr: fs.ErrNotExist,
+			check: func(t *testing.T, root string) {
+				t.Helper()
+				if Exists(filepath.Join(root, "missing")) {
+					t.Error("the parent directory must not be created by a read-only open")
+				}
+			},
+		},
+		{
+			name:    "O_WRONLY without O_CREATE on a missing path does not create the parent directory",
+			path:    filepath.Join("missing", "file"),
+			flg:     os.O_WRONLY,
+			wantErr: fs.ErrNotExist,
+			check: func(t *testing.T, root string) {
+				t.Helper()
+				if Exists(filepath.Join(root, "missing")) {
+					t.Error("the parent directory must not be created without O_CREATE or O_APPEND")
+				}
+			},
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			root := t.TempDir()
+			if tc.setup != nil {
+				tc.setup(t, root)
+			}
+			f, err := Open(filepath.Join(root, tc.path), tc.flg, fs.ModePerm)
+			if f != nil {
+				defer func() {
+					if cerr := f.Close(); cerr != nil {
+						t.Error(cerr)
+					}
+				}()
+			}
+			if tc.wantErr == nil {
+				if err != nil {
+					t.Errorf("unexpected error: %v", err)
+				}
+			} else if !errors.Is(err, tc.wantErr) {
+				t.Errorf("error = %v, want %v", err, tc.wantErr)
+			}
+			tc.check(t, root)
+		})
+	}
+}
+
+func TestCreateTemp_createsExactlyOneFile(t *testing.T) {
+	t.Parallel()
+	f, err := CreateTemp(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() {
+		if cerr := f.Close(); cerr != nil {
+			t.Error(cerr)
+		}
+	}()
+	entries, err := os.ReadDir(filepath.Dir(f.Name()))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(entries) != 1 {
+		t.Errorf("got %d files in the temporary directory, want 1", len(entries))
+	}
+}
+
+func TestMkdirAll_doesNotDeleteExistingData(t *testing.T) {
+	t.Parallel()
+	type test struct {
+		wantErr error
+		setup   func(t *testing.T, path string)
+		check   func(t *testing.T, path string)
+		name    string
+	}
+	readKeep := func(t *testing.T, name string) {
+		t.Helper()
+		b, err := os.ReadFile(name)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if string(b) != "keep" {
+			t.Errorf("content = %q, want %q", b, "keep")
+		}
+	}
+	tests := []test{
+		{
+			name: "existing regular file is not removed and an error is returned",
+			setup: func(t *testing.T, path string) {
+				t.Helper()
+				if err := os.WriteFile(path, []byte("keep"), fs.ModePerm); err != nil {
+					t.Fatal(err)
+				}
+			},
+			wantErr: fs.ErrExist,
+			check: func(t *testing.T, path string) {
+				t.Helper()
+				readKeep(t, path)
+			},
+		},
+		{
+			name: "existing directory keeps its contents",
+			setup: func(t *testing.T, path string) {
+				t.Helper()
+				if err := os.MkdirAll(path, fs.ModePerm); err != nil {
+					t.Fatal(err)
+				}
+				if err := os.WriteFile(filepath.Join(path, "child"), []byte("keep"), fs.ModePerm); err != nil {
+					t.Fatal(err)
+				}
+			},
+			check: func(t *testing.T, path string) {
+				t.Helper()
+				readKeep(t, filepath.Join(path, "child"))
+			},
+		},
+		{
+			name: "existing directory without permission keeps its contents",
+			setup: func(t *testing.T, path string) {
+				t.Helper()
+				if os.Geteuid() == 0 {
+					t.Skip("permission bits are not enforced for root")
+				}
+				if err := os.MkdirAll(path, fs.ModePerm); err != nil {
+					t.Fatal(err)
+				}
+				if err := os.WriteFile(filepath.Join(path, "child"), []byte("keep"), fs.ModePerm); err != nil {
+					t.Fatal(err)
+				}
+				if err := os.Chmod(path, 0); err != nil {
+					t.Fatal(err)
+				}
+				t.Cleanup(func() {
+					if err := os.Chmod(path, fs.ModePerm); err != nil {
+						t.Error(err)
+					}
+				})
+			},
+			check: func(t *testing.T, path string) {
+				t.Helper()
+				if err := os.Chmod(path, fs.ModePerm); err != nil {
+					t.Fatal(err)
+				}
+				readKeep(t, filepath.Join(path, "child"))
+			},
+		},
+		{
+			name: "missing nested directory is created",
+			check: func(t *testing.T, path string) {
+				t.Helper()
+				fi, err := os.Stat(path)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if !fi.IsDir() {
+					t.Error("the path must be a directory")
+				}
+			},
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			path := filepath.Join(t.TempDir(), "x", "target")
+			if tc.setup != nil {
+				// setup creates the target itself, so make sure the parent exists
+				if err := os.MkdirAll(filepath.Dir(path), fs.ModePerm); err != nil {
+					t.Fatal(err)
+				}
+				tc.setup(t, path)
+			}
+			err := MkdirAll(path, fs.ModePerm)
+			if tc.wantErr == nil {
+				if err != nil {
+					t.Errorf("unexpected error: %v", err)
+				}
+			} else if !errors.Is(err, tc.wantErr) {
+				t.Errorf("error = %v, want %v", err, tc.wantErr)
+			}
+			tc.check(t, path)
+		})
+	}
+}

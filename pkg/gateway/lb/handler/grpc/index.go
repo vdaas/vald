@@ -18,7 +18,6 @@ import (
 	"context"
 	"fmt"
 	"slices"
-	"sync/atomic"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
@@ -32,6 +31,7 @@ import (
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/atomic"
 	"github.com/vdaas/vald/pkg/gateway/lb/service"
 )
 
@@ -95,7 +95,7 @@ func (s *server) handleIndexBroadCastError(
 	default:
 		st, msg, err = status.ParseError(err, codes.NotFound, "error "+rpcName+" API",
 			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + rpcName + ".BroadCase/" + target,
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + rpcName + ".BroadCast/" + target,
 				ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
 			})
 		if st != nil {
@@ -217,30 +217,7 @@ func (s *server) IndexStatistics(
 	defer trace.End(span)
 	details, err := s.IndexStatisticsDetail(ctx, req)
 	if err != nil || details == nil {
-		resInfo := &errdetails.ResourceInfo{
-			ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.IndexStatisticsRPCName,
-			ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-		}
-		var attrs trace.Attributes
-		switch {
-		case errors.Is(err, errors.ErrGRPCClientConnNotFound("*")):
-			err = status.WrapWithInternal(vald.IndexStatisticsRPCName+" API connection not found", err, resInfo)
-			attrs = trace.StatusCodeInternal(err.Error())
-		case errors.Is(err, context.Canceled):
-			err = status.WrapWithCanceled(vald.IndexStatisticsRPCName+" API canceled", err, resInfo)
-			attrs = trace.StatusCodeCancelled(err.Error())
-		case errors.Is(err, context.DeadlineExceeded):
-			err = status.WrapWithDeadlineExceeded(vald.IndexStatisticsRPCName+" API deadline exceeded", err, resInfo)
-			attrs = trace.StatusCodeDeadlineExceeded(err.Error())
-		default:
-			st, _ := status.FromError(err)
-			if st != nil {
-				attrs = trace.FromGRPCStatus(st.Code(), st.Message())
-			}
-		}
-		log.Debug(err)
-		errhandler.RecordSpanAttrs(span, attrs, err)
-		return nil, err
+		return nil, s.handleIndexMethodError(ctx, span, vald.IndexStatisticsRPCName, err)
 	}
 	return mergeInfoIndexStatistics(details.GetDetails()), nil
 }
@@ -262,10 +239,9 @@ func (s *server) IndexStatisticsDetail(
 		ech <- s.gateway.BroadCast(ctx, service.READ, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
 			sctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+vald.IndexStatisticsDetailRPCName+"/"+target)
 			defer trace.End(sspan)
-			var stats *payload.Info_Index_Statistics
-			stats, err = vc.IndexStatistics(sctx, new(payload.Empty), copts...)
-			if err != nil {
-				return s.handleIndexBroadCastError(sspan, target, vald.IndexStatisticsDetailRPCName, err)
+			stats, rerr := vc.IndexStatistics(sctx, new(payload.Empty), copts...)
+			if rerr != nil {
+				return s.handleIndexBroadCastError(sspan, target, vald.IndexStatisticsDetailRPCName, rerr)
 			}
 			if stats != nil {
 				mu.Lock()
@@ -320,6 +296,10 @@ func mergeInfoIndexStatistics(
 	var outdegreeHistograms, indegreeHistograms [][]uint64
 	merged.Valid = true
 
+	// first marks the first valid entry: 0 is a legitimate Min*NumberOf*degree,
+	// so it cannot double as the "unset" sentinel without making the result
+	// depend on map iteration order.
+	first := true
 	for _, stat := range stats {
 		if !stat.Valid {
 			continue
@@ -337,12 +317,13 @@ func mergeInfoIndexStatistics(
 		if stat.MaxNumberOfOutdegree > merged.MaxNumberOfOutdegree {
 			merged.MaxNumberOfOutdegree = stat.MaxNumberOfOutdegree
 		}
-		if stat.MinNumberOfIndegree < merged.MinNumberOfIndegree || merged.MinNumberOfIndegree == 0 {
+		if first || stat.MinNumberOfIndegree < merged.MinNumberOfIndegree {
 			merged.MinNumberOfIndegree = stat.MinNumberOfIndegree
 		}
-		if stat.MinNumberOfOutdegree < merged.MinNumberOfOutdegree || merged.MinNumberOfOutdegree == 0 {
+		if first || stat.MinNumberOfOutdegree < merged.MinNumberOfOutdegree {
 			merged.MinNumberOfOutdegree = stat.MinNumberOfOutdegree
 		}
+		first = false
 		merged.ModeIndegree += stat.ModeIndegree
 		merged.ModeOutdegree += stat.ModeOutdegree
 		merged.NodesSkippedFor10Edges += stat.NodesSkippedFor10Edges
@@ -370,9 +351,20 @@ func mergeInfoIndexStatistics(
 		merged.C99Outdegree += stat.C99Outdegree
 	}
 
+	// every entry was invalid: nothing to merge, same result as an empty input
+	if len(indegrees) == 0 {
+		return new(payload.Info_Index_Statistics)
+	}
+
 	merged.MedianIndegree = calculateMedian(indegrees)
 	merged.MedianOutdegree = calculateMedian(outdegrees)
-	merged.IndegreeCount = make([]int64, len(indegreeCounts[0]))
+	// size from the longest input so the result does not depend on which agent
+	// the map range visits first; shorter inputs are skipped per index below.
+	var maxLen int
+	for _, count := range indegreeCounts {
+		maxLen = max(maxLen, len(count))
+	}
+	merged.IndegreeCount = make([]int64, maxLen)
 	for i := range merged.IndegreeCount {
 		var (
 			alen int64
@@ -395,18 +387,20 @@ func mergeInfoIndexStatistics(
 		merged.IndegreeHistogram = sumHistograms(merged.IndegreeHistogram, hist)
 	}
 
-	merged.ModeIndegree /= uint64(len(stats))
-	merged.ModeOutdegree /= uint64(len(stats))
-	merged.VarianceOfIndegree /= float64(len(stats))
-	merged.VarianceOfOutdegree /= float64(len(stats))
-	merged.MeanEdgeLength /= float64(len(stats))
-	merged.MeanEdgeLengthFor10Edges /= float64(len(stats))
-	merged.MeanIndegreeDistanceFor10Edges /= float64(len(stats))
-	merged.MeanNumberOfEdgesPerNode /= float64(len(stats))
-	merged.C1Indegree /= float64(len(stats))
-	merged.C5Indegree /= float64(len(stats))
-	merged.C95Outdegree /= float64(len(stats))
-	merged.C99Outdegree /= float64(len(stats))
+	// average over the valid entries only, the same population as the medians
+	n := len(indegrees)
+	merged.ModeIndegree /= uint64(n)
+	merged.ModeOutdegree /= uint64(n)
+	merged.VarianceOfIndegree /= float64(n)
+	merged.VarianceOfOutdegree /= float64(n)
+	merged.MeanEdgeLength /= float64(n)
+	merged.MeanEdgeLengthFor10Edges /= float64(n)
+	merged.MeanIndegreeDistanceFor10Edges /= float64(n)
+	merged.MeanNumberOfEdgesPerNode /= float64(n)
+	merged.C1Indegree /= float64(n)
+	merged.C5Indegree /= float64(n)
+	merged.C95Outdegree /= float64(n)
+	merged.C99Outdegree /= float64(n)
 
 	return merged
 }
@@ -425,44 +419,11 @@ func (s *server) IndexProperty(
 	s.eg.Go(safety.RecoverFunc(func() error {
 		defer close(ech)
 		ech <- s.gateway.BroadCast(ctx, service.READ, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
-			sctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+vald.IndexStatisticsDetailRPCName+"/"+target)
+			sctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+vald.IndexPropertyRPCName+"/"+target)
 			defer trace.End(sspan)
-			var prop *payload.Info_Index_PropertyDetail
-			prop, err = vc.IndexProperty(sctx, new(payload.Empty), copts...)
-			if err != nil {
-				var (
-					attrs trace.Attributes
-					st    *status.Status
-					msg   string
-					code  codes.Code
-				)
-				switch {
-				case errors.Is(err, context.Canceled), errors.Is(err, errors.ErrRPCCallFailed(target, context.Canceled)):
-					attrs = trace.StatusCodeCancelled(
-						errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.IndexPropertyRPCName + ".BroadCast/" + target + " canceled: " + err.Error())
-					code = codes.Canceled
-				case errors.Is(err, context.DeadlineExceeded), errors.Is(err, errors.ErrRPCCallFailed(target, context.DeadlineExceeded)):
-					attrs = trace.StatusCodeDeadlineExceeded(
-						errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.IndexPropertyRPCName + ".BroadCast/" + target + " deadline_exceeded: " + err.Error())
-					code = codes.DeadlineExceeded
-				default:
-					st, msg, err = status.ParseError(err, codes.NotFound, "error "+vald.IndexPropertyRPCName+" API",
-						&errdetails.ResourceInfo{
-							ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.IndexPropertyRPCName + ".BroadCast/" + target,
-							ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
-						})
-					if st != nil {
-						code = st.Code()
-					} else {
-						code = codes.NotFound
-					}
-					attrs = trace.FromGRPCStatus(code, msg)
-				}
-				errhandler.RecordSpanAttrs(sspan, attrs, err)
-				if err != nil && st != nil && code != codes.Canceled && code != codes.DeadlineExceeded && code != codes.InvalidArgument && code != codes.NotFound && code != codes.OK && code != codes.Unimplemented {
-					return err
-				}
-				return nil
+			prop, rerr := vc.IndexProperty(sctx, new(payload.Empty), copts...)
+			if rerr != nil {
+				return s.handleIndexBroadCastError(sspan, target, vald.IndexPropertyRPCName, rerr)
 			}
 			if prop != nil {
 				mu.Lock()

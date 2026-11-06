@@ -72,6 +72,8 @@ func (s *server) Search(
 	}
 	if err != nil || res == nil {
 		var attrs []attribute.KeyValue
+		// errors.As writes to its target, so it must be local to stay race-free across concurrent requests.
+		var errFaiss errors.FaissError
 		switch {
 		case errors.Is(err, errors.ErrCreateIndexingIsInProgress):
 			err = status.WrapWithAborted("Search API aborted to process search request due to createing indices is in progress", err,

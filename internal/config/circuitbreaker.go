@@ -13,6 +13,8 @@
 // limitations under the License.
 package config
 
+import "github.com/vdaas/vald/internal/circuitbreaker"
+
 // CircuitBreaker represents the configuration for the internal circuitbreaker package.
 type CircuitBreaker struct {
 	// OpenTimeout specifies the duration the circuit breaker stays open before transitioning to half-open.
@@ -31,4 +33,26 @@ func (cb *CircuitBreaker) Bind() *CircuitBreaker {
 	cb.OpenTimeout = GetActualValue(cb.OpenTimeout)
 	cb.ClosedRefreshTimeout = GetActualValue(cb.ClosedRefreshTimeout)
 	return cb
+}
+
+// breakerOpts returns only the options whose fields are set. An unset (zero) error rate would otherwise
+// replace the breaker default with 0, which trips on the first failure and never closes again.
+func (cb *CircuitBreaker) breakerOpts() []circuitbreaker.BreakerOption {
+	var opts []circuitbreaker.BreakerOption
+	if cb.ClosedErrorRate != 0 {
+		opts = append(opts, circuitbreaker.WithClosedErrorRate(cb.ClosedErrorRate))
+	}
+	if cb.HalfOpenErrorRate != 0 {
+		opts = append(opts, circuitbreaker.WithHalfOpenErrorRate(cb.HalfOpenErrorRate))
+	}
+	if cb.MinSamples != 0 {
+		opts = append(opts, circuitbreaker.WithMinSamples(cb.MinSamples))
+	}
+	if cb.OpenTimeout != "" {
+		opts = append(opts, circuitbreaker.WithOpenTimeout(cb.OpenTimeout))
+	}
+	if cb.ClosedRefreshTimeout != "" {
+		opts = append(opts, circuitbreaker.WithClosedRefreshTimeout(cb.ClosedRefreshTimeout))
+	}
+	return opts
 }

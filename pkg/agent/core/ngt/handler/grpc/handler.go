@@ -17,6 +17,8 @@ package grpc
 import (
 	"fmt"
 	"reflect"
+	"unicode"
+	"unicode/utf8"
 
 	agent "github.com/vdaas/vald/apis/grpc/v1/agent/core"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
@@ -24,6 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
+	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
 )
@@ -47,8 +50,6 @@ const (
 	apiName         = "vald/agent/core/ngt"
 	ngtResourceType = "vald/internal/core/algorithm"
 )
-
-var errNGT = new(errors.NGTError)
 
 // resourceInfo builds the errdetails.ResourceInfo shared by every handler error
 // path: the resourceType is caller-specific, the resource name is always this
@@ -95,10 +96,62 @@ func (s *server) newLocations(uuids ...string) (locs *payload.Object_Locations) 
 	return locs
 }
 
-func (s *server) newLocation(uuid string) *payload.Object_Location {
-	locs := s.newLocations(uuid)
-	if locs != nil && locs.GetLocations() != nil && len(locs.GetLocations()) > 0 {
-		return locs.Locations[0]
+// errMatcher returns a func reporting the same as errors.Is(err, target) for
+// targets that can match only by message, as the freshly built per-ID errors
+// (errors.ErrObjectIDNotFound(id) etc.) do. It folds the message of every node
+// of err's tree once, so classifying a batch of N IDs costs O(N) instead of N
+// errors.Is calls that each rebuild the whole joined message (O(N^2)).
+func errMatcher(err error) func(target error) bool {
+	msgs := make(map[string]struct{})
+	var walk func(error)
+	walk = func(e error) {
+		for e != nil {
+			msgs[foldMessage(e.Error())] = struct{}{}
+			//nolint:errorlint // walks the error tree layer by layer like errors.Is; errors.As would skip layers.
+			switch x := e.(type) {
+			case interface{ Unwrap() error }:
+				e = x.Unwrap()
+			case interface{ Unwrap() []error }:
+				for _, c := range x.Unwrap() {
+					walk(c)
+				}
+				return
+			default:
+				return
+			}
+		}
 	}
-	return nil
+	walk(err)
+	return func(target error) bool {
+		_, ok := msgs[foldMessage(target.Error())]
+		return ok
+	}
+}
+
+// foldMessage maps every rune to the smallest rune of its simple case-folding
+// orbit, so two messages fold to the same string iff strings.EqualFold (used
+// by errors.Is) reports them equal.
+func foldMessage(s string) string {
+	return strings.Map(func(r rune) rune {
+		if r < utf8.RuneSelf {
+			// the upper-case ASCII letter is the smallest rune of its orbit.
+			if 'a' <= r && r <= 'z' {
+				return r - 'a' + 'A'
+			}
+			return r
+		}
+		m := r
+		for f := unicode.SimpleFold(r); f != r; f = unicode.SimpleFold(f) {
+			m = min(m, f)
+		}
+		return m
+	}, s)
+}
+
+func (s *server) newLocation(uuid string) *payload.Object_Location {
+	return &payload.Object_Location{
+		Name: s.name,
+		Uuid: uuid,
+		Ips:  []string{s.ip},
+	}
 }

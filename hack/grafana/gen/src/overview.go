@@ -96,12 +96,14 @@ func addBackoffPerRPCPanel(builder *dashboard.DashboardBuilder) {
 					LabelNotMatchRegexp("backoff_name", "github.com/.*"),
 					"\"rpc\"", "\"$1\"", "\"backoff_name\"", "\"(.*/.*)/.*\"")).
 					By([]string{"rpc"})).Range(intervalVariable+":")),
-				promql.Sum(promql.Irate(promql.Vector(serverCompletedRPCs).
+				// grpc_server_method is "/<service>/<method>"; strip the leading "/" into rpc so both sides match one-to-one.
+				promql.Sum(promql.LabelReplace(promql.Irate(promql.Vector(serverCompletedRPCs).
 					Label(namespaceKey, namespaceVariable).
 					LabelMatchRegexp(nameKey, nameVariable).
 					LabelMatchRegexp(podKey, "$PodName").
-					Range(intervalVariable))).By([]string{"grpc_server_method"})).String(),
-		).Format("time_series").LegendFormat("{{grpc_server_method}} ({{grpc_server_status}})"),
+					Range(intervalVariable)),
+					"\"rpc\"", "\"$1\"", "\"grpc_server_method\"", "\"/(.*)\"")).By([]string{"rpc"})).String(),
+		).Format("time_series").LegendFormat("{{rpc}}"),
 		).FillOpacity(opacity)
 	builder.WithPanel(panel)
 }

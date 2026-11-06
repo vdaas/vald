@@ -41,7 +41,7 @@ const rolloutTestName = "vald-agent"
 // against both a nil and a pre-populated annotation map.
 func newRolloutDeployment(name string, annotations map[string]string) *appsv1.Deployment {
 	return &appsv1.Deployment{
-		ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: testNamespaceDefault},
+		Name: name, Namespace: testNamespaceDefault,
 		Spec: appsv1.DeploymentSpec{
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{Annotations: annotations},

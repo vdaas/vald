@@ -17,8 +17,8 @@ package mysql
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"reflect"
-	"sync/atomic"
 	"time"
 
 	"github.com/go-sql-driver/mysql"
@@ -26,6 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
+	"github.com/vdaas/vald/internal/sync/atomic"
 	"github.com/vdaas/vald/internal/tls"
 )
 
@@ -125,7 +126,7 @@ func (m *mySQLClient) Open(ctx context.Context) (err error) {
 	}
 	conn, err := m.dbr.Open(m.db, fmt.Sprintf(
 		"%s:%s@%s(%s)/%s?charset=%s&parseTime=true&loc=%s%s",
-		m.user, m.pass, network, addr, m.name, m.charset, m.timezone, addParam),
+		m.user, m.pass, network, addr, m.name, m.charset, url.QueryEscape(m.timezone), addParam),
 		m.eventReceiver)
 	if err != nil {
 		return err
@@ -154,6 +155,7 @@ func (m *mySQLClient) Ping(ctx context.Context) (err error) {
 	pctx, cancel := context.WithTimeout(ctx, m.initialPingTimeLimit)
 	defer cancel()
 	tick := time.NewTicker(m.initialPingDuration)
+	defer tick.Stop()
 	for {
 		select {
 		case <-pctx.Done():
@@ -320,12 +322,7 @@ func (m *mySQLClient) SetVector(ctx context.Context, vec Vector) error {
 		return err
 	}
 
-	stmt := tx.InsertInto(podIPTableName).Columns(idColumnName, ipColumnName)
-	for _, ip := range vec.GetIPs() {
-		stmt.Record(&podIP{ID: id, IP: ip})
-	}
-	_, err = stmt.ExecContext(ctx)
-	if err != nil {
+	if err = insertPodIPs(ctx, tx, id, vec.GetIPs()); err != nil {
 		return err
 	}
 
@@ -380,12 +377,7 @@ func (m *mySQLClient) SetVectors(ctx context.Context, vecs ...Vector) error {
 			return err
 		}
 
-		stmt := tx.InsertInto(podIPTableName).Columns(idColumnName, ipColumnName)
-		for _, ip := range vec.GetIPs() {
-			stmt.Record(&podIP{ID: id, IP: ip})
-		}
-		_, err = stmt.ExecContext(ctx)
-		if err != nil {
+		if err = insertPodIPs(ctx, tx, id, vec.GetIPs()); err != nil {
 			return err
 		}
 	}
@@ -474,12 +466,7 @@ func (m *mySQLClient) SetIPs(ctx context.Context, uuid string, ips ...string) er
 		return errors.ErrRequiredElementNotFoundByUUID(uuid)
 	}
 
-	stmt := tx.InsertInto(podIPTableName).Columns(idColumnName, ipColumnName)
-	for _, ip := range ips {
-		stmt.Record(&podIP{ID: id, IP: ip})
-	}
-	_, err = stmt.ExecContext(ctx)
-	if err != nil {
+	if err = insertPodIPs(ctx, tx, id, ips); err != nil {
 		return err
 	}
 
@@ -517,4 +504,18 @@ func (m *mySQLClient) errorLog(err error) {
 		"err: %v, { host: %s, port: %d, user: %s, name: %s, db: %s, charset: %s, socketPath: %s, network: %s} ",
 		err, m.host, m.port, m.user, m.name, m.db, m.charset, m.socketPath, m.network,
 	)
+}
+
+// insertPodIPs records the pod IPs of id. dbr builds "INSERT ... VALUES " (a
+// syntax error) when no record is added, so an empty list inserts nothing.
+func insertPodIPs(ctx context.Context, tx dbr.Tx, id int64, ips []string) error {
+	if len(ips) == 0 {
+		return nil
+	}
+	stmt := tx.InsertInto(podIPTableName).Columns(idColumnName, ipColumnName)
+	for _, ip := range ips {
+		stmt.Record(&podIP{ID: id, IP: ip})
+	}
+	_, err := stmt.ExecContext(ctx)
+	return err
 }

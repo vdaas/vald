@@ -398,8 +398,7 @@ package memstore
 // 		vq          vqueue.Queue
 // 		uuid        string
 // 		ts          int64
-// 		force       bool
-// 		getVectorFn func(oid uint32) ([]float32, error)
+// 		force bool
 // 	}
 // 	type want struct {
 // 		err error
@@ -429,7 +428,6 @@ package memstore
 // 		           uuid:"",
 // 		           ts:0,
 // 		           force:false,
-// 		           getVectorFn:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -453,7 +451,6 @@ package memstore
 // 		           uuid:"",
 // 		           ts:0,
 // 		           force:false,
-// 		           getVectorFn:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -484,7 +481,7 @@ package memstore
 // 				checkFunc = defaultCheckFunc
 // 			}
 //
-// 			err := UpdateTimestamp(test.args.kv, test.args.vq, test.args.uuid, test.args.ts, test.args.force, test.args.getVectorFn)
+// 			err := UpdateTimestamp(test.args.kv, test.args.vq, test.args.uuid, test.args.ts, test.args.force)
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}

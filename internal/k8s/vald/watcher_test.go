@@ -23,7 +23,6 @@ import (
 	"github.com/vdaas/vald/internal/k8s"
 	mirrv1 "github.com/vdaas/vald/internal/k8s/vald/mirror/api/v1"
 	"github.com/vdaas/vald/internal/test/goleak"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
 	kclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
@@ -92,11 +91,9 @@ const (
 
 func newMirrorTarget(name, namespace, host string) *mirrv1.ValdMirrorTarget {
 	return &mirrv1.ValdMirrorTarget{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-			Labels:    map[string]string{testRoleLabelKey: "mirror"},
-		},
+		Name:      name,
+		Namespace: namespace,
+		Labels:    map[string]string{testRoleLabelKey: "mirror"},
 		Spec: mirrv1.MirrorTargetSpec{
 			Target: mirrv1.MirrorTarget{Host: host, Port: 8081},
 		},
@@ -152,7 +149,6 @@ func TestNewListWatcher_OptionErrorPolicy(t *testing.T) {
 			watcher, err := NewListWatcher(
 				mirrv1.AddToScheme,
 				hostOf,
-				SkipNonCriticalOptionError,
 				WithWatcherControllerName[string]("list watcher"),
 				failing,
 			)
@@ -295,7 +291,6 @@ func TestNewListWatcher_Reconcile(t *testing.T) {
 			watcher, err := NewListWatcher(
 				mirrv1.AddToScheme,
 				hostOf,
-				SkipNonCriticalOptionError,
 				append([]WatcherOption[string]{
 					WithWatcherControllerName[string]("list watcher"),
 					WithWatcherOnReconcileFunc(func(_ context.Context, m map[string]string) { got = m }),
@@ -334,7 +329,6 @@ func TestNewListWatcher_NilOnReconcile(t *testing.T) {
 			converted++
 			return m.Spec.Target.Host
 		},
-		SkipNonCriticalOptionError,
 		WithWatcherControllerName[string]("list watcher"),
 	)
 	if err != nil {
@@ -365,7 +359,6 @@ func TestNewListWatcher_ListErrorNotifiesOnError(t *testing.T) {
 	watcher, err := NewListWatcher(
 		mirrv1.AddToScheme,
 		hostOf,
-		SkipNonCriticalOptionError,
 		WithWatcherControllerName[string]("list watcher"),
 		WithWatcherOnErrorFunc[string](func(error) { errored++ }),
 	)
@@ -400,7 +393,6 @@ func TestNewListWatcher_RegistersScheme(t *testing.T) {
 	watcher, err := NewListWatcher(
 		mirrv1.AddToScheme,
 		hostOf,
-		SkipNonCriticalOptionError,
 		WithWatcherControllerName[string]("list watcher"),
 	)
 	if err != nil {
@@ -938,7 +930,6 @@ func TestNewListWatcher_RegistersScheme(t *testing.T) {
 // 	type args struct {
 // 		addToScheme func(s *k8s.Scheme) error
 // 		convert     func(obj PT) V
-// 		policy      WatcherOptionErrorPolicy
 // 		opts        []WatcherOption[V]
 // 	}
 // 	type want struct {
@@ -970,7 +961,6 @@ func TestNewListWatcher_RegistersScheme(t *testing.T) {
 // 		       args: args {
 // 		           addToScheme:nil,
 // 		           convert:nil,
-// 		           policy:nil,
 // 		           opts:nil,
 // 		       },
 // 		       want: want{},
@@ -992,7 +982,6 @@ func TestNewListWatcher_RegistersScheme(t *testing.T) {
 // 		           args: args {
 // 		           addToScheme:nil,
 // 		           convert:nil,
-// 		           policy:nil,
 // 		           opts:nil,
 // 		           },
 // 		           want: want{},
@@ -1024,7 +1013,7 @@ func TestNewListWatcher_RegistersScheme(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 //
-// 			got, err := NewListWatcher(test.args.addToScheme, test.args.convert, test.args.policy, test.args.opts...)
+// 			got, err := NewListWatcher(test.args.addToScheme, test.args.convert, test.args.opts...)
 // 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}

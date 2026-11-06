@@ -123,6 +123,9 @@ type server struct {
 	mode          ServerMode
 }
 
+// restartInterval is the wait before a stopped server is restarted, which keeps a persistently failing server from busy looping.
+const restartInterval = time.Second
+
 type grpcKeepalive struct {
 	maxConnIdle         time.Duration
 	maxConnAge          time.Duration
@@ -181,9 +184,7 @@ func New(opts ...Option) (Server, error) {
 		if srv.it != 0 {
 			srv.http.srv.IdleTimeout = srv.it
 		}
-		if srv.http.h != nil {
-			srv.http.srv.Handler = srv.http.h
-		}
+		srv.http.srv.Handler = srv.http.h
 		srv.http.starter = srv.http.srv.Serve
 		srv.http.srv.SetKeepAlivesEnabled(true)
 		if srv.tcfg != nil &&
@@ -253,7 +254,7 @@ func New(opts ...Option) (Server, error) {
 		health.Register(srv.grpc.srv)
 	}
 	if srv.lc == nil {
-		srv.ctrl = control.New(srv.sockFlg, int(keepAlive))
+		srv.ctrl = control.New(srv.sockFlg, control.KeepAliveSeconds(keepAlive))
 		srv.lc = &net.ListenConfig{
 			KeepAlive: keepAlive,
 			Control: func(network, addr string, c syscall.RawConn) (err error) {
@@ -285,6 +286,14 @@ func (s *server) ListenAndServe(ctx context.Context, ech chan<- error) (err erro
 		s.mu.Lock()
 		s.running = true
 		s.mu.Unlock()
+		// reset the running flag when the server failed to start so that it is neither reported as running nor skipped on retry.
+		defer func() {
+			if err != nil {
+				s.mu.Lock()
+				s.running = false
+				s.mu.Unlock()
+			}
+		}()
 
 		if s.preStartFunc != nil {
 			log.Infof("server %s executing preStartFunc", s.name)
@@ -311,49 +320,9 @@ func (s *server) ListenAndServe(ctx context.Context, ech chan<- error) (err erro
 			return net.JoinHostPort(s.host, s.port)
 		}()
 		var l net.Listener
-		if s.tcfg != nil && net.IsUDP(network) {
-			log.Error("QUIC protocol is not supported yet")
-			return errors.ErrUnsupportedClientMethod
-		} else {
-			if net.IsUDP(network) {
-				network = net.TCP.String()
-			}
-			l, err = s.lc.Listen(ctx, network, addr)
-			if err != nil {
-				log.Errorf("failed to listen socket %v", err)
-				return err
-			}
-			var file *os.File
-			switch lt := l.(type) {
-			case *net.TCPListener:
-				file, err = lt.File()
-				if err != nil {
-					log.Errorf("failed to listen tcp socket %v", err)
-					return err
-				}
-			case *net.UnixListener:
-				file, err = lt.File()
-				if err != nil {
-					log.Errorf("failed to listen unix socket %v", err)
-					return err
-				}
-			}
-			if file != nil {
-				err = syscall.SetNonblock(int(file.Fd()), true)
-				if err != nil {
-					return err
-				}
-			}
-			if s.tcfg != nil &&
-				(len(s.tcfg.Certificates) != 0 ||
-					s.tcfg.GetCertificate != nil ||
-					s.tcfg.GetConfigForClient != nil) {
-				l = tls.NewListener(l, s.tcfg)
-			}
-		}
-
-		if l == nil {
-			return errors.ErrInvalidAPIConfig
+		l, err = s.listen(ctx, network, addr)
+		if err != nil {
+			return err
 		}
 
 		s.mu.Lock()
@@ -363,6 +332,12 @@ func (s *server) ListenAndServe(ctx context.Context, ech chan<- error) (err erro
 		s.wg.Add(1)
 		s.eg.Go(safety.RecoverFunc(func() (err error) {
 			defer s.wg.Done()
+			// running stays set while the server is restarted so that a Shutdown issued in between is not skipped.
+			defer func() {
+				s.mu.Lock()
+				s.running = false
+				s.mu.Unlock()
+			}()
 			for {
 				if !s.IsRunning() {
 					s.mu.Lock()
@@ -374,31 +349,93 @@ func (s *server) ListenAndServe(ctx context.Context, ech chan<- error) (err erro
 				switch s.mode {
 				case REST, GQL:
 					err = s.http.starter(l)
-					if err != nil && !errors.Is(err, http.ErrServerClosed) {
-						ech <- err
+					if errors.Is(err, http.ErrServerClosed) {
+						err = nil
 					}
 				case GRPC:
 					err = s.grpc.srv.Serve(l)
-					if err != nil && !errors.Is(err, grpc.ErrServerStopped) {
-						ech <- err
+					if errors.Is(err, grpc.ErrServerStopped) {
+						err = nil
+					}
+				}
+				if err != nil {
+					s.mu.RLock()
+					restart := s.enableRestart
+					s.mu.RUnlock()
+					if restart {
+						// the server is restarted below; repeated sends would fill ech.
+						log.Warnf("%s server %s stopped with error: %v", s.mode.String(), s.name, err)
+					} else {
+						// bounded by ctx so that the goroutine does not block forever once
+						// nobody reads ech; ech must stay open until this goroutine exits.
+						select {
+						case <-ctx.Done():
+						case ech <- err:
+						}
 					}
 				}
 				err = nil
-				s.mu.Lock()
-				s.running = false
-				s.mu.Unlock()
 
-				s.mu.RLock()
-				if !s.enableRestart || s.shuttingDown {
+				// Serve closes l when it returns, so a restart needs a new listener.
+				for {
+					s.mu.RLock()
+					stop := !s.enableRestart || s.shuttingDown
 					s.mu.RUnlock()
-					return err
+					if stop {
+						return nil
+					}
+					log.Infof("%s server %s stopped, restarting in %s", s.mode.String(), s.name, restartInterval.String())
+					timer := time.NewTimer(restartInterval)
+					select {
+					case <-ctx.Done():
+						timer.Stop()
+						return nil
+					case <-timer.C:
+					}
+					// hold the lock while re-listening so that Shutdown either sees the new listener or stops the restart.
+					s.mu.Lock()
+					if s.shuttingDown {
+						s.mu.Unlock()
+						return nil
+					}
+					l, err = s.listen(ctx, network, addr)
+					if err == nil {
+						s.listener = l
+					}
+					s.mu.Unlock()
+					if err == nil {
+						break
+					}
+					// not sent to ech: a restarting server only logs its errors.
+					log.Warnf("%s server %s failed to listen for restart: %v", s.mode.String(), s.name, err)
+					err = nil
 				}
-				s.mu.RUnlock()
-				log.Infof("%s server %s stopped", s.mode.String(), s.name)
 			}
 		}))
 	}
 	return nil
+}
+
+// listen opens a plain listener on addr; TLS is terminated by the HTTP or gRPC server itself.
+func (s *server) listen(ctx context.Context, network, addr string) (l net.Listener, err error) {
+	if s.tcfg != nil && net.IsUDP(network) {
+		log.Error("QUIC protocol is not supported yet")
+		return nil, errors.ErrUnsupportedClientMethod
+	}
+	if net.IsUDP(network) {
+		network = net.TCP.String()
+	}
+	l, err = s.lc.Listen(ctx, network, addr)
+	if err != nil {
+		log.Errorf("failed to listen socket %v", err)
+		return nil, err
+	}
+	// The listener is already non-blocking and registered with the netpoller. It is
+	// deliberately not dup'ed via File(): (*os.File).Fd on that dup switches the shared
+	// open file description, and so this listener, to blocking mode.
+	// TLS is not applied here: ServeTLS (REST/GQL) and grpc.Creds (GRPC) set up in New already
+	// terminate TLS, and wrapping the listener as well would require clients to handshake twice.
+	return l, nil
 }
 
 // skipcq: GO-R1005
@@ -416,19 +453,13 @@ func (s *server) Shutdown(ctx context.Context) (rerr error) {
 		ech := make(chan error, 1)
 		s.wg.Add(1)
 		s.eg.Go(safety.RecoverFunc(func() (err error) {
+			defer s.wg.Done()
 			defer close(ech)
 			log.Infof("server %s executing preStopFunc", s.name)
 			err = s.preStopFunc()
-			if err != nil {
-				select {
-				case <-ctx.Done():
-				case ech <- nil:
-				}
-			}
-			s.wg.Done()
 			select {
 			case <-ctx.Done():
-			case ech <- nil:
+			case ech <- err:
 			}
 			return nil
 		}))
@@ -460,26 +491,46 @@ func (s *server) Shutdown(ctx context.Context) (rerr error) {
 	log.Warnf("%s server %s is now shutting down", s.mode.String(), s.name)
 	switch s.mode {
 	case REST, GQL:
-		sctx, scancel := context.WithTimeout(ctx, s.sddur)
-		defer scancel()
+		// a zero shutdown duration means "no per-server bound": an already
+		// expired context would skip draining in-flight requests entirely,
+		// so rely on the caller's ctx alone in that case.
+		sctx := ctx
+		if s.sddur > 0 {
+			var scancel context.CancelFunc
+			sctx, scancel = context.WithTimeout(ctx, s.sddur)
+			defer scancel()
+		}
 		s.http.srv.SetKeepAlivesEnabled(false)
 		err := s.http.srv.Shutdown(sctx)
 		if errors.IsNot(err, http.ErrServerClosed, grpc.ErrServerStopped, context.Canceled, context.DeadlineExceeded) {
 			rerr = errors.Join(rerr, err)
 		}
-		err = sctx.Err()
-		if errors.IsNot(err, context.Canceled, context.DeadlineExceeded) {
-			rerr = errors.Join(rerr, err)
-		}
 
 	case GRPC:
-		s.grpc.srv.GracefulStop()
+		// GracefulStop blocks until every pending RPC (including long-lived
+		// streams) finishes, so bound it by ctx and force Stop on expiry.
+		// A plain goroutine, not s.eg: a limited errgroup may run f inline or drop
+		// it once its context is cancelled, which would leave done open forever.
+		done := make(chan struct{})
+		go func() {
+			defer close(done)
+			s.grpc.srv.GracefulStop()
+		}()
+		select {
+		case <-done:
+		case <-ctx.Done():
+			log.Warnf("%s server %s graceful stop did not finish before the shutdown deadline, forcing stop: %v", s.mode.String(), s.name, context.Cause(ctx))
+			// Stop closes every connection, which also unblocks GracefulStop.
+			s.grpc.srv.Stop()
+			<-done
+		}
 	}
 
 	s.mu.Lock()
 	if s.listener != nil {
 		err := s.listener.Close()
-		if err != nil && !errors.Is(err, os.ErrClosed) {
+		// the underlying server (http.Server / grpc.Server) has already closed the listener, so a second Close is not an error.
+		if err != nil && !errors.Is(err, os.ErrClosed) && !errors.Is(err, net.ErrClosed) {
 			rerr = errors.Join(rerr, err)
 		}
 		s.listener = nil
@@ -488,5 +539,5 @@ func (s *server) Shutdown(ctx context.Context) (rerr error) {
 
 	s.wg.Wait()
 
-	return nil
+	return rerr
 }

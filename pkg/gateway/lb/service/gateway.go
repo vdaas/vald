@@ -17,8 +17,9 @@ package service
 
 import (
 	"context"
+	"maps"
 	"reflect"
-	"sync/atomic"
+	"slices"
 
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
@@ -27,7 +28,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/sync"
-	"github.com/vdaas/vald/internal/sync/errgroup"
+	"github.com/vdaas/vald/internal/sync/atomic"
 )
 
 type Gateway interface {
@@ -49,12 +50,11 @@ const (
 
 type gateway struct {
 	client discoverer.Client
-	eg     errgroup.Group
 }
 
 func NewGateway(opts ...Option) (gw Gateway, err error) {
 	g := new(gateway)
-	for _, opt := range append(defaultGWOpts, opts...) {
+	for _, opt := range opts {
 		if err := opt(g); err != nil {
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
@@ -86,7 +86,15 @@ func (g *gateway) BroadCast(
 		client = g.client.GetClient()
 	}
 
-	return client.RangeConcurrent(fctx, -1, func(ictx context.Context,
+	// RangeConcurrent drops every per-target error except a local ctx error, so
+	// the callback errors are collected here; otherwise a failing agent would look
+	// to the handlers like one that has nothing to report. Only the last result per
+	// target is kept because the client backoff may re-invoke f for that target.
+	var (
+		mu   sync.Mutex
+		ferr = make(map[string]error)
+	)
+	err = client.RangeConcurrent(fctx, -1, func(ictx context.Context,
 		addr string, conn *grpc.ClientConn, copts ...grpc.CallOption,
 	) (err error) {
 		select {
@@ -94,12 +102,34 @@ func (g *gateway) BroadCast(
 			return nil
 		default:
 			err = f(ictx, addr, vc.NewFromConn(conn), copts...)
+			mu.Lock()
+			if err != nil {
+				ferr[addr] = err
+			} else {
+				delete(ferr, addr)
+			}
+			mu.Unlock()
 			if err != nil {
 				return err
 			}
 		}
 		return nil
 	})
+	if err != nil {
+		return err
+	}
+	mu.Lock()
+	defer mu.Unlock()
+	if len(ferr) == 0 {
+		return nil
+	}
+	// sorted by target so the leading error (whose code a joined error reports)
+	// does not depend on map order.
+	errs := make([]error, 0, len(ferr))
+	for _, addr := range slices.Sorted(maps.Keys(ferr)) {
+		errs = append(errs, ferr[addr])
+	}
+	return errors.Join(errs...)
 }
 
 func (g *gateway) DoMulti(

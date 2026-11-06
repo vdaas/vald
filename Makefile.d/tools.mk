@@ -369,12 +369,18 @@ $(LIB_PATH)/libomp.a: | ninja/install
 		mkdir -p $(TEMP_DIR)/libomp; \
 		tar -xzf $(TEMP_DIR)/libomp-archive -C $(TEMP_DIR)/libomp --strip-components 1 \
 		llvm-project-llvmorg-$(LLVM_VERSION)/openmp \
-		llvm-project-llvmorg-$(LLVM_VERSION)/cmake; \
-		cd $(TEMP_DIR)/libomp/openmp \
+		llvm-project-llvmorg-$(LLVM_VERSION)/cmake \
+		llvm-project-llvmorg-$(LLVM_VERSION)/runtimes \
+		llvm-project-llvmorg-$(LLVM_VERSION)/llvm/cmake \
+		llvm-project-llvmorg-$(LLVM_VERSION)/llvm/utils/llvm-lit \
+		llvm-project-llvmorg-$(LLVM_VERSION)/third-party; \
+		cd $(TEMP_DIR)/libomp \
 		&& _AR=$$(if [ -x '$(AR)' ]; then echo '$(AR)'; else command -v llvm-ar 2>/dev/null || command -v ar; fi) \
 		&& _NM=$$(if [ -x '$(NM)' ]; then echo '$(NM)'; else command -v llvm-nm 2>/dev/null || command -v nm; fi) \
 		&& _RANLIB=$$(if [ -x '$(RANLIB)' ]; then echo '$(RANLIB)'; else command -v llvm-ranlib 2>/dev/null || ls /usr/bin/llvm-ranlib-* 2>/dev/null | sort -V | tail -1 | grep . || command -v gcc-ranlib 2>/dev/null || ls /usr/bin/gcc-ranlib-* 2>/dev/null | sort -V | tail -1 | grep . || command -v ranlib; fi) \
 		&& env LDFLAGS="" cmake -G Ninja \
+		-DLLVM_ENABLE_RUNTIMES=openmp \
+		-DLLVM_INCLUDE_TESTS=OFF \
 		-DCMAKE_BUILD_TYPE=Release \
 		-DCMAKE_POLICY_VERSION_MINIMUM=$(CMAKE_VERSION) \
 		-DCMAKE_C_COMPILER="$(CC)" \
@@ -393,12 +399,23 @@ $(LIB_PATH)/libomp.a: | ninja/install
 		-DPython3_EXECUTABLE="$$(command -v python3)" \
 		-DCMAKE_C_FLAGS="$(CFLAGS_BASE)" \
 		-DCMAKE_CXX_FLAGS="$(CFLAGS_BASE)" \
-		-B $(TEMP_DIR)/libomp/openmp/build $(TEMP_DIR)/libomp/openmp \
-		&& cmake --build $(TEMP_DIR)/libomp/openmp/build --parallel $(CORES) \
-		&& $(SUDO) cmake --install $(TEMP_DIR)/libomp/openmp/build \
+		-B $(TEMP_DIR)/libomp/build $(TEMP_DIR)/libomp/runtimes \
+		&& cmake --build $(TEMP_DIR)/libomp/build --parallel $(CORES) \
+		&& $(SUDO) cmake --install $(TEMP_DIR)/libomp/build \
 		&& rm -rf $(TEMP_DIR)/libomp $(TEMP_DIR)/libomp-archive \
 		&& $(SUDO) ldconfig; \
 	fi
+
+.PHONY: openblas/install
+## install the BLAS/LAPACK (OpenBLAS) -dev packages NGT and Faiss link against (NGT_LDFLAGS)
+openblas/install:
+	# The dev-container Dockerfile ships them, but the published image used by the
+	# runtime jobs can lag. A present runtime lib (libopenblas.so.0) does NOT satisfy
+	# `-lopenblas` / find_package(BLAS) without the -dev package, so install
+	# unconditionally on apt-based systems (idempotent).
+	@command -v apt-get >/dev/null 2>&1 \
+		&& { $(SUDO) apt-get update -qq \
+		&& $(SUDO) apt-get install -y --no-install-recommends libopenblas-dev liblapack-dev gfortran; } || true
 
 .PHONY: ngt/install
 ## install NGT
@@ -410,7 +427,7 @@ ngt/install: $(USR_LOCAL)/include/NGT/Capi.h
 # empty --previous logs on both the GCC and clang images). With GCC, cmake's
 # FindOpenMP resolves -fopenmp to libgomp, the runtime this agent has always
 # shipped with.
-$(USR_LOCAL)/include/NGT/Capi.h: | ninja/install $(if $(findstring clang,$(notdir $(CC))),$(LIB_PATH)/libomp.a)
+$(USR_LOCAL)/include/NGT/Capi.h: | ninja/install openblas/install $(if $(findstring clang,$(notdir $(CC))),$(LIB_PATH)/libomp.a)
 	$(call cmake-install,https://github.com/NGT-labs/NGT.git,ngt, \
 		-DNGT_LARGE_DATASET=ON \
 		$(if $(filter arm64,$(subst aarch64,arm64,$(ARCH))),,-DNGT_AVX2=ON) \
@@ -454,15 +471,7 @@ faiss/install: $(LIB_PATH)/libfaiss.a
 # branch (it sets BLAS_LIBRARIES/LAPACK_LIBRARIES from it and skips find_package).
 OPENBLAS_PATH = $(shell ldconfig -p 2>/dev/null | awk '/libopenblas.*\.so.*=>/{print $$NF; exit}')
 
-$(LIB_PATH)/libfaiss.a: | ninja/install $(if $(findstring clang,$(notdir $(CC))),$(LIB_PATH)/libomp.a)
-	# Faiss needs the BLAS/LAPACK (OpenBLAS) -dev packages (headers + .so symlinks)
-	# and a Fortran runtime. The dev-container Dockerfile ships them, but the
-	# published image used by the runtime jobs can lag. A present runtime lib
-	# (libopenblas.so.0) does NOT satisfy `-lopenblas` / find_package(BLAS) without
-	# the -dev package, so install unconditionally on apt-based systems (idempotent).
-	@command -v apt-get >/dev/null 2>&1 \
-		&& { $(SUDO) apt-get update -qq \
-		&& $(SUDO) apt-get install -y --no-install-recommends libopenblas-dev liblapack-dev gfortran; } || true
+$(LIB_PATH)/libfaiss.a: | ninja/install openblas/install $(if $(findstring clang,$(notdir $(CC))),$(LIB_PATH)/libomp.a)
 	$(call cmake-install,https://github.com/facebookresearch/faiss/archive/v$(FAISS_VERSION).tar.gz,faiss, \
 		-DFAISS_ENABLE_PYTHON=OFF \
 		-DFAISS_ENABLE_GPU=OFF \
@@ -574,5 +583,6 @@ $(DOCKER_BUILDX_PLUGIN_DIR)/docker-buildx:
 
 .PHONY: replace/busybox
 ## replace busybox version
-replace/busybox:
+replace/busybox: \
+	files
 	cat $(ROOTDIR)/.gitfiles | grep -E '\.(yaml|md)$$' | sed -e 's%^%$(ROOTDIR)/%' | xargs -I {} -P $(CORES) sed -i -E 's/busybox:([0-9]+\.[0-9]+\.[0-9]+|latest)/busybox:$(BUSYBOX_VERSION)/g' "{}"

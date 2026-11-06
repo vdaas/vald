@@ -55,9 +55,10 @@ func MetricInterceptors() (grpc.UnaryServerInterceptor, grpc.StreamServerInterce
 	}
 
 	record := func(ctx context.Context, method string, err error, latency float64) {
-		attrs := attributesFromError(method, err)
-		latencyHistogram.Record(ctx, latency, metrics.WithAttributes(attrs...))
-		completedRPCCnt.Add(ctx, 1, metrics.WithAttributes(attrs...))
+		// Build the attribute set once per RPC; WithAttributes copies and sorts it.
+		opt := metrics.WithAttributes(attributesFromError(method, err)...)
+		latencyHistogram.Record(ctx, latency, opt)
+		completedRPCCnt.Add(ctx, 1, opt)
 	}
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp any, err error) {
 			now := time.Now()

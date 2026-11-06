@@ -24,6 +24,7 @@ import (
 	"reflect"
 	"slices"
 	"testing"
+	"time"
 
 	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/errors"
@@ -33,6 +34,9 @@ import (
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
+
+// bracketedIPv6 is an IPv6 literal in the bracketed host form, without a port.
+const bracketedIPv6 = "[2001:db8::1]"
 
 func TestMain(m *testing.M) {
 	log.Init(log.WithLoggerType(logger.NOP.String()))
@@ -301,6 +305,19 @@ func TestParse(t *testing.T) {
 			},
 		},
 		{
+			name: "parse success with bracketed IPv6 address without port",
+			args: args{
+				addr: bracketedIPv6,
+			},
+			want: want{
+				wantHost: "2001:db8::1",
+				wantPort: uint16(80),
+				isV4:     false,
+				isV6:     true,
+				isLocal:  false,
+			},
+		},
+		{
 			name: "return true if it is local address",
 			args: args{
 				addr: "localhost:8080",
@@ -503,6 +520,20 @@ func TestSplitHostPort(t *testing.T) {
 				err: &net.AddrError{
 					Addr: "2001:db8::1",
 					Err:  "too many colons in address",
+				},
+			},
+		},
+		{
+			name: "return the unbracketed host and default port when port number missing in bracketed IPv6 address",
+			args: args{
+				hostport: bracketedIPv6,
+			},
+			want: want{
+				wantHost: "2001:db8::1",
+				wantPort: uint16(80),
+				err: &net.AddrError{
+					Addr: bracketedIPv6,
+					Err:  "missing port in address",
 				},
 			},
 		},
@@ -1561,3 +1592,93 @@ func TestDistinctAddrs(t *testing.T) {
 // 		})
 // 	}
 // }
+
+// TestScanPorts_contextDone verifies that ScanPorts terminates and reports the context error
+// (not partial ports, not ErrNoPortAvailable) when the context is already done.
+// The uint16 loop variable used to wrap to 0 after 65535, so start == 0 && end == 65535 never
+// finished. The contexts are done up front so that no real large scan is performed.
+func TestScanPorts_contextDone(t *testing.T) {
+	t.Parallel()
+	type test struct {
+		ctxFunc func(*testing.T) (context.Context, context.CancelFunc)
+		want    error
+		name    string
+		start   uint16
+		end     uint16
+		openSrv bool
+	}
+	cancelled := func(t *testing.T) (context.Context, context.CancelFunc) {
+		t.Helper()
+		ctx, cancel := context.WithCancel(t.Context())
+		cancel()
+		return ctx, cancel
+	}
+	expired := func(t *testing.T) (context.Context, context.CancelFunc) {
+		t.Helper()
+		return context.WithDeadline(t.Context(), time.Now().Add(-time.Second))
+	}
+	tests := []test{
+		{
+			name:    "cancelled context on the full range returns context.Canceled",
+			ctxFunc: cancelled,
+			start:   0,
+			end:     math.MaxUint16,
+			want:    context.Canceled,
+		},
+		{
+			name:    "expired deadline on the full range returns context.DeadlineExceeded",
+			ctxFunc: expired,
+			start:   0,
+			end:     math.MaxUint16,
+			want:    context.DeadlineExceeded,
+		},
+		{
+			name:    "pre-cancelled context over a range with an open port returns context.Canceled and no ports",
+			ctxFunc: cancelled,
+			openSrv: true,
+			want:    context.Canceled,
+		},
+	}
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			start, end := test.start, test.end
+			if test.openSrv {
+				srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+					w.WriteHeader(http.StatusOK)
+				}))
+				defer srv.Close()
+				_, p, err := SplitHostPort(srv.URL[len("http://"):])
+				if err != nil {
+					tt.Fatal(err)
+				}
+				start, end = p, p
+			}
+			ctx, cancel := test.ctxFunc(tt)
+			defer cancel()
+
+			type result struct {
+				err   error
+				ports []uint16
+			}
+			done := make(chan result, 1)
+			go func() {
+				ports, err := ScanPorts(ctx, start, end, "localhost")
+				done <- result{ports: ports, err: err}
+			}()
+
+			select {
+			case r := <-done:
+				if !errors.Is(r.err, test.want) {
+					tt.Errorf("got error: %v, want: %v", r.err, test.want)
+				}
+				if len(r.ports) != 0 {
+					tt.Errorf("unexpected ports returned for a done context: %v", r.ports)
+				}
+			case <-time.After(30 * time.Second):
+				tt.Fatal("timed out waiting for ScanPorts to terminate")
+			}
+		})
+	}
+}

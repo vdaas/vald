@@ -32,6 +32,7 @@ import (
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
 func (s *server) Search(
@@ -72,6 +73,8 @@ func (s *server) Search(
 	}
 	if err != nil || res == nil {
 		var attrs []attribute.KeyValue
+		// errors.As writes to its target, so it must be local to stay race-free across concurrent requests.
+		var errNGT errors.NGTError
 		switch {
 		case errors.Is(err, errors.ErrCreateIndexingIsInProgress):
 			err = status.WrapWithAborted("Search API aborted to process search request due to creating indices is in progress", err,
@@ -170,6 +173,8 @@ func (s *server) SearchByID(
 	}
 	if err != nil || res == nil {
 		var attrs []attribute.KeyValue
+		// errors.As writes to its target, so it must be local to stay race-free across concurrent requests.
+		var errNGT errors.NGTError
 		switch {
 		case errors.Is(err, errors.ErrCreateIndexingIsInProgress):
 			err = status.WrapWithAborted("SearchByID API aborted to process search request due to creating indices is in progress", err,
@@ -322,79 +327,46 @@ func (s *server) StreamSearchByID(stream vald.Search_StreamSearchByIDServer) (er
 func (s *server) MultiSearch(
 	ctx context.Context, reqs *payload.Search_MultiRequest,
 ) (res *payload.Search_Responses, errs error) {
-	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.MultiSearchRPCName)
-	defer trace.End(span)
-
-	res = &payload.Search_Responses{
-		Responses: make([]*payload.Search_Response, len(reqs.GetRequests())),
-	}
-	var wg sync.WaitGroup
-	var mu sync.Mutex
-	rids := make([]string, 0, len(reqs.GetRequests()))
-	for i, req := range reqs.Requests {
-		idx, query := i, req
-		rids = append(rids, req.GetConfig().GetRequestId())
-		wg.Add(1)
-		s.eg.Go(safety.RecoverFunc(func() (err error) {
-			defer wg.Done()
-			ctx, sspan := trace.StartSpan(ctx, fmt.Sprintf("%s/%s/errgroup.Go/id-%d", apiName, vald.MultiSearchRPCName, idx))
-			defer trace.End(sspan)
-			r, err := s.Search(ctx, query)
-			if err != nil {
-				st, _ := status.FromError(err)
-				errhandler.RecordSpanStatus(sspan, st, err)
-				mu.Lock()
-				if errs == nil {
-					errs = err
-				} else {
-					errs = errors.Join(errs, err)
-				}
-				mu.Unlock()
-				return nil
-			}
-			res.Responses[idx] = r
-			return nil
-		}))
-	}
-	wg.Wait()
-	if errs != nil {
-		st, _ := status.FromError(errs)
-		errhandler.RecordSpanStatus(span, st, errs)
-		return nil, errs
-	}
-	return res, nil
+	return multiSearch(ctx, s, vald.MultiSearchRPCName, reqs.Requests, s.Search)
 }
 
 func (s *server) MultiSearchByID(
 	ctx context.Context, reqs *payload.Search_MultiIDRequest,
 ) (res *payload.Search_Responses, errs error) {
-	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.MultiSearchByIDRPCName)
+	return multiSearch(ctx, s, vald.MultiSearchByIDRPCName, reqs.Requests, s.SearchByID)
+}
+
+// multiSearch is the shared fan-out of MultiSearch, MultiSearchByID,
+// MultiLinearSearch and MultiLinearSearchByID: each request runs search on the
+// bounded multi group, per-item errors are collected and joined, and results
+// keep the request order.
+func multiSearch[Q any](
+	ctx context.Context,
+	s *server,
+	rpcName string,
+	reqs []Q,
+	search func(context.Context, Q) (*payload.Search_Response, error),
+) (res *payload.Search_Responses, errs error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/"+rpcName)
 	defer trace.End(span)
 
 	res = &payload.Search_Responses{
-		Responses: make([]*payload.Search_Response, len(reqs.GetRequests())),
+		Responses: make([]*payload.Search_Response, len(reqs)),
 	}
-	var wg sync.WaitGroup
+	eg := errgroup.NewBoundedFanOut(ctx, s.streamConcurrency)
 	var mu sync.Mutex
-	rids := make([]string, 0, len(reqs.GetRequests()))
-	for i, req := range reqs.Requests {
+	var errList []error
+	for i, req := range reqs {
 		idx, query := i, req
-		rids = append(rids, req.GetConfig().GetRequestId())
-		wg.Add(1)
-		s.eg.Go(safety.RecoverFunc(func() error {
-			ctx, sspan := trace.StartSpan(ctx, fmt.Sprintf("%s/%s/errgroup.Go/id-%d", apiName, vald.MultiSearchByIDRPCName, idx))
+		eg.Go(safety.RecoverFunc(func() error {
+			sctx, sspan := trace.StartSpan(ctx, fmt.Sprintf("%s/%s/errgroup.Go/id-%d", apiName, rpcName, idx))
 			defer trace.End(sspan)
-			defer wg.Done()
-			r, err := s.SearchByID(ctx, query)
+			r, err := search(sctx, query)
 			if err != nil {
 				st, _ := status.FromError(err)
 				errhandler.RecordSpanStatus(sspan, st, err)
 				mu.Lock()
-				if errs == nil {
-					errs = err
-				} else {
-					errs = errors.Join(errs, err)
-				}
+				errList = append(errList, err)
 				mu.Unlock()
 				return nil
 			}
@@ -402,7 +374,10 @@ func (s *server) MultiSearchByID(
 			return nil
 		}))
 	}
-	wg.Wait()
+	if err := eg.Wait(); err != nil {
+		errList = append(errList, err)
+	}
+	errs = errors.Join(errList...)
 	if errs != nil {
 		st, _ := status.FromError(errs)
 		errhandler.RecordSpanStatus(span, st, errs)

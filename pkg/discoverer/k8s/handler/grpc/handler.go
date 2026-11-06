@@ -20,6 +20,7 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/v1/discoverer"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
@@ -52,7 +53,9 @@ const (
 	podPrefix  = "pods"
 	nodePrefix = "nodes"
 	svcPrefix  = "svcs"
-	keyDelim   = "-"
+	// keyDelim must not be a character allowed in Kubernetes node, namespace
+	// or object names ('-' is), or distinct requests share a singleflight key.
+	keyDelim = "/"
 )
 
 func New(opts ...Option) (ds DiscovererServer, err error) {
@@ -75,6 +78,28 @@ func New(opts ...Option) (ds DiscovererServer, err error) {
 func (*server) Start(context.Context) {
 }
 
+// wrapDiscoverError maps the discoverer service's lookup errors to a gRPC code:
+// a missing node/namespace/pod/svc is NotFound (not retried and ignored by the
+// client's circuit breaker), and a not-yet-populated cache is Unavailable, which
+// clients still retry and count against the circuit breaker exactly like
+// Internal. Anything else stays Internal.
+func wrapDiscoverError(
+	req *payload.Discoverer_Request, msg string, err error, details ...any,
+) (codes.Code, error) {
+	switch {
+	case errors.IsAny(err,
+		errors.ErrNodeNotFound(req.GetNode()),
+		errors.ErrNamespaceNotFound(req.GetNamespace()),
+		errors.ErrPodNameNotFound(req.GetName()),
+		errors.ErrSvcNameNotFound(req.GetName())):
+		return codes.NotFound, status.WrapWithNotFound(msg, err, details...)
+	case errors.Is(err, errors.ErrInvalidDiscoveryCache):
+		return codes.Unavailable, status.WrapWithUnavailable(msg, err, details...)
+	default:
+		return codes.Internal, status.WrapWithInternal(msg, err, details...)
+	}
+}
+
 func (s *server) Pods(
 	ctx context.Context, req *payload.Discoverer_Request,
 ) (*payload.Info_Pods, error) {
@@ -85,7 +110,8 @@ func (s *server) Pods(
 		return s.dsc.GetPods(req)
 	})
 	if err != nil {
-		err = status.WrapWithInternal(fmt.Sprintf("Pods API request (name: %s, namespace: %s, node: %s) failed", req.GetName(), req.GetNamespace(), req.GetNode()), err,
+		var code codes.Code
+		code, err = wrapDiscoverError(req, fmt.Sprintf("Pods API request (name: %s, namespace: %s, node: %s) failed", req.GetName(), req.GetNamespace(), req.GetNode()), err,
 			&errdetails.RequestInfo{
 				RequestId:   key,
 				ServingData: errdetails.Serialize(req),
@@ -95,7 +121,7 @@ func (s *server) Pods(
 				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 			},
 			info.Get())
-		errhandler.RecordSpanError(span, codes.Internal, err)
+		errhandler.RecordSpanError(span, code, err)
 		log.Warnf("GetPods returned error: %v", err)
 		return nil, err
 	}
@@ -144,7 +170,8 @@ func (s *server) Nodes(
 		return s.dsc.GetNodes(req)
 	})
 	if err != nil {
-		err = status.WrapWithInternal(fmt.Sprintf("Nodes API request (name: %s, namespace: %s, node: %s) failed", req.GetName(), req.GetNamespace(), req.GetNode()), err,
+		var code codes.Code
+		code, err = wrapDiscoverError(req, fmt.Sprintf("Nodes API request (name: %s, namespace: %s, node: %s) failed", req.GetName(), req.GetNamespace(), req.GetNode()), err,
 			&errdetails.RequestInfo{
 				RequestId:   key,
 				ServingData: errdetails.Serialize(req),
@@ -154,7 +181,7 @@ func (s *server) Nodes(
 				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 			},
 			info.Get())
-		errhandler.RecordSpanError(span, codes.Internal, err)
+		errhandler.RecordSpanError(span, code, err)
 		log.Warnf("GetNodes returned error: %v", err)
 		return nil, err
 	}
@@ -207,7 +234,8 @@ func (s *server) Services(
 		return s.dsc.GetServices(req)
 	})
 	if err != nil {
-		err = status.WrapWithInternal(fmt.Sprintf("Svcs API request (name: %s, namespace: %s) failed", req.GetName(), req.GetNamespace()), err,
+		var code codes.Code
+		code, err = wrapDiscoverError(req, fmt.Sprintf("Svcs API request (name: %s, namespace: %s) failed", req.GetName(), req.GetNamespace()), err,
 			&errdetails.RequestInfo{
 				RequestId:   key,
 				ServingData: errdetails.Serialize(req),
@@ -217,7 +245,7 @@ func (s *server) Services(
 				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 			},
 			info.Get())
-		errhandler.RecordSpanError(span, codes.Internal, err)
+		errhandler.RecordSpanError(span, code, err)
 		log.Warnf("GetSvcs returned error: %v", err)
 		return nil, err
 	}

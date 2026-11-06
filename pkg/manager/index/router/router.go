@@ -23,7 +23,6 @@ import (
 
 type router struct {
 	handler rest.Handler
-	timeout string
 }
 
 // New returns REST route&method information from handler interface.

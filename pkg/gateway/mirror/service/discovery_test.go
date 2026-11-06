@@ -17,11 +17,14 @@ import (
 	"context"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s"
 	"github.com/vdaas/vald/internal/k8s/vald/mirror/target"
+	"github.com/vdaas/vald/internal/sync/atomic"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/test/goleak"
 	k8smock "github.com/vdaas/vald/internal/test/mock/k8s"
 )
@@ -1996,3 +1999,112 @@ func Test_discovery_syncWithAddr(t *testing.T) {
 // 		})
 // 	}
 // }
+
+// doneCountCtx counts Done() calls. A select loop evaluates ctx.Done() on every
+// iteration, so the count is a deterministic measure of how often it spins.
+type doneCountCtx struct {
+	context.Context //nolint:containedctx // test wrapper that counts Done() calls
+	n               atomic.Int64
+}
+
+func (c *doneCountCtx) Done() <-chan struct{} {
+	c.n.Add(1)
+	return c.Context.Done()
+}
+
+// TestDiscovery_Start_ClosedControllerChannelDoesNotSpin pins that the relay
+// loop stops selecting the controller error channel once it is closed (the
+// controller's manager returned while ctx is still live). A closed channel is
+// always ready, so without nil-ing it the loop busy-spins; the spin shows up
+// as an unbounded number of ctx.Done() evaluations.
+func TestDiscovery_Start_ClosedControllerChannelDoesNotSpin(t *testing.T) {
+	t.Parallel()
+
+	ch := make(chan error)
+	close(ch)
+
+	eg, egctx := errgroup.New(t.Context())
+	cctx, cancel := context.WithCancel(egctx)
+	defer cancel()
+	ctx := &doneCountCtx{Context: cctx}
+
+	d := &discovery{
+		eg: eg,
+		// the sync tick must not fire during the test
+		dur: time.Hour,
+		ctrl: &k8smock.ControllerMock{
+			StartFunc: func(context.Context) (<-chan error, error) { return ch, nil },
+		},
+	}
+	if _, err := d.Start(ctx); err != nil {
+		t.Fatalf("Start() error = %v, want nil", err)
+	}
+
+	time.Sleep(100 * time.Millisecond)
+	if n := ctx.n.Load(); n > 100 {
+		t.Errorf("ctx.Done() evaluated %d times with a closed controller channel; the relay loop is busy-spinning", n)
+	}
+
+	cancel()
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		if err := eg.Wait(); err != nil {
+			t.Logf("eg.Wait() = %v", err)
+		}
+	}()
+	select {
+	case <-done:
+	case <-time.After(5 * time.Second):
+		t.Fatal("relay goroutine did not exit on context cancel")
+	}
+}
+
+// TestDiscovery_Start_ErrorRelayStopsOnCancelWhenConsumerGone pins that the
+// relay goroutine returns when ctx is cancelled while it is blocked sending a
+// controller error to a consumer that stopped reading.
+func TestDiscovery_Start_ErrorRelayStopsOnCancelWhenConsumerGone(t *testing.T) {
+	t.Parallel()
+
+	const sendTimeout = 5 * time.Second
+
+	dech := make(chan error)
+	eg, egctx := errgroup.New(t.Context())
+	ctx, cancel := context.WithCancel(egctx)
+	defer cancel()
+
+	d := &discovery{
+		eg:  eg,
+		dur: time.Hour,
+		ctrl: &k8smock.ControllerMock{
+			StartFunc: func(context.Context) (<-chan error, error) { return dech, nil },
+		},
+	}
+	// the returned channel is intentionally never read.
+	if _, err := d.Start(ctx); err != nil {
+		t.Fatalf("Start() error = %v, want nil", err)
+	}
+
+	// one more error than the channel buffer: the last one cannot be buffered.
+	for range errChanBufferSize + 1 {
+		select {
+		case dech <- errors.New("controller error"):
+		case <-time.After(sendTimeout):
+			t.Fatal("relay goroutine did not receive the controller error")
+		}
+	}
+
+	cancel()
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		if err := eg.Wait(); err != nil {
+			t.Logf("eg.Wait() = %v", err)
+		}
+	}()
+	select {
+	case <-done:
+	case <-time.After(sendTimeout):
+		t.Fatal("relay goroutine stayed blocked on the error channel after ctx cancel")
+	}
+}

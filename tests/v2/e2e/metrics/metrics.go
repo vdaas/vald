@@ -349,7 +349,7 @@ func (c *collector) mergeCounters(other *collector) {
 
 func (c *collector) mergeErrorCounts(other *collector) {
 	if c.errorCounts != nil && other.errorCounts != nil {
-		c.errorCounts.Merge(other.errorCounts)
+		other.errorCounts.Merge(c.errorCounts) // other is the destination, like the other merge helpers
 	}
 }
 
@@ -360,7 +360,9 @@ func (c *collector) mergeScales(other *collector) error {
 				return err
 			}
 		} else {
-			other.scales = append(other.scales, s)
+			// Clone so the destination never aliases the source's live scale:
+			// a later merge into other would otherwise write into this collector.
+			other.scales = append(other.scales, s.Clone())
 		}
 	}
 	return nil
@@ -694,14 +696,21 @@ func MergeSnapshots(snapshots ...*GlobalSnapshot) (*GlobalSnapshot, error) {
 	}
 
 	merged := &GlobalSnapshot{
-		Latencies:      &HistogramSnapshot{},
-		QueueWaits:     &HistogramSnapshot{},
-		LatPercentiles: snapshots[0].LatPercentiles,
-		QWPercentiles:  snapshots[0].QWPercentiles,
-		Codes:          make(map[codes.Code]uint64),
-		ErrorDetails:   make(map[string]uint64),
+		Latencies:    &HistogramSnapshot{},
+		QueueWaits:   &HistogramSnapshot{},
+		Codes:        make(map[codes.Code]uint64),
+		ErrorDetails: make(map[string]uint64),
 	}
 	base := snapshots[0]
+	// Start from copies of the first snapshot's digests: they keep its configured
+	// compression and quantiles, and merging into the originals would modify the
+	// caller's snapshot. The loop below skips merging them again for index 0.
+	if base.LatPercentiles != nil {
+		merged.LatPercentiles = base.LatPercentiles.Clone()
+	}
+	if base.QWPercentiles != nil {
+		merged.QWPercentiles = base.QWPercentiles.Clone()
+	}
 	merged.StartTime = base.StartTime
 	merged.LastUpdated = base.LastUpdated
 
@@ -716,7 +725,7 @@ func MergeSnapshots(snapshots ...*GlobalSnapshot) (*GlobalSnapshot, error) {
 	}
 
 	// Merge all fields from the snapshots.
-	for _, s := range snapshots {
+	for i, s := range snapshots {
 		merged.Total += s.Total
 		merged.Errors += s.Errors
 
@@ -743,17 +752,25 @@ func MergeSnapshots(snapshots ...*GlobalSnapshot) (*GlobalSnapshot, error) {
 				return nil, err
 			}
 		}
-		if s.LatPercentiles != nil {
+		if i > 0 && s.LatPercentiles != nil {
 			if merged.LatPercentiles == nil {
-				merged.LatPercentiles, _ = NewTDigest(defaultTDigestOpts...)
+				td, err := NewTDigest(defaultTDigestOpts...)
+				if err != nil {
+					return nil, err
+				}
+				merged.LatPercentiles = td
 			}
 			if err := merged.LatPercentiles.Merge(s.LatPercentiles); err != nil {
 				return nil, err
 			}
 		}
-		if s.QWPercentiles != nil {
+		if i > 0 && s.QWPercentiles != nil {
 			if merged.QWPercentiles == nil {
-				merged.QWPercentiles, _ = NewTDigest(defaultTDigestOpts...)
+				td, err := NewTDigest(defaultTDigestOpts...)
+				if err != nil {
+					return nil, err
+				}
+				merged.QWPercentiles = td
 			}
 			if err := merged.QWPercentiles.Merge(s.QWPercentiles); err != nil {
 				return nil, err

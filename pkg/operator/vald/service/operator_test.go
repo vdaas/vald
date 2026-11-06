@@ -22,6 +22,7 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s"
+	"github.com/vdaas/vald/internal/sync/atomic"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/pkg/operator/vald/config"
 )
@@ -124,6 +125,59 @@ func TestOperator_Start_CtxCancelUnblocksErrorForward(t *testing.T) {
 	case <-done:
 	case <-time.After(5 * time.Second):
 		t.Fatal("forwarding goroutine did not exit on context cancel; the ech send must be ctx-guarded")
+	}
+}
+
+// doneCountCtx counts Done() calls. A select loop evaluates ctx.Done() on every
+// iteration, so the count is a deterministic measure of how often it spins.
+type doneCountCtx struct {
+	context.Context //nolint:containedctx // test wrapper that counts Done() calls
+	n               atomic.Int64
+}
+
+func (c *doneCountCtx) Done() <-chan struct{} {
+	c.n.Add(1)
+	return c.Context.Done()
+}
+
+// TestOperator_Start_ClosedControllerChannelDoesNotSpin pins that the relay
+// loop stops selecting the controller error channel once it is closed (the
+// controller's manager returned while ctx is still live). A closed channel is
+// always ready, so without nil-ing it the loop busy-spins; the spin shows up
+// as an unbounded number of ctx.Done() evaluations.
+func TestOperator_Start_ClosedControllerChannelDoesNotSpin(t *testing.T) {
+	t.Parallel()
+
+	dech := make(chan error)
+	close(dech)
+
+	eg, egctx := errgroup.New(context.Background())
+	cctx, cancel := context.WithCancel(egctx)
+	defer cancel()
+	ctx := &doneCountCtx{Context: cctx}
+
+	o := &operator{ctrl: &ctrlMock{dech: dech}, eg: eg}
+	if _, err := o.Start(ctx); err != nil {
+		t.Fatalf("Start() error = %v, want nil", err)
+	}
+
+	time.Sleep(100 * time.Millisecond)
+	if n := ctx.n.Load(); n > 100 {
+		t.Errorf("ctx.Done() evaluated %d times with a closed controller channel; the relay loop is busy-spinning", n)
+	}
+
+	cancel()
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		if err := eg.Wait(); err != nil {
+			t.Logf("eg.Wait() = %v", err)
+		}
+	}()
+	select {
+	case <-done:
+	case <-time.After(5 * time.Second):
+		t.Fatal("relay goroutine did not exit on context cancel")
 	}
 }
 

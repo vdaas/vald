@@ -23,9 +23,11 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/test/goleak"
+	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/rest"
+	k8stesting "k8s.io/client-go/testing"
 	crclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -200,6 +202,101 @@ func TestPortForward_StartStopIdempotent(t *testing.T) {
 		}
 		if serr := pf.Stop(); serr != nil {
 			t.Errorf("second Stop() error = %v, want nil", serr)
+		}
+	}()
+	select {
+	case <-done:
+	case <-time.After(30 * time.Second):
+		t.Fatal("Stop() did not return: goroutines leaked or deadlocked")
+	}
+}
+
+// TestNew_NormalizesPrivateAddressCopy guards against the session code
+// normalizing the caller's address slice in place on every reconnect:
+// slices.Compact zeroes the removed tail, so duplicate addresses left an empty
+// address in pf.addresses that broke every later session. New must normalize
+// a private copy once and leave the caller's slice untouched.
+func TestNew_NormalizesPrivateAddressCopy(t *testing.T) {
+	t.Parallel()
+
+	const v4, v6 = "127.0.0.1", "::1"
+	addrs := []string{v4, v6, v4}
+	orig := slices.Clone(addrs)
+	f, err := New(
+		WithClient(&mockClientSet{cs: fake.NewClientset()}),
+		WithNamespace("default"),
+		WithServiceName("vald-lb-gateway"),
+		WithAddress(addrs...),
+		WithPorts(map[uint16]uint16{18081: 8081}),
+	)
+	if err != nil {
+		t.Fatalf("New() error = %v", err)
+	}
+	pf, ok := f.(*portForward)
+	if !ok {
+		t.Fatalf("New() returned %T, want *portForward", f)
+	}
+	if want := []string{v4, v6}; !slices.Equal(pf.addresses, want) {
+		t.Errorf("pf.addresses = %q, want %q", pf.addresses, want)
+	}
+	if !slices.Equal(addrs, orig) {
+		t.Errorf("caller's address slice mutated to %q, want %q", addrs, orig)
+	}
+}
+
+// TestPortForward_StartReturnsCause guards against Start reporting a bare
+// context.Canceled when the daemon errgroup is cancelled by a goroutine
+// failure: the endpoints watch error must be returned as the cause.
+func TestPortForward_StartReturnsCause(t *testing.T) {
+	t.Parallel()
+
+	watchErr := errors.New("endpoints watch forbidden")
+	cs := fake.NewClientset()
+	cs.PrependWatchReactor("endpoints", func(k8stesting.Action) (bool, watch.Interface, error) {
+		return true, nil, watchErr
+	})
+	f, err := New(
+		WithClient(&mockClientSet{cs: cs}),
+		WithNamespace("default"),
+		WithServiceName("vald-lb-gateway"),
+		WithAddress("127.0.0.1"),
+		WithPorts(map[uint16]uint16{18081: 8081}),
+	)
+	if err != nil {
+		t.Fatalf("New() error = %v", err)
+	}
+
+	ctx, cancel := context.WithTimeout(t.Context(), 30*time.Second)
+	defer cancel()
+
+	type result struct {
+		err error
+	}
+	res := make(chan result, 1)
+	go func() {
+		_, serr := f.Start(ctx)
+		res <- result{err: serr}
+	}()
+	select {
+	case r := <-res:
+		if !errors.Is(r.err, watchErr) {
+			t.Errorf("Start() error = %v, want %v", r.err, watchErr)
+		}
+	case <-time.After(20 * time.Second):
+		cancel()
+		t.Error("Start() did not return after the endpoints watch failed")
+		select {
+		case <-res:
+		case <-time.After(10 * time.Second):
+			t.Fatal("Start() did not return after cancel")
+		}
+	}
+
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		if serr := f.Stop(); serr != nil {
+			t.Logf("Stop() error = %v", serr)
 		}
 	}()
 	select {

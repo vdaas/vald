@@ -17,6 +17,7 @@ package status
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -24,11 +25,19 @@ import (
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
+	"github.com/vdaas/vald/internal/net/grpc/types"
+	"github.com/vdaas/vald/internal/os"
+	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/test/goleak"
+	spb "google.golang.org/genproto/googleapis/rpc/status"
+	"google.golang.org/grpc/status"
 )
 
 func TestMain(m *testing.M) {
-	info.Init("")
+	if err := info.Init(""); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
 	goleak.VerifyTestMain(m)
 }
 
@@ -92,6 +101,36 @@ func TestParseError(t *testing.T) {
 						return errors.ErrEmptySearchResult
 					}
 					return nil
+				},
+			}
+		}(),
+		func() test {
+			const reqID = "sample request ID"
+			return test{
+				name: "details passed to ParseError are attached to the status",
+				args: args{
+					err:         errors.ErrEmptySearchResult,
+					defaultCode: codes.Internal,
+					defaultMsg:  "failed to parse Search gRPC error response",
+					details: []any{
+						&errdetails.RequestInfo{
+							RequestId: reqID,
+						},
+					},
+				},
+				want: want{
+					wantSt: codes.Internal,
+				},
+				checkFunc: func(w want, gotSt *Status, gotMsg string, err error) error {
+					if w.wantSt != gotSt.Code() {
+						return errors.Errorf("got code: %v, want: %v", gotSt.Code(), w.wantSt)
+					}
+					for _, d := range gotSt.Proto().GetDetails() {
+						if strings.Contains(string(d.GetValue()), reqID) {
+							return nil
+						}
+					}
+					return errors.Errorf("RequestInfo detail %q is not attached: %v", reqID, gotSt.Details())
 				},
 			}
 		}(),
@@ -2862,3 +2901,217 @@ func TestToCode(t *testing.T) {
 // 		})
 // 	}
 // }
+
+// TestWithDetails_MergeResourceInfoType pins how withDetails merges the
+// ResourceType of several ResourceInfo details: distinct values are joined with
+// a tab like the neighbouring fields, never concatenated directly.
+func TestWithDetails_MergeResourceInfoType(t *testing.T) {
+	t.Parallel()
+	const (
+		pod  = "pod"
+		pods = "pods"
+	)
+	tests := []struct {
+		name  string
+		want  string
+		types []string
+	}{
+		{
+			name:  "a longer type that extends the previous one is separated",
+			types: []string{pod, pods},
+			want:  "pod\tpods",
+		},
+		{
+			name:  "a different type of the same length is kept",
+			types: []string{pods, "node"},
+			want:  "pods\tnode",
+		},
+		{
+			name:  "a type already contained in the merged value is not repeated",
+			types: []string{pods, pod},
+			want:  pods,
+		},
+		{
+			name:  "the same type is not repeated",
+			types: []string{pod, pod},
+			want:  pod,
+		},
+	}
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			// withDetails only merges when the status already has details.
+			st := withDetails(New(codes.Internal, "msg"), nil, &errdetails.RequestInfo{RequestId: "id"})
+			details := make([]any, 0, len(test.types))
+			for i, typ := range test.types {
+				details = append(details, &errdetails.ResourceInfo{
+					ResourceType: typ,
+					ResourceName: "name" + string(rune('a'+i)),
+				})
+			}
+			got := withDetails(st, nil, details...)
+			for _, d := range got.Details() {
+				if ri, ok := d.(*errdetails.ResourceInfo); ok {
+					if ri.GetResourceType() != test.want {
+						tt.Errorf("ResourceType = %q, want %q", ri.GetResourceType(), test.want)
+					}
+					return
+				}
+			}
+			tt.Errorf("no ResourceInfo detail in %v", got.Details())
+		})
+	}
+}
+
+// errorInfoTypeURL is the types.Any type URL of an errdetails.ErrorInfo.
+const errorInfoTypeURL = "type.googleapis.com/rpc.v1.ErrorInfo"
+
+// TestWithDetails_MergeKeepsDetailsFromStatusAndAny guards against details
+// carried inside a *spb.Status, *status.Status or *types.Any being keyed by
+// their full type URL in toProtoMessage: withDetails merges by the short
+// errdetails message name, so such details were silently dropped whenever the
+// status already had details.
+func TestWithDetails_MergeKeepsDetailsFromStatusAndAny(t *testing.T) {
+	t.Parallel()
+	const reason = "detail carried in a status"
+	b, err := (&errdetails.ErrorInfo{Reason: reason, Domain: "test"}).MarshalVT()
+	if err != nil {
+		t.Fatalf("MarshalVT: %v", err)
+	}
+	newAny := func() *types.Any {
+		return &types.Any{TypeUrl: errorInfoTypeURL, Value: b}
+	}
+	tests := []struct {
+		detail func() any
+		name   string
+	}{
+		{
+			name:   "*spb.Status",
+			detail: func() any { return &spb.Status{Details: []*types.Any{newAny()}} },
+		},
+		{
+			name:   "*status.Status",
+			detail: func() any { return status.FromProto(&spb.Status{Details: []*types.Any{newAny()}}) },
+		},
+		{
+			name:   "*types.Any",
+			detail: func() any { return newAny() },
+		},
+	}
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			// withDetails only merges when the status already has details.
+			st := withDetails(New(codes.Internal, "msg"), nil, &errdetails.RequestInfo{RequestId: "id"})
+			got := withDetails(st, nil, test.detail())
+			for _, d := range got.Details() {
+				if ei, ok := d.(*errdetails.ErrorInfo); ok {
+					if !strings.Contains(ei.GetReason(), reason) {
+						tt.Errorf("ErrorInfo.Reason = %q, want it to contain %q", ei.GetReason(), reason)
+					}
+					return
+				}
+			}
+			tt.Errorf("ErrorInfo detail dropped, got details %v", got.Details())
+		})
+	}
+}
+
+// Test_toProtoMessage_Keys pins the dmap keys, counts and insertion order that
+// toProtoMessage produces for each supported detail kind.
+func Test_toProtoMessage_Keys(t *testing.T) {
+	t.Parallel()
+	marshal := func(t *testing.T, m interface{ MarshalVT() ([]byte, error) }) []byte {
+		t.Helper()
+		b, err := m.MarshalVT()
+		if err != nil {
+			t.Fatalf("MarshalVT: %v", err)
+		}
+		return b
+	}
+	tests := []struct {
+		details     func(tt *testing.T) []any
+		want        map[string]int
+		name        string
+		err         error
+		wantReasons []string
+	}{
+		{
+			name: "nil details and nil error give an empty map",
+			details: func(*testing.T) []any {
+				return []any{nil, (*spb.Status)(nil), (*types.Any)(nil), (*info.Detail)(nil)}
+			},
+			want: map[string]int{},
+		},
+		{
+			name: "error, proto.Message and status details are appended in order under one key",
+			err:  errors.New("err"),
+			details: func(t *testing.T) []any {
+				t.Helper()
+				return []any{
+					&errdetails.ErrorInfo{Reason: "message"},
+					&spb.Status{Details: []*types.Any{
+						{TypeUrl: errorInfoTypeURL, Value: marshal(t, &errdetails.ErrorInfo{Reason: "spb"})},
+						{}, // empty type URL is skipped
+					}},
+					status.FromProto(&spb.Status{Details: []*types.Any{
+						{TypeUrl: errorInfoTypeURL, Value: marshal(t, &errdetails.ErrorInfo{Reason: "grpc"})},
+					}}),
+				}
+			},
+			want:        map[string]int{errdetails.ErrorInfoMessageName: 4},
+			wantReasons: []string{"err", "message", "spb", "grpc"},
+		},
+		{
+			name: "Any, info.Detail and distinct messages get their own keys",
+			details: func(t *testing.T) []any {
+				t.Helper()
+				return []any{
+					&types.Any{TypeUrl: "type.googleapis.com/rpc.v1.BadRequest", Value: marshal(t, &errdetails.BadRequest{})},
+					&info.Detail{},
+					info.Detail{},
+					&errdetails.RequestInfo{RequestId: "id"},
+				}
+			},
+			want: map[string]int{
+				errdetails.BadRequestMessageName:  1,
+				errdetails.DebugInfoMessageName:   2,
+				errdetails.RequestInfoMessageName: 1,
+			},
+		},
+	}
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			got := toProtoMessage(test.err, test.details(tt)...)
+			if len(got) != len(test.want) {
+				tt.Errorf("got %d keys %v, want %d keys %v", len(got), got, len(test.want), test.want)
+			}
+			for k, n := range test.want {
+				if len(got[k]) != n {
+					tt.Errorf("len(dmap[%q]) = %d, want %d", k, len(got[k]), n)
+				}
+			}
+			if test.wantReasons == nil {
+				return
+			}
+			msgs := got[errdetails.ErrorInfoMessageName]
+			if len(msgs) != len(test.wantReasons) {
+				return
+			}
+			for i, want := range test.wantReasons {
+				ei, ok := msgs[i].(*errdetails.ErrorInfo)
+				if !ok {
+					tt.Errorf("dmap[ErrorInfo][%d] is %T, want *errdetails.ErrorInfo", i, msgs[i])
+					continue
+				}
+				if ei.GetReason() != want {
+					tt.Errorf("dmap[ErrorInfo][%d].Reason = %q, want %q", i, ei.GetReason(), want)
+				}
+			}
+		})
+	}
+}

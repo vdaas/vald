@@ -14,8 +14,8 @@
 package grpc
 
 import (
+	"cmp"
 	"fmt"
-	"math/big"
 	"math/rand/v2"
 	"testing"
 
@@ -34,17 +34,17 @@ func TestPairingHeap(t *testing.T) {
 	defaultCheckFunc := func(got []*DistPayload) error {
 		last := got[0].distance
 		for i, current := range got {
-			cmp := last.Cmp(current.distance)
-			if cmp > 0 {
+			c := cmp.Compare(last, current.distance)
+			if c > 0 {
 				gids := make([]string, 0, len(got))
 				for i, dp := range got {
 					gids = append(gids, fmt.Sprintf("%d:%s:%f", i, dp.raw.GetId(), dp.raw.GetDistance()))
 				}
 				return errors.Errorf(
-					"unsorted return detected cmp: %d, last: %s, current: %s, got: idx=%d,\tid=%s,\traw[\"%#v\"]",
-					cmp,
-					last.String(),
-					current.distance.String(),
+					"unsorted return detected cmp: %d, last: %v, current: %v, got: idx=%d,\tid=%s,\traw[\"%#v\"]",
+					c,
+					last,
+					current.distance,
 					i,
 					got[i].raw.GetId(),
 					gids,
@@ -66,7 +66,7 @@ func TestPairingHeap(t *testing.T) {
 			}
 			dps := make([]*DistPayload, 0, dl) // random DistPayload arguments for heap insert data
 			for _, dist := range ods {
-				dps = append(dps, &DistPayload{raw: dist, distance: big.NewFloat(float64(dist.GetDistance()))})
+				dps = append(dps, &DistPayload{raw: dist, distance: float64(dist.GetDistance())})
 			}
 			return test{
 				name:      "check ExtractMin results are sorted",

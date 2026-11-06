@@ -13,6 +13,119 @@
 // limitations under the License.
 package router
 
+import (
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
+	"github.com/vdaas/vald/pkg/gateway/filter/handler/rest"
+)
+
+// routeRecorder records which handler method served the request.
+type routeRecorder struct {
+	rest.Handler
+	called string
+}
+
+func (r *routeRecorder) SearchByID(http.ResponseWriter, *http.Request) (int, error) {
+	r.called = "SearchByID"
+	return http.StatusOK, nil
+}
+
+func (r *routeRecorder) LinearSearchByID(http.ResponseWriter, *http.Request) (int, error) {
+	r.called = "LinearSearchByID"
+	return http.StatusOK, nil
+}
+
+func (r *routeRecorder) MultiLinearSearch(http.ResponseWriter, *http.Request) (int, error) {
+	r.called = "MultiLinearSearch"
+	return http.StatusOK, nil
+}
+
+func (r *routeRecorder) MultiLinearSearchByID(http.ResponseWriter, *http.Request) (int, error) {
+	r.called = "MultiLinearSearchByID"
+	return http.StatusOK, nil
+}
+
+func (r *routeRecorder) MultiRemove(http.ResponseWriter, *http.Request) (int, error) {
+	r.called = "MultiRemove"
+	return http.StatusOK, nil
+}
+
+func (r *routeRecorder) MultiSearch(http.ResponseWriter, *http.Request) (int, error) {
+	r.called = "MultiSearch"
+	return http.StatusOK, nil
+}
+
+func (r *routeRecorder) MultiSearchByID(http.ResponseWriter, *http.Request) (int, error) {
+	r.called = "MultiSearchByID"
+	return http.StatusOK, nil
+}
+
+func (r *routeRecorder) Remove(http.ResponseWriter, *http.Request) (int, error) {
+	r.called = "Remove"
+	return http.StatusOK, nil
+}
+
+func TestNew_searchByIDRoutes(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name string
+		path string
+		want string
+	}{
+		{name: "search by id", path: "/search/uuid", want: "SearchByID"},
+		{name: "linear search by id", path: "/linearsearch/uuid", want: "LinearSearchByID"},
+	}
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			// embed a real handler so that every other method value is bound.
+			rec := &routeRecorder{Handler: rest.New()}
+			h := New(WithHandler(rec))
+			req := httptest.NewRequestWithContext(tt.Context(), http.MethodGet, test.path, nil)
+			h.ServeHTTP(httptest.NewRecorder(), req)
+			if rec.called != test.want {
+				tt.Errorf("path %s served by %q, want %q", test.path, rec.called, test.want)
+			}
+		})
+	}
+}
+
+func TestNew_staticRoutesNotShadowedByID(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name    string
+		path    string
+		want    string
+		methods []string
+	}{
+		{name: "multi search", methods: []string{http.MethodPost}, path: "/search/multi", want: "MultiSearch"},
+		{name: "multi search by id", methods: []string{http.MethodGet}, path: "/search/multi/uuid", want: "MultiSearchByID"},
+		{name: "multi remove", methods: []string{http.MethodDelete, http.MethodPost}, path: "/delete/multi", want: "MultiRemove"},
+		{name: "remove by id", methods: []string{http.MethodDelete}, path: "/delete/uuid", want: "Remove"},
+		{name: "multi linear search", methods: []string{http.MethodPost}, path: "/linearsearch/multi", want: "MultiLinearSearch"},
+		{name: "multi linear search by id", methods: []string{http.MethodGet}, path: "/linearsearch/multi/uuid", want: "MultiLinearSearchByID"},
+	}
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			for _, method := range test.methods {
+				// embed a real handler so that every other method value is bound.
+				rec := &routeRecorder{Handler: rest.New()}
+				h := New(WithHandler(rec))
+				req := httptest.NewRequestWithContext(tt.Context(), method, test.path, nil)
+				h.ServeHTTP(httptest.NewRecorder(), req)
+				if rec.called != test.want {
+					tt.Errorf("%s %s served by %q, want %q", method, test.path, rec.called, test.want)
+				}
+			}
+		})
+	}
+}
+
 // NOT IMPLEMENTED BELOW
 //
 // func TestNew(t *testing.T) {

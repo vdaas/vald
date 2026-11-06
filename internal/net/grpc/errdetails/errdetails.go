@@ -418,7 +418,8 @@ func AnyToErrorDetail(a *types.Any) proto.Message {
 			return &m
 		}
 	default:
-		m, err := a.UnmarshalNew()
+		var m proto.Message
+		m, err = a.UnmarshalNew()
 		if err == nil {
 			return m
 		}

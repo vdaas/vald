@@ -15,13 +15,10 @@
 package grpc
 
 import (
-	"runtime"
-
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/os"
-	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/pkg/agent/core/faiss/service"
 )
 
@@ -37,8 +34,6 @@ var defaultOptions = []Option{
 		return name
 	}()),
 	WithIP(net.LoadLocalIP()),
-	WithStreamConcurrency(runtime.GOMAXPROCS(-1) * 10),
-	WithErrGroup(errgroup.Get()),
 }
 
 // WithIP returns the option to set the IP for server.
@@ -70,28 +65,6 @@ func WithFaiss(f service.Faiss) Option {
 			return errors.NewErrInvalidOption("faiss", f)
 		}
 		s.faiss = f
-		return nil
-	}
-}
-
-// WithStreamConcurrency returns the option to set the stream concurrency for server.
-func WithStreamConcurrency(c int) Option {
-	return func(s *server) error {
-		if c <= 0 {
-			return errors.NewErrInvalidOption("streamConcurrency", c)
-		}
-		s.streamConcurrency = c
-		return nil
-	}
-}
-
-// WithErrGroup returns the option to set the error group for server.
-func WithErrGroup(eg errgroup.Group) Option {
-	return func(s *server) error {
-		if eg == nil {
-			return errors.NewErrInvalidOption("errGroup", eg)
-		}
-		s.eg = eg
 		return nil
 	}
 }

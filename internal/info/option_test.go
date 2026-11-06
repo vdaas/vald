@@ -133,6 +133,7 @@ func TestWithRuntimeCaller(t *testing.T) {
 
 		opts := []comparator.Option{
 			comparator.AllowUnexported(info{}),
+			comparator.MutexComparer,
 			// skipcq: VET-V0008
 			comparator.Comparer(func(x, y sync.Once) bool {
 				// skipcq: VET-V0008
@@ -231,6 +232,7 @@ func TestWithRuntimeFuncForPC(t *testing.T) {
 
 		opts := []comparator.Option{
 			comparator.AllowUnexported(info{}),
+			comparator.MutexComparer,
 			// skipcq: VET-V0008
 			comparator.Comparer(func(x, y sync.Once) bool {
 				// skipcq: VET-V0008

@@ -67,14 +67,19 @@ func New(opts ...Option) (b blob.Bucket, err error) {
 	}
 
 	if c.reader == nil {
-		c.reader, err = reader.New(
+		ropts := []reader.Option{
 			reader.WithErrGroup(c.eg),
 			reader.WithService(c.service),
 			reader.WithBucket(c.bucket),
-			reader.WithMaxChunkSize(c.maxChunkSize),
 			reader.WithBackoff(c.readerBackoffEnabled),
 			reader.WithBackoffOpts(c.readerBackoffOpts...),
-		)
+		}
+		// maxChunkSize stays 0 when unset or below the minimum part size;
+		// passing 0 would override the reader default and break ranged reads.
+		if c.maxChunkSize > 0 {
+			ropts = append(ropts, reader.WithMaxChunkSize(c.maxChunkSize))
+		}
+		c.reader, err = reader.New(ropts...)
 		if err != nil {
 			return nil, err
 		}
@@ -93,14 +98,14 @@ func (*client) Close() error {
 	return nil
 }
 
-// Reader creates reader.Reader implementation and returns it.
+// Reader opens a new independent stream for key and returns it.
 // An error will be returned when the reader initialization fails or an error occurs in reader.Open.
 func (c *client) Reader(ctx context.Context, key string) (rc io.ReadCloser, err error) {
-	err = c.reader.Open(ctx, key)
+	rc, err = c.reader.Open(ctx, key)
 	if err != nil {
 		return nil, err
 	}
-	return c.reader, nil
+	return rc, nil
 }
 
 // Writer creates writer.Writer implementation and returns it.

@@ -16,6 +16,7 @@ package grpc
 import (
 	"context"
 
+	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/strings"
 )
 
@@ -50,4 +51,22 @@ func FromGRPCMethod(ctx context.Context) string {
 		}
 	}
 	return ""
+}
+
+// quietErrorLogContextKey marks calls whose per-call error log is demoted to
+// Debug because the caller aggregates and reports the failures itself.
+const quietErrorLogContextKey contextKey = "quiet_error_log"
+
+// WithQuietErrorLog returns a copy of ctx whose RPC errors the client logs at
+// Debug instead of the per-code level, for fan-out callers (e.g. a search
+// broadcast) that tolerate per-target failures and log a per-request summary.
+// The backoff retry loop's per-attempt error log is demoted as well.
+func WithQuietErrorLog(ctx context.Context) context.Context {
+	return context.WithValue(backoff.WithQuietErrorLog(ctx), quietErrorLogContextKey, true)
+}
+
+// isQuietErrorLog reports whether ctx was marked by WithQuietErrorLog.
+func isQuietErrorLog(ctx context.Context) bool {
+	quiet, ok := ctx.Value(quietErrorLogContextKey).(bool)
+	return ok && quiet
 }

@@ -623,4 +623,122 @@ func Test_closeBody(t *testing.T) {
 	}
 }
 
+// trackBody records reads and closes of a request body.
+type trackBody struct {
+	reads, closes int
+}
+
+func (b *trackBody) Read([]byte) (int, error) {
+	b.reads++
+	return 0, io.EOF
+}
+
+func (b *trackBody) Close() error {
+	b.closes++
+	return nil
+}
+
+// RoundTrip drained and closed the original req.Body after the transport had
+// taken it (the transport may still be using it from its own goroutine), and it
+// retried requests whose body could not be rewound (GetBody nil).
+func Test_ert_RoundTrip_requestBodyOwnership(t *testing.T) {
+	t.Parallel()
+	// retryingBackoff calls fn while it reports retryable, up to 3 attempts.
+	retryingBackoff := &backoffMock{
+		DoFunc: func(ctx context.Context, fn func(context.Context) (any, bool, error)) (any, error) {
+			var (
+				val   any
+				retry bool
+				err   error
+			)
+			for range 3 {
+				val, retry, err = fn(ctx)
+				if !retry {
+					break
+				}
+			}
+			return val, err
+		},
+	}
+	tests := []struct {
+		bo          backoff.Backoff
+		name        string
+		wantCalls   int
+		wantReads   int
+		wantCloses  int
+		rewindable  bool
+		retryStatus bool
+	}{
+		{
+			name:      "no backoff: handed body is left to the transport",
+			wantCalls: 1,
+		},
+		{
+			name:        "non-rewindable body is not retried and left to the transport",
+			bo:          retryingBackoff,
+			retryStatus: true,
+			wantCalls:   1,
+		},
+		{
+			name:        "rewindable body is retried; the unsent original is closed without draining",
+			bo:          retryingBackoff,
+			rewindable:  true,
+			retryStatus: true,
+			wantCalls:   3,
+			wantCloses:  1,
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			orig := new(trackBody)
+			req, err := http.NewRequestWithContext(t.Context(), http.MethodPost, "http://example.invalid", orig)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if tc.rewindable {
+				req.GetBody = func() (io.ReadCloser, error) {
+					return io.NopCloser(bytes.NewReader(nil)), nil
+				}
+			}
+			var calls int
+			e := &ert{
+				// The mock never touches the body, like a transport that is still
+				// writing it from its own goroutine.
+				transport: &roundTripMock{
+					RoundTripFunc: func(*http.Request) (*http.Response, error) {
+						calls++
+						if tc.retryStatus {
+							return nil, errors.ErrTransportRetryable
+						}
+						return &http.Response{StatusCode: http.StatusOK, Body: http.NoBody}, nil
+					},
+				},
+				bo: tc.bo,
+			}
+			res, err := e.RoundTrip(req)
+			if res != nil && res.Body != nil {
+				if cerr := res.Body.Close(); cerr != nil {
+					t.Error(cerr)
+				}
+			}
+			if tc.retryStatus && !errors.Is(err, errors.ErrTransportRetryable) {
+				t.Errorf("RoundTrip() error = %v, want ErrTransportRetryable", err)
+			}
+			if !tc.retryStatus && err != nil {
+				t.Errorf("RoundTrip() error = %v, want nil", err)
+			}
+			if calls != tc.wantCalls {
+				t.Errorf("transport calls = %d, want %d", calls, tc.wantCalls)
+			}
+			if orig.reads != tc.wantReads {
+				t.Errorf("original body reads by RoundTrip = %d, want %d", orig.reads, tc.wantReads)
+			}
+			if orig.closes != tc.wantCloses {
+				t.Errorf("original body closes by RoundTrip = %d, want %d", orig.closes, tc.wantCloses)
+			}
+		})
+	}
+}
+
 // NOT IMPLEMENTED BELOW

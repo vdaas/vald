@@ -34,6 +34,11 @@ import (
 const (
 	apiName     = "vald/index/job/readreplica/rotate"
 	rotateAllID = "rotate-all"
+
+	// rollbackTimeout bounds the deletion of the resources created by a failed
+	// rotation. It matches resource.Client's default wait timeout (5m), which
+	// is the time budget the k8s helpers already allow a delete to settle.
+	rollbackTimeout = 5 * time.Minute
 )
 
 // Rotator represents an interface for indexing.
@@ -62,7 +67,10 @@ type subProcess struct {
 	// for error messages.
 	selector   string
 	volumeName string
-	listOpts   []k8s.ListOption
+	// replicaID is the read replica id the Helm chart puts in the original
+	// snapshot/PVC names ({{name}}-snapshot-{{id}}, {{name}}-pvc-{{id}}).
+	replicaID string
+	listOpts  []k8s.ListOption
 }
 
 // New returns Indexer object if no error occurs.
@@ -135,6 +143,7 @@ func (r *rotator) newSubprocess(replicaID string) subProcess {
 			k8s.MatchingLabels{r.readReplicaLabelKey: replicaID},
 		},
 		selector:    r.readReplicaLabelKey + "=" + replicaID,
+		replicaID:   replicaID,
 		snapshots:   r.snapshots,
 		pvcs:        r.pvcs,
 		deployments: r.deployments,
@@ -159,7 +168,9 @@ func (s *subProcess) rotate(ctx context.Context) error {
 	newPvc, oldPvc, err := s.createPVC(ctx, newSnap.GetName(), deployment)
 	if err != nil {
 		log.Errorf("failed to create PVC. removing the new snapshot(%s)...", newSnap.GetName())
-		if dserr := s.snapshots.DeleteAndWait(ctx, newSnap, s.listOpts...); dserr != nil {
+		cctx, cancel := rollbackContext(ctx)
+		defer cancel()
+		if dserr := s.snapshots.DeleteAndWait(cctx, newSnap, s.listOpts...); dserr != nil {
 			err = errors.Join(err, dserr)
 		}
 		return err
@@ -168,26 +179,43 @@ func (s *subProcess) rotate(ctx context.Context) error {
 	err = s.updateDeployment(ctx, newPvc.GetName(), deployment, newSnap.CreationTimestamp.Time)
 	if err != nil {
 		log.Errorf("failed to update Deployment. removing the new snapshot(%s) and pvc(%s)...", newSnap.GetName(), newPvc.GetName())
-		if dperr := s.pvcs.DeleteAndWait(ctx, newPvc, s.listOpts...); dperr != nil {
+		cctx, cancel := rollbackContext(ctx)
+		defer cancel()
+		if dperr := s.pvcs.DeleteAndWait(cctx, newPvc, s.listOpts...); dperr != nil {
 			err = errors.Join(err, dperr)
 		}
-		if dserr := s.snapshots.DeleteAndWait(ctx, newSnap, s.listOpts...); dserr != nil {
+		if dserr := s.snapshots.DeleteAndWait(cctx, newSnap, s.listOpts...); dserr != nil {
 			err = errors.Join(err, dserr)
 		}
 		return err
 	}
 
-	err = s.snapshots.DeleteAndWait(ctx, oldSnap, s.listOpts...)
-	if err != nil {
-		return err
-	}
+	return s.deleteOld(ctx, oldSnap, oldPvc)
+}
 
-	err = s.pvcs.DeleteAndWait(ctx, oldPvc, s.listOpts...)
-	if err != nil {
-		return err
+// deleteOld removes the snapshot and PVC the Deployment no longer mounts. The
+// switch has already happened, so like a rollback it must not be cut short by
+// a sibling rotation cancelling ctx, and a failed snapshot delete must not
+// leave the old PVC (a full index copy) behind.
+func (s *subProcess) deleteOld(
+	ctx context.Context, oldSnap *k8s.VolumeSnapshot, oldPvc *k8s.PersistentVolumeClaim,
+) (err error) {
+	cctx, cancel := rollbackContext(ctx)
+	defer cancel()
+	err = s.snapshots.DeleteAndWait(cctx, oldSnap, s.listOpts...)
+	if perr := s.pvcs.DeleteAndWait(cctx, oldPvc, s.listOpts...); perr != nil {
+		err = errors.Join(err, perr)
 	}
+	return err
+}
 
-	return nil
+// rollbackContext returns a context for undoing a failed rotation. It is
+// detached from ctx's cancellation because ctx is shared by the sibling
+// rotations in Start's errgroup, which cancels it on the first failure; a
+// cancelled ctx would make DeleteAndWait fail immediately and orphan the
+// freshly created snapshot/PVC. ctx's values (e.g. trace span) are kept.
+func rollbackContext(ctx context.Context) (context.Context, context.CancelFunc) {
+	return context.WithTimeout(context.WithoutCancel(ctx), rollbackTimeout)
 }
 
 func (s *subProcess) createSnapshot(
@@ -203,23 +231,21 @@ func (s *subProcess) createSnapshot(
 
 	cur := &list.Items[0]
 	oldSnap = cur.DeepCopy()
-	newNameBase := getNewBaseName(cur.GetObjectMeta().GetName())
+	newNameBase := withReplicaID(getNewBaseName(cur.GetObjectMeta().GetName()), s.replicaID)
 	if newNameBase == "" {
 		return nil, nil, fmt.Errorf("the name(%s) doesn't seem to have replica id", cur.GetObjectMeta().GetName())
 	}
 	newSnap = &k8s.VolumeSnapshot{
-		ObjectMeta: k8s.ObjectMeta{
-			Name:      fmt.Sprintf("%s%d", newNameBase, time.Now().Unix()),
-			Namespace: cur.GetNamespace(),
-			Labels:    cur.GetObjectMeta().GetLabels(),
-			OwnerReferences: []k8s.OwnerReference{
-				{
-					APIVersion: "apps/v1",
-					Kind:       "Deployment",
-					Name:       deployment.GetName(),
-					UID:        deployment.GetUID(),
-					Controller: new(true),
-				},
+		Name:      fmt.Sprintf("%s%d", newNameBase, time.Now().Unix()),
+		Namespace: cur.GetNamespace(),
+		Labels:    cur.GetObjectMeta().GetLabels(),
+		OwnerReferences: []k8s.OwnerReference{
+			{
+				APIVersion: "apps/v1",
+				Kind:       "Deployment",
+				Name:       deployment.GetName(),
+				UID:        deployment.GetUID(),
+				Controller: new(true),
 			},
 		},
 		Spec: cur.Spec,
@@ -247,27 +273,35 @@ func (s *subProcess) createPVC(
 		return nil, nil, fmt.Errorf("no PVC found")
 	}
 
+	// The PVC the Deployment mounts is the one to replace and delete; a stale
+	// labeled PVC left by an earlier failed delete must not be picked instead.
 	cur := &list.Items[0]
+	if claim := s.mountedClaimName(deployment); claim != "" {
+		for i := range list.Items {
+			if list.Items[i].GetName() == claim && list.Items[i].GetDeletionTimestamp() == nil {
+				cur = &list.Items[i]
+				break
+			}
+		}
+	}
 	oldPvc = cur.DeepCopy()
-	newNameBase := getNewBaseName(cur.GetObjectMeta().GetName())
+	newNameBase := withReplicaID(getNewBaseName(cur.GetObjectMeta().GetName()), s.replicaID)
 	if newNameBase == "" {
 		return nil, nil, fmt.Errorf("the name(%s) doesn't seem to have replica id", cur.GetObjectMeta().GetName())
 	}
 
 	// remove timestamp from old pvc name
 	newPvc = &k8s.PersistentVolumeClaim{
-		ObjectMeta: k8s.ObjectMeta{
-			Name:      fmt.Sprintf("%s%d", newNameBase, time.Now().Unix()),
-			Namespace: cur.GetNamespace(),
-			Labels:    cur.GetObjectMeta().GetLabels(),
-			OwnerReferences: []k8s.OwnerReference{
-				{
-					APIVersion: "apps/v1",
-					Kind:       "Deployment",
-					Name:       deployment.GetName(),
-					UID:        deployment.GetUID(),
-					Controller: new(true),
-				},
+		Name:      fmt.Sprintf("%s%d", newNameBase, time.Now().Unix()),
+		Namespace: cur.GetNamespace(),
+		Labels:    cur.GetObjectMeta().GetLabels(),
+		OwnerReferences: []k8s.OwnerReference{
+			{
+				APIVersion: "apps/v1",
+				Kind:       "Deployment",
+				Name:       deployment.GetName(),
+				UID:        deployment.GetUID(),
+				Controller: new(true),
 			},
 		},
 		Spec: k8s.PersistentVolumeClaimSpec{
@@ -290,6 +324,20 @@ func (s *subProcess) createPVC(
 	}
 
 	return newPvc, oldPvc, nil
+}
+
+// mountedClaimName returns the PVC claim name of the volume s.volumeName in
+// deployment, or "" when there is none.
+func (s *subProcess) mountedClaimName(deployment *k8s.Deployment) string {
+	if deployment == nil {
+		return ""
+	}
+	for _, vol := range deployment.Spec.Template.Spec.Volumes {
+		if vol.Name == s.volumeName && vol.PersistentVolumeClaim != nil {
+			return vol.PersistentVolumeClaim.ClaimName
+		}
+	}
+	return ""
 }
 
 func (s *subProcess) getDeployment(ctx context.Context) (*k8s.Deployment, error) {
@@ -318,10 +366,17 @@ func (s *subProcess) updateDeployment(
 	}
 	deployment.Annotations[vald.LastTimeSnapshotTimestampAnnotationsKey] = snapshotTime.UTC().Format(vald.TimeFormat)
 
+	found := false
 	for _, vol := range deployment.Spec.Template.Spec.Volumes {
-		if vol.Name == s.volumeName {
+		if vol.Name == s.volumeName && vol.PersistentVolumeClaim != nil {
 			vol.PersistentVolumeClaim.ClaimName = newPVC
+			found = true
 		}
+	}
+	// Without a rewritten volume the rollout would keep mounting the old PVC,
+	// which rotate deletes right after a successful update.
+	if !found {
+		return fmt.Errorf("volume(%s) with a PVC source not found in deployment(%s)", s.volumeName, deployment.GetName())
 	}
 
 	log.Infof("updating deployment(%s)...", deployment.GetName())
@@ -344,6 +399,18 @@ func getNewBaseName(old string) string {
 		newNameBase = strings.Join(splits[:len(splits)-1], "")
 	}
 	return newNameBase
+}
+
+// withReplicaID makes sure base ends with "-<replicaID>-". getNewBaseName
+// takes a multi-character last segment for a timestamp, so it strips the id
+// of a replica >= 10 on the first rotation (…-snapshot-10 -> …-snapshot-),
+// which gives every such replica the same base name and makes rotations in
+// the same second collide. It also repairs names already rotated that way.
+func withReplicaID(base, replicaID string) string {
+	if base == "" || replicaID == "" || strings.HasSuffix(base, "-"+replicaID+"-") {
+		return base
+	}
+	return strings.TrimSuffix(base, "-") + "-" + replicaID + "-"
 }
 
 func (r *rotator) parseReplicaID(replicaID string) ([]string, error) {

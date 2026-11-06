@@ -16,9 +16,12 @@ package main
 import (
 	"context"
 	"path/filepath"
+	"slices"
 	"testing"
 
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/os"
+	"golang.org/x/tools/go/packages"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -160,5 +163,112 @@ func TestWorkflowTrivyIgnorePaths(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+// A dependency tree that cannot be resolved must fail the generation instead of
+// writing a workflow whose pull_request paths only cover cmd/<pkg>.
+// packages.Load does not return an error for a .go file pattern when `go list` fails,
+// so this relies on the empty-result / Package.Errors checks.
+func TestWorkflowFailsOnDependencyTreeError(t *testing.T) {
+	t.Parallel()
+	root := t.TempDir()
+	cmdDir := filepath.Join(root, "cmd", "brokendep")
+	if err := os.MkdirAll(cmdDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(cmdDir, "main.go"), []byte("package main\n\nfunc main() {}\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	// A malformed go.mod makes `go list` fail as a whole.
+	if err := os.WriteFile(filepath.Join(root, "go.mod"), []byte("this is not a go.mod file\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	err := generateWorkflow(context.Background(), root, "vald-brokendep", "vald team", 2026, Data{
+		ContainerType: Go,
+		PackageDir:    "brokendep",
+	})
+	if err == nil {
+		t.Fatal("generateWorkflow() error = nil, want dependency tree error")
+	}
+	wf := filepath.Join(root, ".github", "workflows", "dockers-brokendep-image.yaml")
+	if _, serr := os.Stat(wf); !errors.Is(serr, os.ErrNotExist) {
+		t.Errorf("workflow %s must not be written on error, stat err = %v", wf, serr)
+	}
+}
+
+// entryPkgPath and entryPkgName are what packages.Load reports for the main
+// package of a .go file pattern.
+const (
+	entryPkgPath = "command-line-arguments"
+	entryPkgName = "main"
+)
+
+func TestCheckLoadedPackages(t *testing.T) {
+	t.Parallel()
+	const entry = "/root/cmd/x/main.go"
+	listErr := packages.Error{Msg: "cannot find package"}
+	repoDep := &packages.Package{PkgPath: "github.com/" + repository + "/internal/x"}
+	brokenRepoDep := &packages.Package{PkgPath: "github.com/" + repository + "/internal/y", Errors: []packages.Error{listErr}}
+	brokenExternal := &packages.Package{PkgPath: "example.com/ext", Errors: []packages.Error{listErr}}
+	tests := []struct {
+		name    string
+		pkgs    []*packages.Package
+		wantErr bool
+	}{
+		{name: "no package is an error", pkgs: nil, wantErr: true},
+		{
+			name: "entry package and its repository dependencies without errors",
+			pkgs: []*packages.Package{{
+				PkgPath: entryPkgPath,
+				Name:    entryPkgName,
+				Imports: map[string]*packages.Package{repoDep.PkgPath: repoDep},
+			}},
+		},
+		{
+			name:    "entry package with errors",
+			pkgs:    []*packages.Package{{PkgPath: entryPkgPath, Errors: []packages.Error{listErr}}},
+			wantErr: true,
+		},
+		{
+			name: "repository dependency with errors",
+			pkgs: []*packages.Package{{
+				PkgPath: entryPkgPath,
+				Name:    entryPkgName,
+				Imports: map[string]*packages.Package{brokenRepoDep.PkgPath: brokenRepoDep},
+			}},
+			wantErr: true,
+		},
+		{
+			name: "external dependency errors are ignored",
+			pkgs: []*packages.Package{{
+				PkgPath: entryPkgPath,
+				Name:    entryPkgName,
+				Imports: map[string]*packages.Package{brokenExternal.PkgPath: brokenExternal},
+			}},
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			if err := checkLoadedPackages(entry, tc.pkgs); (err != nil) != tc.wantErr {
+				t.Errorf("checkLoadedPackages() error = %v, wantErr %v", err, tc.wantErr)
+			}
+		})
+	}
+}
+
+func TestPackageNodeToSliceVisitsSharedNodesOnce(t *testing.T) {
+	t.Parallel()
+	// Diamond: root -> {a, b}, a -> c, b -> c. c must be listed once.
+	c := &PackageNode{Name: "c"}
+	a := &PackageNode{Name: "a", Imports: []*PackageNode{c}}
+	b := &PackageNode{Name: "b", Imports: []*PackageNode{c}}
+	root := PackageNode{Name: entryPkgPath, Imports: []*PackageNode{a, b}}
+
+	got := root.ToSlice()
+	slices.Sort(got)
+	if want := []string{"a", "b", "c"}; !slices.Equal(got, want) {
+		t.Fatalf("ToSlice() = %v, want %v", got, want)
 	}
 }

@@ -56,10 +56,17 @@ CVE-2024-23653 exp:2026-11-24
 CVE-2026-33747 exp:2026-11-24
 CVE-2026-33748 exp:2026-11-24
 
-# Upstream BuildKit/runc embed x/net < v0.60.0 and the bundled CNI plugins
-# use Go 1.25.7. Temporarily accept these DoS findings in this build tool
-# pending upstream rebuilds with x/net v0.60.0 and Go 1.26.9/1.27.2.
-# Remove after those binaries are updated; review by 2026-10-21.
-CVE-2026-78667 exp:2026-10-21
-CVE-2026-78669 exp:2026-10-21
-CVE-2026-97031 exp:2026-10-21
+# Reason: upstream moby/buildkit:master still ships buildkit-runc with
+# golang.org/x/net v0.55.0 and CNI plugins built with Go 1.25.7 (rechecked
+# 2026-11-06). Vald only re-tags this image as a CI build tool; remove these
+# exceptions when upstream rebuilds with x/net >= v0.60.0 and Go >= 1.26.10
+# or 1.27.3.
+CVE-2026-78667 exp:2026-12-06
+CVE-2026-78669 exp:2026-12-06
+CVE-2026-97031 exp:2026-12-06
+CVE-2026-111943 exp:2026-12-06
+
+# Reason: CVE-2026-78661 (golang.org/x/net/html DoS, fixed in v0.62.0) was
+# first reported by the 2026-11-06 CI scan; upstream buildkit-runc still embeds x/net v0.55.0.
+# Remove when upstream rebuilds with x/net >= v0.62.0.
+CVE-2026-78661 exp:2026-12-07

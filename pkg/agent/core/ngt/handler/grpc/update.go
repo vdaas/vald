@@ -70,7 +70,8 @@ func (s *server) Update(
 				s.resourceInfo(ngtResourceType+"/ngt.Update"))
 			log.Warn(err)
 			attrs = trace.StatusCodeNotFound(err.Error())
-		} else if errors.Is(err, errors.ErrUUIDNotFound(0)) || errors.Is(err, errors.ErrInvalidDimensionSize(len(vec.GetVector()), s.ngt.GetDimensionSize())) {
+		} else if errors.Is(err, errors.ErrUUIDNotFound(0)) || errors.Is(err, errors.ErrInvalidDimensionSize(len(vec.GetVector()), s.ngt.GetDimensionSize())) ||
+			errors.Is(err, errors.ErrInvalidTimestamp(req.GetConfig().GetTimestamp())) {
 			err = status.WrapWithInvalidArgument(fmt.Sprintf("Update API invalid argument for uuid \"%s\" vec \"%v\" detected", vec.GetId(), vec.GetVector()), err,
 				&errdetails.RequestInfo{
 					RequestId:   req.GetVector().GetId(),
@@ -151,8 +152,13 @@ func (s *server) MultiUpdate(
 
 	uuids := make([]string, 0, len(reqs.GetRequests()))
 	vmap := make(map[string][]float32, len(reqs.GetRequests()))
-	for _, req := range reqs.GetRequests() {
+	var ts int64
+	for i, req := range reqs.GetRequests() {
 		vec := req.GetVector()
+		// first request's timestamp like MultiInsert; Config only, like Update.
+		if i == 0 {
+			ts = req.GetConfig().GetTimestamp()
+		}
 		if len(vec.GetVector()) != s.ngt.GetDimensionSize() {
 			err = errors.ErrIncompatibleDimensionSize(len(vec.GetVector()), int(s.ngt.GetDimensionSize()))
 			err = status.WrapWithInvalidArgument("MultiUpdate API Incompatible Dimension Size detected",
@@ -177,9 +183,14 @@ func (s *server) MultiUpdate(
 		uuids = append(uuids, vec.GetId())
 	}
 
-	err = s.ngt.UpdateMultiple(vmap)
+	if ts != 0 {
+		err = s.ngt.UpdateMultipleWithTime(vmap, ts)
+	} else {
+		err = s.ngt.UpdateMultiple(vmap)
+	}
 	if err != nil {
 		var attrs []attribute.KeyValue
+		isErr := errMatcher(err)
 		if errors.Is(err, errors.ErrFlushingIsInProgress) {
 			err = status.WrapWithAborted("MultiUpdate API aborted to process update request due to flushing indices is in progress", err,
 				&errdetails.RequestInfo{
@@ -192,7 +203,7 @@ func (s *server) MultiUpdate(
 		} else if notFoundIDs := func() []string {
 			aids := make([]string, 0, len(uuids))
 			for _, id := range uuids {
-				if errors.Is(err, errors.ErrObjectIDNotFound(id)) {
+				if isErr(errors.ErrObjectIDNotFound(id)) {
 					aids = append(aids, id)
 				}
 			}
@@ -209,12 +220,12 @@ func (s *server) MultiUpdate(
 		} else if invalidDimensionIDs := func() []string {
 			idis := make([]string, 0, len(uuids))
 			for id, vec := range vmap {
-				if errors.Is(err, errors.ErrInvalidDimensionSize(len(vec), s.ngt.GetDimensionSize())) {
+				if isErr(errors.ErrInvalidDimensionSize(len(vec), s.ngt.GetDimensionSize())) {
 					idis = append(idis, id)
 				}
 			}
 			return idis
-		}(); len(invalidDimensionIDs) != 0 || errors.Is(err, errors.ErrUUIDNotFound(0)) {
+		}(); len(invalidDimensionIDs) != 0 || errors.Is(err, errors.ErrUUIDNotFound(0)) || isErr(errors.ErrInvalidTimestamp(ts)) {
 			err = status.WrapWithInvalidArgument(fmt.Sprintf("MultiUpdate API invalid argument for uuids \"%v\" detected", invalidDimensionIDs), err,
 				&errdetails.RequestInfo{
 					RequestId:   strings.Join(uuids, ", "),
@@ -234,7 +245,7 @@ func (s *server) MultiUpdate(
 		} else if alreadyExistsIDs := func() []string {
 			aids := make([]string, 0, len(uuids))
 			for _, id := range uuids {
-				if errors.Is(err, errors.ErrUUIDAlreadyExists(id)) {
+				if isErr(errors.ErrUUIDAlreadyExists(id)) {
 					aids = append(aids, id)
 				}
 			}

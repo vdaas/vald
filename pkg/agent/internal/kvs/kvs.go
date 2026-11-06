@@ -16,12 +16,12 @@ package kvs
 
 import (
 	"context"
-	"sync/atomic"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/atomic"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/zeebo/xxh3"
 )
@@ -31,6 +31,7 @@ type BidiMap interface {
 	Get(string) (uint32, int64, bool)
 	GetInverse(uint32) (string, int64, bool)
 	Set(string, uint32, int64)
+	SetTimestamp(string, uint32, int64) bool
 	Delete(string) (uint32, bool)
 	DeleteInverse(uint32) (string, bool)
 	Range(ctx context.Context, f func(string, uint32, int64) bool)
@@ -107,15 +108,42 @@ func (b *bidi) GetInverse(val uint32) (string, int64, bool) {
 // Set sets the key and val to the bidi.
 func (b *bidi) Set(key string, val uint32, ts int64) {
 	id := getShardID(key)
-	vs, loaded := b.uo[id].LoadOrStore(key, ValueStructUo{value: val, timestamp: ts})
-	old := vs.value
-	if !loaded { // increase the count only if the key is not exists before
+	// Swap reads the old pair and writes the new one in one step, so a concurrent
+	// Delete cannot be undone by a second Store and the overwrite costs one lookup.
+	vs, loaded := b.uo[id].Swap(key, ValueStructUo{value: val, timestamp: ts})
+	if loaded {
+		b.ou[vs.value&mask].Delete(vs.value) // delete paired map value using old value_key
+	} else { // increase the count only if the key is not exists before
 		atomic.AddUint64(&b.l, 1)
-	} else {
-		b.ou[val&mask].Delete(old)                                    // delete paired map value using old value_key
-		b.uo[id].Store(key, ValueStructUo{value: val, timestamp: ts}) // store if loaded for overwrite new value
 	}
 	b.ou[val&mask].Store(val, valueStructOu{value: key, timestamp: ts}) // store anytime
+}
+
+// SetTimestamp sets the timestamp of key to ts only while key is mapped to val, and reports
+// whether it did. Unlike Set it never re-creates a pair removed by a concurrent Delete nor
+// overwrites a pair repointed by a concurrent Set; a concurrent timestamp change is retried.
+func (b *bidi) SetTimestamp(key string, val uint32, ts int64) bool {
+	uo := b.uo[getShardID(key)]
+	for {
+		vs, ok := uo.Load(key)
+		if !ok || vs.value != val {
+			return false
+		}
+		if uo.CompareAndSwap(key, vs, ValueStructUo{value: val, timestamp: ts}) {
+			break
+		}
+	}
+	ou := b.ou[val&mask]
+	for {
+		vs, ok := ou.Load(val)
+		if !ok || vs.value != key {
+			// a concurrent Delete or Set already dropped the inverse pair.
+			return true
+		}
+		if ou.CompareAndSwap(val, vs, valueStructOu{value: key, timestamp: ts}) {
+			return true
+		}
+	}
 }
 
 // Delete deletes the key and the value from the bidi by the given key and returns val and true.

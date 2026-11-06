@@ -21,7 +21,9 @@ import (
 	"sync/atomic"
 	"testing"
 	"time"
+	_ "time/tzdata" // IANA zones for mysql.ParseDSN in Test_mySQLClient_Open_timezoneDSN
 
+	"github.com/go-sql-driver/mysql"
 	"github.com/vdaas/vald/internal/db/rdb/mysql/dbr"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
@@ -447,6 +449,58 @@ func Test_mySQLClient_Open(t *testing.T) {
 			err := m.Open(test.args.ctx)
 			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_mySQLClient_Open_timezoneDSN(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name     string
+		timezone string
+	}{
+		{name: "Local", timezone: "Local"},
+		{name: "UTC", timezone: "UTC"},
+		{name: "IANA zone with slash", timezone: "America/New_York"},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			var dsn string
+			openErr := errors.New("stop after DSN capture")
+			m := &mySQLClient{
+				host:     "vald.com",
+				port:     3306,
+				user:     "vdaas",
+				pass:     "vald",
+				name:     "vald-user",
+				charset:  "utf8mb4",
+				timezone: tc.timezone,
+				dbr: &dbr.MockDBR{
+					OpenFunc: func(_, d string, _ EventReceiver) (dbr.Connection, error) {
+						dsn = d
+						return nil, openErr
+					},
+				},
+			}
+			if err := m.Open(t.Context()); !errors.Is(err, openErr) {
+				t.Fatalf("Open() error = %v, want %v", err, openErr)
+			}
+			cfg, err := mysql.ParseDSN(dsn)
+			if err != nil {
+				t.Fatalf("mysql.ParseDSN(%q) error = %v", dsn, err)
+			}
+			if tc.timezone == "Local" {
+				// time.Local is process-global and may be replaced by other tests, so compare identity, not its name.
+				if cfg.Loc != time.Local { //nolint:gosmopolitan // the DSN loc=Local must resolve to time.Local itself
+					t.Errorf("loc = %q, want time.Local", cfg.Loc)
+				}
+			} else if got := cfg.Loc.String(); got != tc.timezone {
+				t.Errorf("loc = %q, want %q", got, tc.timezone)
+			}
+			if cfg.DBName != "vald-user" {
+				t.Errorf("DBName = %q, want %q", cfg.DBName, "vald-user")
 			}
 		})
 	}
