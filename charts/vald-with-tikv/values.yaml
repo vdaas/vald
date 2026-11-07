@@ -1287,8 +1287,8 @@ gateway:
       # @schema {"name": "gateway.lb.gateway_config.discoverer", "type": "object"}
       discoverer:
         # @schema {"name": "gateway.lb.gateway_config.discoverer.duration", "type": "string"}
-        # gateway.lb.discoverer.duration -- discoverer duration
-        duration: 200ms
+        # gateway.lb.discoverer.duration -- discoverer duration (polling faster than discoverer.discoverer.discovery_duration only re-fetches the same snapshot)
+        duration: 3s
         # @schema {"name": "gateway.lb.gateway_config.discoverer.client", "alias": "grpc.client"}
         # gateway.lb.gateway_config.discoverer.client -- gRPC client for discoverer (overrides defaults.grpc.client)
         client: {}
