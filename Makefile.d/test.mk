@@ -181,6 +181,14 @@ test/pkg: \
 	$(call go-test,$(ROOTDIR)/pkg/...)
 	$(MAKE) certs/clean
 
+.PHONY: test/package
+## run tests for the packages in TEST_PKG (same flags as `test`), e.g.
+## make test/package TEST_PKG=./pkg/agent/core/ngt/service/... TEST_RUN=TestNew
+test/package: \
+	ngt/install \
+	hdf5/install
+	$(call go-test,$(if $(TEST_RUN),-run '$(TEST_RUN)') $(TEST_PKG))
+
 .PHONY: test/internal
 ## run tests for internal
 test/internal: \

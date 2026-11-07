@@ -109,6 +109,28 @@ bench/datasets/large/deep1b: \
 ## placeholder for future benchmark categories.
 bench:
 
+BENCH_PKG ?= ./...
+BENCH_RUN ?= .
+BENCH_COUNT ?= 10
+BENCH_TIME ?= 1s
+BENCH_OUT ?= $(TEMP_DIR)/bench.txt
+
+.PHONY: bench/go
+## run Go micro-benchmarks without -race/-cover (unlike `test`), e.g.
+## make bench/go BENCH_PKG=./internal/core/algorithm/ngt/... BENCH_RUN=Search BENCH_OUT=/tmp/new.txt
+## then compare two runs with `make bench/compare BENCH_OLD=/tmp/old.txt BENCH_NEW=/tmp/new.txt`
+bench/go: \
+	ngt/install
+	$(GO_ENV_VARS) CGO_LDFLAGS="$(TEST_LDFLAGS)" go test -mod=readonly -run '^$$' \
+		-bench '$(BENCH_RUN)' -benchmem -count $(BENCH_COUNT) -benchtime $(BENCH_TIME) \
+		-timeout=$(GOTEST_TIMEOUT) -ldflags "$(GO_TEST_LDFLAGS)" $(BENCH_PKG) | tee $(BENCH_OUT)
+
+.PHONY: bench/compare
+## compare two bench/go outputs with benchstat
+bench/compare: \
+	benchstat/install
+	$(GOBIN)/benchstat $(BENCH_OLD) $(BENCH_NEW)
+
 .PHONY: bench/kill
 ## kill all benchmark processes
 bench/kill:

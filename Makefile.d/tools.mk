@@ -128,6 +128,11 @@ gotestfmt/install: \
 gotests/install: \
 	$(GOBIN)/gotests
 
+.PHONY: benchstat/install
+## install benchstat
+benchstat/install: \
+	$(GOBIN)/benchstat
+
 .PHONY: protoc-gen-doc/install
 ## install protoc-gen-doc
 protoc-gen-doc/install: \
@@ -154,6 +159,7 @@ GO_BINS = \
 	$(GOBIN)/tparse \
 	$(GOBIN)/gotestfmt \
 	$(GOBIN)/gotests \
+	$(GOBIN)/benchstat \
 	$(GOBIN)/protoc-gen-doc
 
 $(GO_BINS):
