@@ -108,6 +108,9 @@ func (s *server) SearchByID(
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 			span.SetStatus(trace.StatusError, err.Error())
 		}
+		if skipSearchByIDFallback(ctx, err) {
+			return nil, err
+		}
 		// try search by using agent's SearchByID method this operation is emergency fallback, the search quality is not same as usual SearchByID operation.
 		var attrs []attribute.KeyValue
 		res, attrs, err = s.doSearch(
@@ -133,6 +136,9 @@ func (s *server) SearchByID(
 		Config: req.GetConfig(),
 	})
 	if err != nil {
+		if skipSearchByIDFallback(ctx, err) {
+			return nil, err
+		}
 		var attrs []attribute.KeyValue
 		res, attrs, err = s.doSearch(
 			ctx,
@@ -148,6 +154,18 @@ func (s *server) SearchByID(
 		}
 	}
 	return res, nil
+}
+
+// skipSearchByIDFallback reports whether SearchByID must return err instead of
+// falling back to the agent-side SearchByID broadcast: the request ctx is done,
+// or the failed call already used up the per-request search timeout, which the
+// fallback broadcast would only wait out a second time.
+func skipSearchByIDFallback(ctx context.Context, err error) bool {
+	if ctx.Err() != nil {
+		return true
+	}
+	st, ok := status.FromError(err)
+	return ok && st != nil && (st.Code() == codes.DeadlineExceeded || st.Code() == codes.Canceled)
 }
 
 // calculateNum adjusts the number of search results based on the ratio and the number of replicas.
