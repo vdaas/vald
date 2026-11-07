@@ -119,7 +119,9 @@ func (s *server) aggregationSearch(
 	aggr.Start(ctx)
 	// Per-agent failures are tolerated and summarized once per request below, so
 	// the client must not log every failed agent/attempt at Warn/Error.
-	err = s.gateway.BroadCast(grpc.WithQuietErrorLog(ctx), service.READ, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
+	// Replicas cover a failed agent, so an overloaded one (ResourceExhausted) is not
+	// retried inside the search deadline (write paths keep backoff-and-wait).
+	err = s.gateway.BroadCast(grpc.WithQuietErrorLog(grpc.WithoutResourceExhaustedRetry(ctx)), service.READ, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
 		var agentErr error // error of the last agent call, nil when it answered
 		defer func() {
 			fmu.Lock()

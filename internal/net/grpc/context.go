@@ -70,3 +70,22 @@ func isQuietErrorLog(ctx context.Context) bool {
 	quiet, ok := ctx.Value(quietErrorLogContextKey).(bool)
 	return ok && quiet
 }
+
+// noResourceExhaustedRetryContextKey marks calls whose ResourceExhausted
+// errors are returned at once instead of being retried with backoff.
+const noResourceExhaustedRetryContextKey contextKey = "no_resource_exhausted_retry"
+
+// WithoutResourceExhaustedRetry returns a copy of ctx whose RPCs are not
+// retried on ResourceExhausted, for fan-out reads (e.g. a search broadcast)
+// whose per-target failures are covered by the other replicas: retrying an
+// overloaded agent inside the request deadline only adds load and latency.
+// Write paths keep the default backoff-and-wait policy.
+func WithoutResourceExhaustedRetry(ctx context.Context) context.Context {
+	return context.WithValue(ctx, noResourceExhaustedRetryContextKey, true)
+}
+
+// isNoResourceExhaustedRetry reports whether ctx was marked by WithoutResourceExhaustedRetry.
+func isNoResourceExhaustedRetry(ctx context.Context) bool {
+	no, ok := ctx.Value(noResourceExhaustedRetryContextKey).(bool)
+	return ok && no
+}

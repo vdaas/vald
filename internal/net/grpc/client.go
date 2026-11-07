@@ -869,10 +869,14 @@ func (g *gRPCClient) executeRPC(
 			status.Log(st.Code(), err)
 		}
 		switch st.Code() {
+		case codes.ResourceExhausted:
+			if isNoResourceExhaustedRetry(ctx) {
+				return nil, false, err
+			}
+			return nil, p.IsHealthy(ctx), err
 		// retryable errors
 		case codes.Internal,
-			codes.Unavailable,
-			codes.ResourceExhausted:
+			codes.Unavailable:
 			return nil, p.IsHealthy(ctx), err
 		}
 		// not-retryable errors
