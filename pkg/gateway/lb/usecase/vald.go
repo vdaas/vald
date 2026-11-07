@@ -121,6 +121,7 @@ func New(cfg *config.Data) (r runner.Interface, err error) {
 		handler.WithReplicationCount(cfg.Gateway.IndexReplica),
 		handler.WithStreamConcurrency(cfg.Server.GetGRPCStreamConcurrency()),
 		handler.WithMultiConcurrency(cfg.Gateway.MultiOperationConcurrency),
+		handler.WithSearchQuorumGrace(cfg.Gateway.SearchQuorumGrace),
 	)
 
 	grpcServerOptions := []server.Option{

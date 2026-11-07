@@ -89,6 +89,22 @@ func WithTimeout(dur string) Option {
 	}
 }
 
+// WithSearchQuorumGrace sets the grace period a search keeps waiting for the
+// remaining agents once agents - replica + 1 of them answered with results.
+// An empty, invalid or non-positive duration disables the early termination.
+func WithSearchQuorumGrace(dur string) Option {
+	return func(s *server) {
+		if dur == "" {
+			return
+		}
+		d, err := timeutil.Parse(dur)
+		if err != nil || d <= 0 {
+			return
+		}
+		s.searchQuorumGrace = d
+	}
+}
+
 func WithReplicationCount(rep int) Option {
 	return func(s *server) {
 		if rep > 0 {

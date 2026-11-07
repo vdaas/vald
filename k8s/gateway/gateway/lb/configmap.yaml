@@ -247,6 +247,7 @@ data:
       agent_namespace: "_MY_POD_NAMESPACE_"
       node_name: ""
       index_replica: 3
+      search_quorum_grace: ""
       read_replica_replicas: 1
       discoverer:
         duration: 3s

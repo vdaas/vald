@@ -117,11 +117,25 @@ func (s *server) aggregationSearch(
 	)
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	aggr.Start(ctx)
+	// bctx scopes only the broadcast, so the quorum early termination below stops
+	// the remaining agent calls while the aggregator keeps every result it got.
+	bctx, bcancel := context.WithCancelCause(ctx)
+	defer bcancel(nil)
+	quorum := s.searchQuorum(agents)
+	var (
+		answered atomic.Int64
+		qtimer   atomic.Pointer[time.Timer]
+	)
+	defer func() {
+		if t := qtimer.Load(); t != nil {
+			t.Stop()
+		}
+	}()
 	// Per-agent failures are tolerated and summarized once per request below, so
 	// the client must not log every failed agent/attempt at Warn/Error.
 	// Replicas cover a failed agent, so an overloaded one (ResourceExhausted) is not
 	// retried inside the search deadline (write paths keep backoff-and-wait).
-	err = s.gateway.BroadCast(grpc.WithQuietErrorLog(grpc.WithoutResourceExhaustedRetry(ctx)), service.READ, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
+	err = s.gateway.BroadCast(grpc.WithQuietErrorLog(grpc.WithoutResourceExhaustedRetry(bctx)), service.READ, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
 		var agentErr error // error of the last agent call, nil when it answered
 		defer func() {
 			fmu.Lock()
@@ -160,8 +174,20 @@ func (s *server) aggregationSearch(
 			}
 		}
 		aggr.Send(sctx, r)
+		// Count an agent only after all its results were sent, so terminating
+		// early never drops results of an agent that counts toward the quorum.
+		if quorum > 0 && int(answered.Add(1)) == quorum {
+			qtimer.Store(time.AfterFunc(s.searchQuorumGrace, func() {
+				bcancel(errSearchQuorumReached)
+			}))
+		}
 		return nil
 	})
+	quorumReached := errors.Is(context.Cause(bctx), errSearchQuorumReached)
+	if quorumReached && errors.Is(err, context.Canceled) {
+		// the agents still running were canceled on purpose, not failed
+		err = nil
+	}
 	ctxErr := ctx.Err()
 	cancel()
 	fmu.Lock()
@@ -171,7 +197,7 @@ func (s *server) aggregationSearch(
 	// Once the request ctx has ended, targets not reached yet are deadline or
 	// cancel misses, which are not agent failures, so none are counted then.
 	var unreached int
-	if ctxErr == nil {
+	if ctxErr == nil && !quorumReached {
 		unreached = max(agents-len(reached), 0)
 	}
 	failures := len(failed) + unreached
@@ -288,6 +314,24 @@ func searchRecallAtRisk(failures, replica int) bool {
 // does not have) on otherwise healthy agents. A non-status
 // error is counted as Unknown. Whether the error fails the BroadCast is decided
 // separately by handleSearchBroadCastError.
+// quorumError is the cancel cause of a search broadcast ended early by the quorum.
+type quorumError string
+
+func (e quorumError) Error() string { return string(e) }
+
+const errSearchQuorumReached quorumError = "search quorum reached"
+
+// searchQuorum returns how many agents must answer with results before a search
+// may stop waiting for the rest: agents - replica + 1 answered agents include at
+// least one replica of every index replica set. 0 means wait for every agent:
+// the early termination is disabled, or replication leaves nothing to skip.
+func (s *server) searchQuorum(agents int) int {
+	if s.searchQuorumGrace <= 0 || s.replica <= 1 || agents <= s.replica {
+		return 0
+	}
+	return agents - s.replica + 1
+}
+
 func searchAgentFailure(target string, err error) (codes.Code, bool) {
 	if err == nil ||
 		errors.IsAny(err, context.Canceled, context.DeadlineExceeded) ||

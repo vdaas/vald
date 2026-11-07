@@ -6644,6 +6644,8 @@ spec:
                               type: integer
                             node_name:
                               type: string
+                            search_quorum_grace:
+                              type: string
                           type: object
                         hpa:
                           properties:

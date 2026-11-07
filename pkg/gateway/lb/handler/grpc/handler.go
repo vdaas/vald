@@ -40,6 +40,7 @@ type server struct {
 	name              string
 	ip                string
 	timeout           time.Duration
+	searchQuorumGrace time.Duration
 	replica           int
 	streamConcurrency int
 	multiConcurrency  int

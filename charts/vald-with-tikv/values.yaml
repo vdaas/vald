@@ -1284,6 +1284,9 @@ gateway:
       # @schema {"name": "gateway.lb.gateway_config.multi_operation_concurrency", "type": "integer", "minimum": 2}
       # gateway.lb.gateway_config.multi_operation_concurrency -- number of concurrency of multiXXX api's operation
       multi_operation_concurrency: 20
+      # @schema {"name": "gateway.lb.gateway_config.search_quorum_grace", "type": "string"}
+      # gateway.lb.gateway_config.search_quorum_grace -- once agents - index_replica + 1 agents answered a search with results (at least one replica of every index replica set), wait at most this long for the rest before returning; empty disables the early termination
+      search_quorum_grace: ""
       # @schema {"name": "gateway.lb.gateway_config.discoverer", "type": "object"}
       discoverer:
         # @schema {"name": "gateway.lb.gateway_config.discoverer.duration", "type": "string"}
