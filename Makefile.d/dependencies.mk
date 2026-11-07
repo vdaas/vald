@@ -18,6 +18,8 @@
 ## update vald libraries including tools
 update/libs: \
 	update/buf \
+	update/buildkit \
+	update/buildkit-syft-scanner \
 	update/busybox \
 	update/chaos-mesh \
 	update/cmake \
@@ -288,6 +290,22 @@ update/openmp: update/llvm
 update/ngt:
 	$(call fetch-version,$(ROOTDIR)/versions/NGT_VERSION,\
 		curl -fsSL $${GITHUB_TOKEN:+-H "Authorization: Bearer $$GITHUB_TOKEN"} https://api.github.com/repos/NGT-labs/NGT/releases/latest \
+		| grep -Po '"tag_name": "\K.*?(?=")' \
+		| sed 's/v//g')
+
+.PHONY: update/buildkit
+## update buildkit version
+update/buildkit:
+	$(call fetch-version,$(ROOTDIR)/versions/BUILDKIT_VERSION,\
+		curl -fsSL $${GITHUB_TOKEN:+-H "Authorization: Bearer $$GITHUB_TOKEN"} https://api.github.com/repos/moby/buildkit/releases/latest \
+		| grep -Po '"tag_name": "\K.*?(?=")' \
+		| sed 's/v//g')
+
+.PHONY: update/buildkit-syft-scanner
+## update buildkit-syft-scanner version
+update/buildkit-syft-scanner:
+	$(call fetch-version,$(ROOTDIR)/versions/BUILDKIT_SYFT_SCANNER_VERSION,\
+		curl -fsSL $${GITHUB_TOKEN:+-H "Authorization: Bearer $$GITHUB_TOKEN"} https://api.github.com/repos/docker/buildkit-syft-scanner/releases/latest \
 		| grep -Po '"tag_name": "\K.*?(?=")' \
 		| sed 's/v//g')
 

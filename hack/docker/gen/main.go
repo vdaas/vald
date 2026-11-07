@@ -88,8 +88,6 @@ const (
 	defaultBuildStageName = "builder"
 	maintainerKey         = "MAINTAINER"
 	minimumArgumentLength = 2
-	buildkitVersion       = "v0.32.2"
-	syftScannerVersion    = "1.12.0"
 	ubuntuVersion         = "24.04"
 
 	yearKey = "YEAR"
@@ -967,9 +965,32 @@ func main() {
 	}
 }
 
+// buildkitVersion and syftScannerVersion are pinned (never master/edge) and
+// bumped by `make update/buildkit update/buildkit-syft-scanner` via versions/.
+var buildkitVersion, syftScannerVersion string
+
+func loadVersions(rootDir string) error {
+	for name, v := range map[string]*string{
+		"BUILDKIT_VERSION":              &buildkitVersion,
+		"BUILDKIT_SYFT_SCANNER_VERSION": &syftScannerVersion,
+	} {
+		b, err := file.ReadFile(file.Join(rootDir, "versions", name))
+		if err != nil {
+			return errors.Wrapf(err, "failed to read versions/%s", name)
+		}
+		if *v = strings.TrimSpace(conv.Btoa(b)); *v == "" {
+			return errors.Errorf("versions/%s is empty", name)
+		}
+	}
+	return nil
+}
+
 func run() error {
 	if len(os.Args) < minimumArgumentLength {
 		return errors.New("invalid argument")
+	}
+	if err := loadVersions(os.Args[1]); err != nil {
+		return err
 	}
 
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT,
@@ -1184,7 +1205,7 @@ func run() error {
 			AliasImage:   true,
 			PackageDir:   buildkit,
 			BuilderImage: "moby/" + buildkit,
-			BuilderTag:   buildkitVersion,
+			BuilderTag:   "v" + buildkitVersion,
 		},
 		vald + "-" + binfmt: {
 			AppName:      binfmt,
