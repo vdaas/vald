@@ -1410,8 +1410,13 @@ func (n *ngt) createIndexLocked(ctx context.Context, poolSize uint32) (created b
 	defer n.cimu.Unlock()
 	n.indexing.Store(true)
 	now := time.Now().UnixNano()
-	defer n.indexing.Store(false)
-	defer n.gc()
+	// Search is refused while indexing is set, so clear it as soon as the graph build
+	// finishes; the post-build statistics walk (read lock) and proactive GC run after it.
+	// cimu stays held until return, so another CreateIndex still cannot start early.
+	defer func() {
+		n.indexing.Store(false)
+		n.gc()
+	}()
 	ic := n.vq.IVQLen() + n.vq.DVQLen()
 	if ic == 0 {
 		return false, errors.ErrUncommittedIndexNotFound
@@ -1525,6 +1530,7 @@ func (n *ngt) createIndexLocked(ctx context.Context, poolSize uint32) (created b
 		return false, err
 	}
 
+	n.indexing.Store(false)
 	n.nocie.Add(1)
 	n.nopvq.Add(vqProcessedCnt)
 	created = true
