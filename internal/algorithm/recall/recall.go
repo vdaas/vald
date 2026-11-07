@@ -41,6 +41,9 @@ package recall
 // results) must NOT count towards the score, and ground-truth entries beyond
 // effectiveK must NOT be considered "correct" either.
 //
+// Duplicate IDs in got are counted at most once: each ground-truth ID can be
+// matched by only one entry of got.
+//
 // If effectiveK <= 0 (k <= 0, or truth is empty/nil — e.g. no ground-truth
 // dataset is available), Calc returns 0, since recall is undefined for an
 // empty ground truth and 0 is the conservative answer.
@@ -62,6 +65,7 @@ func Calc[T comparable](got, truth []T, k int) float64 {
 	var matched float64
 	for _, id := range got {
 		if _, ok := truthIDs[id]; ok {
+			delete(truthIDs, id)
 			matched++
 		}
 	}

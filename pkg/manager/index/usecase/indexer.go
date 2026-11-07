@@ -20,6 +20,7 @@ import (
 	index "github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
 	iconf "github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/observability"
 	backoffmetrics "github.com/vdaas/vald/internal/observability/metrics/backoff"
@@ -93,8 +94,12 @@ func New(cfg *config.Data) (r runner.Interface, err error) {
 		service.WithErrGroup(eg),
 		service.WithDiscoverer(client),
 		service.WithIndexingConcurrency(cfg.Indexer.Concurrency),
+		// No dedicated save-concurrency key exists (manager.index.saver.* belongs to
+		// the index save job); bound SaveIndex fan-out like CreateIndex.
+		service.WithSaveConcurrency(cfg.Indexer.Concurrency),
 		service.WithIndexingDuration(cfg.Indexer.AutoIndexCheckDuration),
 		service.WithIndexingDurationLimit(cfg.Indexer.AutoIndexDurationLimit),
+		service.WithSaveIndexDuration(cfg.Indexer.AutoSaveIndexWaitDuration),
 		service.WithSaveIndexDurationLimit(cfg.Indexer.AutoSaveIndexDurationLimit),
 		service.WithCreationPoolSize(cfg.Indexer.CreationPoolSize),
 		service.WithMinUncommitted(cfg.Indexer.AutoIndexLength),
@@ -209,11 +214,14 @@ func (*run) PreStop(context.Context) error {
 	return nil
 }
 
-func (r *run) Stop(ctx context.Context) error {
+func (r *run) Stop(ctx context.Context) (err error) {
+	// Shut the server down first so spans and metrics of the requests it drains
+	// are still exported before observability is stopped.
+	err = r.server.Shutdown(ctx)
 	if r.observability != nil {
-		r.observability.Stop(ctx)
+		err = errors.Join(err, r.observability.Stop(ctx))
 	}
-	return r.server.Shutdown(ctx)
+	return err
 }
 
 func (*run) PostStop(context.Context) error {

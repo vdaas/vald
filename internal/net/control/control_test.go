@@ -511,4 +511,87 @@ func Test_control_controlFunc(t *testing.T) {
 	}
 }
 
+// controlFunc used to return c.Control(...) directly, which overwrote the setsockopt
+// errors collected inside the closure with c.Control's own nil result, so they were
+// silently dropped. setsockopts must report them; controlFunc only logs them.
+func Test_control_setsockopts(t *testing.T) {
+	t.Parallel()
+	if SO_REUSEADDR == 0 {
+		t.Skip("setsockopt is not supported on this platform")
+	}
+	// a directory fd is not a socket, so every setsockopt fails.
+	f, err := file.Open(".", 0, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() {
+		if cerr := f.Close(); cerr != nil {
+			t.Errorf("failed to close file: %v", cerr)
+		}
+	}()
+	sc, err := f.SyscallConn()
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctrl := &control{reuseAddr: true, tcpNoDelay: true, keepAlive: 10}
+	var serr error
+	if err = sc.Control(func(fd uintptr) {
+		serr = ctrl.setsockopts("tcp", int(fd))
+	}); err != nil {
+		t.Fatalf("Control() error = %v", err)
+	}
+	if serr == nil {
+		t.Error("setsockopts() error = nil, want the setsockopt failures on a non-socket fd")
+	}
+	// controlFunc stays fail-open: the same failures must not fail the dial or listen.
+	if err = ctrl.controlFunc("tcp", "127.0.0.1", sc); err != nil {
+		t.Errorf("controlFunc() error = %v, want nil", err)
+	}
+}
+
+type errRawConn struct {
+	err error
+}
+
+func (c errRawConn) Control(func(fd uintptr)) error { return c.err }
+
+func (c errRawConn) Read(func(fd uintptr) bool) error { return c.err }
+
+func (c errRawConn) Write(func(fd uintptr) bool) error { return c.err }
+
+func Test_control_controlFunc_returnsControlError(t *testing.T) {
+	t.Parallel()
+	want := errors.New("control failed")
+	err := new(control).controlFunc("tcp", "127.0.0.1", errRawConn{err: want})
+	if !errors.Is(err, want) {
+		t.Errorf("controlFunc() error = %v, want %v", err, want)
+	}
+}
+
 // NOT IMPLEMENTED BELOW
+
+// TCP_KEEPIDLE/TCP_KEEPINTVL take seconds, but the callers used to pass the keepalive
+// time.Duration as nanoseconds (30s became 30e9, which setsockopt truncates and rejects).
+func TestKeepAliveSeconds(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name string
+		d    time.Duration
+		want int
+	}{
+		{name: "zero stays disabled", d: 0, want: 0},
+		{name: "negative stays disabled", d: -time.Second, want: 0},
+		{name: "sub-second becomes 1", d: 500 * time.Millisecond, want: 1},
+		{name: "one second", d: time.Second, want: 1},
+		{name: "fractional seconds are truncated", d: 1500 * time.Millisecond, want: 1},
+		{name: "thirty seconds", d: 30 * time.Second, want: 30},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(tt *testing.T) {
+			tt.Parallel()
+			if got := KeepAliveSeconds(tc.d); got != tc.want {
+				tt.Errorf("KeepAliveSeconds(%v) = %d, want %d", tc.d, got, tc.want)
+			}
+		})
+	}
+}

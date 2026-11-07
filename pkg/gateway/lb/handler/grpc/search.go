@@ -16,7 +16,6 @@ package grpc
 
 import (
 	"context"
-	"fmt"
 	"math"
 	"strconv"
 
@@ -33,6 +32,7 @@ import (
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
 func (s *server) Search(
@@ -58,10 +58,14 @@ func (s *server) Search(
 			})
 		return errhandler.HandleError[payload.Search_Response](span, codes.InvalidArgument, err)
 	}
-	res, attrs, err := s.doSearch(ctx, req.GetConfig(), func(ctx context.Context, fcfg *payload.Search_Config, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
-		req.Config = fcfg
-		return vc.Search(ctx, req, copts...)
-	})
+	res, attrs, err := s.doSearch(
+		ctx,
+		vald.SearchRPCName,
+		req.GetConfig(),
+		func(ctx context.Context, fcfg *payload.Search_Config, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
+			return vc.Search(ctx, &payload.Search_Request{Vector: req.GetVector(), Config: fcfg}, copts...)
+		},
+	)
 	if err != nil {
 		if attrs != nil && span != nil {
 			span.RecordError(err)
@@ -79,17 +83,9 @@ func (s *server) SearchByID(
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.SearchByIDRPCName), apiName+"/"+vald.SearchByIDRPCName)
 	defer trace.End(span)
 	uuid := req.GetId()
-	reqInfo := &errdetails.RequestInfo{
-		RequestId:   uuid,
-		ServingData: errdetails.Serialize(req),
-	}
-	resInfo := &errdetails.ResourceInfo{
-		ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.SearchByIDRPCName,
-		ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-	}
 	if len(uuid) == 0 {
 		err = errors.ErrInvalidMetaDataConfig
-		err = status.WrapWithInvalidArgument(vald.SearchByIDRPCName+" API invalid uuid", err, reqInfo, resInfo,
+		err = status.WrapWithInvalidArgument(vald.SearchByIDRPCName+" API invalid uuid", err, append(s.errDetails(ctx, vald.SearchByIDRPCName, uuid, req),
 			&errdetails.BadRequest{
 				FieldViolations: []*errdetails.BadRequestFieldViolation{
 					{
@@ -97,7 +93,7 @@ func (s *server) SearchByID(
 						Description: err.Error(),
 					},
 				},
-			})
+			})...)
 		return errhandler.HandleError[payload.Search_Response](span, codes.InvalidArgument, err)
 	}
 	vec, err := s.GetObject(ctx, &payload.Object_VectorRequest{
@@ -112,12 +108,19 @@ func (s *server) SearchByID(
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 			span.SetStatus(trace.StatusError, err.Error())
 		}
+		if skipSearchByIDFallback(ctx, err) {
+			return nil, err
+		}
 		// try search by using agent's SearchByID method this operation is emergency fallback, the search quality is not same as usual SearchByID operation.
 		var attrs []attribute.KeyValue
-		res, attrs, err = s.doSearch(ctx, req.GetConfig(), func(ctx context.Context, fcfg *payload.Search_Config, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
-			req.Config = fcfg
-			return vc.SearchByID(ctx, req, copts...)
-		})
+		res, attrs, err = s.doSearch(
+			ctx,
+			vald.SearchByIDRPCName,
+			req.GetConfig(),
+			func(ctx context.Context, fcfg *payload.Search_Config, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
+				return vc.SearchByID(ctx, &payload.Search_IDRequest{Id: req.GetId(), Config: fcfg}, copts...)
+			},
+		)
 		if err == nil {
 			return res, nil
 		}
@@ -133,11 +136,18 @@ func (s *server) SearchByID(
 		Config: req.GetConfig(),
 	})
 	if err != nil {
+		if skipSearchByIDFallback(ctx, err) {
+			return nil, err
+		}
 		var attrs []attribute.KeyValue
-		res, attrs, err = s.doSearch(ctx, req.GetConfig(), func(ctx context.Context, fcfg *payload.Search_Config, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
-			req.Config = fcfg
-			return vc.SearchByID(ctx, req, copts...)
-		})
+		res, attrs, err = s.doSearch(
+			ctx,
+			vald.SearchByIDRPCName,
+			req.GetConfig(),
+			func(ctx context.Context, fcfg *payload.Search_Config, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
+				return vc.SearchByID(ctx, &payload.Search_IDRequest{Id: req.GetId(), Config: fcfg}, copts...)
+			},
+		)
 		if err != nil {
 			errhandler.RecordSpanAttrs(span, attrs, err)
 			return nil, err
@@ -146,23 +156,38 @@ func (s *server) SearchByID(
 	return res, nil
 }
 
+// skipSearchByIDFallback reports whether SearchByID must return err instead of
+// falling back to the agent-side SearchByID broadcast: the request ctx is done,
+// or the failed call already used up the per-request search timeout, which the
+// fallback broadcast would only wait out a second time.
+func skipSearchByIDFallback(ctx context.Context, err error) bool {
+	if ctx.Err() != nil {
+		return true
+	}
+	st, ok := status.FromError(err)
+	return ok && st != nil && (st.Code() == codes.DeadlineExceeded || st.Code() == codes.Canceled)
+}
+
 // calculateNum adjusts the number of search results based on the ratio and the number of replicas.
 // It ensures that the number of results is not less than the minimum required and adjusts based on the provided ratio.
-func (s *server) calculateNum(ctx context.Context, num uint32, ratio float32) (n uint32) {
-	min := float64(s.replica) / float64(s.gateway.GetAgentCount(ctx))
+func (s *server) calculateNum(num uint32, ratio float32, agents int) (n uint32) {
+	minRatio := float64(s.replica) / float64(agents)
 	if ratio <= 0.0 {
-		return uint32(math.Ceil(float64(num) * min))
+		return uint32(math.Ceil(float64(num) * minRatio))
 	}
-	n = uint32(math.Ceil(float64(num) * (min + ((1 - min) * float64(ratio)))))
-	sn := uint32(math.Ceil(float64(num) * min))
-	if n-1 < sn {
+	n = uint32(math.Ceil(float64(num) * (minRatio + ((1 - minRatio) * float64(ratio)))))
+	sn := uint32(math.Ceil(float64(num) * minRatio))
+	if n == 0 || n-1 < sn {
 		return sn
 	}
 	return n - 1
 }
 
+// doSearch broadcasts the search to every agent and aggregates the results. rpc
+// is the agent RPC name f calls; it labels the partial-failure metrics.
 func (s *server) doSearch(
 	ctx context.Context,
+	rpc string,
 	cfg *payload.Search_Config,
 	f func(ctx context.Context, cfg *payload.Search_Config, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error),
 ) (res *payload.Search_Response, attrs []attribute.KeyValue, err error) {
@@ -195,19 +220,17 @@ func (s *server) doSearch(
 	)
 
 	if cfg.GetRatio() != nil {
-		fnum = int(s.calculateNum(ctx, cfg.GetNum(), cfg.GetRatio().GetValue()))
+		fnum = int(s.calculateNum(cfg.GetNum(), cfg.GetRatio().GetValue(), replica))
 	}
 	if fnum <= 0 {
 		fnum = num
 	}
 
-	return s.aggregationSearch(ctx, selectAggregator(cfg.GetAggregationAlgorithm(), num, fnum, replica), cfg, f)
+	return s.aggregationSearch(ctx, rpc, replica, selectAggregator(cfg.GetAggregationAlgorithm(), num, fnum, replica), cfg, f)
 }
 
 func selectAggregator(algo payload.Search_AggregationAlgorithm, num, fnum, replica int) Aggregator {
 	switch algo {
-	case payload.Search_Unknown, payload.Search_ConcurrentQueue:
-		return newStd(num, fnum, replica)
 	case payload.Search_SortSlice:
 		return newSlice(num, fnum, replica)
 	case payload.Search_SortPoolSlice:
@@ -286,47 +309,56 @@ func (s *server) MultiSearch(
 ) (res *payload.Search_Responses, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.MultiSearchRPCName), apiName+"/"+vald.MultiSearchRPCName)
 	defer trace.End(span)
-	res = &payload.Search_Responses{
-		Responses: make([]*payload.Search_Response, len(reqs.GetRequests())),
+	res, errs = multiSearch(ctx, s, vald.MultiSearchRPCName, reqs.GetRequests(), s.Search)
+	if errs != nil {
+		st, _ := status.FromError(errs)
+		errhandler.RecordSpanStatus(span, st, errs)
 	}
-	var wg sync.WaitGroup
-	var mu, emu sync.Mutex
-	rids := make([]string, 0, len(reqs.GetRequests()))
-	for i, req := range reqs.GetRequests() {
+	return res, errs
+}
+
+// multiSearch is the shared fan-out of MultiSearch, MultiSearchByID,
+// MultiLinearSearch and MultiLinearSearchByID: it runs search for each request
+// under the multi-request concurrency limit, records each failure on a per-item
+// child span of rpcName, and returns the positional responses together with the
+// joined errors. Each goroutine writes its own index of the pre-sized slice and
+// eg.Wait orders those writes before the return, so only errList needs a lock.
+func multiSearch[Q any](
+	ctx context.Context,
+	s *server,
+	rpcName string,
+	reqs []Q,
+	search func(context.Context, Q) (*payload.Search_Response, error),
+) (*payload.Search_Responses, error) {
+	res := &payload.Search_Responses{
+		Responses: make([]*payload.Search_Response, len(reqs)),
+	}
+	eg := errgroup.NewBoundedFanOut(ctx, s.multiConcurrency)
+	var emu sync.Mutex
+	var errList []error
+	for i, req := range reqs {
 		idx, query := i, req
-		rids = append(rids, req.GetConfig().GetRequestId())
-		wg.Add(1)
-		s.eg.Go(safety.RecoverFunc(func() error {
-			defer wg.Done()
+		eg.Go(safety.RecoverFunc(func() error {
 			ti := "errgroup.Go/id-" + strconv.Itoa(idx)
-			ctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, ti), apiName+"/"+vald.MultiSearchRPCName+"/"+ti)
+			sctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, ti), apiName+"/"+rpcName+"/"+ti)
 			defer trace.End(sspan)
-			r, err := s.Search(ctx, query)
+			r, err := search(sctx, query)
 			if err != nil {
 				st, _ := status.FromError(err)
 				errhandler.RecordSpanStatus(sspan, st, err)
 				emu.Lock()
-				if errs != nil {
-					errs = errors.Join(errs, err)
-				} else {
-					errs = err
-				}
+				errList = append(errList, err)
 				emu.Unlock()
 				return nil
 			}
-			mu.Lock()
 			res.Responses[idx] = r
-			mu.Unlock()
 			return nil
 		}))
 	}
-	wg.Wait()
-	if errs != nil {
-		st, _ := status.FromError(errs)
-		errhandler.RecordSpanStatus(span, st, errs)
-		return res, errs
+	if err := eg.Wait(); err != nil {
+		errList = append(errList, err)
 	}
-	return res, nil
+	return res, errors.Join(errList...)
 }
 
 func (s *server) MultiSearchByID(
@@ -334,46 +366,10 @@ func (s *server) MultiSearchByID(
 ) (res *payload.Search_Responses, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.MultiSearchByIDRPCName), apiName+"/"+vald.MultiSearchByIDRPCName)
 	defer trace.End(span)
-
-	res = &payload.Search_Responses{
-		Responses: make([]*payload.Search_Response, len(reqs.GetRequests())),
-	}
-	var wg sync.WaitGroup
-	var mu, emu sync.Mutex
-	rids := make([]string, 0, len(reqs.GetRequests()))
-	for i, req := range reqs.GetRequests() {
-		idx, query := i, req
-		rids = append(rids, req.GetConfig().GetRequestId())
-		wg.Add(1)
-		s.eg.Go(safety.RecoverFunc(func() error {
-			defer wg.Done()
-			ti := "errgroup.Go/id-" + strconv.Itoa(idx)
-			ctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, ti), apiName+"/"+vald.MultiSearchByIDRPCName+"/"+ti)
-			defer trace.End(sspan)
-			r, err := s.SearchByID(ctx, query)
-			if err != nil {
-				st, _ := status.FromError(err)
-				errhandler.RecordSpanStatus(sspan, st, err)
-				emu.Lock()
-				if errs != nil {
-					errs = errors.Join(errs, err)
-				} else {
-					errs = err
-				}
-				emu.Unlock()
-				return nil
-			}
-			mu.Lock()
-			res.Responses[idx] = r
-			mu.Unlock()
-			return nil
-		}))
-	}
-	wg.Wait()
+	res, errs = multiSearch(ctx, s, vald.MultiSearchByIDRPCName, reqs.GetRequests(), s.SearchByID)
 	if errs != nil {
 		st, _ := status.FromError(errs)
 		errhandler.RecordSpanStatus(span, st, errs)
-		return res, errs
 	}
-	return res, nil
+	return res, errs
 }

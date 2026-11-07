@@ -19,7 +19,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -56,12 +55,10 @@ func TestValdRelease_RuntimeObject(t *testing.T) {
 	var _ runtime.Object = &ValdRelease{}
 
 	vr := &ValdRelease{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "orig",
-			Namespace: "ns",
-			Labels:    map[string]string{"k": "v"},
-		},
-		Spec: Values{Agent: &Agent{MinReplicas: new(3)}},
+		Name:      "orig",
+		Namespace: "ns",
+		Labels:    map[string]string{"k": "v"},
+		Spec:      Values{Agent: &Agent{MinReplicas: new(3)}},
 	}
 
 	cp, ok := vr.DeepCopyObject().(*ValdRelease)
@@ -83,8 +80,8 @@ func TestValdRelease_RuntimeObject(t *testing.T) {
 // marshal→unmarshal cycle with its pointer and enum fields intact.
 func TestValdRelease_JSONRoundTrip(t *testing.T) {
 	vr := &ValdRelease{
-		TypeMeta:   metav1.TypeMeta{APIVersion: GroupVersion.String(), Kind: GVK.Kind},
-		ObjectMeta: metav1.ObjectMeta{Name: "rt", Namespace: "ns"},
+		APIVersion: GroupVersion.String(), Kind: GVK.Kind,
+		Name: "rt", Namespace: "ns",
 		Spec: Values{
 			Agent: &Agent{
 				MinReplicas: new(2),

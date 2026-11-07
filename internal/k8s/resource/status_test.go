@@ -122,8 +122,8 @@ func TestCheckResourceState_Details(t *testing.T) {
 		{
 			name: "paused deployment reports name and reason",
 			obj: &appsv1.Deployment{
-				ObjectMeta: metav1.ObjectMeta{Name: "vald-lb-gateway"},
-				Spec:       appsv1.DeploymentSpec{Paused: true},
+				Name: "vald-lb-gateway",
+				Spec: appsv1.DeploymentSpec{Paused: true},
 			},
 			wantStatus: StatusPaused,
 			wantInfo:   []string{"vald-lb-gateway", "Deployment is paused."},
@@ -131,7 +131,7 @@ func TestCheckResourceState_Details(t *testing.T) {
 		{
 			name: "available deployment reports success",
 			obj: &appsv1.Deployment{
-				ObjectMeta: metav1.ObjectMeta{Name: "vald-agent"},
+				Name: "vald-agent",
 				Status: appsv1.DeploymentStatus{
 					Replicas:          1,
 					UpdatedReplicas:   1,
@@ -144,7 +144,7 @@ func TestCheckResourceState_Details(t *testing.T) {
 		{
 			name: "degraded deployment reports replica shortage",
 			obj: &appsv1.Deployment{
-				ObjectMeta: metav1.ObjectMeta{Name: "vald-discoverer"},
+				Name: "vald-discoverer",
 				Status: appsv1.DeploymentStatus{
 					Replicas:        1,
 					UpdatedReplicas: 1,
@@ -156,8 +156,8 @@ func TestCheckResourceState_Details(t *testing.T) {
 		{
 			name: "pending pod reports phase",
 			obj: &corev1.Pod{
-				ObjectMeta: metav1.ObjectMeta{Name: "vald-agent-0"},
-				Status:     corev1.PodStatus{Phase: corev1.PodPending},
+				Name:   "vald-agent-0",
+				Status: corev1.PodStatus{Phase: corev1.PodPending},
 			},
 			wantStatus: StatusPending,
 			wantInfo:   []string{"vald-agent-0", "Pod is pending scheduling or initialization."},

@@ -18,7 +18,6 @@ import (
 	"context"
 	"fmt"
 	"runtime"
-	"sync/atomic"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/io"
@@ -30,6 +29,7 @@ import (
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/atomic"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"google.golang.org/grpc"
 )
@@ -90,14 +90,16 @@ func BidirectionalStream[Q, R proto.Message, S TypedServerStream[Q, R]](
 		emu.Unlock()
 		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse BidirectionalStream final gRPC error response")
 		if span != nil {
-			span.RecordError(err)
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
-			span.SetStatus(trace.StatusError, msg)
+			if err != nil {
+				span.RecordError(err)
+				span.SetStatus(trace.StatusError, msg)
+			}
 		}
 		return err
 	}
 
-	var cnt uint64
+	var cnt atomic.Uint64
 	// Run Recv in a helper goroutine so a ctx cancellation actually interrupts the
 	// receive loop. ctx here is a child of stream.Context() (errgroup.New above);
 	// grpc's stream.Recv observes only the parent stream.Context(), so the previous
@@ -105,26 +107,37 @@ func BidirectionalStream[Q, R proto.Message, S TypedServerStream[Q, R]](
 	// worker's stream.Send fails non-transport-fatally (MaxSendMsgSize/marshal) and
 	// self-cancels this errgroup ctx — deadlocking finalize()'s eg.Wait against the
 	// stuck receiver (the server-side counterpart of the BidirectionalStreamClient fix).
-	recv := func() (<-chan Q, <-chan error) {
-		dc := make(chan Q, 1)
-		ec := make(chan error, 1)
-		go func() {
+	// One receiver goroutine serves the whole stream. dc is unbuffered, so the next
+	// Recv starts only after the loop below took the previous message, and at most
+	// one Recv is in flight; done releases a receiver still holding a message.
+	dc := make(chan Q)
+	ec := make(chan error, 1)
+	done := make(chan struct{})
+	defer close(done)
+	go func() {
+		for {
 			data, err := stream.Recv()
 			if err != nil {
 				ec <- err
 				return
 			}
-			dc <- data
-		}()
-		return dc, ec
-	}
+			select {
+			case dc <- data:
+			case <-done:
+				return
+			}
+		}
+	}()
 	// dispatch hands a received message to a worker in the errgroup. It is a named
 	// closure (not inlined into the receive case) so the ctx.Done() branch can also
 	// drain and dispatch an already-received message instead of dropping it.
 	dispatch := func(data Q) {
 		eg.Go(safety.RecoverWithoutPanicFunc(func() (err error) {
-			id := atomic.AddUint64(&cnt, 1)
-			sctx, sspan := trace.StartSpan(ctx, fmt.Sprintf("%s/BidirectionalStream/stream-%020d", apiName, id))
+			id := cnt.Add(1)
+			sctx, sspan := ctx, trace.Span(nil)
+			if trace.Enabled() {
+				sctx, sspan = trace.StartSpan(ctx, fmt.Sprintf("%s/BidirectionalStream/stream-%020d", apiName, id))
+			}
 			defer func() {
 				if sspan != nil {
 					sspan.End()
@@ -174,14 +187,13 @@ func BidirectionalStream[Q, R proto.Message, S TypedServerStream[Q, R]](
 			return nil
 		}))
 	}
-	dc, ec := recv()
 	for {
 		select {
 		case <-ctx.Done():
 			// A message may have landed in dc concurrently with the cancellation
 			// (e.g. a sibling worker's Send failure self-cancelled this errgroup ctx
-			// at the same instant a message was received). dc is buffered (cap 1) so
-			// the receiver never blocks handing it off; drain it non-blockingly and
+			// at the same instant a message was received). The receiver holding it is
+			// blocked sending on dc, so drain it non-blockingly and
 			// dispatch before finalizing, so a fully-received message is not silently
 			// dropped by select choosing ctx.Done() over dc. This preserves the old
 			// default-branch behavior that always handed a received message to eg.Go.
@@ -201,7 +213,6 @@ func BidirectionalStream[Q, R proto.Message, S TypedServerStream[Q, R]](
 			}
 			return finalize()
 		case data := <-dc:
-			dc, ec = recv()
 			dispatch(data)
 		}
 	}
@@ -229,21 +240,42 @@ func BidirectionalStreamClient[Q, R proto.Message, S TypedClientStream[Q, R]](
 	recvDone := make(chan error, 1)
 	go func() {
 		recvDone <- safety.RecoverFunc(func() (err error) {
-			for {
-				// Run Recv in a helper goroutine so a cancelled ctx aborts the loop
-				// even though grpc's stream.Recv only observes the stream's own
-				// context, not the derived ctx that cancel() controls. This makes
-				// cancellation effective (fix 2) instead of a no-op.
-				resCh := make(chan R, 1)
-				errCh := make(chan error, 1)
-				go func() {
+			// Run Recv in a helper goroutine so a cancelled ctx aborts the loop
+			// even though grpc's stream.Recv only observes the stream's own
+			// context, not the derived ctx that cancel() controls. This makes
+			// cancellation effective (fix 2) instead of a no-op.
+			// One helper serves the whole stream: it hands each result over the
+			// unbuffered resCh/errCh and starts the next Recv only after next is
+			// signalled, i.e. after the callback returned true, so Recv and
+			// callBack never overlap. ctx is cancelled on every exit of this loop,
+			// or at the latest by the deferred cancel, which releases the helper.
+			resCh := make(chan R)
+			errCh := make(chan error)
+			next := make(chan struct{})
+			go func() {
+				for {
 					res, rerr := stream.Recv()
 					if rerr != nil {
-						errCh <- rerr
+						select {
+						case errCh <- rerr:
+						case <-ctx.Done():
+							return
+						}
+					} else {
+						select {
+						case resCh <- res:
+						case <-ctx.Done():
+							return
+						}
+					}
+					select {
+					case <-next:
+					case <-ctx.Done():
 						return
 					}
-					resCh <- res
-				}()
+				}
+			}()
+			for {
 				select {
 				case <-ctx.Done():
 					return nil
@@ -263,6 +295,11 @@ func BidirectionalStreamClient[Q, R proto.Message, S TypedClientStream[Q, R]](
 						return nil
 					}
 				}
+				select {
+				case next <- struct{}{}:
+				case <-ctx.Done():
+					return nil
+				}
 			}
 		})()
 	}()
@@ -274,7 +311,10 @@ func BidirectionalStreamClient[Q, R proto.Message, S TypedClientStream[Q, R]](
 
 	return func() (err error) {
 		var mu sync.Mutex
-		ech := make(chan error, concurrency)
+		// concurrency == 0 means unlimited workers, so keep at least one slot for
+		// the first send error; workers never block on ech (see the non-blocking
+		// send below) because finalize drains it only after eg.Wait().
+		ech := make(chan error, max(concurrency, 1))
 		finalize := func(err error) error {
 			if errors.IsAny(err, io.EOF, context.Canceled, context.DeadlineExceeded) {
 				err = nil
@@ -328,6 +368,7 @@ func BidirectionalStreamClient[Q, R proto.Message, S TypedClientStream[Q, R]](
 						select {
 						case <-egctx.Done():
 						case ech <- err:
+						default:
 						}
 					}
 					return nil

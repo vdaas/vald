@@ -183,6 +183,7 @@ func (s *server) MultiInsert(
 	}
 	if err != nil {
 		var attrs []attribute.KeyValue
+		isErr := errMatcher(err)
 		if errors.Is(err, errors.ErrFlushingIsInProgress) {
 			err = status.WrapWithAborted("MultiInsert API aborted to process insert request due to flushing indices is in progress", err,
 				&errdetails.RequestInfo{
@@ -195,7 +196,7 @@ func (s *server) MultiInsert(
 		} else if alreadyExistsIDs := func() []string {
 			aids := make([]string, 0, len(uuids))
 			for _, id := range uuids {
-				if errors.Is(err, errors.ErrUUIDAlreadyExists(id)) {
+				if isErr(errors.ErrUUIDAlreadyExists(id)) {
 					aids = append(aids, id)
 				}
 			}

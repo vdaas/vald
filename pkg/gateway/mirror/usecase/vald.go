@@ -48,6 +48,7 @@ type run struct {
 	mirror        service.Mirror
 	discover      service.Discovery
 	observability observability.Observability
+	stopClient    context.CancelFunc
 }
 
 // New returns Runner instance.
@@ -198,9 +199,15 @@ func (r *run) Start(ctx context.Context) (_ <-chan error, err error) { // skipcq
 	var mech, dech, cech, sech, oech <-chan error
 
 	sech = r.server.ListenAndServe(ctx)
+	// ctx is cancelled by the shutdown signal, before the server drains its
+	// in-flight requests, and a cancelled client closes its connections. Run
+	// the outbound client on a context that only PostStop cancels.
+	cctx, cancel := context.WithCancel(context.WithoutCancel(ctx))
+	r.stopClient = cancel
 	if r.client != nil {
-		cech, err = r.client.Start(ctx)
+		cech, err = r.client.Start(cctx)
 		if err != nil {
+			cancel()
 			close(ech)
 			return nil, err
 		}
@@ -211,6 +218,7 @@ func (r *run) Start(ctx context.Context) (_ <-chan error, err error) { // skipcq
 	if r.discover != nil {
 		dech, err = r.discover.Start(ctx)
 		if err != nil {
+			cancel()
 			close(ech)
 			return nil, err
 		}
@@ -250,20 +258,29 @@ func (*run) PreStop(_ context.Context) error {
 
 // Stop is a method used to stop an operation in the run.
 func (r *run) Stop(ctx context.Context) (errs error) {
-	if r.observability != nil {
-		if err := r.observability.Stop(ctx); err != nil {
+	// Shut the server down first so spans and metrics of the requests it drains
+	// are still exported before observability is stopped.
+	if r.server != nil {
+		if err := r.server.Shutdown(ctx); err != nil {
 			errs = errors.Join(errs, err)
 		}
 	}
-	if r.server != nil {
-		if err := r.server.Shutdown(ctx); err != nil {
+	if r.observability != nil {
+		if err := r.observability.Stop(ctx); err != nil {
 			errs = errors.Join(errs, err)
 		}
 	}
 	return errs
 }
 
-// PostStop is a method called after execution of Stop.
-func (*run) PostStop(_ context.Context) error {
+// PostStop is a method called after execution of Stop. It closes the outbound
+// client once the server has drained its requests.
+func (r *run) PostStop(ctx context.Context) error {
+	if r.stopClient != nil {
+		defer r.stopClient()
+	}
+	if r.client != nil {
+		return r.client.Stop(ctx)
+	}
 	return nil
 }

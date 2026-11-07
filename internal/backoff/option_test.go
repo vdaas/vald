@@ -61,6 +61,19 @@ func TestWithInitialDuration(t *testing.T) {
 				return nil
 			},
 		},
+		{
+			name: "keep current initial duration when dur is empty",
+			dur:  "",
+			checkFunc: func(opt Option) error {
+				got := &backoff{initialDuration: float64(time.Second)}
+				opt(got)
+
+				if got.initialDuration != float64(time.Second) {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -99,6 +112,45 @@ func TestWithMaximumDuration(t *testing.T) {
 			dur:  "dur",
 			checkFunc: func(opt Option) error {
 				got := new(backoff)
+				opt(got)
+
+				if got.maxDuration != float64(5*time.Hour) {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+		{
+			name: "keep current maximum duration when dur is empty",
+			dur:  "",
+			checkFunc: func(opt Option) error {
+				got := &backoff{maxDuration: float64(time.Hour)}
+				opt(got)
+
+				if got.maxDuration != float64(time.Hour) {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+		{
+			name: "set default when dur is zero",
+			dur:  "0s",
+			checkFunc: func(opt Option) error {
+				got := &backoff{maxDuration: float64(time.Hour)}
+				opt(got)
+
+				if got.maxDuration != float64(5*time.Hour) {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+		{
+			name: "set default when dur is negative",
+			dur:  "-1s",
+			checkFunc: func(opt Option) error {
+				got := &backoff{maxDuration: float64(time.Hour)}
 				opt(got)
 
 				if got.maxDuration != float64(5*time.Hour) {
@@ -148,6 +200,19 @@ func TestWithJitterLimit(t *testing.T) {
 				opt(got)
 
 				if got.jitterLimit != float64(time.Minute) {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+		{
+			name: "keep current jitter limit when dur is empty",
+			dur:  "",
+			checkFunc: func(opt Option) error {
+				got := &backoff{jitterLimit: float64(time.Second)}
+				opt(got)
+
+				if got.jitterLimit != float64(time.Second) {
 					return errors.New("invalid param was set")
 				}
 				return nil
@@ -283,6 +348,45 @@ func TestWithBackOffTimeLimit(t *testing.T) {
 			dur:  "dur",
 			checkFunc: func(opt Option) error {
 				got := new(backoff)
+				opt(got)
+
+				if got.backoffTimeLimit != 20*time.Second {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+		{
+			name: "keep current backoff time limit when dur is empty",
+			dur:  "",
+			checkFunc: func(opt Option) error {
+				got := &backoff{backoffTimeLimit: 5 * time.Minute}
+				opt(got)
+
+				if got.backoffTimeLimit != 5*time.Minute {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+		{
+			name: "set default when dur is zero",
+			dur:  "0s",
+			checkFunc: func(opt Option) error {
+				got := &backoff{backoffTimeLimit: 5 * time.Minute}
+				opt(got)
+
+				if got.backoffTimeLimit != 20*time.Second {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+		{
+			name: "set default when dur is negative",
+			dur:  "-1s",
+			checkFunc: func(opt Option) error {
+				got := &backoff{backoffTimeLimit: 5 * time.Minute}
 				opt(got)
 
 				if got.backoffTimeLimit != 20*time.Second {

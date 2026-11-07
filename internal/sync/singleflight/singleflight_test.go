@@ -424,6 +424,124 @@ func TestDoChan(t *testing.T) {
 	}
 }
 
+// TestDoChanSlowReceiverDoesNotBlockGroup ensures that a DoChan result nobody
+// has received yet does not hold the group lock and block other keys.
+func TestDoChanSlowReceiverDoesNotBlockGroup(t *testing.T) {
+	g := New[string]()
+	// cancel releases the DoChan leader blocked on the unread channel as soon as
+	// the test ends, instead of leaving it until t.Context() is cancelled.
+	ctx, cancel := context.WithCancel(t.Context())
+	defer cancel()
+	done := make(chan struct{})
+	_ = g.DoChan(ctx, "key1", func(context.Context) (string, error) {
+		close(done)
+		return "bar", nil
+	})
+	<-done
+	// fn has returned, but doCall still has to reach the blocking send on the
+	// unread channel; there is no hook to observe that, so wait briefly. The
+	// test cannot flake into a false failure: a late doCall only makes it pass.
+	time.Sleep(50 * time.Millisecond)
+
+	finished := make(chan struct{})
+	go func() {
+		defer close(finished)
+		g.Forget("key2")
+		_, _, err := g.Do(ctx, "key2", func(context.Context) (string, error) {
+			return "baz", nil
+		})
+		if err != nil {
+			t.Errorf("Do error: %v", err)
+		}
+	}()
+	select {
+	case <-finished:
+	case <-time.After(5 * time.Second):
+		t.Fatal("group is blocked by an unreceived DoChan result")
+	}
+}
+
+// TestDoDoChanForgetUnsharedRace exercises concurrent updates and reads of the
+// duplicate counter from Do, DoChan and ForgetUnshared (run with -race).
+// A leader's doCall blocks sending to unread DoChan channels and can only be
+// released by ctx, so all calls share a cancellable ctx that is cancelled on any
+// receive timeout and when the bounded wait for wg expires. Hence no
+// interleaving (e.g. ForgetUnshared creating a new leader) can block the test
+// beyond a fixed time; failures are reported through t.Errorf/t.Fatal.
+func TestDoDoChanForgetUnsharedRace(t *testing.T) {
+	g := New[int]()
+	ctx, cancel := context.WithCancel(t.Context())
+	defer cancel()
+	release := make(chan struct{})
+	started := make(chan struct{})
+	var once sync.Once
+	fn := func(ctx context.Context) (int, error) {
+		once.Do(func() { close(started) })
+		select {
+		case <-release:
+		case <-ctx.Done():
+		}
+		return 1, ctx.Err()
+	}
+	doFn := func() {
+		if _, _, err := g.Do(ctx, "key", fn); err != nil {
+			t.Errorf("Do error: %v", err)
+		}
+	}
+
+	var wg sync.WaitGroup
+	wg.Go(func() {
+		doFn()
+	})
+	<-started
+
+	const n = 16
+	for range n {
+		wg.Add(3)
+		go func() {
+			defer wg.Done()
+			doFn()
+		}()
+		go func() {
+			defer wg.Done()
+			// receive in the same goroutine: doCall sends to the unbuffered
+			// channels sequentially, so every receiver must be independent.
+			select {
+			case <-g.DoChan(ctx, "key", fn):
+			case <-time.After(5 * time.Second):
+				t.Errorf("DoChan result was not delivered")
+				// unblock leaders stuck sending to this or other abandoned receivers.
+				cancel()
+			}
+		}()
+		go func() {
+			defer wg.Done()
+			// the result only says whether the key was forgotten or unknown;
+			// either outcome is valid here.
+			g.(*group[int]).ForgetUnshared("key")
+		}()
+	}
+	close(release)
+
+	waited := make(chan struct{})
+	go func() {
+		defer close(waited)
+		wg.Wait()
+	}()
+	select {
+	case <-waited:
+		return
+	case <-time.After(10 * time.Second):
+		t.Errorf("goroutines did not finish in time; cancelling ctx")
+		cancel()
+	}
+	select {
+	case <-waited:
+	case <-time.After(10 * time.Second):
+		t.Fatal("goroutines still blocked after ctx cancellation")
+	}
+}
+
 // Test singleflight behaves correctly after Do panic.
 // See https://github.com/golang/go/issues/41133
 func TestPanicDo(t *testing.T) {

@@ -329,6 +329,8 @@ spec:
                       properties:
                         host:
                           type: string
+                        port:
+                          type: integer
                       type: object
                   type: object
                 remove_config:

@@ -148,8 +148,8 @@ object_config:
     # @schema {"name": "object_config.filter_config.host", "type": "string"}
     # object_config.filter_config.host -- filter target host
     host: 0.0.0.0
-    # @schema {"name": "object_config.filter_config.host", "type": "integer"}
-    # object_config.filter_config.port -- filter target host
+    # @schema {"name": "object_config.filter_config.port", "type": "integer"}
+    # object_config.filter_config.port -- filter target port
     port: 8081
 # @schema {"name": "client_config", "type": "object"}
 # client_config -- gRPC client config for request to the Vald cluster

@@ -777,6 +777,43 @@ func Test_data_GetByGroupName(t *testing.T) {
 		return nil
 	}
 	tests := []test{
+		{
+			name: "neighbors are converted to float32 rows",
+			args: args{name: "neighbors"},
+			fields: fields{
+				neighbors: [][]int{{1, 2, 3}, {4, 5}},
+			},
+			want: want{
+				want: [][]float32{{1, 2, 3}, {4, 5}},
+			},
+		},
+		{
+			name: "empty neighbors yield no rows",
+			args: args{name: "neighbors"},
+			fields: fields{
+				neighbors: nil,
+			},
+			want: want{
+				want: [][]float32{},
+			},
+		},
+		{
+			name: "train is returned as is",
+			args: args{name: "train"},
+			fields: fields{
+				train: [][]float32{{1.5, 2.5}},
+			},
+			want: want{
+				want: [][]float32{{1.5, 2.5}},
+			},
+		},
+		{
+			name: "unknown group returns nil",
+			args: args{name: "unknown"},
+			want: want{
+				want: nil,
+			},
+		},
 		// TODO test cases
 		/*
 		   {

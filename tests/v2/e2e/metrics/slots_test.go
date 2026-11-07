@@ -158,6 +158,68 @@ func TestSlot_Merge(t *testing.T) {
 	}
 }
 
+func TestSlot_Merge_WindowMismatch(t *testing.T) {
+	type args struct {
+		dstWindow, dstTotal uint64
+		srcWindow, srcTotal uint64
+	}
+	type want struct {
+		window, total uint64
+	}
+	tests := []struct {
+		name string
+		args args
+		want want
+	}{
+		{
+			name: "newer source window replaces destination data",
+			args: args{dstWindow: 1, dstTotal: 10, srcWindow: 3, srcTotal: 4},
+			want: want{window: 3, total: 4},
+		},
+		{
+			name: "older source window is dropped",
+			args: args{dstWindow: 3, dstTotal: 10, srcWindow: 1, srcTotal: 4},
+			want: want{window: 3, total: 10},
+		},
+		{
+			name: "empty destination adopts older source window",
+			args: args{dstWindow: 3, dstTotal: 0, srcWindow: 1, srcTotal: 4},
+			want: want{window: 1, total: 4},
+		},
+		{
+			name: "empty source leaves destination unchanged",
+			args: args{dstWindow: 3, dstTotal: 10, srcWindow: 5, srcTotal: 0},
+			want: want{window: 3, total: 10},
+		},
+		{
+			name: "same window accumulates",
+			args: args{dstWindow: 2, dstTotal: 10, srcWindow: 2, srcTotal: 4},
+			want: want{window: 2, total: 14},
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			dst := newSlot(1, nil, nil, nil).(*slot)
+			dst.WindowStart = tc.args.dstWindow
+			dst.Total.Store(tc.args.dstTotal)
+			src := newSlot(1, nil, nil, nil).(*slot)
+			src.WindowStart = tc.args.srcWindow
+			src.Total.Store(tc.args.srcTotal)
+
+			if err := dst.Merge(src); err != nil {
+				t.Fatalf("Merge returned error: %v", err)
+			}
+			if dst.WindowStart != tc.want.window {
+				t.Errorf("WindowStart = %d, want %d", dst.WindowStart, tc.want.window)
+			}
+			if got := dst.Total.Load(); got != tc.want.total {
+				t.Errorf("Total = %d, want %d", got, tc.want.total)
+			}
+		})
+	}
+}
+
 func TestSlot_Concurrent_Record(t *testing.T) {
 	type args struct {
 		workers int

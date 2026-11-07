@@ -14,6 +14,227 @@
 
 package restorer
 
+import (
+	"context"
+	"os"
+	"os/signal"
+	"syscall"
+	"testing"
+	"time"
+
+	"github.com/vdaas/vald/internal/backoff"
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/io"
+	"github.com/vdaas/vald/internal/sync/atomic"
+	"github.com/vdaas/vald/internal/sync/errgroup"
+	"github.com/vdaas/vald/pkg/agent/sidecar/service/storage"
+)
+
+// doneCountCtx counts Done() calls. A select loop evaluates ctx.Done() on every
+// iteration, so the count is a deterministic measure of how often it spins.
+type doneCountCtx struct {
+	context.Context //nolint:containedctx // test wrapper that counts Done() calls
+	n               atomic.Int64
+}
+
+func (c *doneCountCtx) Done() <-chan struct{} {
+	c.n.Add(1)
+	return c.Context.Done()
+}
+
+// closedStorage is a storage.Storage whose Start channel is already closed and
+// whose Reader reports io.EOF, so a restore finishes immediately with no data.
+type closedStorage struct {
+	storage.Storage
+}
+
+func (closedStorage) Start(context.Context) (<-chan error, error) {
+	ch := make(chan error)
+	close(ch)
+	return ch, nil
+}
+
+func (closedStorage) Reader(context.Context) (io.ReadCloser, error) {
+	return nil, io.EOF
+}
+
+// TestRestorer_Start_ClosedChannelsDoNotSpin pins that the relay loop stops
+// selecting the storage and restore error channels once they are closed. The
+// restore channel is closed when the restore completes, which is while ctx is
+// still live (startRestore then SIGTERMs the process, and ctx is cancelled only
+// later). A closed channel is always ready, so without nil-ing them the loop
+// busy-spins; the spin shows up as an unbounded number of ctx.Done()
+// evaluations.
+//
+// This test must not run in parallel: startRestore signals the whole process
+// with SIGTERM, which is intercepted here with signal.Notify.
+func TestRestorer_Start_ClosedChannelsDoNotSpin(t *testing.T) {
+	sigc := make(chan os.Signal, 1)
+	signal.Notify(sigc, syscall.SIGTERM)
+	defer signal.Stop(sigc)
+
+	eg, egctx := errgroup.New(context.Background())
+	cctx, cancel := context.WithCancel(egctx)
+	defer cancel()
+	ctx := &doneCountCtx{Context: cctx}
+
+	r := &restorer{eg: eg, storage: closedStorage{}}
+	if _, err := r.Start(ctx); err != nil {
+		t.Fatalf("Start() error = %v, want nil", err)
+	}
+
+	// the restore goroutine has finished (and closed the restore channel) once
+	// it has delivered its SIGTERM.
+	select {
+	case <-sigc:
+	case <-time.After(5 * time.Second):
+		t.Fatal("restore did not complete")
+	}
+
+	// both channels are closed and ctx is live: the loop must be parked now.
+	time.Sleep(100 * time.Millisecond)
+	before := ctx.n.Load()
+	time.Sleep(100 * time.Millisecond)
+	if n := ctx.n.Load() - before; n > 100 {
+		t.Errorf("ctx.Done() evaluated %d times in 100ms with closed channels; the relay loop is busy-spinning", n)
+	}
+
+	cancel()
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		if err := eg.Wait(); err != nil && !errors.Is(err, context.Canceled) {
+			t.Logf("eg.Wait() = %v", err)
+		}
+	}()
+	select {
+	case <-done:
+	case <-time.After(5 * time.Second):
+		t.Fatal("relay goroutine did not exit on context cancel")
+	}
+}
+
+// failNStorage is a storage.Storage whose Reader fails the first `fails` calls
+// and then reports io.EOF, so a later restore attempt succeeds with no data.
+type failNStorage struct {
+	storage.Storage
+	err   error
+	calls *atomic.Int64
+	fails int64
+}
+
+func (s failNStorage) Reader(context.Context) (io.ReadCloser, error) {
+	if s.calls.Add(1) <= s.fails {
+		return nil, s.err
+	}
+	return nil, io.EOF
+}
+
+// TestRestorer_startRestore_reportsOnlyFinalResult pins that startRestore
+// delivers only the final restore result on its error channel. A failed attempt
+// that a later backoff retry recovers from must not be reported (it would make
+// the init container exit non-zero), and with backoff disabled a failure must
+// be reported once, not twice.
+//
+// This test must not run in parallel: startRestore signals the whole process
+// with SIGTERM, which is intercepted here with signal.Notify.
+func TestRestorer_startRestore_reportsOnlyFinalResult(t *testing.T) {
+	sigc := make(chan os.Signal, 1)
+	signal.Notify(sigc, syscall.SIGTERM)
+	defer signal.Stop(sigc)
+
+	errBoom := errors.New("transient storage failure")
+
+	tests := []struct {
+		name           string
+		fails          int64
+		backoffEnabled bool
+		wantErrs       int
+		wantCalls      int64
+	}{
+		{name: "failure recovered by a backoff retry is not reported", fails: 1, backoffEnabled: true, wantErrs: 0, wantCalls: 2},
+		{name: "failure without backoff is reported once", fails: 1, backoffEnabled: false, wantErrs: 1, wantCalls: 1},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx, cancel := context.WithTimeout(t.Context(), 10*time.Second)
+			defer cancel()
+			eg, egctx := errgroup.New(ctx)
+
+			var calls atomic.Int64
+			r := &restorer{
+				eg:             eg,
+				dir:            t.TempDir(),
+				storage:        failNStorage{err: errBoom, calls: &calls, fails: tt.fails},
+				backoffEnabled: tt.backoffEnabled,
+			}
+			if tt.backoffEnabled {
+				r.bo = backoff.New(
+					backoff.WithInitialDuration("1ms"),
+					backoff.WithMaximumDuration("5ms"),
+					backoff.WithJitterLimit("1ms"),
+					backoff.WithRetryCount(5),
+					backoff.WithBackOffTimeLimit("5s"),
+					backoff.WithDisableErrorLog(),
+				)
+				defer r.bo.Close()
+			}
+
+			ech, err := r.startRestore(egctx)
+			if err != nil {
+				t.Fatalf("startRestore() error = %v, want nil", err)
+			}
+
+			var got []error
+		drain:
+			for {
+				select {
+				case e, ok := <-ech:
+					if !ok {
+						break drain
+					}
+					got = append(got, e)
+				case <-ctx.Done():
+					t.Fatal("restore error channel was not closed")
+				}
+			}
+			// ech is closed after the SIGTERM is sent; wait for its delivery so it
+			// cannot reach the process after signal.Stop.
+			select {
+			case <-sigc:
+			case <-ctx.Done():
+				t.Fatal("restore did not signal completion")
+			}
+
+			if len(got) != tt.wantErrs {
+				t.Errorf("startRestore() reported %d errors %v, want %d", len(got), got, tt.wantErrs)
+			}
+			for _, e := range got {
+				if !errors.Is(e, errBoom) {
+					t.Errorf("startRestore() reported %v, want %v", e, errBoom)
+				}
+			}
+			if n := calls.Load(); n != tt.wantCalls {
+				t.Errorf("storage.Reader called %d times, want %d", n, tt.wantCalls)
+			}
+
+			cancel()
+			done := make(chan struct{})
+			go func() {
+				defer close(done)
+				if err := eg.Wait(); err != nil && !errors.Is(err, context.Canceled) {
+					t.Logf("eg.Wait() = %v", err)
+				}
+			}()
+			select {
+			case <-done:
+			case <-time.After(5 * time.Second):
+				t.Fatal("restore goroutines did not exit on context cancel")
+			}
+		})
+	}
+}
+
 // NOT IMPLEMENTED BELOW
 //
 // func TestNew(t *testing.T) {

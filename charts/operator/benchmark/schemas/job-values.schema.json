@@ -440,6 +440,10 @@
             "host": {
               "type": "string",
               "description": "filter target host"
+            },
+            "port": {
+              "type": "integer",
+              "description": "filter target port"
             }
           }
         }

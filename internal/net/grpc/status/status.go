@@ -295,179 +295,96 @@ func toProtoMessage(err error, details ...any) (dmap map[string][]proto.Message)
 			Domain: hostname,
 		}}
 	}
+	add := func(typeName string, msg proto.Message) {
+		dmap[typeName] = append(dmap[typeName], msg)
+	}
+	addAny := func(a *types.Any) {
+		if msg := errdetails.AnyToErrorDetail(a); msg != nil {
+			add(detailTypeName(a.GetTypeUrl(), msg), msg)
+		}
+	}
+	addStatusDetails := func(ds []*types.Any) {
+		for _, d := range ds {
+			if d.GetTypeUrl() != "" {
+				addAny(d)
+			}
+		}
+	}
 	for _, detail := range details {
 		if detail == nil {
 			continue
 		}
-		var (
-			typeName string
-			msg      proto.Message
-		)
 		switch v := detail.(type) {
 		case *spb.Status:
 			if v != nil {
-				for _, d := range v.GetDetails() {
-					typeName = d.GetTypeUrl()
-					if typeName != "" {
-						msg = errdetails.AnyToErrorDetail(d)
-						if msg != nil {
-							dm, ok := dmap[typeName]
-							if ok && dm != nil {
-								dmap[typeName] = append(dm, msg)
-							} else {
-								dmap[typeName] = []proto.Message{msg}
-							}
-						}
-					}
-				}
+				addStatusDetails(v.GetDetails())
 			}
 		case spb.Status:
-			for _, d := range v.GetDetails() {
-				typeName = d.GetTypeUrl()
-				if typeName != "" {
-					msg = errdetails.AnyToErrorDetail(d)
-					if msg != nil {
-						d, ok := dmap[typeName]
-						if ok && d != nil {
-							dmap[typeName] = append(d, msg)
-						} else {
-							dmap[typeName] = []proto.Message{msg}
-						}
-					}
-				}
-			}
+			addStatusDetails(v.GetDetails())
 		case *status.Status:
 			if v != nil {
-				for _, d := range v.Proto().GetDetails() {
-					typeName = d.GetTypeUrl()
-					if typeName != "" {
-						msg = errdetails.AnyToErrorDetail(d)
-						if msg != nil {
-							d, ok := dmap[typeName]
-							if ok && d != nil {
-								dmap[typeName] = append(d, msg)
-							} else {
-								dmap[typeName] = []proto.Message{msg}
-							}
-						}
-					}
-				}
+				addStatusDetails(v.Proto().GetDetails())
 			}
 		case status.Status:
-			for _, d := range v.Proto().GetDetails() {
-				typeName = d.GetTypeUrl()
-				if typeName != "" {
-					msg = errdetails.AnyToErrorDetail(d)
-					if msg != nil {
-						d, ok := dmap[typeName]
-						if ok && d != nil {
-							dmap[typeName] = append(d, msg)
-						} else {
-							dmap[typeName] = []proto.Message{msg}
-						}
-					}
-				}
-			}
+			addStatusDetails(v.Proto().GetDetails())
 		case *info.Detail:
 			if v != nil {
-				typeName = errdetails.DebugInfoMessageName
-				msg = errdetails.DebugInfoFromInfoDetail(v)
-				if msg != nil {
-					d, ok := dmap[typeName]
-					if ok && d != nil {
-						dmap[typeName] = append(d, msg)
-					} else {
-						dmap[typeName] = []proto.Message{msg}
-					}
+				if msg := errdetails.DebugInfoFromInfoDetail(v); msg != nil {
+					add(errdetails.DebugInfoMessageName, msg)
 				}
 			}
 		case info.Detail:
-			typeName = errdetails.DebugInfoMessageName
-			msg = errdetails.DebugInfoFromInfoDetail(&v)
-			if msg != nil {
-				d, ok := dmap[typeName]
-				if ok && d != nil {
-					dmap[typeName] = append(d, msg)
-				} else {
-					dmap[typeName] = []proto.Message{msg}
-				}
+			if msg := errdetails.DebugInfoFromInfoDetail(&v); msg != nil {
+				add(errdetails.DebugInfoMessageName, msg)
 			}
 		case *types.Any:
 			if v != nil {
-				typeName = v.GetTypeUrl()
-				msg = errdetails.AnyToErrorDetail(v)
-				if msg != nil {
-					d, ok := dmap[typeName]
-					if ok && d != nil {
-						dmap[typeName] = append(d, msg)
-					} else {
-						dmap[typeName] = []proto.Message{msg}
-					}
-				}
+				addAny(v)
 			}
 		case types.Any:
-			typeName = v.GetTypeUrl()
-			msg = errdetails.AnyToErrorDetail(&v)
-			if msg != nil {
-				d, ok := dmap[typeName]
-				if ok && d != nil {
-					dmap[typeName] = append(d, msg)
-				} else {
-					dmap[typeName] = []proto.Message{msg}
-				}
-			}
+			addAny(&v)
 		case *proto.Message:
 			if v != nil {
-				typeName = typeURL(*v)
-				d, ok := dmap[typeName]
-				if ok && d != nil {
-					dmap[typeName] = append(d, *v)
-				} else {
-					dmap[typeName] = []proto.Message{*v}
-				}
+				add(typeURL(*v), *v)
 			}
 		case proto.Message:
-			typeName = typeURL(v)
-			d, ok := dmap[typeName]
-			if ok && d != nil {
-				dmap[typeName] = append(d, v)
-			} else {
-				dmap[typeName] = []proto.Message{v}
-			}
+			add(typeURL(v), v)
 		case *proto.MessageV1:
 			if v != nil {
-				msg = proto.ToMessageV2(*v)
-				typeName = typeURL(msg)
+				msg := proto.ToMessageV2(*v)
+				typeName := typeURL(msg)
 				if msg != nil {
-					d, ok := dmap[typeName]
-					if ok && d != nil {
-						dmap[typeName] = append(d, msg)
-					} else {
-						dmap[typeName] = []proto.Message{msg}
-					}
+					add(typeName, msg)
 				}
 			}
 		case proto.MessageV1:
-			msg = proto.ToMessageV2(v)
-			typeName = typeURL(msg)
+			msg := proto.ToMessageV2(v)
+			typeName := typeURL(msg)
 			if msg != nil {
-				d, ok := dmap[typeName]
-				if ok && d != nil {
-					dmap[typeName] = append(d, msg)
-				} else {
-					dmap[typeName] = []proto.Message{msg}
-				}
+				add(typeName, msg)
 			}
 		}
 	}
 	return dmap
 }
 
+// detailTypeName returns the dmap key for msg decoded from an Any whose type
+// URL is url. withDetails merges details by the short errdetails message name
+// (e.g. "ErrorInfo"), so a known detail must be keyed by that name rather than
+// by its full type URL, otherwise it is dropped or left unmerged.
+// Unknown messages keep their type URL as the key.
+func detailTypeName(url string, msg proto.Message) string {
+	if name := typeURL(msg); name != "unknown" {
+		return name
+	}
+	return url
+}
+
 func withDetails(st *Status, err error, details ...any) *Status {
 	if st != nil {
 		if len(st.Details()) == 0 {
 			ds := make([]proto.MessageV1, 0, len(details))
-			for _, msgs := range toProtoMessage(err, details) {
+			for _, msgs := range toProtoMessage(err, details...) {
 				for _, msg := range msgs {
 					ds = append(ds, proto.ToMessageV1(msg))
 				}
@@ -482,7 +399,7 @@ func withDetails(st *Status, err error, details ...any) *Status {
 		details = append(st.Details(), details...)
 	}
 
-	dmap := toProtoMessage(err, details)
+	dmap := toProtoMessage(err, details...)
 
 	msgs := make([]proto.MessageV1, 0, len(dmap))
 	visited := make(map[string]bool, len(dmap))
@@ -768,8 +685,8 @@ func withDetails(st *Status, err error, details ...any) *Status {
 						visited[key] = true
 						if m.GetResourceType() == "" {
 							m.ResourceType = r.GetResourceType()
-						} else if m.GetResourceType() != r.GetResourceType() && len(m.GetResourceType()) < len(r.GetResourceType()) {
-							m.ResourceType += r.GetResourceType()
+						} else if m.GetResourceType() != r.GetResourceType() && !strings.Contains(m.GetResourceType(), r.GetResourceType()) {
+							m.ResourceType += "\t" + r.GetResourceType()
 						}
 						if m.GetResourceName() == "" {
 							m.ResourceName = r.GetResourceName()

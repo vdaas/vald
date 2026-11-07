@@ -20,6 +20,7 @@ import (
 
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
+	lbmetrics "github.com/vdaas/vald/internal/observability/metrics/gateway/lb"
 	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/timeutil"
@@ -88,6 +89,22 @@ func WithTimeout(dur string) Option {
 	}
 }
 
+// WithSearchQuorumGrace sets the grace period a search keeps waiting for the
+// remaining agents once agents - replica + 1 of them answered with results.
+// An empty, invalid or non-positive duration disables the early termination.
+func WithSearchQuorumGrace(dur string) Option {
+	return func(s *server) {
+		if dur == "" {
+			return
+		}
+		d, err := timeutil.Parse(dur)
+		if err != nil || d <= 0 {
+			return
+		}
+		s.searchQuorumGrace = d
+	}
+}
+
 func WithReplicationCount(rep int) Option {
 	return func(s *server) {
 		if rep > 0 {
@@ -98,7 +115,7 @@ func WithReplicationCount(rep int) Option {
 
 func WithStreamConcurrency(c int) Option {
 	return func(s *server) {
-		if c > 1 {
+		if c > 0 {
 			s.streamConcurrency = c
 		}
 	}
@@ -106,8 +123,19 @@ func WithStreamConcurrency(c int) Option {
 
 func WithMultiConcurrency(c int) Option {
 	return func(s *server) {
-		if c > 1 {
+		if c > 0 {
 			s.multiConcurrency = c
+		}
+	}
+}
+
+// WithSearchMetrics returns the option to set the metrics that count the agent
+// failures of the search broadcast and of the partially successful writes.
+// Without it nothing is recorded.
+func WithSearchMetrics(m *lbmetrics.SearchMetrics) Option {
+	return func(s *server) {
+		if m != nil {
+			s.searchMetrics = m
 		}
 	}
 }

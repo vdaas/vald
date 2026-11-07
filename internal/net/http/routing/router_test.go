@@ -15,15 +15,19 @@ package routing
 
 import (
 	"bytes"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/log/logger"
+	"github.com/vdaas/vald/internal/net/http/middleware"
 	"github.com/vdaas/vald/internal/net/http/rest"
+	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
@@ -170,6 +174,42 @@ func TestRouting(t *testing.T) {
 				},
 			}
 		}(),
+
+		func() test {
+			w := httptest.NewRecorder()
+			release := make(chan struct{})
+			r := httptest.NewRequest(http.MethodPost, "/", &blockingReader{release: release})
+			h := func(http.ResponseWriter, *http.Request) (int, error) {
+				return http.StatusRequestTimeout, errors.New("handler timeout")
+			}
+
+			return test{
+				name: "serveHTTP does not read the request body after handler timeout",
+				args: args{
+					m: []string{
+						http.MethodPost,
+					},
+					h: h,
+				},
+				checkFunc: func(hdr http.Handler) error {
+					defer close(release)
+					done := make(chan struct{})
+					go func() {
+						defer close(done)
+						hdr.ServeHTTP(w, r)
+					}()
+					select {
+					case <-done:
+					case <-time.After(10 * time.Second):
+						return errors.New("serveHTTP blocked on reading the request body")
+					}
+					if got, want := w.Code, http.StatusRequestTimeout; got != want {
+						return errors.Errorf("status code not equals. want: %v, got: %v", want, got)
+					}
+					return nil
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
@@ -182,6 +222,16 @@ func TestRouting(t *testing.T) {
 			}
 		})
 	}
+}
+
+// blockingReader blocks every Read until release is closed.
+type blockingReader struct {
+	release chan struct{}
+}
+
+func (b *blockingReader) Read([]byte) (int, error) {
+	<-b.release
+	return 0, io.EOF
 }
 
 // NOT IMPLEMENTED BELOW
@@ -296,3 +346,87 @@ func TestRouting(t *testing.T) {
 // 		})
 // 	}
 // }
+
+func TestNew_concurrentDoesNotRaceOnDefaultTransport(t *testing.T) {
+	// Not parallel: resets the package-level once and swaps http.DefaultTransport.
+	orig := http.DefaultTransport
+	t.Cleanup(func() {
+		http.DefaultTransport = orig
+		tuneOnce = sync.Once{}
+	})
+
+	tr := &http.Transport{}
+	http.DefaultTransport = tr
+	tuneOnce = sync.Once{}
+
+	const n = 16
+	var wg sync.WaitGroup
+	done := make(chan struct{})
+	for range n {
+		wg.Go(func() {
+			if New() == nil {
+				t.Error("New returned nil")
+			}
+		})
+	}
+	go func() {
+		wg.Wait()
+		close(done)
+	}()
+	select {
+	case <-done:
+	case <-time.After(10 * time.Second):
+		t.Fatal("timed out waiting for concurrent New calls")
+	}
+
+	// All New calls have returned, so reading is ordered after the writes.
+	if got, want := tr.MaxIdleConnsPerHost, defaultMaxIdleConnsPerHost; got != want {
+		t.Errorf("MaxIdleConnsPerHost = %d, want %d", got, want)
+	}
+}
+
+type notTransport struct{}
+
+func (notTransport) RoundTrip(*http.Request) (*http.Response, error) {
+	return nil, errors.New("unused")
+}
+
+func TestNew_defaultTransportNotHTTPTransport(t *testing.T) {
+	// Not parallel: resets the package-level once and swaps http.DefaultTransport.
+	orig := http.DefaultTransport
+	t.Cleanup(func() {
+		http.DefaultTransport = orig
+		tuneOnce = sync.Once{}
+	})
+
+	http.DefaultTransport = notTransport{}
+	tuneOnce = sync.Once{}
+
+	defer func() {
+		if r := recover(); r != nil {
+			t.Errorf("New panicked when http.DefaultTransport is not *http.Transport: %v", r)
+		}
+	}()
+	if New() == nil {
+		t.Error("New returned nil")
+	}
+}
+
+func TestWithRoutesMiddlewares_doNotAliasCallerSlice(t *testing.T) {
+	t.Parallel()
+
+	mws := make([]middleware.Wrapper, 1, 4)
+	mws[0] = new(middlewareMock)
+	r := new(router)
+	WithMiddlewares(mws...)(r)
+	if len(r.middlewares) != 1 || &r.middlewares[0] == &mws[0] {
+		t.Error("WithMiddlewares must copy the caller's slice")
+	}
+
+	routes := make([]Route, 1, 4)
+	r = new(router)
+	WithRoutes(routes...)(r)
+	if len(r.routes) != 1 || &r.routes[0] == &routes[0] {
+		t.Error("WithRoutes must copy the caller's slice")
+	}
+}

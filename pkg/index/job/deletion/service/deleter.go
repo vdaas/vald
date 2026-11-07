@@ -28,7 +28,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/strings"
-	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/pkg/index/job/internal/targets"
 )
 
 const (
@@ -149,17 +149,18 @@ func (idx *index) doDeleteIndex(
 	}
 	log.Infof("target agent addrs: %v", targetAddrs)
 
-	var emu sync.Mutex
+	outcomes := targets.New(targetAddrs)
 	err := idx.client.GetClient().OrderedRangeConcurrent(
 		ctx, targetAddrs, idx.concurrency,
-		func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
+		func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) (err error) {
+			defer func() { outcomes.Record(target, err) }()
 			ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "OrderedRangeConcurrent/"+target), vald.RemoveRPCName+"/"+target)
 			defer func() {
 				if span != nil {
 					span.End()
 				}
 			}()
-			_, err := fn(ctx, vald.NewRemoveClient(conn), copts...)
+			_, err = fn(ctx, vald.NewRemoveClient(conn), copts...)
 			if err != nil {
 				var attrs trace.Attributes
 				switch {
@@ -208,12 +209,9 @@ func (idx *index) doDeleteIndex(
 					span.SetAttributes(attrs...)
 					span.SetStatus(trace.StatusError, err.Error())
 				}
-				emu.Lock()
-				errs = errors.Join(errs, err)
-				emu.Unlock()
 			}
 			return err
 		},
 	)
-	return errors.Join(err, errs)
+	return outcomes.Err(err)
 }

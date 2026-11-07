@@ -27,7 +27,7 @@ const (
 	IndexCountMetricsDescription = "Agent Faiss index count"
 
 	UncommittedIndexCountMetricsName        = "agent_core_faiss_uncommitted_index_count"
-	UncommittedIndexCountMetricsDescription = "Agent Faiss index count"
+	UncommittedIndexCountMetricsDescription = "Agent Faiss uncommitted index count"
 
 	InsertVQueueCountMetricsName        = "agent_core_faiss_insert_vqueue_count"
 	InsertVQueueCountMetricsDescription = "Agent Faiss insert vqueue count"

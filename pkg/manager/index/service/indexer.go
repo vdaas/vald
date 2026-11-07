@@ -19,7 +19,6 @@ import (
 	"context"
 	"math"
 	"reflect"
-	"sync/atomic"
 	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
@@ -34,6 +33,7 @@ import (
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/atomic"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
@@ -92,6 +92,9 @@ func (idx *index) Start(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 100)
 	idx.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)
+		// Save goroutines send on ech, so wait for them before ech is closed.
+		var saves sync.WaitGroup
+		defer saves.Wait()
 		if idx.indexDuration <= 0 {
 			idx.indexDuration = math.MaxInt64
 		}
@@ -121,6 +124,7 @@ func (idx *index) Start(ctx context.Context) (<-chan error, error) {
 		}
 		var mu sync.Mutex
 		for {
+			err = nil // do not report the previous iteration's error again
 			select {
 			case <-ctx.Done():
 				return finalize()
@@ -141,44 +145,14 @@ func (idx *index) Start(ctx context.Context) (<-chan error, error) {
 				itl.Reset(idx.indexDurationLimit)
 			case <-st.C: // save index duration ticker
 				//  execute SaveIndex in concurrent.
-				idx.eg.Go(safety.RecoverFunc(func() (err error) {
-					if !mu.TryLock() {
-						return err
-					}
-					defer mu.Unlock()
-					defer st.Reset(idx.saveIndexDuration)
-					err = idx.saveIndex(grpc.WithGRPCMethod(ctx, "core.v1.Agent/SaveIndex"), false)
-					if errors.IsNot(err, context.Canceled, context.DeadlineExceeded) {
-						err = errors.Wrap(err, "an error occurred during save indexing")
-						log.Error(err)
-						select {
-						case <-ctx.Done():
-							return nil
-						case ech <- err:
-						}
-					}
-					return nil
-				}))
+				saves.Go(func() {
+					idx.saveOnTick(ctx, &mu, st, false, ech)
+				})
 			case <-stl.C: // save index duration limit ticker
 				//  execute SaveIndex in concurrent.
-				idx.eg.Go(safety.RecoverFunc(func() (err error) {
-					if !mu.TryLock() {
-						return err
-					}
-					defer mu.Unlock()
-					defer stl.Reset(idx.saveIndexDurationLimit)
-					err = idx.saveIndex(grpc.WithGRPCMethod(ctx, "core.v1.Agent/SaveIndex"), true)
-					if errors.IsNot(err, context.Canceled, context.DeadlineExceeded) {
-						err = errors.Wrap(err, "an error occurred during force save indexing")
-						log.Error(err)
-						select {
-						case <-ctx.Done():
-							return nil
-						case ech <- err:
-						}
-					}
-					return nil
-				}))
+				saves.Go(func() {
+					idx.saveOnTick(ctx, &mu, stl, true, ech)
+				})
 			}
 			if errors.IsNot(err, context.Canceled, context.DeadlineExceeded) {
 				log.Error(err)
@@ -191,6 +165,43 @@ func (idx *index) Start(ctx context.Context) (<-chan error, error) {
 		}
 	}))
 	return ech, nil
+}
+
+// saveOnTick runs one save tick of Start. mu serializes the regular and forced save ticks;
+// t is the ticker that fired and is reset to its period after the save.
+func (idx *index) saveOnTick(
+	ctx context.Context, mu *sync.Mutex, t *time.Ticker, force bool, ech chan<- error,
+) {
+	period, msg := idx.saveIndexDuration, "an error occurred during save indexing"
+	if force {
+		period, msg = idx.saveIndexDurationLimit, "an error occurred during force save indexing"
+	}
+	if err := safety.RecoverFunc(func() (err error) {
+		if !mu.TryLock() {
+			if force {
+				// A regular save is running. The forced save is the only pass that reaches agents
+				// not queued in shouldSaveList, so retry it soon instead of a full limit later
+				// (without blocking on mu, so ticks do not stack up goroutines).
+				t.Reset(min(idx.saveIndexDuration, idx.saveIndexDurationLimit))
+			}
+			return nil
+		}
+		defer mu.Unlock()
+		defer t.Reset(period)
+		err = idx.saveIndex(grpc.WithGRPCMethod(ctx, "core.v1.Agent/SaveIndex"), force)
+		if errors.IsNot(err, context.Canceled, context.DeadlineExceeded) {
+			err = errors.Wrap(err, msg)
+			log.Error(err)
+			select {
+			case <-ctx.Done():
+				return nil
+			case ech <- err:
+			}
+		}
+		return nil
+	})(); err != nil {
+		log.Error(err)
+	}
 }
 
 func (idx *index) createIndex(ctx context.Context, enableLowIndexSkip bool) (err error) {
@@ -206,6 +217,11 @@ func (idx *index) createIndex(ctx context.Context, enableLowIndexSkip bool) (err
 	}
 	idx.indexing.Store(true)
 	defer idx.indexing.Store(false)
+	// The skip decision below needs the agents' current uncommitted counts; the snapshot taken
+	// after the previous run only reflects what was left right after that run's CreateIndex.
+	if err := idx.loadInfos(ctx); err != nil {
+		log.Warnf("failed to refresh index infos before CreateIndex, using the previous snapshot: %v", err)
+	}
 	return errors.Join(idx.client.GetClient().OrderedRangeConcurrent(ctx, idx.client.GetAddrs(ctx),
 		idx.createIndexConcurrency,
 		func(ctx context.Context,
@@ -224,6 +240,10 @@ func (idx *index) createIndex(ctx context.Context, enableLowIndexSkip bool) (err
 					log.Debugf("CreateIndex of %s skipped, message: %s, err: %v", addr, st.Message(), errors.Join(st.Err(), err))
 					return nil
 				}
+				// The agent may have built a new index generation before failing (e.g. canceled after
+				// the delete phase, statistics or k8s export errors, a lost reply), so queue it for the
+				// next save tick anyway; SaveIndex is a no-op on the agent when nothing new was built.
+				idx.shouldSaveList.Store(addr, true)
 				log.Warnf("an error occurred while calling CreateIndex of %s: %s", addr, err)
 				return err
 			}
@@ -254,8 +274,8 @@ func (idx *index) saveIndex(ctx context.Context, force bool) (err error) {
 		func(ctx context.Context,
 			addr string, conn *grpc.ClientConn, copts ...grpc.CallOption,
 		) (err error) {
-			_, ok := idx.shouldSaveList.LoadAndDelete(addr)
-			if !ok && !force {
+			_, queued := idx.shouldSaveList.LoadAndDelete(addr)
+			if !queued && !force {
 				return nil
 			}
 			_, err = agent.NewAgentClient(conn).SaveIndex(ctx, new(payload.Empty), copts...)
@@ -264,6 +284,10 @@ func (idx *index) saveIndex(ctx context.Context, force bool) (err error) {
 				if ok && st != nil && st.Code() == codes.FailedPrecondition {
 					log.Debugf("SaveIndex of %s skipped, message: %s, err: %v", addr, st.Message(), errors.Join(st.Err(), err))
 					return nil
+				}
+				if queued {
+					// keep the unsaved CreateIndex result queued so the next save tick retries it.
+					idx.shouldSaveList.Store(addr, true)
 				}
 				log.Warnf("an error occurred while calling SaveIndex of %s: %s", addr, err)
 				return err
@@ -310,6 +334,7 @@ func (idx *index) loadInfos(ctx context.Context) (err error) {
 		info, ok := infoMap.Load(addr)
 		if !ok {
 			idx.indexInfos.Delete(addr)
+			return true
 		}
 		idx.indexInfos.Store(addr, info)
 		infoMap.Delete(addr)

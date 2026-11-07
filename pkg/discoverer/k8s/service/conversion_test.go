@@ -24,11 +24,9 @@ import (
 
 func newRunningPod(name, app string) k8s.Pod {
 	return k8s.Pod{
-		ObjectMeta: k8s.ObjectMeta{
-			Name:      name,
-			Namespace: "default",
-			Labels:    map[string]string{"app": app},
-		},
+		Name:      name,
+		Namespace: "default",
+		Labels:    map[string]string{"app": app},
 		Spec: k8s.PodSpec{
 			NodeName:   testNodeAName,
 			Containers: []k8s.Container{{Name: "vald-agent"}},

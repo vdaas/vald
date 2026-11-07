@@ -76,17 +76,22 @@ func (j *job) getObject(ctx context.Context, ech chan error) error {
 	log.Info("[benchmark job] Start benchmarking getObject")
 	eg, egctx := errgroup.New(ctx)
 	eg.SetLimit(j.concurrencyLimit)
-	for i := j.dataset.Range.Start; i <= j.dataset.Range.End; i++ {
-		log.Infof("[benchmark job] Start get object: iter = %d", i)
-		ft := []*payload.Filter_Target{}
-		if j.objectConfig != nil {
-			for i, target := range j.objectConfig.FilterConfig.Targets {
-				ft[i] = &payload.Filter_Target{
-					Host: target.Host,
-					Port: uint32(target.Port), //nolint:gosec // filter target port is a non-negative config value within uint16 range
-				}
+	ft := []*payload.Filter_Target{}
+	if j.objectConfig != nil {
+		targets := j.objectConfig.FilterConfig.Targets
+		ft = make([]*payload.Filter_Target, 0, len(targets))
+		for _, target := range targets {
+			if target == nil {
+				continue
 			}
+			ft = append(ft, &payload.Filter_Target{
+				Host: target.Host,
+				Port: uint32(target.Port), //nolint:gosec // filter target port is a non-negative config value within uint16 range
+			})
 		}
+	}
+	for i := j.dataset.Range.Start; i <= j.dataset.Range.End; i++ {
+		log.Debugf("[benchmark job] Start get object: iter = %d", i)
 		idx := i
 		eg.Go(func() error {
 			log.Debugf("[benchmark job] Start get object: iter = %d", idx)
@@ -122,7 +127,7 @@ func (j *job) getObject(ctx context.Context, ech chan error) error {
 				}
 			}
 			if res != nil {
-				log.Infof("[benchmark get object job] iter=%d, Id=%s, Vec=%v", idx, res.GetId(), res.GetVector())
+				log.Debugf("[benchmark get object job] iter=%d, Id=%s, Vec=%v", idx, res.GetId(), res.GetVector())
 			}
 			log.Debugf("[benchmark job] Finish get object: iter= %d \n%v\n", idx, res)
 			return nil

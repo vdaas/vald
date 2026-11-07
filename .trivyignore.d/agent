@@ -18,3 +18,9 @@
 # OpenSSL denial-of-service issue. The agent image already runs apt upgrade;
 # remove this exception when Debian publishes a security update.
 CVE-2026-14456 exp:2026-11-24
+
+# Reason: the gcr.io/distroless/cc-debian12 runtime base still ships libssl3
+# 3.0.20-1~deb12u2 (Debian fixed it in 3.0.22-1~deb12u2, rechecked 2026-11-06).
+# Distroless has no package manager, so the agent image cannot upgrade it;
+# remove this exception when the distroless base is rebuilt.
+CVE-2026-84782 exp:2026-12-06

@@ -93,10 +93,14 @@ func (s *srvs) setupAPIs(cfg *tls.Config) ([]servers.Option, error) {
 	for _, sc := range s.cfg.Servers {
 		switch mode := server.Mode(sc.Mode); mode {
 		case server.REST:
+			restOpts := sc.Opts()
+			if s.rest != nil {
+				restOpts = append(restOpts, s.rest(sc)...)
+			}
 			srv, err := server.New(
-				append(append(sc.Opts(), s.rest(sc)...),
+				append(append(restOpts,
 					server.WithTLSConfig(cfg),
-				)...)
+				), s.hookOpts(sc.Name)...)...)
 			if err != nil {
 				return nil, err
 			}
@@ -110,6 +114,7 @@ func (s *srvs) setupAPIs(cfg *tls.Config) ([]servers.Option, error) {
 			if s.grpc != nil {
 				grpcOpts = append(grpcOpts, s.grpc(sc)...)
 			}
+			grpcOpts = append(grpcOpts, s.hookOpts(sc.Name)...)
 
 			srv, err := server.New(grpcOpts...)
 			if err != nil {
@@ -117,8 +122,12 @@ func (s *srvs) setupAPIs(cfg *tls.Config) ([]servers.Option, error) {
 			}
 			opts = append(opts, servers.WithServer(srv))
 		case server.GQL:
+			gqlOpts := sc.Opts()
+			if s.gql != nil {
+				gqlOpts = append(gqlOpts, s.gql(sc)...)
+			}
 			srv, err := server.New(
-				append(append(sc.Opts(), s.gql(sc)...),
+				append(append(gqlOpts,
 					server.WithTLSConfig(cfg),
 					server.WithPreStartFunc(func() error {
 						return nil
@@ -126,7 +135,7 @@ func (s *srvs) setupAPIs(cfg *tls.Config) ([]servers.Option, error) {
 					server.WithPreStopFunction(func() error {
 						return nil
 					}),
-				)...)
+				), s.hookOpts(sc.Name)...)...)
 			if err != nil {
 				return nil, err
 			}
@@ -137,22 +146,72 @@ func (s *srvs) setupAPIs(cfg *tls.Config) ([]servers.Option, error) {
 	return opts, nil
 }
 
+// hookOpts returns the pre-start and pre-stop functions registered for the server name
+// by WithPreStartFunc and WithPreStopFunc. They are appended last so that they override any default hook.
+func (s *srvs) hookOpts(name string) (opts []server.Option) {
+	if f, ok := s.pstartf[name]; ok {
+		opts = append(opts, server.WithPreStartFunc(f))
+	}
+	if f, ok := s.pstopf[name]; ok {
+		opts = append(opts, server.WithPreStopFunction(f))
+	}
+	return opts
+}
+
 func (s *srvs) setupHealthCheck(*tls.Config) ([]servers.Option, error) {
 	opts := make([]servers.Option, 0, len(s.cfg.HealthCheckServers))
 	for _, hsc := range s.cfg.HealthCheckServers {
-		srv, err := server.New(
-			append(server.HealthServerOpts(
-				hsc.Name,
-				hsc.Host,
-				fmt.Sprintf("/%s", strings.ToLower(hsc.Name)),
-				hsc.Port),
-				hsc.Opts()...)...)
+		srv, err := server.New(append(healthServerOpts(hsc), s.hookOpts(hsc.Name)...)...)
 		if err != nil {
 			return nil, err
 		}
 		opts = append(opts, servers.WithServer(srv))
 	}
 	return opts, nil
+}
+
+// healthServerOpts returns the HealthServerOpts presets overridden by hsc.
+// hsc.Opts passes an unset ("") duration through, which the options parse as 0
+// and so wipe the presets (the default Helm values leave the health servers'
+// http timeouts empty). The presets are therefore applied again after
+// hsc.Opts, followed by the config values they overrode: network and mode, and
+// only the durations the config actually sets.
+func healthServerOpts(hsc *config.Server) []server.Option {
+	preset := func() []server.Option {
+		return server.HealthServerOpts(
+			hsc.Name,
+			hsc.Host,
+			fmt.Sprintf("/%s", strings.ToLower(hsc.Name)),
+			hsc.Port)
+	}
+	opts := append(preset(), hsc.Opts()...)
+	opts = append(opts, preset()...)
+	mode := server.Mode(hsc.Mode)
+	opts = append(opts,
+		server.WithNetwork(hsc.Network),
+		server.WithServerMode(mode),
+	)
+	type durOpt struct {
+		opt func(string) server.Option
+		dur string
+	}
+	durs := []durOpt{{server.WithProbeWaitTime, hsc.ProbeWaitTime}}
+	// hsc.Opts applies the http durations only in these modes.
+	if h := hsc.HTTP; h != nil && (mode == server.REST || mode == server.GQL) {
+		durs = append(durs,
+			durOpt{server.WithReadHeaderTimeout, h.ReadHeaderTimeout},
+			durOpt{server.WithReadTimeout, h.ReadTimeout},
+			durOpt{server.WithWriteTimeout, h.WriteTimeout},
+			durOpt{server.WithIdleTimeout, h.IdleTimeout},
+			durOpt{server.WithShutdownDuration, h.ShutdownDuration},
+		)
+	}
+	for _, d := range durs {
+		if d.dur != "" {
+			opts = append(opts, d.opt(d.dur))
+		}
+	}
+	return opts
 }
 
 func (s *srvs) setupMetrics(cfg *tls.Config) ([]servers.Option, error) {
@@ -167,7 +226,7 @@ func (s *srvs) setupMetrics(cfg *tls.Config) ([]servers.Option, error) {
 		}
 		if hopt != nil {
 			srv, err := server.New(
-				append(msc.Opts(),
+				append(append(msc.Opts(),
 					hopt,
 					server.WithTLSConfig(cfg),
 					server.WithPreStartFunc(func() error {
@@ -176,7 +235,7 @@ func (s *srvs) setupMetrics(cfg *tls.Config) ([]servers.Option, error) {
 					server.WithPreStopFunction(func() error {
 						return nil
 					}),
-				)...)
+				), s.hookOpts(msc.Name)...)...)
 			if err != nil {
 				return nil, err
 			}

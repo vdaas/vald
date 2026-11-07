@@ -183,8 +183,9 @@ format/md: \
 	prettier/install
 	@echo "Formatting Makrdown files..."
 	- @if [ -f "$(ROOTDIR)/.gitfiles" ]; then \
-		grep -E '\.md\b' "$(ROOTDIR)/.gitfiles" \
+		grep -E '\.md$$' "$(ROOTDIR)/.gitfiles" \
 		| xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P"$(CORES)" bash -c ' \
+		[ -L {} ] && exit 0; \
 		echo "Formatting Markdown file {}" && \
 		bunx prettier --write {}'; \
 	fi
@@ -195,8 +196,9 @@ format/json: \
 	prettier/install
 	@echo "Formatting JSON files..."
 	- @if [ -f "$(ROOTDIR)/.gitfiles" ]; then \
-		grep -E '\.json\b' "$(ROOTDIR)/.gitfiles" \
+		grep -E '\.json$$' "$(ROOTDIR)/.gitfiles" \
 		| xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P"$(CORES)" bash -c ' \
+		[ -L {} ] && exit 0; \
 		echo "Formatting JSON file {}" && \
 		bunx prettier --write {}'; \
 	fi

@@ -145,6 +145,19 @@ func TestWithShutdownDuration(t *testing.T) {
 			},
 		},
 		{
+			name: "set default value when empty",
+			dur:  "",
+			checkFunc: func(opt Option) error {
+				got := new(listener)
+				opt(got)
+
+				if !reflect.DeepEqual(got.sddur, 20*time.Second) {
+					return errors.New("invalid param was set")
+				}
+				return nil
+			},
+		},
+		{
 			name: "set default value",
 			dur:  "vald",
 			checkFunc: func(opt Option) error {

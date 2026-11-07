@@ -44,7 +44,7 @@ func WithNoFreeListSync(noFreeListSync bool) Option {
 
 func WithPreLoadFreelist(preloadFreelist bool) Option {
 	return func(opts *bolt.Options) error {
-		opts.NoFreelistSync = preloadFreelist
+		opts.PreLoadFreelist = preloadFreelist
 		return nil
 	}
 }

@@ -19,10 +19,12 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/attribute"
 	"github.com/vdaas/vald/internal/observability/metrics"
+	"github.com/vdaas/vald/internal/sync"
 	"google.golang.org/grpc"
 )
 
@@ -35,8 +37,12 @@ const (
 )
 
 func ClientInterceptors() (grpc.UnaryClientInterceptor, grpc.StreamClientInterceptor, error) {
-	meter := metrics.GetMeter()
+	return clientInterceptors(metrics.GetMeter())
+}
 
+func clientInterceptors(
+	meter metrics.Meter,
+) (grpc.UnaryClientInterceptor, grpc.StreamClientInterceptor, error) {
 	latencyHistogram, err := meter.Float64Histogram(
 		latencyMetricsName,
 		metrics.WithDescription("Client latency in milliseconds, by method"),
@@ -56,9 +62,10 @@ func ClientInterceptors() (grpc.UnaryClientInterceptor, grpc.StreamClientInterce
 	}
 
 	record := func(ctx context.Context, method string, err error, latency float64) {
-		attrs := attributesFromError(method, err)
-		latencyHistogram.Record(ctx, latency, metrics.WithAttributes(attrs...))
-		completedRPCCnt.Add(ctx, 1, metrics.WithAttributes(attrs...))
+		// Build the attribute set once per RPC; WithAttributes copies and sorts it.
+		opt := metrics.WithAttributes(attributesFromError(method, err)...)
+		latencyHistogram.Record(ctx, latency, opt)
+		completedRPCCnt.Add(ctx, 1, opt)
 	}
 	return func(ctx context.Context, method string, req, reply any, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 			now := time.Now()
@@ -69,14 +76,71 @@ func ClientInterceptors() (grpc.UnaryClientInterceptor, grpc.StreamClientInterce
 		}, func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 			now := time.Now()
 			stream, err := streamer(ctx, desc, cc, method, opts...)
-			elapsedTime := time.Since(now)
-			record(ctx, method, err, float64(elapsedTime)/float64(time.Millisecond))
-			// Return the real stream and error from streamer: discarding them
-			// (returning nil, nil) hands the caller a nil ClientStream with a
-			// nil error, so its first Send/Recv/CloseSend nil-panics and any
-			// stream-creation error is silently swallowed.
-			return stream, err
+			if err != nil {
+				record(ctx, method, err, float64(time.Since(now))/float64(time.Millisecond))
+				// Return the real stream and error from streamer: discarding them
+				// (returning nil, nil) hands the caller a nil ClientStream with a
+				// nil error, so its first Send/Recv/CloseSend nil-panics and any
+				// stream-creation error is silently swallowed.
+				return stream, err
+			}
+			// streamer only sets the stream up; the RPC's final status surfaces
+			// later, so record once when the stream actually ends.
+			cs := &clientStream{
+				ClientStream:  stream,
+				serverStreams: desc != nil && desc.ServerStreams,
+			}
+			cs.finish = func(err error) {
+				cs.once.Do(func() {
+					record(ctx, method, err, float64(time.Since(now))/float64(time.Millisecond))
+				})
+			}
+			// Mirror grpc-go, which also ends the stream when ctx is done, so a
+			// stream abandoned without a terminal RecvMsg is still counted.
+			cs.stop = context.AfterFunc(ctx, func() { cs.finish(ctx.Err()) })
+			return cs, nil
 		}, nil
+}
+
+// clientStream records the stream's metrics once, when the RPC ends.
+// It deliberately does not record on CloseSend: that is only a half-close,
+// and the final status still arrives through RecvMsg.
+type clientStream struct {
+	grpc.ClientStream
+	finish        func(error)
+	stop          func() bool
+	once          sync.Once
+	serverStreams bool
+}
+
+func (cs *clientStream) end(err error) {
+	cs.stop()
+	cs.finish(err)
+}
+
+func (cs *clientStream) RecvMsg(m any) error {
+	err := cs.ClientStream.RecvMsg(m)
+	switch {
+	case errors.Is(err, io.EOF):
+		cs.end(nil)
+	case err != nil:
+		cs.end(err)
+	case !cs.serverStreams:
+		// A non-server-streaming RPC is complete once its single response
+		// arrives; callers (e.g. CloseAndRecv) do not read on to io.EOF.
+		cs.end(nil)
+	}
+	return err
+}
+
+func (cs *clientStream) SendMsg(m any) error {
+	err := cs.ClientStream.SendMsg(m)
+	// grpc-go ends the RPC on SendMsg errors other than io.EOF; io.EOF means
+	// the real status will be returned by RecvMsg.
+	if err != nil && !errors.Is(err, io.EOF) {
+		cs.end(err)
+	}
+	return err
 }
 
 func attributesFromError(method string, err error) []attribute.KeyValue {

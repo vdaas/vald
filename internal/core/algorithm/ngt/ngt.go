@@ -25,7 +25,6 @@ import (
 	"context"
 	"reflect"
 	"runtime"
-	"sync/atomic"
 	"unsafe"
 
 	"github.com/vdaas/vald/internal/core/algorithm"
@@ -34,8 +33,13 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/atomic"
 	"github.com/vdaas/vald/internal/sync/singleflight"
 )
+
+// errIndexClosed is returned instead of passing a NULL handle to an NGT C function
+// that does not check for it (and would SIGSEGV) after Close or before the index is opened.
+var errIndexClosed = errors.NewNGTError("ngt index is closed")
 
 // pinVec pins the first element of vec to prevent the GC from moving it during CGo calls.
 // The caller must call Unpin on the returned Pinner after the CGo call completes.
@@ -118,10 +122,10 @@ type (
 		poolSize            uint32
 		cnt                 atomic.Uint64
 		prop                C.NGTProperty
-		ces                 uint64        // NGT edge size for creation
-		epool               sync.Pool     // NGT error buffer pool
-		eps                 atomic.Uint64 // NGT error buffer pool size
-		epl                 uint64        // NGT error buffer pool size limit
+		ces                 uint64       // NGT edge size for creation
+		epool               sync.Pool    // NGT error buffer pool
+		eps                 atomic.Int64 // NGT error buffer pool size (signed: concurrent borrowers may drive it below zero)
+		epl                 uint64       // NGT error buffer pool size limit
 		index               C.NGTIndex
 		ospace              C.NGTObjectSpace
 		group               singleflight.Group[*GraphStatistics]
@@ -253,7 +257,10 @@ type (
 		EdgeSizeForCreation int32
 		// EdgeSizeForSearch represents the edge size for search.
 		EdgeSizeForSearch int32
-		// EdgeSizeLimitForCreation represents the edge size limit for creation.
+		// EdgeSizeLimitForCreation represents the upper bound of the edge size for
+		// creation. NGT >= 2.8.0 replaced edge_size_limit_for_creation with
+		// min/max_edge_size_for_creation; this reports max_edge_size_for_creation
+		// to keep the Info.Index.Property API unchanged.
 		EdgeSizeLimitForCreation int32
 		// InsertionRadiusCoefficient represents the insertion radius coefficient.
 		InsertionRadiusCoefficient float64
@@ -614,10 +621,6 @@ func (n *ngt) setup() error {
 		},
 	}
 
-	for i := uint64(0); i < n.epl; i++ {
-		n.PutErrorBuffer(newNGTError())
-	}
-
 	ne := n.GetErrorBuffer()
 	n.prop = C.ngt_create_property(ne.err)
 	if n.prop == nil {
@@ -760,46 +763,7 @@ func (n *ngt) Search(
 	}
 	n.rUnlock(true)
 
-	rsize := int(C.ngt_get_result_size(results, ne.err))
-	if rsize <= 0 {
-		if n.cnt.Load() == 0 {
-			n.PutErrorBuffer(ne)
-			return nil, errors.ErrSearchResultEmptyButNoDataStored
-		}
-		err = n.newGoError(ne)
-		if err != nil {
-			return nil, err
-		}
-		return nil, errors.ErrEmptySearchResult
-	}
-	result = make([]algorithm.SearchResult, rsize)
-
-	for i := range result {
-		select {
-		case <-ctx.Done():
-			n.PutErrorBuffer(ne)
-			return result[:i], nil
-		default:
-		}
-		d := C.ngt_get_result(results, C.uint32_t(i), ne.err)
-		if d.id == 0 && d.distance == 0 {
-			result[i] = algorithm.SearchResult{
-				ID:       0,
-				Distance: 0,
-				Error:    n.newGoError(ne),
-			}
-			ne = n.GetErrorBuffer()
-		} else {
-			result[i] = algorithm.SearchResult{
-				ID:       uint32(d.id),
-				Distance: float32(d.distance),
-				Error:    nil,
-			}
-		}
-	}
-	n.PutErrorBuffer(ne)
-
-	return result, nil
+	return n.toSearchResults(ctx, results, ne)
 }
 
 // Linear Search returns linear search result as []algorithm.SearchResult.
@@ -836,19 +800,32 @@ func (n *ngt) LinearSearch(
 	}
 	n.rUnlock(true)
 
+	return n.toSearchResults(ctx, results, ne)
+}
+
+// toSearchResults converts the C results of Search and LinearSearch into
+// []algorithm.SearchResult. It takes over ne: every return path releases it
+// via PutErrorBuffer or newGoError. The caller still owns and destroys results.
+func (n *ngt) toSearchResults(
+	ctx context.Context, results C.NGTObjectDistances, ne *ngtError,
+) (result []algorithm.SearchResult, err error) {
 	rsize := int(C.ngt_get_result_size(results, ne.err))
 	if rsize <= 0 {
-		if n.cnt.Load() == 0 {
-			n.PutErrorBuffer(ne)
-			return nil, errors.ErrSearchResultEmptyButNoDataStored
-		}
-		err = n.newGoError(ne)
-		if err != nil {
+		// n.cnt only counts Insert/Remove in this process and stays 0 for an index
+		// restored by Load, so ask NGT how many objects are stored.
+		n.rLock(false)
+		nobj := C.ngt_get_number_of_objects(n.index, ne.err)
+		n.rUnlock(false)
+		if err = n.newGoError(ne); err != nil {
 			return nil, err
+		}
+		if nobj == 0 {
+			return nil, errors.ErrSearchResultEmptyButNoDataStored
 		}
 		return nil, errors.ErrEmptySearchResult
 	}
 	result = make([]algorithm.SearchResult, rsize)
+
 	for i := range result {
 		select {
 		case <-ctx.Done():
@@ -1015,8 +992,12 @@ func (n *ngt) SaveIndex() error {
 		defer C.free(unsafe.Pointer(path))
 		n.smu.Lock()
 		defer n.smu.Unlock()
-		ne := n.GetErrorBuffer()
 		n.rLock(true)
+		if n.index == nil {
+			n.rUnlock(true)
+			return errIndexClosed
+		}
+		ne := n.GetErrorBuffer()
 		ret := C.ngt_save_index(n.index, path, ne.err)
 		n.rUnlock(true)
 		if ret == ErrorCode {
@@ -1035,8 +1016,12 @@ func (n *ngt) SaveIndexWithPath(idxPath string) error {
 		defer C.free(unsafe.Pointer(path))
 		n.smu.Lock()
 		defer n.smu.Unlock()
-		ne := n.GetErrorBuffer()
 		n.rLock(true)
+		if n.index == nil {
+			n.rUnlock(true)
+			return errIndexClosed
+		}
+		ne := n.GetErrorBuffer()
 		ret := C.ngt_save_index(n.index, path, ne.err)
 		n.rUnlock(true)
 		if ret == ErrorCode {
@@ -1079,15 +1064,30 @@ func (n *ngt) GetVector(id uint) (ret []float32, err error) {
 	ne := n.GetErrorBuffer()
 	switch n.objectType {
 	case Float:
+		// results points into NGT's object repository, which Remove frees under the
+		// write lock, so copy it out before releasing the read lock.
 		n.rLock(false)
+		if n.ospace == nil {
+			n.rUnlock(false)
+			n.PutErrorBuffer(ne)
+			return nil, errIndexClosed
+		}
 		results := C.ngt_get_object_as_float(n.ospace, C.ObjectID(id), ne.err)
+		if results != nil {
+			ret = make([]float32, dimension)
+			copy(ret, unsafe.Slice((*float32)(unsafe.Pointer(results)), dimension))
+		}
 		n.rUnlock(false)
 		if results == nil {
 			return nil, n.newGoError(ne)
 		}
-		ret = (*[algorithm.MaximumVectorDimensionSize]float32)(unsafe.Pointer(results))[:dimension:dimension]
 	case HalfFloat:
 		n.rLock(false)
+		if n.ospace == nil {
+			n.rUnlock(false)
+			n.PutErrorBuffer(ne)
+			return nil, errIndexClosed
+		}
 		results := C.ngt_get_allocated_object_as_float(n.ospace, C.ObjectID(id), ne.err)
 		n.rUnlock(false)
 		defer C.free(unsafe.Pointer(results))
@@ -1100,14 +1100,21 @@ func (n *ngt) GetVector(id uint) (ret []float32, err error) {
 		}
 	case Uint8:
 		n.rLock(false)
+		if n.ospace == nil {
+			n.rUnlock(false)
+			n.PutErrorBuffer(ne)
+			return nil, errIndexClosed
+		}
 		results := C.ngt_get_object_as_integer(n.ospace, C.ObjectID(id), ne.err)
+		if results != nil {
+			ret = make([]float32, dimension)
+			for i, elem := range unsafe.Slice((*C.uint8_t)(unsafe.Pointer(results)), dimension) {
+				ret[i] = float32(elem)
+			}
+		}
 		n.rUnlock(false)
 		if results == nil {
 			return nil, n.newGoError(ne)
-		}
-		ret = make([]float32, 0, dimension)
-		for _, elem := range (*[algorithm.MaximumVectorDimensionSize]C.uint8_t)(unsafe.Pointer(results))[:dimension:dimension] {
-			ret = append(ret, float32(elem))
 		}
 	default:
 		n.PutErrorBuffer(ne)
@@ -1123,7 +1130,7 @@ func (n *ngt) newGoError(ne *ngtError) (err error) {
 		n.PutErrorBuffer(ne)
 		return nil
 	}
-	if n.epl == 0 || n.eps.Load() < n.epl {
+	if n.epl == 0 || n.eps.Load() < int64(n.epl) {
 		n.PutErrorBuffer(newNGTError())
 	}
 	ne.close()
@@ -1131,10 +1138,9 @@ func (n *ngt) newGoError(ne *ngtError) (err error) {
 }
 
 // Close NGT without save index.
+// ngt_close_index only frees the index (it does not save), so this is the same as Close.
 func (n *ngt) CloseWithoutSaveIndex() {
-	n.index = nil
-	n.prop = nil
-	n.ospace = nil
+	n.Close()
 }
 
 func (n *ngt) GetErrorBuffer() (ne *ngtError) {
@@ -1143,12 +1149,12 @@ func (n *ngt) GetErrorBuffer() (ne *ngtError) {
 	if !ok {
 		ne = newNGTError()
 	}
-	n.eps.Add(^uint64(0))
+	n.eps.Add(-1)
 	return ne
 }
 
 func (n *ngt) PutErrorBuffer(ne *ngtError) {
-	if n.epl != 0 && n.eps.Load() > n.epl {
+	if n.epl != 0 && n.eps.Load() >= int64(n.epl) {
 		ne.close()
 		return
 	}
@@ -1186,9 +1192,18 @@ func (n *ngt) rUnlock(cLock bool) {
 
 // Close NGT index.
 func (n *ngt) Close() {
+	// gen sets the mutexes before it opens the index, so an ngt without them has
+	// no index to close.
+	if n.smu == nil || n.cmu == nil || n.mu == nil {
+		return
+	}
+	// Same lock order as CreateIndex/SaveIndex (smu -> cmu -> mu), so in-flight
+	// Search/Insert/Remove/GetVector/statistics finish before the index is freed.
+	n.smu.Lock()
+	defer n.smu.Unlock()
+	n.lock(true)
+	defer n.unlock(true)
 	if n.index != nil {
-		n.smu.Lock()
-		defer n.smu.Unlock()
 		C.ngt_close_index(n.index)
 		n.index = nil
 		n.prop = nil
@@ -1282,12 +1297,20 @@ func (n *ngt) getGraphStatistics(
 		}
 		err = safety.RecoverFunc(func() (err error) {
 			ne := n.GetErrorBuffer()
+			// The walk reads the whole graph, so exclude Insert/Remove like Search does.
+			n.rLock(true)
 			cstats := C.ngt_get_graph_statistics(n.index, C.char(mode), C.size_t(n.ces), ne.err)
-			if !cstats.valid {
-				return n.newGoError(ne)
+			n.rUnlock(true)
+			// On the NULL-index and exception paths NGT sets the error string and
+			// returns cstats uninitialized, so it must be neither read nor freed.
+			if err := n.newGoError(ne); err != nil {
+				return err
 			}
-			n.PutErrorBuffer(ne)
+			// Otherwise the arrays are allocated even when the graph is not valid.
 			defer C.ngt_free_graph_statistics(&cstats)
+			if !cstats.valid {
+				return nil
+			}
 			stats = fromCGraphStatistics(&cstats)
 			if stats == nil {
 				return errors.ErrNGTIndexStatisticsNotReady
@@ -1310,9 +1333,23 @@ func (n *ngt) getGraphStatistics(
 }
 
 func (n *ngt) GetProperty() (prop *Property, err error) {
+	n.rLock(false)
+	if n.index == nil {
+		n.rUnlock(false)
+		return nil, errIndexClosed
+	}
 	ne := n.GetErrorBuffer()
 	cprop := C.ngt_get_property_info(n.index, ne.err)
-	n.PutErrorBuffer(ne)
+	n.rUnlock(false)
+	// newGoError returns ne to the pool only when it holds no error message.
+	if err := n.newGoError(ne); err != nil {
+		return nil, err
+	}
+	// AccuracyTable and SearchType are left empty on purpose: ngt_get_property_info
+	// (NGT Capi.cpp) fills cprop.accuracy_table / cprop.search_type with c_str() of
+	// std::string members of a local NGT::Property that is destroyed before it returns,
+	// so both pointers dangle and must not be read. Vald never sets either value
+	// (NGT defaults both to ""), and the C API offers no other way to read them.
 	return &Property{
 		Dimension:                     int32(cprop.dimension),
 		ThreadPoolSize:                int32(cprop.thread_pool_size),
@@ -1327,8 +1364,6 @@ func (n *ngt) GetProperty() (prop *Property, err error) {
 		ObjectSharedMemorySize:        int32(cprop.object_shared_memory_size),
 		PrefetchOffset:                int32(cprop.prefetch_offset),
 		PrefetchSize:                  int32(cprop.prefetch_size),
-		AccuracyTable:                 C.GoString(cprop.accuracy_table),
-		SearchType:                    C.GoString(cprop.search_type),
 		MaxMagnitude:                  float32(cprop.max_magnitude),
 		NOfNeighborsForInsertionOrder: int32(cprop.n_of_neighbors_for_insertion_order),
 		EpsilonForInsertionOrder:      float32(cprop.epsilon_for_insertion_order),
@@ -1337,7 +1372,7 @@ func (n *ngt) GetProperty() (prop *Property, err error) {
 		TruncationThreshold:           int32(cprop.truncation_threshold),
 		EdgeSizeForCreation:           int32(cprop.edge_size_for_creation),
 		EdgeSizeForSearch:             int32(cprop.edge_size_for_search),
-		EdgeSizeLimitForCreation:      int32(cprop.edge_size_limit_for_creation),
+		EdgeSizeLimitForCreation:      int32(cprop.max_edge_size_for_creation),
 		InsertionRadiusCoefficient:    float64(cprop.insertion_radius_coefficient),
 		SeedSize:                      int32(cprop.seed_size),
 		SeedType:                      seedType(cprop.seed_type),

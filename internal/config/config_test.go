@@ -863,7 +863,7 @@ func TestRead(t *testing.T) {
 				},
 				want: want{
 					want: cfg,
-					err:  errors.New("invalid character 't' looking for beginning of value"),
+					err:  errors.New("invalid character 'i' in literal true (expecting 'r')"),
 				},
 			}
 		}(),
@@ -1865,24 +1865,20 @@ func Test_deepMerge(t *testing.T) {
 	tests := []test{
 		func() test {
 			dst := &config{
-				GlobalConfig: GlobalConfig{
-					Version: "v0.0.1",
-					TZ:      "UTC",
-					Logging: &Logging{
-						Logger: "glg",
-						Level:  "debug",
-						Format: "raw",
-					},
+				Version: "v0.0.1",
+				TZ:      "UTC",
+				Logging: &Logging{
+					Logger: "glg",
+					Level:  "debug",
+					Format: "raw",
 				},
 			}
 			src := &config{
-				GlobalConfig: GlobalConfig{
-					Version: "v1.0.1",
-					TZ:      "JST",
-					Logging: &Logging{
-						Logger: "glg",
-						Format: "json",
-					},
+				Version: "v1.0.1",
+				TZ:      "JST",
+				Logging: &Logging{
+					Logger: "glg",
+					Format: "json",
 				},
 			}
 			visited := make(map[uintptr]bool)

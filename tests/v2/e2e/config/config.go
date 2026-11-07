@@ -374,7 +374,10 @@ func (d *Data) Bind() (bound *Data, err error) {
 
 // Bind binds and validates the Strategy configuration.
 func (s *Strategy) Bind(parentMetrics *Metrics) (bound *Strategy, err error) {
-	if s == nil || s.Operations == nil || len(s.Operations) == 0 {
+	if s == nil {
+		return nil, errors.Wrap(errors.ErrInvalidConfig, "missing required fields on Strategy")
+	}
+	if len(s.Operations) == 0 {
 		return nil, errors.Wrapf(errors.ErrInvalidConfig, "missing required fields on Strategy %s", s.Name)
 	}
 	s.Name = config.GetActualValue(s.Name)
@@ -407,12 +410,16 @@ func (s *Strategy) Bind(parentMetrics *Metrics) (bound *Strategy, err error) {
 			}
 		}
 	}
+	s.Operations = s.Operations[:cnt]
 	return s, nil
 }
 
 // Bind binds and validates the Operation configuration.
 func (o *Operation) Bind(strategy string, parentMetrics *Metrics) (bound *Operation, err error) {
-	if o == nil || o.Executions == nil || len(o.Executions) == 0 {
+	if o == nil {
+		return nil, errors.Wrap(errors.ErrInvalidConfig, "missing required fields on Operation")
+	}
+	if len(o.Executions) == 0 {
 		return nil, errors.Wrapf(errors.ErrInvalidConfig, "missing required fields on Operation %s", o.Name)
 	}
 	o.Name = config.GetActualValue(o.Name)
@@ -434,6 +441,9 @@ func (o *Operation) Bind(strategy string, parentMetrics *Metrics) (bound *Operat
 	}
 	var cnt int
 	for _, exec := range o.Executions {
+		if exec == nil {
+			continue
+		}
 		exec.Strategy = strategy
 		exec.Operation = o.Name
 		var be *Execution
@@ -444,6 +454,7 @@ func (o *Operation) Bind(strategy string, parentMetrics *Metrics) (bound *Operat
 			cnt++
 		}
 	}
+	o.Executions = o.Executions[:cnt]
 	return o, nil
 }
 
@@ -712,9 +723,10 @@ func (om OperationMode) Bind() (bound OperationMode, err error) {
 
 // Bind expands environment variables for StatusCode.
 func (op Operator) Bind() (bound Operator, err error) {
-	switch strings.TrimForCompare(config.GetActualValue(op)) {
+	// Return the normalized value: callers switch on the lowercase constants.
+	switch normalized := strings.TrimForCompare(config.GetActualValue(op)); normalized {
 	case Le, Lt, Ge, Gt, Eq, Ne:
-		return op, nil
+		return normalized, nil
 	case Contains:
 		return Contains, nil
 	case "notcontains": // TrimForCompare strips "_" from "not_contains"
@@ -1018,11 +1030,15 @@ func (pf *PortForward) Bind() (bound *PortForward, err error) {
 	if pf.Namespace == "" {
 		return nil, errors.New("portforward: namespace cannot be empty")
 	}
-	if _, err = pf.TargetPort.Bind(); err != nil {
+	if bp, err := pf.TargetPort.Bind(); err != nil {
 		return nil, err
+	} else if bp != nil {
+		pf.TargetPort = *bp
 	}
-	if _, err = pf.LocalPort.Bind(); err != nil {
+	if bp, err := pf.LocalPort.Bind(); err != nil {
 		return nil, err
+	} else if bp != nil {
+		pf.LocalPort = *bp
 	}
 	if pf.TargetPort.Port() == 0 {
 		pf.TargetPort = localPort
@@ -1170,20 +1186,10 @@ func (m *Metrics) Opts() (opts []metrics.Option) {
 		opts = append(opts, metrics.WithQueueWaitHistogram(hopts...))
 	}
 	if m.LatencyTDigest != nil {
-		opts = append(opts, metrics.WithLatencyTDigest(
-			metrics.WithTDigestCompression(m.LatencyTDigest.Compression),
-			metrics.WithTDigestCompressionTriggerFactor(m.LatencyTDigest.CompressionTriggerFactor),
-			metrics.WithTDigestQuantiles(m.LatencyTDigest.Quantiles...),
-			metrics.WithTDigestNumShards(m.LatencyTDigest.NumShards),
-		))
+		opts = append(opts, metrics.WithLatencyTDigest(m.LatencyTDigest.opts()...))
 	}
 	if m.QueueWaitTDigest != nil {
-		opts = append(opts, metrics.WithQueueWaitTDigest(
-			metrics.WithTDigestCompression(m.QueueWaitTDigest.Compression),
-			metrics.WithTDigestCompressionTriggerFactor(m.QueueWaitTDigest.CompressionTriggerFactor),
-			metrics.WithTDigestQuantiles(m.QueueWaitTDigest.Quantiles...),
-			metrics.WithTDigestNumShards(m.QueueWaitTDigest.NumShards),
-		))
+		opts = append(opts, metrics.WithQueueWaitTDigest(m.QueueWaitTDigest.opts()...))
 	}
 	if m.Exemplar != nil {
 		opts = append(opts, metrics.WithExemplar(
@@ -1220,6 +1226,25 @@ func (t *TDigest) Bind() (bound *TDigest, err error) {
 		return nil, nil
 	}
 	return t, nil
+}
+
+// opts returns the TDigest options for the fields that are set; unset (zero)
+// fields are omitted so that the metrics package defaults apply instead of
+// being rejected by the option validators.
+func (t *TDigest) opts() []metrics.TDigestOption {
+	const maxOpts = 4 // compression, trigger factor, quantiles, shards
+	topts := make([]metrics.TDigestOption, 0, maxOpts)
+	if t.Compression > 0 {
+		topts = append(topts, metrics.WithTDigestCompression(t.Compression))
+	}
+	if t.CompressionTriggerFactor > 0 {
+		topts = append(topts, metrics.WithTDigestCompressionTriggerFactor(t.CompressionTriggerFactor))
+	}
+	topts = append(topts, metrics.WithTDigestQuantiles(t.Quantiles...))
+	if t.NumShards > 0 {
+		topts = append(topts, metrics.WithTDigestNumShards(t.NumShards))
+	}
+	return topts
 }
 
 // Bind binds and validates the Exemplar configuration.

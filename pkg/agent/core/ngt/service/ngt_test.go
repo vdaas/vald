@@ -795,6 +795,70 @@ func Test_needsBackup(t *testing.T) {
 			}
 		}(),
 	}
+	// An unreadable metadata.json next to index data (crash while writing it) must be
+	// treated as a broken index so that rebuild backs it up instead of deleting it.
+	for _, corrupt := range []struct {
+		modify func(t *testing.T, metafile string)
+		name   string
+	}{
+		{
+			name: "returns true when metadata.json is empty",
+			modify: func(t *testing.T, metafile string) {
+				t.Helper()
+				if err := os.Truncate(metafile, 0); err != nil {
+					t.Errorf("failed to truncate metadata.json: %v", err)
+				}
+			},
+		},
+		{
+			name: "returns true when metadata.json is truncated",
+			modify: func(t *testing.T, metafile string) {
+				t.Helper()
+				b, err := os.ReadFile(metafile)
+				if err != nil {
+					t.Errorf("failed to read metadata.json: %v", err)
+					return
+				}
+				if len(b) < 2 {
+					t.Errorf("metadata.json is too short to truncate: %d bytes", len(b))
+					return
+				}
+				if err := os.Truncate(metafile, int64(len(b)/2)); err != nil {
+					t.Errorf("failed to truncate metadata.json: %v", err)
+				}
+			},
+		},
+		{
+			name: "returns true when metadata.json is null",
+			modify: func(t *testing.T, metafile string) {
+				t.Helper()
+				if err := os.WriteFile(metafile, []byte("null"), fs.ModePerm); err != nil {
+					t.Errorf("failed to write metadata.json: %v", err)
+				}
+			},
+		},
+	} {
+		tests = append(tests, func() test {
+			tmpDir := t.TempDir()
+			validIndexDir := testdata.GetTestdataPath(testdata.ValidIndex)
+			return test{
+				name: corrupt.name,
+				args: args{
+					path: tmpDir,
+				},
+				want: want{
+					need: true,
+				},
+				beforeFunc: func(t *testing.T, a args) {
+					t.Helper()
+					if err := file.CopyDir(t.Context(), validIndexDir, tmpDir); err != nil {
+						t.Errorf("failed to copy index files: %v", err)
+					}
+					corrupt.modify(t, filepath.Join(tmpDir, metadata.AgentMetadataFileName))
+				},
+			}
+		}())
+	}
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
@@ -1111,6 +1175,85 @@ func Test_ngt_Close(t *testing.T) {
 			require.Equal(tt, test.want, err)
 		})
 	}
+}
+
+func Test_ngt_Close_waitsForInflightCreateIndex(t *testing.T) {
+	t.Parallel()
+	cfg := defaultConfig
+	cfg.Dimension = 3
+
+	nn, err := New(&cfg, WithIndexPath(t.TempDir()))
+	require.NoError(t, err)
+	n, ok := nn.(*ngt)
+	require.True(t, ok)
+
+	require.NoError(t, n.InsertWithTime("test-uuid", []float32{1.0, 2.0, 3.0}, time.Now().UnixNano()))
+	require.NoError(t, n.CreateIndex(t.Context(), 10))
+	require.NoError(t, n.SaveIndex(t.Context()))
+	require.Equal(t, n.NumberOfCreateIndexExecution(), n.lastNumberOfCreateIndexExecution())
+
+	// Simulate an auto-index CreateIndex in its graph build phase: the batch is already popped
+	// from the vqueue and nocie is not bumped yet.
+	n.indexing.Store(true)
+
+	ctx, cancel := context.WithTimeout(t.Context(), 30*time.Second)
+	defer cancel()
+	done := make(chan error, 1)
+	go func() {
+		done <- n.Close(ctx)
+	}()
+	select {
+	case err := <-done:
+		t.Fatalf("Close returned while CreateIndex was still in progress: %v", err)
+	case <-time.After(300 * time.Millisecond):
+	}
+
+	// The in-flight CreateIndex finishes.
+	n.nocie.Add(1)
+	n.indexing.Store(false)
+
+	select {
+	case err := <-done:
+		require.NoError(t, err)
+	case <-time.After(20 * time.Second):
+		cancel()
+		t.Fatal("Close did not return after the in-flight CreateIndex finished")
+	}
+	require.Equal(t, n.NumberOfCreateIndexExecution(), n.lastNumberOfCreateIndexExecution(),
+		"Close must save the generation produced by the in-flight CreateIndex")
+}
+
+func TestCreateIndex_exportsIndexInfoOutsideIndexingWindow(t *testing.T) {
+	t.Parallel()
+	cfg := defaultConfig
+	cfg.Dimension = 3
+	cfg.EnableExportIndexInfoToK8s = true
+	cfg.PodName = "test-pod"
+
+	var (
+		n                    NGT
+		exported             atomic.Bool
+		indexingDuringExport atomic.Bool
+	)
+	mock := &k8s.PatcherMock{}
+	mock.On("ApplyPodAnnotations",
+		testify.Anything,
+		testify.Anything,
+		testify.Anything,
+		testify.Anything,
+	).Run(func(testify.Arguments) {
+		exported.Store(true)
+		indexingDuringExport.Store(n.IsIndexing())
+	}).Return(nil)
+
+	var err error
+	n, err = New(&cfg, WithPatcher(mock))
+	require.NoError(t, err)
+	require.NoError(t, n.InsertWithTime("test-uuid", []float32{1.0, 2.0, 3.0}, time.Now().UnixNano()))
+	require.NoError(t, n.CreateIndex(t.Context(), 10))
+
+	require.True(t, exported.Load(), "index info must be exported after CreateIndex")
+	require.False(t, indexingDuringExport.Load(), "search must not be blocked by the k8s export")
 }
 
 func TestExportIndexInfo(t *testing.T) {

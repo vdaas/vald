@@ -121,6 +121,8 @@ spec:
               protocol: TCP
               containerPort: 6060
           resources:
+            limits:
+              memory: 4Gi
             requests:
               cpu: 100m
               memory: 50Mi
@@ -149,6 +151,10 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
+            - name: GOMEMLIMIT
+              valueFrom:
+                resourceFieldRef:
+                  resource: limits.memory
           volumeMounts:
             - name: vald-agent-config
               mountPath: /etc/server/

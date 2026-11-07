@@ -893,3 +893,54 @@ func TestErrIgnoredOption_Unwrap(t *testing.T) {
 }
 
 // NOT IMPLEMENTED BELOW
+
+func TestNewErrOption_multipleErrors(t *testing.T) {
+	t.Parallel()
+	first := New("first failure")
+	second := New("second failure")
+	third := New("third failure")
+
+	type ctor func(errs ...error) error
+	ctors := []struct {
+		new    ctor
+		name   string
+		prefix string
+	}{
+		{
+			name:   "ErrInvalidOption",
+			prefix: "invalid option, name: opt, val: 1",
+			new:    func(errs ...error) error { return NewErrInvalidOption("opt", 1, errs...) },
+		},
+		{
+			name:   "ErrCriticalOption",
+			prefix: "invalid critical option, name: opt, val: 1",
+			new:    func(errs ...error) error { return NewErrCriticalOption("opt", 1, errs...) },
+		},
+		{
+			name:   "ErrIgnoredOption",
+			prefix: "ignored option, name: opt",
+			new:    func(errs ...error) error { return NewErrIgnoredOption("opt", errs...) },
+		},
+	}
+	for _, c := range ctors {
+		ct := c
+		t.Run(ct.name, func(tt *testing.T) {
+			tt.Parallel()
+			got := ct.new(first, nil, second, third)
+			// message is unchanged: previous errors prefix the latest one.
+			if want := ct.prefix + ": first failure: second failure: third failure"; got.Error() != want {
+				tt.Errorf("Error() = %q, want %q", got.Error(), want)
+			}
+			// every merged error remains reachable, not only the last one.
+			for _, target := range []error{first, second, third} {
+				if !Is(got, target) {
+					tt.Errorf("Is(got, %q) = false, want true", target)
+				}
+			}
+			// all-nil errs still yields a non-nil option error without a cause.
+			if nilGot := ct.new(nil, nil); nilGot == nil {
+				tt.Error("expected non-nil error when all errs are nil")
+			}
+		})
+	}
+}

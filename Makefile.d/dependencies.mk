@@ -18,6 +18,8 @@
 ## update vald libraries including tools
 update/libs: \
 	update/buf \
+	update/buildkit \
+	update/buildkit-syft-scanner \
 	update/busybox \
 	update/chaos-mesh \
 	update/cmake \
@@ -119,7 +121,7 @@ rust/deps: \
 ## update chaos-mesh version
 update/chaos-mesh:
 	$(call fetch-version,$(ROOTDIR)/versions/CHAOS_MESH_VERSION,\
-		curl -fsSL https://api.github.com/repos/chaos-mesh/chaos-mesh/releases/latest \
+		curl -fsSL $${GITHUB_TOKEN:+-H "Authorization: Bearer $$GITHUB_TOKEN"} https://api.github.com/repos/chaos-mesh/chaos-mesh/releases/latest \
 		| grep -Po '"tag_name": "\K.*?(?=")' \
 		| sed 's/v//g')
 
@@ -127,7 +129,7 @@ update/chaos-mesh:
 ## update k3d version
 update/k3d:
 	$(call fetch-version,$(ROOTDIR)/versions/K3D_VERSION,\
-		curl -fsSL https://api.github.com/repos/k3d-io/k3d/releases/latest \
+		curl -fsSL $${GITHUB_TOKEN:+-H "Authorization: Bearer $$GITHUB_TOKEN"} https://api.github.com/repos/k3d-io/k3d/releases/latest \
 		| jq -r '.tag_name' \
 		| sed 's/v//g')
 
@@ -155,7 +157,7 @@ update/go:
 ## update golangci-lint version
 update/golangci-lint:
 	$(call fetch-version,$(ROOTDIR)/versions/GOLANGCILINT_VERSION,\
-		curl -fsSL https://api.github.com/repos/golangci/golangci-lint/releases/latest \
+		curl -fsSL $${GITHUB_TOKEN:+-H "Authorization: Bearer $$GITHUB_TOKEN"} https://api.github.com/repos/golangci/golangci-lint/releases/latest \
 		| grep -Po '"tag_name": "\K.*?(?=")')
 
 .PHONY: update/rust
@@ -173,7 +175,7 @@ update/rust:
 ## update docker version
 update/docker:
 	$(call fetch-version,$(ROOTDIR)/versions/DOCKER_VERSION,\
-		curl -fsSL https://api.github.com/repos/moby/moby/releases/latest \
+		curl -fsSL $${GITHUB_TOKEN:+-H "Authorization: Bearer $$GITHUB_TOKEN"} https://api.github.com/repos/moby/moby/releases/latest \
 		| grep -Po '"tag_name": "\K.*?(?=")' \
 		| sed 's/docker-//g')
 
@@ -181,7 +183,7 @@ update/docker:
 ## update helm version
 update/helm:
 	$(call fetch-version,$(ROOTDIR)/versions/HELM_VERSION,\
-		curl -fsSL https://api.github.com/repos/helm/helm/releases/latest \
+		curl -fsSL $${GITHUB_TOKEN:+-H "Authorization: Bearer $$GITHUB_TOKEN"} https://api.github.com/repos/helm/helm/releases/latest \
 		| grep -Po '"tag_name": "\K.*?(?=")')
 
 .PHONY: update/operator/helm
@@ -195,13 +197,13 @@ update/operator/helm:
 		| grep -v latest \
 		| grep -v rc \
 		| head -1 \
-		| sed 's/.*"name": "\(.*\)",/\1/g')
+		| sed 's/.*"name": "\(.*\)"$(COMMA)/\1/g')
 
 .PHONY: update/helm-docs
 ## update helm-docs version
 update/helm-docs:
 	$(call fetch-version,$(ROOTDIR)/versions/HELM_DOCS_VERSION,\
-		curl -fsSL https://api.github.com/repos/norwoodj/helm-docs/releases/latest \
+		curl -fsSL $${GITHUB_TOKEN:+-H "Authorization: Bearer $$GITHUB_TOKEN"} https://api.github.com/repos/norwoodj/helm-docs/releases/latest \
 		| grep -Po '"tag_name": "\K.*?(?=")' \
 		| sed 's/v//g')
 
@@ -209,7 +211,7 @@ update/helm-docs:
 ## update protobuf version
 update/protobuf:
 	$(call fetch-version,$(ROOTDIR)/versions/PROTOBUF_VERSION,\
-		curl -fsSL https://api.github.com/repos/protocolbuffers/protobuf/releases/latest \
+		curl -fsSL $${GITHUB_TOKEN:+-H "Authorization: Bearer $$GITHUB_TOKEN"} https://api.github.com/repos/protocolbuffers/protobuf/releases/latest \
 		| grep -Po '"tag_name": "\K.*?(?=")' \
 		| sed 's/v//g')
 
@@ -217,7 +219,7 @@ update/protobuf:
 ## update buf version
 update/buf:
 	$(call fetch-version,$(ROOTDIR)/versions/BUF_VERSION,\
-		curl -fsSL https://api.github.com/repos/bufbuild/buf/releases/latest \
+		curl -fsSL $${GITHUB_TOKEN:+-H "Authorization: Bearer $$GITHUB_TOKEN"} https://api.github.com/repos/bufbuild/buf/releases/latest \
 		| grep -Po '"tag_name": "\K.*?(?=")')
 
 .PHONY: update/busybox
@@ -234,7 +236,7 @@ update/busybox:
 ## update kind (kubernetes in docker) version
 update/kind:
 	$(call fetch-version,$(ROOTDIR)/versions/KIND_VERSION,\
-		curl -fsSL https://api.github.com/repos/kubernetes-sigs/kind/releases/latest \
+		curl -fsSL $${GITHUB_TOKEN:+-H "Authorization: Bearer $$GITHUB_TOKEN"} https://api.github.com/repos/kubernetes-sigs/kind/releases/latest \
 		| grep -Po '"tag_name": "\K.*?(?=")' \
 		| sed 's/v//g')
 
@@ -262,21 +264,21 @@ update/jaeger-operator:
 ## update kube-linter version
 update/kube-linter:
 	$(call fetch-version,$(ROOTDIR)/versions/KUBELINTER_VERSION,\
-		curl -fsSL https://api.github.com/repos/stackrox/kube-linter/releases/latest \
+		curl -fsSL $${GITHUB_TOKEN:+-H "Authorization: Bearer $$GITHUB_TOKEN"} https://api.github.com/repos/stackrox/kube-linter/releases/latest \
 		| grep -Po '"tag_name": "\K.*?(?=")')
 
 # .PHONY: update/otel-operator
 # ## update otel-operator version
 # update/otel-operator:
 #	$(call fetch-version,$(ROOTDIR)/versions/OTEL_OPERATOR_VERSION,\
-#		curl -fsSL https://api.github.com/repos/open-telemetry/opentelemetry-operator/releases/latest \
+#		curl -fsSL $${GITHUB_TOKEN:+-H "Authorization: Bearer $$GITHUB_TOKEN"} https://api.github.com/repos/open-telemetry/opentelemetry-operator/releases/latest \
 #		| grep -Po '"tag_name": "\K.*?(?=")')
 
 .PHONY: update/llvm
 ## update llvm version
 update/llvm:
 	$(call fetch-version,$(ROOTDIR)/versions/LLVM_VERSION,\
-		curl -fsSL https://api.github.com/repos/llvm/llvm-project/releases/latest \
+		curl -fsSL $${GITHUB_TOKEN:+-H "Authorization: Bearer $$GITHUB_TOKEN"} https://api.github.com/repos/llvm/llvm-project/releases/latest \
 		| grep -Po '"tag_name": "llvmorg-\K[^"]+')
 
 .PHONY: update/openmp
@@ -287,7 +289,23 @@ update/openmp: update/llvm
 ## update NGT-labs/NGT version
 update/ngt:
 	$(call fetch-version,$(ROOTDIR)/versions/NGT_VERSION,\
-		curl -fsSL https://api.github.com/repos/NGT-labs/NGT/releases/latest \
+		curl -fsSL $${GITHUB_TOKEN:+-H "Authorization: Bearer $$GITHUB_TOKEN"} https://api.github.com/repos/NGT-labs/NGT/releases/latest \
+		| grep -Po '"tag_name": "\K.*?(?=")' \
+		| sed 's/v//g')
+
+.PHONY: update/buildkit
+## update buildkit version
+update/buildkit:
+	$(call fetch-version,$(ROOTDIR)/versions/BUILDKIT_VERSION,\
+		curl -fsSL $${GITHUB_TOKEN:+-H "Authorization: Bearer $$GITHUB_TOKEN"} https://api.github.com/repos/moby/buildkit/releases/latest \
+		| grep -Po '"tag_name": "\K.*?(?=")' \
+		| sed 's/v//g')
+
+.PHONY: update/buildkit-syft-scanner
+## update buildkit-syft-scanner version
+update/buildkit-syft-scanner:
+	$(call fetch-version,$(ROOTDIR)/versions/BUILDKIT_SYFT_SCANNER_VERSION,\
+		curl -fsSL $${GITHUB_TOKEN:+-H "Authorization: Bearer $$GITHUB_TOKEN"} https://api.github.com/repos/docker/buildkit-syft-scanner/releases/latest \
 		| grep -Po '"tag_name": "\K.*?(?=")' \
 		| sed 's/v//g')
 
@@ -295,7 +313,7 @@ update/ngt:
 ## update facebookresearch/faiss version
 update/faiss:
 	$(call fetch-version,$(ROOTDIR)/versions/FAISS_VERSION,\
-		curl -fsSL https://api.github.com/repos/facebookresearch/faiss/releases/latest \
+		curl -fsSL $${GITHUB_TOKEN:+-H "Authorization: Bearer $$GITHUB_TOKEN"} https://api.github.com/repos/facebookresearch/faiss/releases/latest \
 		| grep -Po '"tag_name": "\K.*?(?=")' \
 		| sed 's/v//g')
 
@@ -303,7 +321,7 @@ update/faiss:
 ## update usearch version
 update/usearch:
 	$(call fetch-version,$(ROOTDIR)/versions/USEARCH_VERSION,\
-		curl -fsSL https://api.github.com/repos/unum-cloud/usearch/releases/latest \
+		curl -fsSL $${GITHUB_TOKEN:+-H "Authorization: Bearer $$GITHUB_TOKEN"} https://api.github.com/repos/unum-cloud/usearch/releases/latest \
 		| grep -Po '"tag_name": "\K.*?(?=")' \
 		| sed 's/v//g')
 
@@ -311,7 +329,7 @@ update/usearch:
 ## update CMAKE version
 update/cmake:
 	$(call fetch-version,$(ROOTDIR)/versions/CMAKE_VERSION,\
-		curl -fsSL https://api.github.com/repos/Kitware/CMake/releases/latest \
+		curl -fsSL $${GITHUB_TOKEN:+-H "Authorization: Bearer $$GITHUB_TOKEN"} https://api.github.com/repos/Kitware/CMake/releases/latest \
 		| grep -Po '"tag_name": "\K.*?(?=")' \
 		| sed 's/v//g')
 
@@ -319,7 +337,7 @@ update/cmake:
 ## update NINJA version
 update/ninja:
 	$(call fetch-version,$(ROOTDIR)/versions/NINJA_VERSION,\
-		curl -fsSL https://api.github.com/repos/ninja-build/ninja/releases/latest \
+		curl -fsSL $${GITHUB_TOKEN:+-H "Authorization: Bearer $$GITHUB_TOKEN"} https://api.github.com/repos/ninja-build/ninja/releases/latest \
 		| grep -Po '"tag_name": "\K.*?(?=")' \
 		| sed 's/v//g')
 
@@ -327,14 +345,14 @@ update/ninja:
 ## update reviewdog version
 update/reviewdog:
 	$(call fetch-version,$(ROOTDIR)/versions/REVIEWDOG_VERSION,\
-		curl -fsSL https://api.github.com/repos/reviewdog/reviewdog/releases/latest \
+		curl -fsSL $${GITHUB_TOKEN:+-H "Authorization: Bearer $$GITHUB_TOKEN"} https://api.github.com/repos/reviewdog/reviewdog/releases/latest \
 		| grep -Po '"tag_name": "\K.*?(?=")')
 
 .PHONY: update/telepresence
 ## update telepresence version
 update/telepresence:
 	$(call fetch-version,$(ROOTDIR)/versions/TELEPRESENCE_VERSION,\
-		curl -fsSL https://api.github.com/repos/telepresenceio/telepresence/releases/latest \
+		curl -fsSL $${GITHUB_TOKEN:+-H "Authorization: Bearer $$GITHUB_TOKEN"} https://api.github.com/repos/telepresenceio/telepresence/releases/latest \
 		| grep -Po '"tag_name": "\K.*?(?=")' \
 		| sed 's/v//g')
 
@@ -342,14 +360,14 @@ update/telepresence:
 ## update YQ version
 update/yq:
 	$(call fetch-version,$(ROOTDIR)/versions/YQ_VERSION,\
-		curl -fsSL https://api.github.com/repos/mikefarah/yq/releases/latest \
+		curl -fsSL $${GITHUB_TOKEN:+-H "Authorization: Bearer $$GITHUB_TOKEN"} https://api.github.com/repos/mikefarah/yq/releases/latest \
 		| grep -Po '"tag_name": "\K.*?(?=")')
 
 .PHONY: update/zlib
 ## update zlib version
 update/zlib:
 	$(call fetch-version,$(ROOTDIR)/versions/ZLIB_VERSION,\
-		curl -fsSL https://api.github.com/repos/madler/zlib/releases/latest \
+		curl -fsSL $${GITHUB_TOKEN:+-H "Authorization: Bearer $$GITHUB_TOKEN"} https://api.github.com/repos/madler/zlib/releases/latest \
 		| grep -Po '"tag_name": "\K.*?(?=")' \
 		| sed 's/v//g')
 
@@ -357,7 +375,7 @@ update/zlib:
 ## update hdf5 version
 update/hdf5:
 	$(call fetch-version,$(ROOTDIR)/versions/HDF5_VERSION,\
-		curl -fsSL https://api.github.com/repos/HDFGroup/hdf5/releases/latest \
+		curl -fsSL $${GITHUB_TOKEN:+-H "Authorization: Bearer $$GITHUB_TOKEN"} https://api.github.com/repos/HDFGroup/hdf5/releases/latest \
 		| grep -Po '"tag_name": "\K.*?(?=")' \
 		| sed 's/v//g')
 
@@ -365,21 +383,21 @@ update/hdf5:
 ## update vald it's self version
 update/vald:
 	$(call fetch-version,$(ROOTDIR)/versions/VALD_VERSION,\
-		curl -fsSL https://api.github.com/repos/$(REPO)/releases/latest \
+		curl -fsSL $${GITHUB_TOKEN:+-H "Authorization: Bearer $$GITHUB_TOKEN"} https://api.github.com/repos/$(REPO)/releases/latest \
 		| grep -Po '"tag_name": "\K.*?(?=")')
 
 .PHONY: update/snapshotter
 ## update snapshotter version
 update/snapshotter:
 	$(call fetch-version,$(ROOTDIR)/versions/SNAPSHOTTER_VERSION,\
-		curl -fsSL https://api.github.com/repos/kubernetes-csi/external-snapshotter/releases/latest \
+		curl -fsSL $${GITHUB_TOKEN:+-H "Authorization: Bearer $$GITHUB_TOKEN"} https://api.github.com/repos/kubernetes-csi/external-snapshotter/releases/latest \
 		| grep -Po '"tag_name": "\K.*?(?=")')
 
 .PHONY: update/csi-driver-host-path
 ## update csi-driver-host-path version
 update/csi-driver-host-path:
 	$(call fetch-version,$(ROOTDIR)/versions/CSI_DRIVER_HOST_PATH_VERSION,\
-		curl -fsSL https://api.github.com/repos/kubernetes-csi/csi-driver-host-path/releases/latest \
+		curl -fsSL $${GITHUB_TOKEN:+-H "Authorization: Bearer $$GITHUB_TOKEN"} https://api.github.com/repos/kubernetes-csi/csi-driver-host-path/releases/latest \
 		| grep -Po '"tag_name": "\K.*?(?=")')
 
 .PHONY: update/template

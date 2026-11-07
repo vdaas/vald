@@ -14,6 +14,191 @@
 
 package ingress
 
+import (
+	"context"
+	"slices"
+	"testing"
+	"time"
+
+	"github.com/vdaas/vald/apis/grpc/v1/filter/ingress"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/net"
+	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/grpc/codes"
+	"github.com/vdaas/vald/internal/net/grpc/status"
+	"github.com/vdaas/vald/internal/sync"
+	ggrpc "google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/test/bufconn"
+)
+
+// fakeFilter appends tag to the vector, or fails with err when set.
+type fakeFilter struct {
+	ingress.UnimplementedFilterServer
+	err    error
+	mu     sync.Mutex
+	called int
+	tag    float32
+}
+
+func (f *fakeFilter) FilterVector(
+	_ context.Context, in *payload.Object_Vector,
+) (*payload.Object_Vector, error) {
+	f.mu.Lock()
+	f.called++
+	f.mu.Unlock()
+	if f.err != nil {
+		return nil, f.err
+	}
+	return &payload.Object_Vector{Id: in.GetId(), Vector: append(slices.Clone(in.GetVector()), f.tag)}, nil
+}
+
+func (f *fakeFilter) calls() int {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	return f.called
+}
+
+// fakeGRPCClient runs callbacks on bufconn connections. OrderedRange mirrors
+// gRPCClient.OrderedRange, which drops per-address errors.
+type fakeGRPCClient struct {
+	grpc.Client
+	conns map[string]*grpc.ClientConn
+}
+
+func (f *fakeGRPCClient) Do(
+	ctx context.Context,
+	addr string,
+	fn func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (any, error),
+) (any, error) {
+	conn, ok := f.conns[addr]
+	if !ok {
+		return nil, errors.ErrGRPCClientConnNotFound(addr)
+	}
+	return fn(ctx, conn)
+}
+
+func (f *fakeGRPCClient) OrderedRange(
+	ctx context.Context,
+	order []string,
+	fn func(ctx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error,
+) error {
+	for _, addr := range order {
+		if conn, ok := f.conns[addr]; ok {
+			if err := fn(ctx, addr, conn); err != nil {
+				// gRPCClient.OrderedRange joins the error and still returns nil.
+				continue
+			}
+		}
+	}
+	return nil
+}
+
+func newFakeGRPCClient(
+	t *testing.T, order []string, filters map[string]*fakeFilter,
+) *fakeGRPCClient {
+	t.Helper()
+	conns := make(map[string]*grpc.ClientConn, len(order))
+	for _, addr := range order {
+		lis := bufconn.Listen(1 << 20)
+		srv := ggrpc.NewServer()
+		ingress.RegisterFilterServer(srv, filters[addr])
+		served := make(chan struct{})
+		go func() {
+			defer close(served)
+			if err := srv.Serve(lis); err != nil {
+				t.Logf("fake filter %s stopped: %v", addr, err)
+			}
+		}()
+		conn, err := ggrpc.NewClient("passthrough:///"+addr,
+			ggrpc.WithContextDialer(func(ctx context.Context, _ string) (net.Conn, error) {
+				return lis.DialContext(ctx)
+			}),
+			ggrpc.WithTransportCredentials(insecure.NewCredentials()))
+		if err != nil {
+			t.Fatalf("failed to create client for %s: %v", addr, err)
+		}
+		t.Cleanup(func() {
+			if err := conn.Close(); err != nil {
+				t.Logf("failed to close conn to %s: %v", addr, err)
+			}
+			srv.Stop()
+			select {
+			case <-served:
+			case <-time.After(10 * time.Second):
+				t.Errorf("fake filter %s did not stop", addr)
+			}
+		})
+		conns[addr] = conn
+	}
+	return &fakeGRPCClient{conns: conns}
+}
+
+func Test_multipleAddrsClient_FilterVector_Chain(t *testing.T) {
+	t.Parallel()
+	failure := status.Error(codes.InvalidArgument, "filter failed")
+	tests := []struct {
+		errs      map[string]error
+		wantCalls map[string]int
+		name      string
+		want      []float32
+		wantErr   bool
+	}{
+		{
+			name:      "applies every filter in order",
+			want:      []float32{0, 1, 2},
+			wantCalls: map[string]int{"a": 1, "b": 1},
+		},
+		{
+			name:      "returns the error of a failing middle filter and stops the chain",
+			errs:      map[string]error{"a": failure},
+			wantCalls: map[string]int{"a": 1, "b": 0},
+			wantErr:   true,
+		},
+		{
+			name:      "returns the error of a failing last filter instead of (nil, nil)",
+			errs:      map[string]error{"b": failure},
+			wantCalls: map[string]int{"a": 1, "b": 1},
+			wantErr:   true,
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			order := []string{"a", "b"}
+			filters := map[string]*fakeFilter{
+				"a": {tag: 1, err: tc.errs["a"]},
+				"b": {tag: 2, err: tc.errs["b"]},
+			}
+			m := &multipleAddrsClient{addrs: order, c: newFakeGRPCClient(t, order, filters)}
+			ctx, cancel := context.WithTimeout(t.Context(), 30*time.Second)
+			defer cancel()
+			got, err := m.FilterVector(ctx, &payload.Object_Vector{Id: "x", Vector: []float32{0}})
+			if tc.wantErr {
+				if err == nil {
+					t.Fatalf("FilterVector() error = nil, want error (got %v)", got)
+				}
+				if got != nil {
+					t.Errorf("FilterVector() got = %v, want nil on error", got)
+				}
+			} else {
+				if err != nil {
+					t.Fatalf("FilterVector() error = %v, want nil", err)
+				}
+				if !slices.Equal(got.GetVector(), tc.want) {
+					t.Errorf("FilterVector() vector = %v, want %v", got.GetVector(), tc.want)
+				}
+			}
+			for addr, want := range tc.wantCalls {
+				if c := filters[addr].calls(); c != want {
+					t.Errorf("filter %s called %d times, want %d", addr, c, want)
+				}
+			}
+		})
+	}
+}
+
 // NOT IMPLEMENTED BELOW
 //
 // func TestNew(t *testing.T) {

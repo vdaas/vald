@@ -14,7 +14,9 @@
 package usecase
 
 import (
+	"reflect"
 	"testing"
+	"time"
 
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/file"
@@ -66,6 +68,58 @@ func TestNew(t *testing.T) {
 		}
 		if err := r.PreStop(tt.Context()); err != nil {
 			tt.Errorf("PreStop failed: %v", err)
+		}
+	})
+
+	t.Run("applies the configured KVS background sync and compaction intervals", func(tt *testing.T) {
+		tt.Parallel()
+		defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+
+		const (
+			syncInterval       = 7 * time.Second
+			compactionInterval = 11 * time.Second
+		)
+		cfg := &jconfig.Data{
+			Server:        &config.Servers{},
+			Observability: &config.Observability{Enabled: false},
+			Exporter: &config.IndexExporter{
+				IndexPath:                       tt.TempDir(),
+				Concurrency:                     1,
+				KVSBackgroundSyncInterval:       syncInterval.String(),
+				KVSBackgroundCompactionInterval: compactionInterval.String(),
+			},
+		}
+
+		r, err := New(cfg)
+		if err != nil {
+			tt.Fatalf("err: %v", err)
+		}
+		defer func() {
+			if err := r.PreStop(tt.Context()); err != nil {
+				tt.Errorf("PreStop failed: %v", err)
+			}
+		}()
+		rr, ok := r.(*run)
+		if !ok {
+			tt.Fatalf("New returned %T, want *run", r)
+		}
+		// the exporter implementation is unexported in package service, so its
+		// interval fields are read through reflection.
+		ev := reflect.ValueOf(rr.exporter)
+		if ev.Kind() != reflect.Pointer || ev.Elem().Kind() != reflect.Struct {
+			tt.Fatalf("exporter is %T, want a pointer to a struct", rr.exporter)
+		}
+		for field, want := range map[string]time.Duration{
+			"backgroundSyncInterval":       syncInterval,
+			"backgroundCompactionInterval": compactionInterval,
+		} {
+			fv := ev.Elem().FieldByName(field)
+			if !fv.IsValid() {
+				tt.Fatalf("exporter has no field %s", field)
+			}
+			if got := time.Duration(fv.Int()); got != want {
+				tt.Errorf("exporter %s = %v, want %v from the config", field, got, want)
+			}
 		}
 	})
 

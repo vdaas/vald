@@ -17,8 +17,8 @@ package net
 import (
 	"context"
 	"net"
+	"net/netip"
 	"strconv"
-	"sync/atomic"
 	"syscall"
 	"time"
 
@@ -32,6 +32,7 @@ import (
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/atomic"
 	"github.com/vdaas/vald/internal/tls"
 )
 
@@ -57,7 +58,6 @@ type dialer struct {
 	dialerFallbackDelay   time.Duration
 	dnsRefreshDuration    time.Duration
 	sockFlg               control.SocketFlag
-	tmu                   sync.RWMutex
 	dnsCachedOnce         sync.Once
 	dialerDualStack       bool
 	enableDNSCache        bool
@@ -75,7 +75,12 @@ type dialerCache struct {
 	cnt uint32
 }
 
-const apiName = "vald/internal/net"
+const (
+	apiName = "vald/internal/net"
+
+	// dnsRetryInterval is the pause between DNS lookup/dial retry rounds in cachedDialer.
+	dnsRetryInterval = 10 * time.Millisecond
+)
 
 // IP returns the next cached IP address in round robin order.
 // It starts getting the index 1 cache instead of index 0 cache.
@@ -98,7 +103,7 @@ func NewDialer(opts ...DialerOption) (der Dialer, err error) {
 	for _, opt := range append(defaultDialerOptions, opts...) {
 		opt(d)
 	}
-	d.ctrl = control.New(d.sockFlg, int(d.dialerKeepalive))
+	d.ctrl = control.New(d.sockFlg, control.KeepAliveSeconds(d.dialerKeepalive))
 
 	d.der = &net.Dialer{
 		Timeout:       d.dialerTimeout,
@@ -130,9 +135,11 @@ func NewDialer(opts ...DialerOption) (der Dialer, err error) {
 		d.dialer = d.cachedDialer
 	}
 
+	// The resolver dials DNS servers (udp, and tcp on truncation); those dials must
+	// never be TLS-handshaked or go over QUIC, so it does not use d.dialer.
 	d.der.Resolver = &Resolver{
 		PreferGo: true,
-		Dial:     d.dialer,
+		Dial:     d.resolverDial,
 	}
 
 	return d, nil
@@ -195,6 +202,9 @@ func (d *dialer) lookupIPAddrs(ctx context.Context, host string) (ips []string, 
 		rsv = d.der.Resolver
 	}
 	r, err := lookupNetIP(ctx, rsv, host)
+	if err != nil {
+		return nil, errors.Wrap(err, errors.ErrLookupIPAddrNotFound(host).Error())
+	}
 	if len(r) == 0 {
 		return nil, errors.ErrLookupIPAddrNotFound(host)
 	}
@@ -254,28 +264,26 @@ func (d *dialer) cachedDialer(ctx context.Context, network, addr string) (conn C
 			}
 			return nil, err
 		}
-		if nport != 0 {
-			port = strconv.FormatUint(uint64(nport), 10)
+		// Parse substitutes defaultPort for a missing port, so nport is never 0 here.
+		port = strconv.FormatUint(uint64(nport), 10)
+		if _, perr := netip.ParseAddr(host); perr == nil {
+			// An IP literal dials itself and re-parsing it needs no DNS lookup, so it
+			// is neither cached here nor sent through the DNS cache. gRPC hands the
+			// dialer every resolved IP:port, and caching them kept one entry per
+			// backend IP ever dialed: Disconnect evicts only the configured address.
+			isIP = true
 		} else {
-			const (
-				defaultTCPPort = "80"
-				defaultUDPPort = "53"
-			)
-			switch network {
-			case TCP.String(), TCP4.String(), TCP6.String():
-				port = defaultTCPPort
-			case UDP.String(), UDP4.String(), UDP6.String():
-				port = defaultUDPPort
-			default:
-				log.Warnf("Unknown network type: %s. Port will be empty.", network)
-			}
+			// Keep the upstream semantics: Parse also reports isIPv4/isIPv6 for resolved
+			// host names, so later dials skip the DNS-cache path while the first one
+			// (local isIP still false) goes through it. Making host names use the cache
+			// path on every dial changes TLS server names and retry timing.
+			d.addrs.Store(addr, &addrInfo{
+				host: host,
+				port: port,
+				addr: addr,
+				isIP: isV4 || isV6,
+			})
 		}
-		d.addrs.Store(addr, &addrInfo{
-			host: host,
-			port: port,
-			addr: addr,
-			isIP: isV4 || isV6,
-		})
 	} else {
 		host = ai.host
 		port = ai.port
@@ -305,17 +313,29 @@ func (d *dialer) cachedDialer(ctx context.Context, network, addr string) (conn C
 						default:
 							// in this line we use golang's standard net packages net.JoinHostPort cuz port is string type
 							target := net.JoinHostPort(dc.IP(), port)
-							conn, err := d.dial(ctx, network, target)
-							if err == nil && conn != nil {
-								return conn, nil
+							// Verify TLS against the host name, not the resolved IP that
+							// target carries, as the plain dial of addr does.
+							tconn, err := d.dialConn(ctx, network, target, host, true)
+							if err == nil && tconn != nil {
+								return tconn, nil
 							}
 							log.Warnf("failed to dial connection to %s\terror: %v", target, err)
-							if conn != nil {
-								conn.Close()
+							if tconn != nil {
+								if cerr := tconn.Close(); cerr != nil {
+									log.Warnf("failed to close connection to %s\terror: %v", target, cerr)
+								}
 							}
 						}
 						d.dnsCache.Delete(host)
 					}
+				}
+				// Back off before retrying so that a fast-failing lookup/dial does not spin
+				// the CPU and the resolver until dialerTimeout, and so that a cancelled ctx
+				// ends the loop immediately.
+				select {
+				case <-ctx.Done():
+					return nil, ctx.Err()
+				case <-time.After(dnsRetryInterval):
 				}
 			}
 		}
@@ -340,6 +360,19 @@ func isQUICDial(network, addr string) bool {
 }
 
 func (d *dialer) dial(ctx context.Context, network, addr string) (conn Conn, err error) {
+	return d.dialConn(ctx, network, addr, "", true)
+}
+
+// resolverDial is the Resolver's dial func: a plain connection, never TLS or QUIC.
+func (d *dialer) resolverDial(ctx context.Context, network, addr string) (conn Conn, err error) {
+	return d.dialConn(ctx, network, addr, "", false)
+}
+
+// dialConn dials addr. serverName, when set, is the TLS server name to verify
+// instead of the host of addr.
+func (d *dialer) dialConn(
+	ctx context.Context, network, addr, serverName string, secure bool,
+) (conn Conn, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/Dialer.dial")
 	defer func() {
 		if span != nil {
@@ -353,8 +386,11 @@ func (d *dialer) dial(ctx context.Context, network, addr string) (conn Conn, err
 		return nil, errors.ErrInvalidAddress(network, addr)
 	}
 	log.Debugf("%s connection dialing to addr %s", network, addr)
+	// Capture this before the closure below rewrites network from udp to tcp, so
+	// that udp dials (e.g. the resolver's DNS dials) are never TLS-handshaked.
+	isUDP := IsUDP(network)
 	err = safety.RecoverWithoutPanicFunc(func() (err error) {
-		if isQUICDial(network, addr) {
+		if secure && isQUICDial(network, addr) {
 			conn, err = quic.DialContext(ctx, addr, d.tlsConfig)
 		} else {
 			if IsUDP(network) {
@@ -371,12 +407,15 @@ func (d *dialer) dial(ctx context.Context, network, addr string) (conn Conn, err
 		return nil, err
 	}
 
-	d.tmu.RLock()
-	if !IsUDP(network) && d.tlsConfig != nil {
-		d.tmu.RUnlock()
-		return d.tlsHandshake(ctx, conn, network, addr)
+	if secure && !isUDP && d.tlsConfig != nil {
+		// Do not return the *tls.Conn directly: a nil *tls.Conn converted to Conn is a
+		// non-nil interface, and callers that Close a non-nil conn on error would panic.
+		tconn, err := d.tlsHandshake(ctx, conn, network, addr, serverName)
+		if err != nil {
+			return nil, err
+		}
+		return tconn, nil
 	}
-	d.tmu.RUnlock()
 	if conn != nil {
 		log.Infof("connected to addr %s succeed from %s://%s to %s://%s",
 			addr,
@@ -388,7 +427,7 @@ func (d *dialer) dial(ctx context.Context, network, addr string) (conn Conn, err
 }
 
 func (d *dialer) tlsHandshake(
-	ctx context.Context, conn Conn, network, addr string,
+	ctx context.Context, conn Conn, network, addr, serverName string,
 ) (tconn *tls.Conn, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/Dialer.tlsHandshake")
 	defer func() {
@@ -396,23 +435,21 @@ func (d *dialer) tlsHandshake(
 			span.End()
 		}
 	}()
-	d.tmu.RLock()
-	if d.tlsConfig.ServerName == "" {
-		d.tmu.RUnlock()
+	// d.tlsConfig is shared by every dial (possibly to different hosts), so it must
+	// never be mutated here: work on a per-dial clone to set the ServerName.
+	cfg := d.tlsConfig.Clone()
+	if cfg.ServerName == "" && serverName != "" {
+		cfg.ServerName = serverName
+	}
+	if cfg.ServerName == "" {
 		var host string
 		host, _, err = SplitHostPort(addr)
 		if err == nil && len(host) != 0 {
-			d.tmu.Lock()
-			d.tlsConfig.ServerName = host
-			d.tmu.Unlock()
+			cfg.ServerName = host
 		}
-	} else {
-		d.tmu.RUnlock()
 	}
 	if conn != nil {
-		d.tmu.RLock()
-		tconn = tls.Client(conn, d.tlsConfig)
-		d.tmu.RUnlock()
+		tconn = tls.Client(conn, cfg)
 	}
 	var tctx context.Context
 	if d.der.Timeout > 0 {
@@ -451,12 +488,10 @@ func (d *dialer) tlsHandshake(
 			defer tcancel()
 		}
 		err = safety.RecoverWithoutPanicFunc(func() error {
-			d.tmu.RLock()
 			tder := &tls.Dialer{
 				NetDialer: d.der,
-				Config:    d.tlsConfig,
+				Config:    cfg,
 			}
-			d.tmu.RUnlock()
 			conn, err = tder.DialContext(tctx, network, addr)
 			return err
 		})()
@@ -468,11 +503,9 @@ func (d *dialer) tlsHandshake(
 				defer ttcancel()
 			}
 			err = safety.RecoverWithoutPanicFunc(func() error {
-				d.tmu.RLock()
 				tder := &tls.Dialer{
-					Config: d.tlsConfig,
+					Config: cfg,
 				}
-				d.tmu.RUnlock()
 				conn, err = tder.DialContext(ttctx, network, addr)
 				return err
 			})()
@@ -510,7 +543,23 @@ func (d *dialer) tlsHandshake(
 	return tconn, nil
 }
 
+// EvictAddr drops the cached parse result of addr and the DNS cache entry of its
+// host, so the state of removed addresses does not pile up. The gRPC client
+// calls it when it disconnects addr. A later dial to addr re-creates both.
+func (d *dialer) EvictAddr(addr string) {
+	ai, ok := d.addrs.LoadAndDelete(addr)
+	if ok && ai != nil && d.dnsCache != nil {
+		d.dnsCache.Delete(ai.host)
+	}
+}
+
 func (d *dialer) cacheExpireHook(ctx context.Context, addr string, dc *dialerCache) {
+	// An IP literal always resolves to itself, so refreshing it would keep its
+	// entry forever. cachedDialer never reads one (IP literals skip the cache),
+	// so let a stored one expire instead.
+	if _, err := netip.ParseAddr(addr); err == nil {
+		return
+	}
 	if err := safety.RecoverFunc(func() (err error) {
 		dc, err = d.lookup(ctx, addr)
 		return err

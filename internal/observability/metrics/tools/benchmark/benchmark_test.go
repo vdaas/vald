@@ -14,13 +14,17 @@
 package benchmark
 
 import (
+	"context"
 	"reflect"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
+	v1 "github.com/vdaas/vald/internal/k8s/vald/benchmark/api/v1"
 	"github.com/vdaas/vald/internal/observability/metrics"
 	"github.com/vdaas/vald/internal/test/goleak"
 	"github.com/vdaas/vald/pkg/operator/benchmark/service"
+	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
+	"go.opentelemetry.io/otel/sdk/metric/metricdata"
 )
 
 func TestNew(t *testing.T) {
@@ -295,6 +299,110 @@ func Test_operatorMetrics_Register(t *testing.T) {
 				tt.Errorf("error = %v", err)
 			}
 		})
+	}
+}
+
+type fakeOperator struct {
+	service.Operator
+	scenario map[v1.ValdBenchmarkScenarioStatus]int64
+	job      map[v1.BenchmarkJobStatus]int64
+}
+
+func (f *fakeOperator) GetScenarioStatus() map[v1.ValdBenchmarkScenarioStatus]int64 {
+	return f.scenario
+}
+
+func (f *fakeOperator) GetBenchmarkJobStatus() map[v1.BenchmarkJobStatus]int64 {
+	return f.job
+}
+
+// Test_operatorMetrics_Register_instruments registers the metrics against a real SDK meter
+// with the views returned by View() and asserts the name, description, unit and value of
+// every instrument. A view only matches an instrument when name and description are equal,
+// so a Gauge result also proves View() and Register() agree on the description.
+func Test_operatorMetrics_Register_instruments(t *testing.T) {
+	t.Parallel()
+
+	type want struct {
+		desc  string
+		value int64
+	}
+	wants := map[string]want{
+		"benchmark_operator_applied_scenario":       {desc: "Benchmark Operator applied scenario count", value: 5},
+		"benchmark_operator_running_scenario":       {desc: "Benchmark Operator running scenario count", value: 2},
+		"benchmark_operator_complete_scenario":      {desc: "Benchmark Operator complete scenario count", value: 3},
+		"benchmark_operator_applied_benchmark_job":  {desc: "Benchmark Operator applied benchmark job count", value: 7},
+		"benchmark_operator_running_benchmark_job":  {desc: "Benchmark Operator running benchmark job count", value: 4},
+		"benchmark_operator_complete_benchmark_job": {desc: "Benchmark Operator complete benchmark job count", value: 3},
+	}
+
+	om := &operatorMetrics{
+		op: &fakeOperator{
+			scenario: map[v1.ValdBenchmarkScenarioStatus]int64{
+				v1.BenchmarkScenarioHealthy:   2,
+				v1.BenchmarkScenarioCompleted: 3,
+			},
+			job: map[v1.BenchmarkJobStatus]int64{
+				v1.BenchmarkJobHealthy:   1,
+				v1.BenchmarkJobNotReady:  3,
+				v1.BenchmarkJobCompleted: 3,
+			},
+		},
+	}
+	views, err := om.View()
+	if err != nil {
+		t.Fatalf("View() error = %v", err)
+	}
+	opts := make([]sdkmetric.Option, 0, len(views)+1)
+	reader := sdkmetric.NewManualReader()
+	opts = append(opts, sdkmetric.WithReader(reader))
+	for _, vw := range views {
+		opts = append(opts, sdkmetric.WithView(vw))
+	}
+	mp := sdkmetric.NewMeterProvider(opts...)
+	t.Cleanup(func() {
+		if err := mp.Shutdown(context.WithoutCancel(t.Context())); err != nil {
+			t.Errorf("Shutdown() error = %v", err)
+		}
+	})
+
+	if err := om.Register(mp.Meter("test")); err != nil {
+		t.Fatalf("Register() error = %v", err)
+	}
+	var rm metricdata.ResourceMetrics
+	if err := reader.Collect(t.Context(), &rm); err != nil {
+		t.Fatalf("Collect() error = %v", err)
+	}
+
+	got := make(map[string]metricdata.Metrics)
+	for _, sm := range rm.ScopeMetrics {
+		for _, m := range sm.Metrics {
+			got[m.Name] = m
+		}
+	}
+	if len(got) != len(wants) {
+		t.Errorf("registered %d instruments, want %d: %v", len(got), len(wants), got)
+	}
+	for name, w := range wants {
+		m, ok := got[name]
+		if !ok {
+			t.Errorf("instrument %q is not registered", name)
+			continue
+		}
+		if m.Description != w.desc {
+			t.Errorf("%s: description = %q, want %q", name, m.Description, w.desc)
+		}
+		if m.Unit != metrics.Dimensionless {
+			t.Errorf("%s: unit = %q, want %q", name, m.Unit, metrics.Dimensionless)
+		}
+		g, ok := m.Data.(metricdata.Gauge[int64])
+		if !ok {
+			t.Errorf("%s: data = %T, want metricdata.Gauge[int64] (view did not match)", name, m.Data)
+			continue
+		}
+		if len(g.DataPoints) != 1 || g.DataPoints[0].Value != w.value {
+			t.Errorf("%s: data points = %v, want one point with value %d", name, g.DataPoints, w.value)
+		}
 	}
 }
 

@@ -17,6 +17,7 @@ import (
 	"cmp"
 	"context"
 	"fmt"
+	"maps"
 	"reflect"
 	"slices"
 	"time"
@@ -39,6 +40,14 @@ import (
 	"github.com/vdaas/vald/internal/sync/atomic"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 )
+
+// errReplicaCorrectionFailed marks an id left under- or over-replicated
+// because an agent rejected the corrective Insert/Remove.
+var errReplicaCorrectionFailed = errors.New("replica correction failed")
+
+// maxReportedFailures bounds the replica correction failures kept for the
+// final error.
+const maxReportedFailures = 100
 
 type Corrector interface {
 	Start(ctx context.Context) error
@@ -166,7 +175,40 @@ func (c *correct) Start(ctx context.Context) (err error) {
 
 	corrected := 1
 
+	// incomplete counts ids skipped because their replica information could
+	// not be fully loaded; such ids stay uncorrected, so the job must fail.
+	var incomplete atomic.Uint64
+
+	// failures collects ids whose replicas could not be corrected because an
+	// agent rejected the Insert/Remove. They are reported after the loop
+	// instead of returned from the worker, which would cancel egctx and stop
+	// correction of every remaining id in the stream.
+	// Only the first maxReportedFailures are kept; the rest are counted so a
+	// cluster-wide rejection does not grow memory with the index size.
+	var (
+		fmu      sync.Mutex
+		failures []error
+		dropped  uint64
+	)
+	deferFailure := func(err error) error {
+		if !errors.Is(err, errReplicaCorrectionFailed) {
+			return err
+		}
+		fmu.Lock()
+		if len(failures) < maxReportedFailures {
+			failures = append(failures, err)
+		} else {
+			dropped++
+		}
+		fmu.Unlock()
+		return nil
+	}
+
 	replicas := slices.Clone(agents)
+
+	// reached records the agents whose callback ran: OrderedRange skips an agent with no
+	// connection pool and swallows that error, which would leave its ids unchecked.
+	reached := make(map[string]struct{}, len(agents))
 
 	log.Infof("processing order of agents: %v", agents)
 	if err := c.discoverer.GetClient().OrderedRange(ctx, agents, func(ctx context.Context,
@@ -174,13 +216,18 @@ func (c *correct) Start(ctx context.Context) (err error) {
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (err error) {
+		reached[addr] = struct{}{}
 		defer func() {
 			corrected++
 			if err != nil {
 				errs = append(errs, err)
 			}
 		}()
-		if len(replicas) > 0 {
+		// Derive the remaining agents from addr: OrderedRange skips agents without a
+		// connection, so popping one entry per callback would drift.
+		if i := slices.Index(agents, addr); i >= 0 {
+			replicas = agents[i+1:]
+		} else if len(replicas) > 0 {
 			replicas = replicas[1:]
 		}
 		var (
@@ -235,15 +282,23 @@ func (c *correct) Start(ctx context.Context) (err error) {
 				if !errors.Is(ctx.Err(), context.Canceled) {
 					log.Errorf("context done unexpectedly: %v for %s", ctx.Err(), debugMsg)
 				}
-				if !errors.Is(context.Cause(ctx), io.EOF) {
-					log.Errorf("context canceled due to %v for %s", ctx.Err(), debugMsg)
+				cause := context.Cause(ctx)
+				if !errors.Is(cause, io.EOF) {
+					log.Errorf("context canceled due to %v for %s", cause, debugMsg)
 				}
 				err = eg.Wait()
-				if err != nil {
-					log.Errorf("correction returned error status errgroup returned error: %v for %s", ctx.Err(), debugMsg)
-				} else {
-					log.Infof("correction finished for %s", debugMsg)
+				// A stream that ended with a real failure (anything but EOF or the
+				// parent's cancellation) left the remaining ids of this agent
+				// unchecked, so the job must not report success. A worker error is
+				// also the cause of the cancellation; Join drops the duplicate.
+				if cause != nil && !errors.Is(cause, io.EOF) && !errors.Is(cause, context.Canceled) {
+					err = errors.Join(err, cause)
 				}
+				if err != nil {
+					log.Errorf("correction returned error status errgroup returned error: %v for %s", err, debugMsg)
+					return err
+				}
+				log.Infof("correction finished for %s", debugMsg)
 				return nil
 			default:
 				res, err := stream.Recv()
@@ -281,7 +336,7 @@ func (c *correct) Start(ctx context.Context) (err error) {
 							diff := c.indexReplica - 1
 							// correct index replica shortage
 							if diff > 0 {
-								return c.correctShortage(egctx, id, addr, debugMsg, vec, make(map[string]*payload.Object_Timestamp), diff)
+								return deferFailure(c.correctShortage(egctx, id, addr, debugMsg, vec, make(map[string]*payload.Object_Timestamp), diff))
 							}
 							return nil
 						}
@@ -289,7 +344,11 @@ func (c *correct) Start(ctx context.Context) (err error) {
 						// load index replica from other agents and store it to found map
 						found, skipped, latest, latestAgent, err := c.loadReplicaInfo(egctx, addr, id, replicas, counts, ts, start)
 						if err != nil {
-							return err
+							// A replica that failed to report would be counted as missing,
+							// so do not touch any replica of this id based on it.
+							log.Errorf("skipping correction of index id %s for %s: replica information is incomplete: %v", id, debugMsg, err)
+							incomplete.Add(1)
+							return nil
 						}
 						if len(found) != 0 && ((len(replicas) > 0 && len(skipped) == 0) || (len(skipped) > 0 && len(skipped) < len(replicas))) {
 							// current object timestamp is not latest get latest object from other agent index replica
@@ -299,15 +358,23 @@ func (c *correct) Start(ctx context.Context) (err error) {
 									vec = latestObject
 								}
 							}
-							c.correctTimestamp(ctx, id, vec, found)
+							// The origin agent (addr) is never in found, so add its stale copy
+							// to the correction targets only; found keeps driving the diff.
+							targets := found
+							if vec.GetTimestamp() > ts {
+								targets = make(map[string]*payload.Object_Timestamp, len(found)+1)
+								maps.Copy(targets, found)
+								targets[addr] = &payload.Object_Timestamp{Id: id, Timestamp: ts}
+							}
+							c.correctTimestamp(egctx, id, vec, targets)
 						} else if len(skipped) > 0 {
 							log.Debugf("timestamp correction for index id %s skipped, replica %s, skipped agents: %v", id, addr, skipped)
 						}
 						diff := c.indexReplica - (len(found) + 1)
 						if diff > 0 { // correct index replica shortage
-							return c.correctShortage(egctx, id, addr, debugMsg, vec, found, diff)
+							return deferFailure(c.correctShortage(egctx, id, addr, debugMsg, vec, found, diff))
 						} else if diff < 0 { // correct index replica oversupply
-							return c.correctOversupply(egctx, id, addr, debugMsg, found, diff)
+							return deferFailure(c.correctOversupply(egctx, id, addr, debugMsg, found, diff))
 						}
 						return nil
 					}))
@@ -318,6 +385,18 @@ func (c *correct) Start(ctx context.Context) (err error) {
 		// This only happens when ErrGRPCClientConnNotFound is returned.
 		// In other cases, OrderedRange continues processing, so error is used to keep track of the error status of correction.
 		errs = append(errs, err)
+	}
+	for _, addr := range agents {
+		if _, ok := reached[addr]; !ok {
+			errs = append(errs, errors.ErrGRPCClientConnNotFound(addr))
+		}
+	}
+	if n := incomplete.Load(); n > 0 {
+		errs = append(errs, errors.Errorf("%d index ids skipped due to incomplete replica information", n))
+	}
+	errs = append(errs, failures...)
+	if dropped > 0 {
+		errs = append(errs, errors.Errorf("%d more index ids could not be corrected", dropped))
 	}
 	if len(errs) != 0 {
 		return errors.Join(errs...)
@@ -357,17 +436,35 @@ func (c *correct) loadReplicaInfo(
 	latestAgent string,
 	err error,
 ) {
-	var mu sync.Mutex
+	var (
+		mu sync.Mutex
+		// errs keeps only the latest outcome per agent: the client backoff can re-run the callback
+		// for the same addr, and a retry that succeeds must clear the earlier failure.
+		errs = make(map[string]error, len(replicas))
+	)
 	latestAgent = originAddr
 	skipped = make([]string, 0, len(replicas))
 	found = make(map[string]*payload.Object_Timestamp, c.indexReplica-1)
 	tss := time.Unix(0, start.UnixNano()).Format(time.RFC3339Nano)
+	// Seed every replica with a failure: the client skips the callback for an
+	// agent with no connection pool, a connection lookup failure or an open
+	// circuit breaker and swallows that error, so an agent that never reached
+	// the callback would otherwise be counted as holding no replica. The
+	// callback clears the entry as soon as it runs.
+	for _, addr := range replicas {
+		if addr != originAddr {
+			errs[addr] = errors.ErrGRPCClientConnNotFound(addr)
+		}
+	}
 	err = c.discoverer.GetClient().OrderedRangeConcurrent(
 		ctx, replicas, len(replicas),
 		func(ctx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
 			if originAddr == addr {
 				return nil
 			}
+			mu.Lock()
+			delete(errs, addr)
+			mu.Unlock()
 			count, ok := counts[addr] // counts is read-only we don't need to lock.
 			if ok && count != nil && count.GetStored() == 0 && count.GetUncommitted() == 0 {
 				mu.Lock()
@@ -384,7 +481,6 @@ func (c *correct) loadReplicaInfo(
 			if gerr != nil {
 				if st, ok := status.FromError(gerr); !ok || st == nil {
 					log.Errorf("gRPC call GetTimestamp to agent: %s, id: %s returned not a gRPC status error: %v", addr, id, gerr)
-					return gerr
 				} else if st.Code() == codes.NotFound {
 					// when replica of agent > index replica, this happens
 					return nil
@@ -392,8 +488,13 @@ func (c *correct) loadReplicaInfo(
 					return nil
 				} else {
 					log.Errorf("failed to GetTimestamp with unexpected error. agent: %s, id: %s, code: %v, message: %s", addr, id, st.Code(), st.Message())
-					return gerr
 				}
+				// OrderedRangeConcurrent does not return callback errors, so
+				// collect them for the caller.
+				mu.Lock()
+				errs[addr] = gerr
+				mu.Unlock()
+				return gerr
 			}
 
 			if ots == nil {
@@ -423,6 +524,13 @@ func (c *correct) loadReplicaInfo(
 			return nil
 		},
 	)
+	mu.Lock()
+	for _, addr := range replicas {
+		if e, ok := errs[addr]; ok {
+			err = errors.Join(err, e)
+		}
+	}
+	mu.Unlock()
 	return found, skipped, latest, latestAgent, err
 }
 
@@ -511,7 +619,7 @@ func (c *correct) correctTimestamp(
 				return nil, nil
 			})
 			if err != nil {
-				log.Errorf("failed to fix timestamp to %s for id %s agent %s error: %w", tss, id, addr, err)
+				log.Errorf("failed to fix timestamp to %s for id %s agent %s error: %v", tss, id, addr, err)
 			}
 		}
 	}
@@ -534,6 +642,7 @@ func (c *correct) correctOversupply(
 			Id: id,
 		},
 	}
+	var rerrs error
 	for _, daddr := range addrs {
 		if diff < 0 {
 			_, ok := found[daddr]
@@ -561,10 +670,16 @@ func (c *correct) correctOversupply(
 					return nil, nil
 				})
 				if err != nil {
-					log.Errorf("failed to delete object from agent(%s): %w", daddr, err)
+					log.Errorf("failed to delete object from agent(%s): %v", daddr, err)
+					rerrs = errors.Join(rerrs, errors.Wrapf(err, "failed to delete object %s from agent(%s)", id, daddr))
 				}
 			}
 		}
+	}
+	// A failed delete only matters while the oversupply remains; the job must
+	// not report success for an id it could not correct.
+	if diff < 0 && rerrs != nil {
+		return errors.Join(errReplicaCorrectionFailed, rerrs)
 	}
 	return nil
 }
@@ -589,6 +704,7 @@ func (c *correct) correctShortage(
 			Timestamp: latestObject.GetTimestamp(),
 		},
 	}
+	var ierrs error
 	for _, daddr := range addrs {
 		if diff > 0 && daddr != selfAddr {
 			_, ok := found[daddr]
@@ -659,10 +775,17 @@ func (c *correct) correctShortage(
 					return nil, nil
 				})
 				if err != nil {
-					log.Errorf("failed to insert object to agent(%s): %w", daddr, err)
+					log.Errorf("failed to insert object to agent(%s): %v", daddr, err)
+					ierrs = errors.Join(ierrs, errors.Wrapf(err, "failed to insert object %s to agent(%s)", id, daddr))
 				}
 			}
 		}
+	}
+	// A shortage left only because there are fewer agents than index_replica is
+	// not an error; one left after a failed insert is, since the job must not
+	// report success for an id it could not correct.
+	if diff > 0 && ierrs != nil {
+		return errors.Join(errReplicaCorrectionFailed, ierrs)
 	}
 	return nil
 }

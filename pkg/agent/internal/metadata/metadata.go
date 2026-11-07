@@ -16,11 +16,13 @@ package metadata
 
 import (
 	"io/fs"
+	"path/filepath"
 
 	"github.com/vdaas/vald/internal/encoding/json"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/io"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/os"
 )
 
@@ -70,12 +72,22 @@ func Load(path string) (meta *Metadata, err error) {
 	if err != nil && !errors.Is(err, io.EOF) {
 		return nil, err
 	}
+	// A whitespace-only (io.EOF) or "null" file decodes to a nil *Metadata; report it as empty
+	// so callers never dereference a nil result.
+	if meta == nil {
+		return nil, errors.ErrMetadataFileEmpty
+	}
 	return meta, nil
 }
 
+// Store writes meta to path atomically: it writes a temporary file in the same directory and
+// renames it over path, so a crash never leaves an empty or partial metadata file and watchers
+// see the new file (fsnotify Create) only once its content is complete.
+// The temporary file name does not end with ".json", so it is never mistaken for the metadata file.
 func Store(path string, meta *Metadata) (err error) {
+	tmp := path + tmpFileSuffix
 	var f *os.File
-	f, err = file.Open(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, fs.ModePerm)
+	f, err = file.Open(tmp, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, fs.ModePerm)
 	if err != nil {
 		return err
 	}
@@ -84,6 +96,12 @@ func Store(path string, meta *Metadata) (err error) {
 			derr := f.Close()
 			if derr != nil {
 				err = errors.Join(err, derr)
+			}
+		}
+		if err != nil {
+			rerr := os.Remove(tmp)
+			if rerr != nil && !errors.Is(rerr, fs.ErrNotExist) {
+				err = errors.Join(err, rerr)
 			}
 		}
 	}()
@@ -97,5 +115,36 @@ func Store(path string, meta *Metadata) (err error) {
 	if err != nil {
 		return err
 	}
+	err = f.Close()
+	f = nil
+	if err != nil {
+		return err
+	}
+
+	err = os.Rename(tmp, path)
+	if err != nil {
+		return err
+	}
+
+	// Persist the rename itself. The metadata is already complete on disk at this point,
+	// so a failure here is only logged.
+	if serr := syncDir(filepath.Dir(path)); serr != nil {
+		log.Warnf("failed to sync directory of metadata file %s: %v", path, serr)
+	}
 	return nil
+}
+
+const tmpFileSuffix = ".tmp"
+
+func syncDir(dir string) (err error) {
+	d, err := os.Open(dir)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if cerr := d.Close(); cerr != nil {
+			err = errors.Join(err, cerr)
+		}
+	}()
+	return d.Sync()
 }

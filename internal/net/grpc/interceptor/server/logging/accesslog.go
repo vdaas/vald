@@ -73,6 +73,21 @@ func (e AccessLogEntity) String() (str string) {
 	return str
 }
 
+// lazyAccessLog defers AccessLogEntity.String (a JSON encoding) until the logger
+// actually formats its arguments, so that it is not paid when the level is disabled.
+// fmt-based backends render it through String, and the glg JSON format encodes it
+// through MarshalText as the same JSON string the pre-rendered value produced.
+// Being a defined type, it does not inherit AccessLogEntity's methods.
+type lazyAccessLog AccessLogEntity
+
+func (l *lazyAccessLog) String() string {
+	return (*AccessLogEntity)(l).String()
+}
+
+func (l *lazyAccessLog) MarshalText() ([]byte, error) {
+	return []byte(l.String()), nil
+}
+
 func AccessLogInterceptor() grpc.UnaryServerInterceptor {
 	return func(
 		ctx context.Context,
@@ -112,9 +127,9 @@ func AccessLogInterceptor() grpc.UnaryServerInterceptor {
 
 		if err != nil {
 			entity.Error = err
-			log.Warn(rpcFailedMessage, entity.String())
+			log.Warn(rpcFailedMessage, (*lazyAccessLog)(entity))
 		} else {
-			log.Debug(rpcCompletedMessage, entity.String())
+			log.Debug(rpcCompletedMessage, (*lazyAccessLog)(entity))
 		}
 
 		return resp, err
@@ -160,9 +175,9 @@ func AccessLogStreamInterceptor() grpc.StreamServerInterceptor {
 
 		if err != nil {
 			entity.Error = err
-			log.Warn(rpcFailedMessage, entity.String())
+			log.Warn(rpcFailedMessage, (*lazyAccessLog)(entity))
 		} else {
-			log.Debug(rpcCompletedMessage, entity.String())
+			log.Debug(rpcCompletedMessage, (*lazyAccessLog)(entity))
 		}
 
 		return err

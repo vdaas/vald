@@ -16,6 +16,7 @@ package backoff
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"testing"
 	"time"
@@ -23,7 +24,6 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
-	"github.com/vdaas/vald/internal/log/logger"
 	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
@@ -31,8 +31,13 @@ import (
 const str = "success"
 
 func TestMain(m *testing.M) {
-	log.Init(log.WithLoggerType(logger.NOP.String()))
-	info.Init("backoff test")
+	// recLog discards like the NOP logger but records Error/Debug details
+	// messages so tests can assert the level Do logs at.
+	log.Init(log.WithLogger(recLog))
+	if err := info.Init("backoff test"); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
 	os.Exit(m.Run())
 }
 
@@ -557,6 +562,33 @@ func Test_backoff_Do(t *testing.T) {
 				},
 				want: want{
 					err: errors.ErrBackoffTimeout(err),
+				},
+			}
+		}(),
+		func() test {
+			ctx := t.Context()
+			err := errors.New("errors is occurred")
+			return test{
+				name: "return response and error without waiting after the final retry",
+				args: args{
+					ctx: ctx,
+					f: func(context.Context) (any, bool, error) {
+						return str, true, err
+					},
+				},
+				fields: fields{
+					backoffFactor:         1.1,
+					initialDuration:       float64(time.Hour),
+					jittedInitialDuration: float64(time.Hour),
+					durationLimit:         float64(time.Hour),
+					maxDuration:           float64(time.Hour),
+					maxRetryCount:         1,
+					// a trailing wait would run into this limit and return (nil, ErrBackoffTimeout) instead of (str, err)
+					backoffTimeLimit: 2 * time.Second,
+				},
+				want: want{
+					wantRes: str,
+					err:     err,
 				},
 			}
 		}(),

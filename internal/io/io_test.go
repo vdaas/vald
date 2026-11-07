@@ -402,6 +402,44 @@ func Test_ctxReader_Close(t *testing.T) {
 	}
 }
 
+type closeRecorder struct {
+	bytes.Buffer
+	closed int
+}
+
+func (c *closeRecorder) Close() error {
+	c.closed++
+	return nil
+}
+
+func Test_ctxReader_Close_closesUnderlyingWhenContextDone(t *testing.T) {
+	t.Parallel()
+	ctx, cancel := context.WithCancel(t.Context())
+	cancel()
+	rec := new(closeRecorder)
+	r := &ctxReader{ctx: ctx, r: rec}
+	if err := r.Close(); !errors.Is(err, context.Canceled) {
+		t.Errorf("got error = %v, want %v", err, context.Canceled)
+	}
+	if rec.closed != 1 {
+		t.Errorf("underlying Close called %d times, want 1", rec.closed)
+	}
+}
+
+func Test_ctxWriter_Close_closesUnderlyingWhenContextDone(t *testing.T) {
+	t.Parallel()
+	ctx, cancel := context.WithCancel(t.Context())
+	cancel()
+	rec := new(closeRecorder)
+	w := &ctxWriter{ctx: ctx, w: rec}
+	if err := w.Close(); !errors.Is(err, context.Canceled) {
+		t.Errorf("got error = %v, want %v", err, context.Canceled)
+	}
+	if rec.closed != 1 {
+		t.Errorf("underlying Close called %d times, want 1", rec.closed)
+	}
+}
+
 func TestNewWriterWithContext(t *testing.T) {
 	t.Parallel()
 	type args struct {

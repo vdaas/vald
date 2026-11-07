@@ -150,7 +150,7 @@ export UPDATE_GITHUB_ACTION_SCRIPT = \
 			* ) \
 			REPO_NAME=$$(echo $$ACTION | cut -d'/' -f1-2); \
 			echo "$$ACTION to $$REPO_NAME"; \
-			VERSION=$$(curl -fsSL https://api.github.com/repos/$$REPO_NAME/tags?per_page=1 | \
+			VERSION=$$(curl -fsSL $${GITHUB_TOKEN:+-H "Authorization: Bearer $$GITHUB_TOKEN"} https://api.github.com/repos/$$REPO_NAME/tags?per_page=1 | \
 			grep -Po '"name": "\K.*?(?=")' | \
 			head -n1 | sed 's/v//g' | sed -E 's/[^0-9.]+//g'); \
 			;; \

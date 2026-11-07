@@ -120,6 +120,8 @@ gateway:
 ```
 
 Those parameters help the Vald filter gateway connect the filter component before getting the users' requests.
+`ingress_filter.vectorizer` (`host:port`) is also used by the `*Object` APIs to vectorize an object when the request sets no target.
+A filter component that appears in a request but not in any of the parameters above is connected for that request and disconnected when no request uses it anymore; list frequently used components in the parameters above to keep their connections open.
 
 ## Client configuration
 

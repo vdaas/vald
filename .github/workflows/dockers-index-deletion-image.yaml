@@ -138,6 +138,7 @@ on:
       - internal/servers/starter/*.go
       - internal/strings/*.go
       - internal/sync/*.go
+      - internal/sync/atomic/*.go
       - internal/sync/errgroup/*.go
       - internal/sync/semaphore/*.go
       - internal/sync/singleflight/*.go
@@ -148,6 +149,7 @@ on:
       - pkg/index/job/deletion/config/*.go
       - pkg/index/job/deletion/service/*.go
       - pkg/index/job/deletion/usecase/*.go
+      - pkg/index/job/internal/targets/*.go
       - versions/GO_VERSION
   pull_request_target:
     types:
@@ -250,6 +252,7 @@ on:
       - internal/servers/starter/*.go
       - internal/strings/*.go
       - internal/sync/*.go
+      - internal/sync/atomic/*.go
       - internal/sync/errgroup/*.go
       - internal/sync/semaphore/*.go
       - internal/sync/singleflight/*.go
@@ -260,4 +263,5 @@ on:
       - pkg/index/job/deletion/config/*.go
       - pkg/index/job/deletion/service/*.go
       - pkg/index/job/deletion/usecase/*.go
+      - pkg/index/job/internal/targets/*.go
       - versions/GO_VERSION

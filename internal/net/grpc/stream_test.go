@@ -18,11 +18,14 @@ import (
 	"context"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/io"
 	_ "github.com/vdaas/vald/internal/net/grpc/logger"
+	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/atomic"
 	"github.com/vdaas/vald/internal/test/data/request"
 	"github.com/vdaas/vald/internal/test/data/vector"
 	"github.com/vdaas/vald/internal/test/goleak"
@@ -196,98 +199,237 @@ func TestBidirectionalStream(t *testing.T) {
 	}
 }
 
-// NOT IMPLEMENTED BELOW
-//
-// func TestBidirectionalStreamClient(t *testing.T) {
-// 	type args struct {
-// 		stream           S
-// 		concurrency      int
-// 		sendDataProvider func() (Q, bool)
-// 		callBack         func(R, error) bool
-// 	}
-// 	type want struct {
-// 		err error
-// 	}
-// 	type test struct {
-// 		name       string
-// 		args       args
-// 		want       want
-// 		checkFunc  func(want, error) error
-// 		beforeFunc func(*testing.T, args)
-// 		afterFunc  func(*testing.T, args)
-// 	}
-// 	defaultCheckFunc := func(w want, err error) error {
-// 		if !errors.Is(err, w.err) {
-// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-// 		}
-// 		return nil
-// 	}
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       args: args {
-// 		           stream:nil,
-// 		           concurrency:0,
-// 		           sendDataProvider:nil,
-// 		           callBack:nil,
-// 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
-//
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           args: args {
-// 		           stream:nil,
-// 		           concurrency:0,
-// 		           sendDataProvider:nil,
-// 		           callBack:nil,
-// 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
-//
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt, test.args)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt, test.args)
-// 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
-//
-// 			err := BidirectionalStreamClient(test.args.stream, test.args.concurrency, test.args.sendDataProvider, test.args.callBack)
-// 			if err := checkFunc(test.want, err); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
-// 		})
-// 	}
-// }
+// fakeClientStream is a minimal TypedClientStream. Recv blocks until CloseSend
+// is called and then returns io.EOF, like a server that finishes after the
+// client half-closes.
+type fakeClientStream struct {
+	ClientStream
+	ctxFn  func() context.Context
+	sendFn func(*payload.Insert_Request) error
+	done   chan struct{}
+	once   sync.Once
+}
+
+func newFakeClientStream(
+	ctx context.Context, sendFn func(*payload.Insert_Request) error,
+) *fakeClientStream {
+	return &fakeClientStream{ctxFn: func() context.Context { return ctx }, sendFn: sendFn, done: make(chan struct{})}
+}
+
+func (f *fakeClientStream) Context() context.Context { return f.ctxFn() }
+
+func (f *fakeClientStream) CloseSend() error {
+	f.once.Do(func() { close(f.done) })
+	return nil
+}
+
+func (f *fakeClientStream) Send(r *payload.Insert_Request) error { return f.sendFn(r) }
+
+func (f *fakeClientStream) Recv() (*payload.Object_StreamLocation, error) {
+	<-f.done
+	return nil, io.EOF
+}
+
+func TestBidirectionalStreamClient(t *testing.T) {
+	t.Parallel()
+	errSend := errors.New("fake send error")
+	const timeout = 10 * time.Second
+
+	type args struct {
+		sendFn      func(*payload.Insert_Request) error
+		provider    func() func() (*payload.Insert_Request, bool)
+		concurrency int
+	}
+	type want struct {
+		err error
+	}
+	tests := []struct {
+		want want
+		name string
+		args args
+	}{
+		{
+			// Before the fix ech was unbuffered for concurrency == 0: the failing worker
+			// blocked on `ech <- err` while finalize waited for it in eg.Wait().
+			// The provider only reports "no more data" after Send has been invoked, so
+			// the main loop deterministically reaches finalize with the worker in flight.
+			name: "concurrency 0: send fails and provider then finishes does not deadlock",
+			args: args{
+				concurrency: 0,
+				// sendFn and provider are built in the subtest: they share a channel.
+			},
+			want: want{err: errSend},
+		},
+		{
+			name: "concurrency 4: multiple send errors are reported",
+			args: args{
+				concurrency: 4,
+				sendFn: func(*payload.Insert_Request) error {
+					return errSend
+				},
+				provider: func() func() (*payload.Insert_Request, bool) {
+					cnt := 0
+					return func() (*payload.Insert_Request, bool) {
+						cnt++
+						return &payload.Insert_Request{}, cnt <= 16
+					}
+				},
+			},
+			want: want{err: errSend},
+		},
+		{
+			name: "concurrency 0: all sends succeed",
+			args: args{
+				concurrency: 0,
+				sendFn: func(*payload.Insert_Request) error {
+					return nil
+				},
+				provider: func() func() (*payload.Insert_Request, bool) {
+					cnt := 0
+					return func() (*payload.Insert_Request, bool) {
+						cnt++
+						return &payload.Insert_Request{}, cnt <= 16
+					}
+				},
+			},
+			want: want{err: nil},
+		},
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+
+			sendFn, provider := test.args.sendFn, test.args.provider
+			if sendFn == nil {
+				sent := make(chan struct{})
+				var once sync.Once
+				sendFn = func(*payload.Insert_Request) error {
+					once.Do(func() { close(sent) })
+					return errSend
+				}
+				calls := 0
+				provider = func() func() (*payload.Insert_Request, bool) {
+					return func() (*payload.Insert_Request, bool) {
+						calls++
+						if calls == 1 {
+							return &payload.Insert_Request{}, true
+						}
+						select {
+						case <-sent:
+						case <-time.After(timeout):
+						}
+						return nil, false
+					}
+				}
+			}
+
+			stream := newFakeClientStream(tt.Context(), sendFn)
+			resc := make(chan error, 1)
+			go func() {
+				resc <- BidirectionalStreamClient(stream, test.args.concurrency, provider(),
+					func(*payload.Object_StreamLocation, error) bool { return true })
+			}()
+			select {
+			case err := <-resc:
+				if !errors.Is(err, test.want.err) {
+					tt.Errorf("got error: %v, want: %v", err, test.want.err)
+				}
+			case <-time.After(timeout):
+				// unblock Recv so the goroutines can exit, then fail without hanging.
+				if err := stream.CloseSend(); err != nil {
+					tt.Error(err)
+				}
+				tt.Fatalf("BidirectionalStreamClient did not return within %v (deadlock)", timeout)
+			}
+		})
+	}
+}
+
+// sequencedClientStream returns msgs responses and then io.EOF once CloseSend
+// was called. It records whether Recv ever ran concurrently with another Recv
+// or with the callback (inCallback is set by the test's callback).
+type sequencedClientStream struct {
+	*fakeClientStream
+	inRecv     atomic.Bool
+	inCallback atomic.Bool
+	overlap    atomic.Bool
+	recvs      atomic.Int64
+	msgs       int64
+}
+
+func (s *sequencedClientStream) Recv() (*payload.Object_StreamLocation, error) {
+	if s.inRecv.Swap(true) || s.inCallback.Load() {
+		s.overlap.Store(true)
+	}
+	defer s.inRecv.Store(false)
+	if s.recvs.Add(1) <= s.msgs {
+		return &payload.Object_StreamLocation{}, nil
+	}
+	<-s.done
+	return nil, io.EOF
+}
+
+// TestBidirectionalStreamClient_RecvSequencing pins that the receiver calls
+// Recv one at a time and only after the previous callback returned, and that
+// every response reaches the callback before the stream finishes.
+func TestBidirectionalStreamClient_RecvSequencing(t *testing.T) {
+	t.Parallel()
+	defer goleak.VerifyNone(t, goleak.IgnoreCurrent())
+	const (
+		msgs    = 8
+		timeout = 10 * time.Second
+	)
+	stream := &sequencedClientStream{
+		fakeClientStream: newFakeClientStream(t.Context(), func(*payload.Insert_Request) error { return nil }),
+		msgs:             msgs,
+	}
+	var got atomic.Int64
+	callbackDone := make(chan struct{})
+	callBack := func(_ *payload.Object_StreamLocation, err error) bool {
+		if err != nil {
+			t.Errorf("callback got error: %v", err)
+			return false
+		}
+		stream.inCallback.Store(true)
+		// widen the window in which an overlapping Recv would be observed.
+		time.Sleep(time.Millisecond)
+		stream.inCallback.Store(false)
+		if got.Add(1) == msgs {
+			close(callbackDone)
+		}
+		return true
+	}
+	provider := func() (*payload.Insert_Request, bool) {
+		// keep the send side open until every response was handled, so the
+		// receiver is not cut short by the half-close.
+		select {
+		case <-callbackDone:
+		case <-time.After(timeout):
+		}
+		return new(payload.Insert_Request), false
+	}
+	resc := make(chan error, 1)
+	go func() {
+		resc <- BidirectionalStreamClient(stream, 1, provider, callBack)
+	}()
+	select {
+	case err := <-resc:
+		if err != nil {
+			t.Errorf("BidirectionalStreamClient error: %v", err)
+		}
+	case <-time.After(2 * timeout):
+		if err := stream.CloseSend(); err != nil {
+			t.Error(err)
+		}
+		t.Fatalf("BidirectionalStreamClient did not return within %v", 2*timeout)
+	}
+	if n := got.Load(); n != msgs {
+		t.Errorf("callback called %d times, want %d", n, msgs)
+	}
+	if stream.overlap.Load() {
+		t.Error("Recv overlapped another Recv or the callback")
+	}
+}

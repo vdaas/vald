@@ -156,7 +156,7 @@ func WithInitialPingDuration(dur string) Option {
 			return nil
 		}
 		pd, err := timeutil.Parse(dur)
-		if err != nil {
+		if err != nil || pd <= 0 {
 			pd = time.Millisecond * 50
 		}
 		m.initialPingDuration = pd

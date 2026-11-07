@@ -103,12 +103,3 @@ func WithOnWrite(f func(ctx context.Context, name string) error) Option {
 		return nil
 	}
 }
-
-func WithOnError(f func(ctx context.Context, err error) error) Option {
-	return func(w *watch) error {
-		if f != nil {
-			w.onError = f
-		}
-		return nil
-	}
-}

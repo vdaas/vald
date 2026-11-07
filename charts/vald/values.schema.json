@@ -12468,6 +12468,10 @@
                 "node_name": {
                   "type": "string",
                   "description": "node name"
+                },
+                "search_quorum_grace": {
+                  "type": "string",
+                  "description": "once agents - index_replica + 1 agents answered a search with results (at least one replica of every index replica set), wait at most this long for the rest before returning; empty disables the early termination"
                 }
               }
             },

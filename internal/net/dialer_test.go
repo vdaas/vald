@@ -16,6 +16,7 @@ package net
 
 import (
 	"context"
+	"crypto/x509"
 	"fmt"
 	"math"
 	"net"
@@ -32,6 +33,7 @@ import (
 	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/io"
+	"github.com/vdaas/vald/internal/net/control"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/test/comparator"
 	"github.com/vdaas/vald/internal/tls"
@@ -266,7 +268,7 @@ func TestNewDialer(t *testing.T) {
 		if diff := comparator.Diff(*want, *got,
 			// skipcq: VET-V0008
 			//nolint:govet,copylocks
-			comparator.IgnoreFields(*want, "dialer", "der", "addrs", "dnsCachedOnce", "dnsCache", "ctrl", "tmu"),
+			comparator.IgnoreFields(*want, "dialer", "der", "addrs", "dnsCachedOnce", "dnsCache", "ctrl"),
 			// skipcq: VET-V0008
 			//nolint:govet,copylocks
 			comparator.AllowUnexported(*want),
@@ -1214,11 +1216,14 @@ func Test_dialer_cachedDialer(t *testing.T) {
 				w.WriteHeader(http.StatusOK)
 			}))
 
-			addr := srv.URL[len("http://"):]
-			host, _, err := SplitHostPort(addr)
+			// Use a host name: an IP literal skips the DNS cache entirely, so the
+			// counter would never be exercised.
+			ip, port, err := SplitHostPort(srv.URL[len("http://"):])
 			if err != nil {
 				t.Error(err)
 			}
+			const host = "localhost"
+			addr := JoinHostPort(host, port)
 
 			c, err := cache.New[*dialerCache]()
 			if err != nil {
@@ -1237,9 +1242,9 @@ func Test_dialer_cachedDialer(t *testing.T) {
 				},
 				beforeFunc: func(t *testing.T) {
 					t.Helper()
-					c.Set(addr, &dialerCache{
+					c.Set(host, &dialerCache{
 						cnt: math.MaxUint32,
-						ips: []string{host, host},
+						ips: []string{ip, ip},
 					})
 				},
 				checkFunc: func(d *dialer, ctx context.Context, w want, gotConn Conn, err error) error {
@@ -1250,7 +1255,10 @@ func Test_dialer_cachedDialer(t *testing.T) {
 						return errors.New("conn is nil")
 					}
 
-					dc, _ := d.dnsCache.Get(host)
+					dc, ok := d.dnsCache.Get(host)
+					if !ok {
+						return errors.Errorf("dns cache entry for %s not found", host)
+					}
 					if dc.cnt != 0 {
 						return errors.Errorf("count do not reset, cnt: %v", dc.cnt)
 					}
@@ -1550,6 +1558,29 @@ func Test_dialer_cacheExpireHook(t *testing.T) {
 				},
 			}
 		}(),
+		func() test {
+			addr := "10.0.0.1"
+			return test{
+				name: "IP literal is not refreshed",
+				args: args{
+					addr: addr,
+				},
+				opts: []DialerOption{
+					WithEnableDNSCache(),
+					WithDNSRefreshDuration("100ms"),
+					WithDNSCacheExpiration("100ms"),
+					WithDisableDialerDualStack(),
+					WithDialerTimeout("1m"),
+					WithDialerKeepalive("1m"),
+				},
+				checkFunc: func(d *dialer) error {
+					if _, ok := d.dnsCache.Get(addr); ok {
+						return errors.New("expired IP literal was cached again")
+					}
+					return nil
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
@@ -1807,7 +1838,7 @@ func Test_dialer_tlsHandshake(t *testing.T) {
 				test.beforeFunc(tt)
 			}
 
-			got, err := d.tlsHandshake(ctx, test.args.conn, test.args.network, test.args.addr)
+			got, err := d.tlsHandshake(ctx, test.args.conn, test.args.network, test.args.addr, "")
 			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -2069,3 +2100,580 @@ func Test_dialer_tlsHandshake(t *testing.T) {
 // 		})
 // 	}
 // }
+
+// Test_dialer_tlsHandshake_sharedConfigNotMutated verifies that concurrent TLS dials never
+// write the shared tls.Config (the ServerName used to be assigned in place, which races with
+// the handshakes reading the same config); the ServerName must be set on a per-dial clone.
+func Test_dialer_tlsHandshake_sharedConfigNotMutated(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer srv.Close()
+
+	pool := x509.NewCertPool()
+	pool.AddCert(srv.Certificate())
+	cfg := &tls.Config{
+		RootCAs:    pool,
+		MinVersion: tls.VersionTLS12,
+	}
+	d := &dialer{
+		tlsConfig: cfg,
+		der:       &net.Dialer{Timeout: 10 * time.Second},
+	}
+	// the httptest certificate is valid for 127.0.0.1, so verification only succeeds
+	// when the per-dial ServerName is derived from the address.
+	addr := srv.Listener.Addr().String()
+
+	const n = 16
+	ctx, cancel := context.WithTimeout(t.Context(), 30*time.Second)
+	defer cancel()
+	errs := make(chan error, n)
+	for range n {
+		go func() {
+			conn, err := d.dial(ctx, TCP.String(), addr)
+			if err != nil {
+				errs <- err
+				return
+			}
+			if conn == nil {
+				errs <- errors.New("dial returned nil conn without error")
+				return
+			}
+			errs <- conn.Close()
+		}()
+	}
+	for range n {
+		select {
+		case err := <-errs:
+			if err != nil {
+				t.Errorf("failed to dial tls: %v", err)
+			}
+		case <-ctx.Done():
+			t.Fatalf("timed out waiting for tls dials: %v", ctx.Err())
+		}
+	}
+
+	if cfg.ServerName != "" {
+		t.Errorf("shared tls.Config was mutated, ServerName = %q", cfg.ServerName)
+	}
+}
+
+// Test_dialer_cachedDialer_contextCancelled verifies that the DNS retry loop stops as soon as
+// the context is cancelled instead of spinning until dialerTimeout.
+func Test_dialer_cachedDialer_contextCancelled(t *testing.T) {
+	t.Parallel()
+	der, err := NewDialer(
+		WithEnableDNSCache(),
+		WithDNSRefreshDuration("5s"),
+		WithDNSCacheExpiration("10s"),
+		WithDisableDialerDualStack(),
+		WithDialerTimeout("2s"),
+	)
+	if err != nil {
+		t.Fatalf("failed to initialize dialer: %v", err)
+	}
+	d, ok := der.(*dialer)
+	if !ok {
+		t.Fatalf("NewDialer return value Dialer is not *dialer: %v", der)
+	}
+	const (
+		host = "cancelled.invalid"
+		addr = host + ":80"
+	)
+	// pre-populate the parsed address so that the call goes straight to the retry loop
+	// (a lookup failure for a non-IP host).
+	d.addrs.Store(addr, &addrInfo{addr: addr, host: host, port: "80"})
+
+	ctx, cancel := context.WithCancel(t.Context())
+	cancel()
+
+	type result struct {
+		err     error
+		elapsed time.Duration
+	}
+	done := make(chan result, 1)
+	go func() {
+		start := time.Now()
+		conn, err := d.cachedDialer(ctx, TCP.String(), addr)
+		if conn != nil {
+			if cerr := conn.Close(); cerr != nil {
+				err = errors.Join(err, cerr)
+			}
+		}
+		done <- result{err: err, elapsed: time.Since(start)}
+	}()
+
+	select {
+	case r := <-done:
+		if !errors.Is(r.err, context.Canceled) {
+			t.Errorf("got error: %v, want: %v", r.err, context.Canceled)
+		}
+		// dialerTimeout is 2s; returning well before it proves the loop did not spin on.
+		if r.elapsed >= time.Second {
+			t.Errorf("cachedDialer kept retrying after ctx cancellation for %v", r.elapsed)
+		}
+	case <-time.After(30 * time.Second):
+		t.Fatal("timed out waiting for cachedDialer to return")
+	}
+}
+
+// Test_dialer_dial_tlsHandshakeFailureReturnsNilConn verifies that a failed TLS dial returns
+// a nil Conn interface. dial used to return tlsHandshake's typed nil *tls.Conn through the
+// Conn interface, which made the conn non-nil and cachedDialer's conn.Close() panic.
+func Test_dialer_dial_tlsHandshakeFailureReturnsNilConn(t *testing.T) {
+	t.Parallel()
+	ln, err := net.Listen(TCP.String(), "127.0.0.1:0")
+	if err != nil {
+		t.Fatalf("failed to listen: %v", err)
+	}
+	// accept every connection and close it at once, so every TLS handshake fails.
+	acceptDone := make(chan struct{})
+	defer func() {
+		if err := ln.Close(); err != nil {
+			t.Errorf("failed to close listener: %v", err)
+		}
+		// wait for the accept loop so it never logs after the test has returned.
+		select {
+		case <-acceptDone:
+		case <-time.After(10 * time.Second):
+			t.Error("timed out waiting for the accept loop to stop")
+		}
+	}()
+	go func() {
+		defer close(acceptDone)
+		for {
+			c, err := ln.Accept()
+			if err != nil {
+				return
+			}
+			if err := c.Close(); err != nil {
+				t.Logf("failed to close accepted conn: %v", err)
+			}
+		}
+	}()
+
+	d := &dialer{
+		tlsConfig: &tls.Config{MinVersion: tls.VersionTLS12},
+		der:       &net.Dialer{Timeout: 5 * time.Second},
+	}
+	type result struct {
+		conn Conn
+		err  error
+	}
+	done := make(chan result, 1)
+	go func() {
+		conn, err := d.dial(t.Context(), TCP.String(), ln.Addr().String())
+		done <- result{conn: conn, err: err}
+	}()
+	select {
+	case r := <-done:
+		if r.err == nil {
+			t.Fatal("dial() error = nil, want a tls handshake error")
+		}
+		if r.conn != nil {
+			t.Errorf("dial() conn = %#v (non-nil interface), want nil", r.conn)
+		}
+	case <-time.After(30 * time.Second):
+		t.Fatal("timed out waiting for dial to return")
+	}
+}
+
+// Test_dialer_dial_udpSkipsTLS verifies that a udp dial (the resolver dials DNS servers with
+// "udp" to port 53) is not TLS-handshaked when TLS is enabled. dial rewrites network to tcp
+// for these dials, and the TLS guard used to read the rewritten network.
+// Only port 53 takes this path (other udp dials are QUIC), so the test needs to bind a
+// privileged port and is skipped where that is not allowed.
+func Test_dialer_dial_udpSkipsTLS(t *testing.T) {
+	t.Parallel()
+	ln, err := net.Listen(TCP.String(), "127.0.0.1:53")
+	if err != nil {
+		t.Skipf("cannot listen on 127.0.0.1:53 (needs CAP_NET_BIND_SERVICE or a free port 53): %v", err)
+	}
+	// accept every connection and close it at once, so any TLS handshake fails.
+	acceptDone := make(chan struct{})
+	defer func() {
+		if err := ln.Close(); err != nil {
+			t.Errorf("failed to close listener: %v", err)
+		}
+		select {
+		case <-acceptDone:
+		case <-time.After(10 * time.Second):
+			t.Error("timed out waiting for the accept loop to stop")
+		}
+	}()
+	go func() {
+		defer close(acceptDone)
+		for {
+			c, err := ln.Accept()
+			if err != nil {
+				return
+			}
+			if err := c.Close(); err != nil {
+				t.Logf("failed to close accepted conn: %v", err)
+			}
+		}
+	}()
+
+	d := &dialer{
+		tlsConfig: &tls.Config{MinVersion: tls.VersionTLS12},
+		der:       &net.Dialer{Timeout: 5 * time.Second},
+	}
+	type result struct {
+		conn Conn
+		err  error
+	}
+	done := make(chan result, 1)
+	go func() {
+		conn, err := d.dial(t.Context(), UDP.String(), ln.Addr().String())
+		done <- result{conn: conn, err: err}
+	}()
+	select {
+	case r := <-done:
+		if r.err != nil {
+			t.Fatalf("dial() error = %v, want nil (udp dials must not be TLS-handshaked)", r.err)
+		}
+		if r.conn == nil {
+			t.Fatal("dial() conn = nil, want a connection")
+		}
+		defer func() {
+			if err := r.conn.Close(); err != nil {
+				t.Logf("failed to close conn: %v", err)
+			}
+		}()
+		if _, ok := r.conn.(*tls.Conn); ok {
+			t.Error("dial() returned a *tls.Conn for a udp dial, want a plain connection")
+		}
+	case <-time.After(30 * time.Second):
+		t.Fatal("timed out waiting for dial to return")
+	}
+}
+
+// NewDialer used to pass the keepalive duration to control.New as nanoseconds, while the
+// socket controller sets TCP_KEEPIDLE/TCP_KEEPINTVL in seconds.
+func TestNewDialer_keepaliveInSeconds(t *testing.T) {
+	t.Parallel()
+	der, err := NewDialer(WithDialerKeepalive("30s"))
+	if err != nil {
+		t.Fatalf("failed to initialize dialer: %v", err)
+	}
+	d, ok := der.(*dialer)
+	if !ok {
+		t.Fatalf("NewDialer return value Dialer is not *dialer: %v", der)
+	}
+	if want := control.New(d.sockFlg, 30); !reflect.DeepEqual(d.ctrl, want) {
+		t.Errorf("ctrl = %#v, want %#v", d.ctrl, want)
+	}
+}
+
+// Test_dialer_resolverDialSkipsTLS verifies that the resolver's dials never get TLS, while
+// normal tcp dials keep it. The Go resolver falls back to tcp (to the DNS server, port 53)
+// when a udp answer is truncated, and the resolver used to dial with d.dialer, so that tcp
+// fallback was TLS-handshaked against the DNS server and failed.
+func Test_dialer_resolverDialSkipsTLS(t *testing.T) {
+	t.Parallel()
+	ln, err := net.Listen(TCP.String(), "127.0.0.1:0")
+	if err != nil {
+		t.Fatalf("failed to listen: %v", err)
+	}
+	// accept every connection and close it at once, so any TLS handshake fails.
+	acceptDone := make(chan struct{})
+	defer func() {
+		if cerr := ln.Close(); cerr != nil {
+			t.Errorf("failed to close listener: %v", cerr)
+		}
+		select {
+		case <-acceptDone:
+		case <-time.After(10 * time.Second):
+			t.Error("timed out waiting for the accept loop to stop")
+		}
+	}()
+	go func() {
+		defer close(acceptDone)
+		for {
+			c, aerr := ln.Accept()
+			if aerr != nil {
+				return
+			}
+			if cerr := c.Close(); cerr != nil {
+				t.Logf("failed to close accepted conn: %v", cerr)
+			}
+		}
+	}()
+
+	der, err := NewDialer(
+		WithTLS(&tls.Config{MinVersion: tls.VersionTLS12}),
+		WithDialerTimeout("5s"),
+	)
+	if err != nil {
+		t.Fatalf("failed to initialize dialer: %v", err)
+	}
+	d, ok := der.(*dialer)
+	if !ok {
+		t.Fatalf("NewDialer return value Dialer is not *dialer: %v", der)
+	}
+	if d.der == nil || d.der.Resolver == nil || d.der.Resolver.Dial == nil {
+		t.Fatal("NewDialer did not set a resolver dial func")
+	}
+
+	type result struct {
+		conn Conn
+		err  error
+	}
+	tests := []struct {
+		dial    func(ctx context.Context, network, addr string) (Conn, error)
+		name    string
+		wantTLS bool
+	}{
+		{
+			dial:    d.der.Resolver.Dial,
+			name:    "resolver tcp dial is plain",
+			wantTLS: false,
+		},
+		{
+			dial:    d.DialContext,
+			name:    "normal tcp dial keeps TLS",
+			wantTLS: true,
+		},
+	}
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			done := make(chan result, 1)
+			go func() {
+				conn, err := test.dial(tt.Context(), TCP.String(), ln.Addr().String())
+				done <- result{conn: conn, err: err}
+			}()
+			select {
+			case r := <-done:
+				if r.conn != nil {
+					defer func() {
+						if err := r.conn.Close(); err != nil {
+							tt.Logf("failed to close conn: %v", err)
+						}
+					}()
+				}
+				if test.wantTLS {
+					// the server closes without a handshake, so a TLS dial must fail.
+					if r.err == nil {
+						tt.Fatal("dial() error = nil, want a tls handshake error")
+					}
+					return
+				}
+				if r.err != nil {
+					tt.Fatalf("dial() error = %v, want nil (resolver dials must not be TLS-handshaked)", r.err)
+				}
+				if r.conn == nil {
+					tt.Fatal("dial() conn = nil, want a connection")
+				}
+				if _, ok := r.conn.(*tls.Conn); ok {
+					tt.Error("dial() returned a *tls.Conn for a resolver dial, want a plain connection")
+				}
+			case <-time.After(30 * time.Second):
+				tt.Fatal("timed out waiting for dial to return")
+			}
+		})
+	}
+}
+
+// Test_dialer_EvictAddr verifies that EvictAddr drops the cached parse result
+// of the address and the DNS cache entry of its host, and nothing else.
+func Test_dialer_EvictAddr(t *testing.T) {
+	t.Parallel()
+	const (
+		addr  = "10.0.0.1:8081"
+		host  = "10.0.0.1"
+		other = "10.0.0.2:8081"
+		oHost = "10.0.0.2"
+	)
+	tests := []struct {
+		wantAddrs map[string]bool
+		wantDNS   map[string]bool
+		name      string
+		evict     string
+	}{
+		{
+			name:      "known address",
+			evict:     addr,
+			wantAddrs: map[string]bool{addr: false, other: true},
+			wantDNS:   map[string]bool{host: false, oHost: true},
+		},
+		{
+			name:      "unknown address",
+			evict:     "10.0.0.3:8081",
+			wantAddrs: map[string]bool{addr: true, other: true},
+			wantDNS:   map[string]bool{host: true, oHost: true},
+		},
+	}
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			der, err := NewDialer(
+				WithEnableDNSCache(),
+				WithDNSRefreshDuration("1m"),
+				WithDNSCacheExpiration("1m"),
+			)
+			if err != nil {
+				tt.Fatal(err)
+			}
+			d, ok := der.(*dialer)
+			if !ok {
+				tt.Fatalf("NewDialer returned %T, want *dialer", der)
+			}
+			for a, h := range map[string]string{addr: host, other: oHost} {
+				d.addrs.Store(a, &addrInfo{addr: a, host: h, port: "8081", isIP: true})
+				d.dnsCache.Set(h, &dialerCache{ips: []string{h}})
+			}
+
+			d.EvictAddr(test.evict)
+
+			for a, want := range test.wantAddrs {
+				if _, ok := d.addrs.Load(a); ok != want {
+					tt.Errorf("addrs[%q] present = %v, want %v", a, ok, want)
+				}
+			}
+			for h, want := range test.wantDNS {
+				if _, ok := d.dnsCache.Get(h); ok != want {
+					tt.Errorf("dnsCache[%q] present = %v, want %v", h, ok, want)
+				}
+			}
+		})
+	}
+}
+
+// Test_dialer_cachedDialer_ipLiteralNotCached verifies that dialing an IP literal
+// leaves no per-address state, while a host name keeps its cached parse result
+// (Disconnect evicts it). gRPC hands the dialer every resolved backend IP:port,
+// and those entries used to stay in addrs and the DNS cache forever.
+func Test_dialer_cachedDialer_ipLiteralNotCached(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+	// subtests run in parallel after this function returns, so close the
+	// server only when they finish.
+	t.Cleanup(srv.Close)
+	ip, port, err := SplitHostPort(srv.Listener.Addr().String())
+	if err != nil {
+		t.Fatal(err)
+	}
+	tests := []struct {
+		name       string
+		host       string
+		wantCached bool
+	}{
+		{
+			name:       "ip literal is not cached",
+			host:       ip,
+			wantCached: false,
+		},
+		{
+			name:       "host name stays cached",
+			host:       "localhost",
+			wantCached: true,
+		},
+	}
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			der, err := NewDialer(
+				WithEnableDNSCache(),
+				WithDNSRefreshDuration("1m"),
+				WithDNSCacheExpiration("1m"),
+				WithDialerTimeout("10s"),
+			)
+			if err != nil {
+				tt.Fatal(err)
+			}
+			d, ok := der.(*dialer)
+			if !ok {
+				tt.Fatalf("NewDialer returned %T, want *dialer", der)
+			}
+			addr := JoinHostPort(test.host, port)
+			for range 2 {
+				conn, err := d.cachedDialer(tt.Context(), TCP.String(), addr)
+				if err != nil {
+					tt.Fatalf("cachedDialer(%s) error = %v", addr, err)
+				}
+				if cerr := conn.Close(); cerr != nil {
+					tt.Error(cerr)
+				}
+			}
+			if _, ok := d.addrs.Load(addr); ok != test.wantCached {
+				tt.Errorf("addrs[%q] present = %v, want %v", addr, ok, test.wantCached)
+			}
+			if !test.wantCached {
+				if _, ok := d.dnsCache.Get(test.host); ok {
+					tt.Errorf("dnsCache[%q] is present for an IP literal", test.host)
+				}
+			}
+		})
+	}
+}
+
+// Test_dialer_cachedDialer_tlsServerNameIsHost verifies that a TLS dial through
+// the DNS cache sends the host name, not the resolved IP it connects to, as the
+// TLS server name. It used to send the IP, so certificates issued for the host
+// name failed verification on the cache path.
+func Test_dialer_cachedDialer_tlsServerNameIsHost(t *testing.T) {
+	t.Parallel()
+	// The host never resolves: the cached parse result and DNS entry set below
+	// route it to the test server, so the dial takes the DNS-cache path.
+	const host = "vald-sni-test.invalid"
+	srv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.TLS != nil && r.TLS.ServerName == host {
+			fmt.Fprint(w, "sni=host")
+		}
+	}))
+	defer srv.Close()
+	ip, port, err := SplitHostPort(srv.Listener.Addr().String())
+	if err != nil {
+		t.Fatal(err)
+	}
+	cfg, err := tls.NewClientConfig(tls.WithInsecureSkipVerify(true))
+	if err != nil {
+		t.Fatal(err)
+	}
+	der, err := NewDialer(
+		WithEnableDNSCache(),
+		WithDNSRefreshDuration("1m"),
+		WithDNSCacheExpiration("1m"),
+		WithDialerTimeout("10s"),
+		WithTLS(cfg),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	d, ok := der.(*dialer)
+	if !ok {
+		t.Fatalf("NewDialer returned %T, want *dialer", der)
+	}
+	addr := JoinHostPort(host, port)
+	d.addrs.Store(addr, &addrInfo{addr: addr, host: host, port: strconv.Itoa(int(port))})
+	d.dnsCache.Set(host, &dialerCache{ips: []string{ip}})
+
+	conn, err := d.cachedDialer(t.Context(), TCP.String(), addr)
+	if err != nil {
+		t.Fatalf("cachedDialer(%s) error = %v", addr, err)
+	}
+	defer func() {
+		if cerr := conn.Close(); cerr != nil {
+			t.Error(cerr)
+		}
+	}()
+	if err = conn.SetDeadline(time.Now().Add(10 * time.Second)); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = fmt.Fprint(conn, "GET / HTTP/1.0\r\n\r\n"); err != nil {
+		t.Fatal(err)
+	}
+	buf, err := io.ReadAll(conn)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := conv.Btoa(buf); !strings.HasSuffix(got, "sni=host") {
+		t.Errorf("server saw response %q, want TLS server name %q", got, host)
+	}
+}

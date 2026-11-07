@@ -75,7 +75,8 @@ func (s *server) Update(
 				s.resourceInfo(faissResourceType+"/faiss.Update"))
 			log.Warn(err)
 			attrs = trace.StatusCodeNotFound(err.Error())
-		} else if errors.Is(err, errors.ErrUUIDNotFound(0)) || errors.Is(err, errors.ErrInvalidDimensionSize(len(vec.GetVector()), s.faiss.GetDimensionSize())) {
+		} else if errors.Is(err, errors.ErrUUIDNotFound(0)) || errors.Is(err, errors.ErrInvalidDimensionSize(len(vec.GetVector()), s.faiss.GetDimensionSize())) ||
+			errors.Is(err, errors.ErrInvalidTimestamp(req.GetConfig().GetTimestamp())) {
 			err = status.WrapWithInvalidArgument(fmt.Sprintf("Update API invalid argument for uuid \"%s\" vec \"%v\" detected", vec.GetId(), vec.GetVector()), err,
 				&errdetails.RequestInfo{
 					RequestId:   req.GetVector().GetId(),

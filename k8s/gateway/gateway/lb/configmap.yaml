@@ -247,9 +247,10 @@ data:
       agent_namespace: "_MY_POD_NAMESPACE_"
       node_name: ""
       index_replica: 3
+      search_quorum_grace: ""
       read_replica_replicas: 1
       discoverer:
-        duration: 200ms
+        duration: 3s
         client:
           addrs:
             - vald-discoverer.default.svc.cluster.local:8081

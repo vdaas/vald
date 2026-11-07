@@ -19,16 +19,10 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/v1/agent/sidecar"
 	iconf "github.com/vdaas/vald/internal/config"
-	"github.com/vdaas/vald/internal/db/storage/blob/cloudstorage"
-	"github.com/vdaas/vald/internal/db/storage/blob/cloudstorage/urlopener"
-	"github.com/vdaas/vald/internal/db/storage/blob/s3"
-	"github.com/vdaas/vald/internal/db/storage/blob/s3/session"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/log"
-	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
-	"github.com/vdaas/vald/internal/net/http/client"
 	"github.com/vdaas/vald/internal/observability"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
@@ -41,6 +35,7 @@ import (
 	"github.com/vdaas/vald/pkg/agent/sidecar/router"
 	"github.com/vdaas/vald/pkg/agent/sidecar/service/restorer"
 	"github.com/vdaas/vald/pkg/agent/sidecar/service/storage"
+	"github.com/vdaas/vald/pkg/agent/sidecar/usecase/internal/blobstorage"
 )
 
 type run struct {
@@ -61,82 +56,7 @@ func New(cfg *config.Data) (r runner.Interface, err error) {
 		bs storage.Storage
 	)
 
-	netOpts, err := cfg.AgentSidecar.Client.Net.Opts()
-	if err != nil {
-		return nil, err
-	}
-
-	dialer, err := net.NewDialer(netOpts...)
-	if err != nil {
-		return nil, err
-	}
-
-	client, err := client.New(
-		client.WithDialContext(dialer.DialContext),
-		client.WithTLSHandshakeTimeout(cfg.AgentSidecar.Client.Transport.RoundTripper.TLSHandshakeTimeout),
-		client.WithMaxIdleConns(cfg.AgentSidecar.Client.Transport.RoundTripper.MaxIdleConns),
-		client.WithMaxIdleConnsPerHost(cfg.AgentSidecar.Client.Transport.RoundTripper.MaxIdleConnsPerHost),
-		client.WithMaxConnsPerHost(cfg.AgentSidecar.Client.Transport.RoundTripper.MaxConnsPerHost),
-		client.WithIdleConnTimeout(cfg.AgentSidecar.Client.Transport.RoundTripper.IdleConnTimeout),
-		client.WithResponseHeaderTimeout(cfg.AgentSidecar.Client.Transport.RoundTripper.ResponseHeaderTimeout),
-		client.WithExpectContinueTimeout(cfg.AgentSidecar.Client.Transport.RoundTripper.ExpectContinueTimeout),
-		client.WithMaxResponseHeaderBytes(cfg.AgentSidecar.Client.Transport.RoundTripper.MaxResponseHeaderSize),
-		client.WithWriteBufferSize(cfg.AgentSidecar.Client.Transport.RoundTripper.WriteBufferSize),
-		client.WithReadBufferSize(cfg.AgentSidecar.Client.Transport.RoundTripper.ReadBufferSize),
-		client.WithForceAttemptHTTP2(cfg.AgentSidecar.Client.Transport.RoundTripper.ForceAttemptHTTP2),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	bs, err = storage.New(
-		storage.WithErrGroup(eg),
-		storage.WithType(cfg.AgentSidecar.BlobStorage.StorageType),
-		storage.WithBucketName(cfg.AgentSidecar.BlobStorage.Bucket),
-		storage.WithFilename(cfg.AgentSidecar.Filename),
-		storage.WithFilenameSuffix(cfg.AgentSidecar.FilenameSuffix),
-		storage.WithS3SessionOpts(
-			session.WithEndpoint(cfg.AgentSidecar.BlobStorage.S3.Endpoint),
-			session.WithRegion(cfg.AgentSidecar.BlobStorage.S3.Region),
-			session.WithAccessKey(cfg.AgentSidecar.BlobStorage.S3.AccessKey),
-			session.WithSecretAccessKey(cfg.AgentSidecar.BlobStorage.S3.SecretAccessKey),
-			session.WithToken(cfg.AgentSidecar.BlobStorage.S3.Token),
-			session.WithMaxRetries(cfg.AgentSidecar.BlobStorage.S3.MaxRetries),
-			session.WithForcePathStyle(cfg.AgentSidecar.BlobStorage.S3.ForcePathStyle),
-			session.WithUseAccelerate(cfg.AgentSidecar.BlobStorage.S3.UseAccelerate),
-			session.WithUseARNRegion(cfg.AgentSidecar.BlobStorage.S3.UseARNRegion),
-			session.WithUseDualStack(cfg.AgentSidecar.BlobStorage.S3.UseDualStack),
-			session.WithEnableSSL(cfg.AgentSidecar.BlobStorage.S3.EnableSSL),
-			session.WithEnableParamValidation(cfg.AgentSidecar.BlobStorage.S3.EnableParamValidation),
-			session.WithEnable100Continue(cfg.AgentSidecar.BlobStorage.S3.Enable100Continue),
-			session.WithEnableContentMD5Validation(cfg.AgentSidecar.BlobStorage.S3.EnableContentMD5Validation),
-			session.WithEnableEndpointDiscovery(cfg.AgentSidecar.BlobStorage.S3.EnableEndpointDiscovery),
-			session.WithEnableEndpointHostPrefix(cfg.AgentSidecar.BlobStorage.S3.EnableEndpointHostPrefix),
-			session.WithHTTPClient(client),
-		),
-		storage.WithS3Opts(
-			s3.WithMaxPartSize(cfg.AgentSidecar.BlobStorage.S3.MaxPartSize),
-			s3.WithMaxChunkSize(cfg.AgentSidecar.BlobStorage.S3.MaxChunkSize),
-			s3.WithReaderBackoff(cfg.AgentSidecar.RestoreBackoffEnabled),
-			s3.WithReaderBackoffOpts(cfg.AgentSidecar.RestoreBackoff.Opts()...),
-		),
-		storage.WithCloudStorageURLOpenerOpts(
-			urlopener.WithCredentialsFile(cfg.AgentSidecar.BlobStorage.CloudStorage.Client.CredentialsFilePath),
-			urlopener.WithCredentialsJSON(cfg.AgentSidecar.BlobStorage.CloudStorage.Client.CredentialsJSON),
-			urlopener.WithHTTPClient(client),
-		),
-		storage.WithCloudStorageOpts(
-			cloudstorage.WithURL(cfg.AgentSidecar.BlobStorage.CloudStorage.URL),
-			cloudstorage.WithWriteBufferSize(cfg.AgentSidecar.BlobStorage.CloudStorage.WriteBufferSize),
-			cloudstorage.WithWriteCacheControl(cfg.AgentSidecar.BlobStorage.CloudStorage.WriteCacheControl),
-			cloudstorage.WithWriteContentDisposition(cfg.AgentSidecar.BlobStorage.CloudStorage.WriteContentDisposition),
-			cloudstorage.WithWriteContentEncoding(cfg.AgentSidecar.BlobStorage.CloudStorage.WriteContentEncoding),
-			cloudstorage.WithWriteContentLanguage(cfg.AgentSidecar.BlobStorage.CloudStorage.WriteContentLanguage),
-			cloudstorage.WithWriteContentType(cfg.AgentSidecar.BlobStorage.CloudStorage.WriteContentType),
-		),
-		storage.WithCompressAlgorithm(cfg.AgentSidecar.Compress.CompressAlgorithm),
-		storage.WithCompressionLevel(cfg.AgentSidecar.Compress.CompressionLevel),
-	)
+	bs, err = blobstorage.New(cfg, eg)
 	if err != nil {
 		return nil, err
 	}
@@ -259,11 +179,14 @@ func (r *run) PreStop(ctx context.Context) error {
 	return nil
 }
 
-func (r *run) Stop(ctx context.Context) error {
+func (r *run) Stop(ctx context.Context) (err error) {
+	// Shut the server down first so spans and metrics of the requests it drains
+	// are still exported before observability is stopped.
+	err = r.server.Shutdown(ctx)
 	if r.observability != nil {
-		r.observability.Stop(ctx)
+		err = errors.Join(err, r.observability.Stop(ctx))
 	}
-	return r.server.Shutdown(ctx)
+	return err
 }
 
 func (*run) PostStop(context.Context) error {

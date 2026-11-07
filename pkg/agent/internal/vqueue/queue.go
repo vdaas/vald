@@ -19,12 +19,12 @@ import (
 	"context"
 	"reflect"
 	"slices"
-	"sync/atomic"
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/atomic"
 )
 
 // Queue represents vector queue cache interface.
@@ -37,7 +37,9 @@ type Queue interface {
 	Range(ctx context.Context, f func(uuid string, vector []float32, ts int64) bool)
 	GetVectorWithTimestamp(uuid string) (vec []float32, its, dts int64, exists bool)
 	RangePopInsert(ctx context.Context, now int64, f func(uuid string, vector []float32, timestamp int64) bool)
-	RangePopDelete(ctx context.Context, now int64, f func(uuid string) bool)
+	// RangePopDelete calls f for each delete queued at or before now, newest first. f reports
+	// whether it applied the delete; see the method for what each answer pops.
+	RangePopDelete(ctx context.Context, now int64, f func(uuid string, timestamp int64) (applied bool))
 	IVExists(uuid string) (timestamp int64, ok bool)
 	DVExists(uuid string) (timestamp int64, ok bool)
 	IVQLen() int
@@ -88,14 +90,7 @@ func (v *vqueue) PushInsert(uuid string, vector []float32, timestamp int64) erro
 		vector:    vector,
 		timestamp: timestamp,
 	}
-	oidx, loaded := v.il.LoadOrStore(uuid, &idx)
-	if loaded {
-		if newer(timestamp, oidx.timestamp) { // if data already exists and existing index is older than new one
-			v.il.Store(uuid, &idx)
-		}
-	} else {
-		_ = atomic.AddUint64(&v.ic, 1)
-	}
+	push(&v.il, &v.ic, uuid, &idx)
 	return nil
 }
 
@@ -110,15 +105,36 @@ func (v *vqueue) PushDelete(uuid string, timestamp int64) error {
 		uuid:      uuid,
 		timestamp: timestamp,
 	}
-	oidx, loaded := v.dl.LoadOrStore(uuid, &idx)
-	if loaded {
-		if newer(timestamp, oidx.timestamp) { // if data already exists and existing index is older than new one
-			v.dl.Store(uuid, &idx)
-		}
-	} else {
-		_ = atomic.AddUint64(&v.dc, 1)
-	}
+	push(&v.dl, &v.dc, uuid, &idx)
 	return nil
+}
+
+// push stores idx unless a newer entry for uuid is already queued. The CAS loop
+// keeps the newest timestamp under concurrent pushes, and a key popped in between
+// is re-created through LoadOrStore so cnt stays in step with the map.
+// cnt is incremented before the entry is published (and the increment is undone when
+// the key already existed), so a concurrent pop of the new entry can never decrement
+// cnt below zero; cnt may only over-count briefly.
+func push(m *sync.Map[string, *index], cnt *uint64, uuid string, idx *index) {
+	for {
+		atomic.AddUint64(cnt, 1)
+		oidx, loaded := m.LoadOrStore(uuid, idx)
+		if !loaded {
+			return
+		}
+		atomic.AddUint64(cnt, ^uint64(0))
+		if !newer(idx.timestamp, oidx.timestamp) || m.CompareAndSwap(uuid, oidx, idx) {
+			return
+		}
+	}
+}
+
+// popIfSame removes uuid only while it still maps to idx, so an entry pushed after
+// idx was read is never dropped by mistake.
+func popIfSame(m *sync.Map[string, *index], cnt *uint64, uuid string, idx *index) {
+	if m.CompareAndDelete(uuid, idx) {
+		atomic.AddUint64(cnt, ^uint64(0))
+	}
 }
 
 func (v *vqueue) PopInsert(uuid string) (vector []float32, timestamp int64, ok bool) {
@@ -207,7 +223,7 @@ func (v *vqueue) DVExists(uuid string) (dts int64, ok bool) {
 func (v *vqueue) RangePopInsert(
 	ctx context.Context, now int64, f func(uuid string, vector []float32, timestamp int64) bool,
 ) {
-	uii := make([]index, 0, atomic.LoadUint64(&v.ic))
+	uii := make([]*index, 0, atomic.LoadUint64(&v.ic))
 	defer func() {
 		uii = nil
 	}()
@@ -215,12 +231,18 @@ func (v *vqueue) RangePopInsert(
 		if newer(idx.timestamp, now) {
 			return true
 		}
-		dts, ok := v.loadDVQ(uuid)
-		if ok && newer(dts, idx.timestamp) {
-			_, _, _ = v.PopInsert(uuid)
+		// A newer delete cancels the insert. An older (or equal) delete still queued
+		// has not been applied yet, e.g. a concurrent Update pushed it after the
+		// RangePopDelete(now) snapshot. Applying the insert first would repoint the uuid and let that delete
+		// remove the new object on the next run, so keep the insert queued until the
+		// delete has been applied.
+		if dts, ok := v.loadDVQ(uuid); ok {
+			if newer(dts, idx.timestamp) {
+				popIfSame(&v.il, &v.ic, uuid, idx)
+			}
 			return true
 		}
-		uii = append(uii, *idx)
+		uii = append(uii, idx)
 		select {
 		case <-ctx.Done():
 			return false
@@ -228,7 +250,7 @@ func (v *vqueue) RangePopInsert(
 		}
 		return true
 	})
-	slices.SortFunc(uii, func(left, right index) int {
+	slices.SortFunc(uii, func(left, right *index) int {
 		return cmp.Compare(right.timestamp, left.timestamp)
 	})
 	for _, idx := range uii {
@@ -236,7 +258,7 @@ func (v *vqueue) RangePopInsert(
 			return
 		}
 
-		_, _, _ = v.PopInsert(idx.uuid)
+		popIfSame(&v.il, &v.ic, idx.uuid, idx)
 		select {
 		case <-ctx.Done():
 			return
@@ -245,8 +267,15 @@ func (v *vqueue) RangePopInsert(
 	}
 }
 
-func (v *vqueue) RangePopDelete(ctx context.Context, now int64, f func(uuid string) bool) {
-	udi := make([]index, 0, atomic.LoadUint64(&v.dc))
+// RangePopDelete hands each delete in the snapshot to f with its timestamp. When f applied it
+// (the uuid is gone from the index), every delete queued for the uuid is satisfied and popped,
+// together with the inserts older than the newest one. When f skipped it (the indexed object
+// is newer than the delete), only that entry is popped: a delete pushed while f ran was not
+// compared with the index yet and stays queued for the next run.
+func (v *vqueue) RangePopDelete(
+	ctx context.Context, now int64, f func(uuid string, timestamp int64) (applied bool),
+) {
+	udi := make([]*index, 0, atomic.LoadUint64(&v.dc))
 	defer func() {
 		udi = nil
 	}()
@@ -254,7 +283,7 @@ func (v *vqueue) RangePopDelete(ctx context.Context, now int64, f func(uuid stri
 		if newer(idx.timestamp, now) {
 			return true
 		}
-		udi = append(udi, *idx)
+		udi = append(udi, idx)
 		select {
 		case <-ctx.Done():
 			return false
@@ -262,17 +291,23 @@ func (v *vqueue) RangePopDelete(ctx context.Context, now int64, f func(uuid stri
 		}
 		return true
 	})
-	slices.SortFunc(udi, func(left, right index) int {
+	slices.SortFunc(udi, func(left, right *index) int {
 		return cmp.Compare(right.timestamp, left.timestamp)
 	})
 	for _, didx := range udi {
-		if !f(didx.uuid) {
-			return
-		}
-		_, _ = v.PopDelete(didx.uuid)
-		_, its, ok := v.loadIVQ(didx.uuid)
-		if ok && newer(didx.timestamp, its) {
-			_, _, _ = v.PopInsert(didx.uuid)
+		if !f(didx.uuid, didx.timestamp) {
+			popIfSame(&v.dl, &v.dc, didx.uuid, didx)
+		} else {
+			// f already removed uuid from the index, which also satisfies any newer
+			// delete pushed meanwhile, so pop the delete entry by key. Cancel only
+			// inserts older than the newest delete popped; a newer insert must stay.
+			dts, ok := v.PopDelete(didx.uuid)
+			if !ok || dts < didx.timestamp {
+				dts = didx.timestamp
+			}
+			if iidx, ok := v.il.Load(didx.uuid); ok && iidx != nil && newer(dts, iidx.timestamp) {
+				popIfSame(&v.il, &v.ic, didx.uuid, iidx)
+			}
 		}
 		select {
 		case <-ctx.Done():

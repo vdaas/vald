@@ -29,9 +29,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/attribute"
 	"github.com/vdaas/vald/internal/observability/trace"
-	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/strings"
-	"github.com/vdaas/vald/internal/sync"
 )
 
 func (s *server) LinearSearch(
@@ -69,6 +67,8 @@ func (s *server) LinearSearch(
 	}
 	if err != nil || res == nil {
 		var attrs []attribute.KeyValue
+		// errors.As writes to its target, so it must be local to stay race-free across concurrent requests.
+		var errNGT errors.NGTError
 		switch {
 		case errors.Is(err, errors.ErrCreateIndexingIsInProgress):
 			err = status.WrapWithAborted("LinearSearch API aborted to process search request due to creating indices is in progress", err,
@@ -164,6 +164,8 @@ func (s *server) LinearSearchByID(
 	}
 	if err != nil || res == nil {
 		var attrs []attribute.KeyValue
+		// errors.As writes to its target, so it must be local to stay race-free across concurrent requests.
+		var errNGT errors.NGTError
 		switch {
 		case errors.Is(err, errors.ErrCreateIndexingIsInProgress):
 			err = status.WrapWithAborted("LinearSearchByID API aborted to process search request due to creating indices is in progress", err,
@@ -318,91 +320,11 @@ func (s *server) StreamLinearSearchByID(
 func (s *server) MultiLinearSearch(
 	ctx context.Context, reqs *payload.Search_MultiRequest,
 ) (res *payload.Search_Responses, errs error) {
-	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.MultiLinearSearchRPCName)
-	defer trace.End(span)
-
-	res = &payload.Search_Responses{
-		Responses: make([]*payload.Search_Response, len(reqs.GetRequests())),
-	}
-	var wg sync.WaitGroup
-	var mu sync.Mutex
-	rids := make([]string, 0, len(reqs.GetRequests()))
-	for i, req := range reqs.Requests {
-		idx, query := i, req
-		rids = append(rids, req.GetConfig().GetRequestId())
-		wg.Add(1)
-		s.eg.Go(safety.RecoverFunc(func() (err error) {
-			defer wg.Done()
-			ctx, sspan := trace.StartSpan(ctx, fmt.Sprintf("%s/%s/errgroup.Go/id-%d", apiName, vald.MultiLinearSearchRPCName, idx))
-			defer trace.End(sspan)
-			r, err := s.LinearSearch(ctx, query)
-			if err != nil {
-				st, _ := status.FromError(err)
-				errhandler.RecordSpanStatus(sspan, st, err)
-				mu.Lock()
-				if errs == nil {
-					errs = err
-				} else {
-					errs = errors.Join(errs, err)
-				}
-				mu.Unlock()
-				return nil
-			}
-			res.Responses[idx] = r
-			return nil
-		}))
-	}
-	wg.Wait()
-	if errs != nil {
-		st, _ := status.FromError(errs)
-		errhandler.RecordSpanStatus(span, st, errs)
-		return nil, errs
-	}
-	return res, nil
+	return multiSearch(ctx, s, vald.MultiLinearSearchRPCName, reqs.Requests, s.LinearSearch)
 }
 
 func (s *server) MultiLinearSearchByID(
 	ctx context.Context, reqs *payload.Search_MultiIDRequest,
 ) (res *payload.Search_Responses, errs error) {
-	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.MultiLinearSearchByIDRPCName)
-	defer trace.End(span)
-
-	res = &payload.Search_Responses{
-		Responses: make([]*payload.Search_Response, len(reqs.GetRequests())),
-	}
-	var wg sync.WaitGroup
-	var mu sync.Mutex
-	rids := make([]string, 0, len(reqs.GetRequests()))
-	for i, req := range reqs.Requests {
-		idx, query := i, req
-		rids = append(rids, req.GetConfig().GetRequestId())
-		wg.Add(1)
-		s.eg.Go(safety.RecoverFunc(func() error {
-			ctx, sspan := trace.StartSpan(ctx, fmt.Sprintf("%s/%s/errgroup.Go/id-%d", apiName, vald.MultiLinearSearchByIDRPCName, idx))
-			defer trace.End(sspan)
-			defer wg.Done()
-			r, err := s.LinearSearchByID(ctx, query)
-			if err != nil {
-				st, _ := status.FromError(err)
-				errhandler.RecordSpanStatus(sspan, st, err)
-				mu.Lock()
-				if errs == nil {
-					errs = err
-				} else {
-					errs = errors.Join(errs, err)
-				}
-				mu.Unlock()
-				return nil
-			}
-			res.Responses[idx] = r
-			return nil
-		}))
-	}
-	wg.Wait()
-	if errs != nil {
-		st, _ := status.FromError(errs)
-		errhandler.RecordSpanStatus(span, st, errs)
-		return nil, errs
-	}
-	return res, nil
+	return multiSearch(ctx, s, vald.MultiLinearSearchByIDRPCName, reqs.Requests, s.LinearSearchByID)
 }

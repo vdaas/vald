@@ -669,6 +669,61 @@ func Test_lz4Compressor_Writer(t *testing.T) {
 				},
 			}
 		}(),
+		func() test {
+			var (
+				dst = new(lz4.MockWriter)
+				w   = new(lz4.MockWriter)
+			)
+			return test{
+				name: "returns a writer with the configured compression level when the level is positive",
+				args: args{
+					dst: dst,
+				},
+				fields: fields{
+					compressionLevel: 9,
+					lz4: &lz4.MockLZ4{
+						NewWriterLevelFunc: func(_ io.Writer, level int) lz4.Writer {
+							if level != 9 {
+								return nil
+							}
+							return w
+						},
+					},
+				},
+				want: want{
+					want: &lz4Writer{
+						dst: dst,
+						w:   w,
+					},
+				},
+			}
+		}(),
+		func() test {
+			var (
+				dst = new(lz4.MockWriter)
+				w   = new(lz4.MockWriter)
+			)
+			return test{
+				name: "returns a default (fast) writer when the level is negative",
+				args: args{
+					dst: dst,
+				},
+				fields: fields{
+					compressionLevel: -1,
+					lz4: &lz4.MockLZ4{
+						NewWriterFunc: func(io.Writer) lz4.Writer {
+							return w
+						},
+					},
+				},
+				want: want{
+					want: &lz4Writer{
+						dst: dst,
+						w:   w,
+					},
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {

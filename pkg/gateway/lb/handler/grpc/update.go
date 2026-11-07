@@ -17,8 +17,8 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"math"
 	"slices"
-	"sync/atomic"
 	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
@@ -27,6 +27,7 @@ import (
 	"github.com/vdaas/vald/internal/core/algorithm"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
@@ -37,6 +38,7 @@ import (
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/atomic"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/pkg/gateway/lb/service"
 )
@@ -47,17 +49,9 @@ func (s *server) Update(
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.UpdateRPCServiceName+"/"+vald.UpdateRPCName), apiName+"/"+vald.UpdateRPCName)
 	defer trace.End(span)
 	uuid := req.GetVector().GetId()
-	reqInfo := &errdetails.RequestInfo{
-		RequestId:   uuid,
-		ServingData: errdetails.Serialize(req),
-	}
-	resInfo := &errdetails.ResourceInfo{
-		ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateRPCName + "." + vald.GetObjectRPCName,
-		ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-	}
 	if len(uuid) == 0 {
 		err = errors.ErrInvalidMetaDataConfig
-		err = status.WrapWithInvalidArgument(vald.UpdateRPCName+" API invalid uuid", err, reqInfo, resInfo,
+		err = status.WrapWithInvalidArgument(vald.UpdateRPCName+" API invalid uuid", err, append(s.errDetails(ctx, vald.UpdateRPCName+"."+vald.GetObjectRPCName, uuid, req),
 			&errdetails.BadRequest{
 				FieldViolations: []*errdetails.BadRequestFieldViolation{
 					{
@@ -65,14 +59,14 @@ func (s *server) Update(
 						Description: err.Error(),
 					},
 				},
-			})
+			})...)
 		return errhandler.HandleError[payload.Object_Location](span, codes.InvalidArgument, err)
 	}
 	vec := req.GetVector().GetVector()
 	vl := len(vec)
 	if vl < algorithm.MinimumVectorDimensionSize {
 		err = errors.ErrInvalidDimensionSize(vl, 0)
-		err = status.WrapWithInvalidArgument(vald.UpdateRPCName+" API invalid vector argument", err, reqInfo, resInfo,
+		err = status.WrapWithInvalidArgument(vald.UpdateRPCName+" API invalid vector argument", err, append(s.errDetails(ctx, vald.UpdateRPCName+"."+vald.GetObjectRPCName, uuid, req),
 			&errdetails.BadRequest{
 				FieldViolations: []*errdetails.BadRequestFieldViolation{
 					{
@@ -80,7 +74,22 @@ func (s *server) Update(
 						Description: err.Error(),
 					},
 				},
-			}, info.Get())
+			}, info.Get())...)
+		return errhandler.HandleError[payload.Object_Location](span, codes.InvalidArgument, err)
+	}
+	// Update inserts at timestamp+1 after removing at timestamp, which would wrap
+	// to a negative value for MaxInt64 and silently drop the insert.
+	if ts := req.GetConfig().GetTimestamp(); ts == math.MaxInt64 {
+		err = errors.ErrInvalidTimestamp(ts)
+		err = status.WrapWithInvalidArgument(vald.UpdateRPCName+" API invalid timestamp", err, append(s.errDetails(ctx, vald.UpdateRPCName, uuid, req),
+			&errdetails.BadRequest{
+				FieldViolations: []*errdetails.BadRequestFieldViolation{
+					{
+						Field:       "timestamp",
+						Description: err.Error(),
+					},
+				},
+			})...)
 		return errhandler.HandleError[payload.Object_Location](span, codes.InvalidArgument, err)
 	}
 
@@ -91,7 +100,9 @@ func (s *server) Update(
 			updated atomic.Uint64
 			ls      = make([]string, 0, s.replica)
 			visited = make(map[string]bool, s.replica)
-			locs    = &payload.Object_Location{
+			// ferr keeps each agent's latest failure; the client backoff may call f again.
+			ferr = make(map[string]error)
+			locs = &payload.Object_Location{
 				Uuid: uuid,
 				Ips:  make([]string, 0, s.replica),
 			}
@@ -99,6 +110,15 @@ func (s *server) Update(
 		err = s.gateway.BroadCast(ctx, service.WRITE, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) (err error) {
 			ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+vald.UpdateRPCName+"/"+target)
 			defer trace.End(span)
+			defer func() {
+				mu.Lock()
+				if err != nil {
+					ferr[target] = err
+				} else {
+					delete(ferr, target)
+				}
+				mu.Unlock()
+			}()
 			loc, err := vc.Update(ctx, req, copts...)
 			if err != nil {
 				st, ok := status.FromError(err)
@@ -143,10 +163,12 @@ func (s *server) Update(
 			}
 			return nil
 		})
+		//nolint:gosec // both counters are bounded by the number of target agents
+		err = s.partialBroadCastResult(ctx, vald.UpdateRPCName, uuid, err, int(updated.Load()+aeCount.Load()), ferr)
 		switch {
 		case err != nil:
 			st, msg, err := status.ParseError(err, codes.Internal,
-				"failed to parse "+vald.UpdateRPCName+" gRPC error response", reqInfo, resInfo, info.Get())
+				"failed to parse "+vald.UpdateRPCName+" gRPC error response", append(s.errDetails(ctx, vald.UpdateRPCName+"."+vald.GetObjectRPCName, uuid, req), info.Get())...)
 			if span != nil {
 				span.RecordError(err)
 				span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
@@ -155,25 +177,37 @@ func (s *server) Update(
 			return nil, err
 		case len(locs.Ips) <= 0:
 			err = errors.ErrIndexNotFound
-			err = status.WrapWithNotFound(vald.UpdateRPCName+" API update target not found", err, reqInfo, resInfo)
+			err = status.WrapWithNotFound(vald.UpdateRPCName+" API update target not found", err, s.errDetails(ctx, vald.UpdateRPCName+"."+vald.GetObjectRPCName, uuid, req)...)
 			return errhandler.HandleError[payload.Object_Location](span, codes.NotFound, err)
 		case updated.Load()+aeCount.Load() < uint64(s.replica):
 			shortage := s.replica - int(updated.Load()+aeCount.Load())
+			// Agents' Update deletes at the config timestamp and inserts at +1
+			// (MaxInt64 is rejected above); 0 lets each agent pick its own clock.
+			its := req.GetConfig().GetTimestamp()
+			if its > 0 {
+				its++
+			}
 			err = s.gateway.DoMulti(ctx, shortage, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) (err error) {
 				mu.RLock()
-				tf, ok := visited[target]
+				tf := visited[target]
 				mu.RUnlock()
-				if tf && ok {
+				if tf {
 					return errors.Errorf("target: %s already inserted will skip", target)
 				}
 				ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "DoMulti/"+target), apiName+"/"+vald.InsertRPCName+"/"+target)
 				defer trace.End(span)
+				// Agents prefer the vector's timestamp; give the top-up replicas the
+				// timestamp (config timestamp + 1) the Update call above stored on the others.
 				loc, err := vc.Insert(ctx, &payload.Insert_Request{
-					Vector: req.GetVector(),
+					Vector: &payload.Object_Vector{
+						Id:        uuid,
+						Vector:    req.GetVector().GetVector(),
+						Timestamp: its,
+					},
 					Config: &payload.Insert_Config{
 						SkipStrictExistCheck: true,
 						Filters:              req.GetConfig().GetFilters(),
-						Timestamp:            req.GetConfig().GetTimestamp(),
+						Timestamp:            its,
 					},
 				}, copts...)
 				if err != nil {
@@ -194,9 +228,14 @@ func (s *server) Update(
 				}
 				return nil
 			})
+			if err != nil {
+				st, _ := status.FromError(err)
+				errhandler.RecordSpanStatus(span, st, err)
+				return nil, err
+			}
 		case updated.Load() == 0 && aeCount.Load() > 0:
 			err = errors.ErrSameVectorAlreadyExists(uuid, vec, vec)
-			err = status.WrapWithAlreadyExists(vald.UpdateRPCName+" API update target same vector already exists", err, reqInfo, resInfo)
+			err = status.WrapWithAlreadyExists(vald.UpdateRPCName+" API update target same vector already exists", err, s.errDetails(ctx, vald.UpdateRPCName+"."+vald.GetObjectRPCName, uuid, req)...)
 			return errhandler.HandleError[payload.Object_Location](span, codes.AlreadyExists, err)
 
 		}
@@ -241,11 +280,6 @@ func (s *server) Update(
 			}
 			return nil, err
 		}
-		if req.GetConfig() != nil {
-			req.GetConfig().SkipStrictExistCheck = true
-		} else {
-			req.Config = &payload.Update_Config{SkipStrictExistCheck: true}
-		}
 	}
 	var now int64
 	if req.GetConfig().GetTimestamp() > 0 {
@@ -263,7 +297,25 @@ func (s *server) Update(
 			Timestamp:            now,
 		},
 	}
-	res, err = s.Remove(ctx, rreq)
+	// An agent failing to remove the old copy does not abort the update: the copy
+	// inserted below at now+1 takes precedence, and the index correction removes
+	// the stale one. Only a missing connection or a done request context is fatal.
+	rlocs, removed, failed, err := s.broadcastRemove(ctx, uuid, rreq, rreq)
+	switch {
+	case err == nil && len(rlocs.GetIps()) <= 0:
+		err = errors.ErrIndexNotFound
+		err = status.WrapWithNotFound(vald.RemoveRPCName+" API remove target not found", err, s.errDetails(ctx, vald.RemoveRPCName, uuid, rreq)...)
+	case err != nil && !errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) && ctx.Err() == nil:
+		if removed > 0 {
+			s.warnPartialWrite(vald.RemoveRPCName+" for "+vald.UpdateRPCName, uuid, removed, failed, err)
+		} else {
+			// Not a partial write (no agent removed the old copy), so it is not counted;
+			// the insert below still decides the Update's result.
+			log.Warnf("%s API for uuid %s failed on every agent holding it (%d agent(s)), errors: %v",
+				vald.RemoveRPCName+" for "+vald.UpdateRPCName, uuid, len(failed), err)
+		}
+		err = nil
+	}
 	if err != nil {
 		if errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) {
 			err = status.WrapWithInternal(vald.RemoveRPCName+" for "+vald.UpdateRPCName+" API connection not found", err,
@@ -283,8 +335,15 @@ func (s *server) Update(
 		return nil, err
 	}
 	now++
+	// Agents prefer the vector's own timestamp over the config's, so the client's
+	// vector timestamp must not reach them: an insert older than the delete queued
+	// above would be dropped while still reporting success.
 	ireq := &payload.Insert_Request{
-		Vector: req.GetVector(),
+		Vector: &payload.Object_Vector{
+			Id:        uuid,
+			Vector:    req.GetVector().GetVector(),
+			Timestamp: now,
+		},
 		Config: &payload.Insert_Config{
 			SkipStrictExistCheck: true,
 			Filters:              req.GetConfig().GetFilters(),
@@ -349,14 +408,22 @@ func (s *server) MultiUpdate(
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.UpdateRPCServiceName+"/"+vald.MultiUpdateRPCName), apiName+"/"+vald.MultiUpdateRPCName)
 	defer trace.End(span)
 	var (
-		emu sync.Mutex
-		lmu sync.Mutex
+		errList []error
+		emu     sync.Mutex
+		lmu     sync.Mutex
 	)
 	eg, ectx := errgroup.New(ctx)
 	eg.SetLimit(s.multiConcurrency)
 	locs = &payload.Object_Locations{
 		Locations: make([]*payload.Object_Location, len(reqs.GetRequests())),
 	}
+	// The invalid-argument details are identical for every invalid request of
+	// the batch, so serialize the whole batch and resolve Addrs once, lazily.
+	var (
+		detailsBuilt bool
+		servingData  string
+		resourceName string
+	)
 	for i, r := range reqs.GetRequests() {
 		if r != nil && r.GetVector() != nil && len(r.GetVector().GetVector()) >= algorithm.MinimumVectorDimensionSize && r.GetVector().GetId() != "" {
 			idx := i
@@ -369,11 +436,7 @@ func (s *server) MultiUpdate(
 					st, _ := status.FromError(err)
 					errhandler.RecordSpanStatus(sspan, st, err)
 					emu.Lock()
-					if errs == nil {
-						errs = err
-					} else {
-						errs = errors.Join(errs, err)
-					}
+					errList = append(errList, err)
 					emu.Unlock()
 				} else if res != nil && res.GetUuid() == req.GetVector().GetId() && res.GetIps() != nil {
 					lmu.Lock()
@@ -393,16 +456,21 @@ func (s *server) MultiUpdate(
 				field = "vector"
 			case r.GetVector().GetId() == "":
 				err = errors.ErrInvalidUUID(r.GetVector().GetId())
-				field = "uuid"
+				field = uuidField
+			}
+			if !detailsBuilt {
+				servingData = errdetails.Serialize(reqs)
+				resourceName = fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx))
+				detailsBuilt = true
 			}
 			err = status.WrapWithInvalidArgument(vald.MultiUpdateRPCName+" API invalid vector argument", err,
 				&errdetails.RequestInfo{
 					RequestId:   r.GetVector().GetId(),
-					ServingData: errdetails.Serialize(reqs),
+					ServingData: servingData,
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.MultiUpdateRPCName,
-					ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
+					ResourceName: resourceName,
 				},
 				&errdetails.BadRequest{
 					FieldViolations: []*errdetails.BadRequestFieldViolation{
@@ -413,25 +481,15 @@ func (s *server) MultiUpdate(
 					},
 				}, info.Get())
 			emu.Lock()
-			if errs == nil {
-				errs = err
-			} else {
-				errs = errors.Join(errs, err)
-			}
+			errList = append(errList, err)
 			emu.Unlock()
 
 		}
 	}
-	err := eg.Wait()
-	if err != nil {
-		emu.Lock()
-		if errs == nil {
-			errs = err
-		} else {
-			errs = errors.Join(errs, err)
-		}
-		emu.Unlock()
+	if err := eg.Wait(); err != nil {
+		errList = append(errList, err)
 	}
+	errs = errors.Join(errList...)
 
 	if errs != nil {
 		st, _ := status.FromError(errs)
@@ -447,17 +505,9 @@ func (s *server) UpdateTimestamp(
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.UpdateRPCServiceName+"/"+vald.UpdateTimestampRPCName), apiName+"/"+vald.UpdateTimestampRPCName)
 	defer trace.End(span)
 	uuid := req.GetId()
-	reqInfo := &errdetails.RequestInfo{
-		RequestId:   uuid,
-		ServingData: errdetails.Serialize(req),
-	}
-	resInfo := &errdetails.ResourceInfo{
-		ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateTimestampRPCName + "." + vald.GetObjectRPCName,
-		ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-	}
 	if len(uuid) == 0 {
 		err = errors.ErrInvalidMetaDataConfig
-		err = status.WrapWithInvalidArgument(vald.UpdateTimestampRPCName+" API invalid uuid", err, reqInfo, resInfo,
+		err = status.WrapWithInvalidArgument(vald.UpdateTimestampRPCName+" API invalid uuid", err, append(s.errDetails(ctx, vald.UpdateTimestampRPCName+"."+vald.GetObjectRPCName, uuid, req),
 			&errdetails.BadRequest{
 				FieldViolations: []*errdetails.BadRequestFieldViolation{
 					{
@@ -465,21 +515,22 @@ func (s *server) UpdateTimestamp(
 						Description: err.Error(),
 					},
 				},
-			})
+			})...)
 		return errhandler.HandleError[payload.Object_Location](span, codes.InvalidArgument, err)
 	}
 	ts := req.GetTimestamp()
 	if ts < 0 {
 		err = errors.ErrInvalidTimestamp(ts)
-		err = status.WrapWithInvalidArgument(vald.UpdateTimestampRPCName+" API invalid vector argument", err, reqInfo, resInfo,
-			&errdetails.BadRequest{
-				FieldViolations: []*errdetails.BadRequestFieldViolation{
-					{
-						Field:       "timestamp",
-						Description: err.Error(),
+		err = status.WrapWithInvalidArgument(vald.UpdateTimestampRPCName+" API invalid vector argument", err,
+			append(s.errDetails(ctx, vald.UpdateTimestampRPCName+"."+vald.GetObjectRPCName, uuid, req),
+				&errdetails.BadRequest{
+					FieldViolations: []*errdetails.BadRequestFieldViolation{
+						{
+							Field:       "timestamp",
+							Description: err.Error(),
+						},
 					},
-				},
-			}, info.Get())
+				}, info.Get())...)
 		return errhandler.HandleError[payload.Object_Location](span, codes.InvalidArgument, err)
 	}
 	var (
@@ -488,7 +539,9 @@ func (s *server) UpdateTimestamp(
 		updated atomic.Uint64
 		ls      = make([]string, 0, s.replica)
 		visited = make(map[string]bool, s.replica)
-		locs    = &payload.Object_Location{
+		// ferr keeps each agent's latest failure; the client backoff may call f again.
+		ferr = make(map[string]error)
+		locs = &payload.Object_Location{
 			Uuid: uuid,
 			Ips:  make([]string, 0, s.replica),
 		}
@@ -496,6 +549,15 @@ func (s *server) UpdateTimestamp(
 	err = s.gateway.BroadCast(ctx, service.WRITE, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) (err error) {
 		ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+vald.UpdateTimestampRPCName+"/"+target)
 		defer trace.End(span)
+		defer func() {
+			mu.Lock()
+			if err != nil {
+				ferr[target] = err
+			} else {
+				delete(ferr, target)
+			}
+			mu.Unlock()
+		}()
 		loc, err := vc.UpdateTimestamp(ctx, req, copts...)
 		if err != nil {
 			st, ok := status.FromError(err)
@@ -540,6 +602,8 @@ func (s *server) UpdateTimestamp(
 		}
 		return nil
 	})
+	//nolint:gosec // both counters are bounded by the number of target agents
+	err = s.partialBroadCastResult(ctx, vald.UpdateTimestampRPCName, uuid, err, int(updated.Load()+aeCount.Load()), ferr)
 	switch {
 	case err != nil:
 		st, _ := status.FromError(err)
@@ -547,7 +611,7 @@ func (s *server) UpdateTimestamp(
 		return nil, err
 	case len(locs.Ips) <= 0:
 		err = errors.ErrIndexNotFound
-		err = status.WrapWithNotFound(vald.UpdateTimestampRPCName+" API update target not found", err, reqInfo, resInfo)
+		err = status.WrapWithNotFound(vald.UpdateTimestampRPCName+" API update target not found", err, s.errDetails(ctx, vald.UpdateTimestampRPCName+"."+vald.GetObjectRPCName, uuid, req)...)
 		return errhandler.HandleError[payload.Object_Location](span, codes.NotFound, err)
 	case updated.Load()+aeCount.Load() < uint64(s.replica):
 		shortage := s.replica - int(updated.Load()+aeCount.Load())
@@ -571,8 +635,13 @@ func (s *server) UpdateTimestamp(
 			}
 			ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "DoMulti/"+target), apiName+"/"+vald.InsertRPCName+"/"+target)
 			defer trace.End(span)
+			// vec carries the stored (old) timestamp, which agents prefer over the config's.
 			loc, err := vc.Insert(ctx, &payload.Insert_Request{
-				Vector: vec,
+				Vector: &payload.Object_Vector{
+					Id:        uuid,
+					Vector:    vec.GetVector(),
+					Timestamp: ts,
+				},
 				Config: &payload.Insert_Config{
 					SkipStrictExistCheck: true,
 					Timestamp:            ts,
@@ -602,7 +671,8 @@ func (s *server) UpdateTimestamp(
 			return nil, err
 		}
 	case updated.Load() == 0 && aeCount.Load() > 0:
-		err = status.WrapWithAlreadyExists(vald.UpdateTimestampRPCName+" API update target same vector already exists", errors.ErrSameVectorAlreadyExists(uuid, nil, nil), reqInfo, resInfo)
+		err = status.WrapWithAlreadyExists(vald.UpdateTimestampRPCName+" API update target same vector already exists", errors.ErrSameVectorAlreadyExists(uuid, nil, nil),
+			s.errDetails(ctx, vald.UpdateTimestampRPCName+"."+vald.GetObjectRPCName, uuid, req)...)
 		return errhandler.HandleError[payload.Object_Location](span, codes.AlreadyExists, err)
 
 	}

@@ -108,16 +108,12 @@ func (c *client) Search(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
+	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Search_Response, error) {
 		return vald.NewValdClient(conn).Search(ctx, in, append(copts, opts...)...)
 	})
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
 }
 
 func (c *client) SearchByID(
@@ -129,16 +125,12 @@ func (c *client) SearchByID(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
+	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Search_Response, error) {
 		return vald.NewValdClient(conn).SearchByID(ctx, in, append(copts, opts...)...)
 	})
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
 }
 
 func (c *client) StreamSearch(
@@ -150,16 +142,13 @@ func (c *client) StreamSearch(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
+	// the stream is opened with the method ctx: the per-attempt ctx is cancelled by backoff.Do on return.
+	return grpc.RoundRobin(ctx, c.c, func(_ context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (vald.Search_StreamSearchClient, error) {
 		return vald.NewValdClient(conn).StreamSearch(ctx, append(copts, opts...)...)
 	})
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
 }
 
 func (c *client) StreamSearchByID(
@@ -171,16 +160,13 @@ func (c *client) StreamSearchByID(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
+	// the stream is opened with the method ctx: the per-attempt ctx is cancelled by backoff.Do on return.
+	return grpc.RoundRobin(ctx, c.c, func(_ context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (vald.Search_StreamSearchByIDClient, error) {
 		return vald.NewValdClient(conn).StreamSearchByID(ctx, append(copts, opts...)...)
 	})
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
 }
 
 func (c *client) MultiSearch(
@@ -192,16 +178,12 @@ func (c *client) MultiSearch(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
+	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Search_Responses, error) {
 		return vald.NewValdClient(conn).MultiSearch(ctx, in, append(copts, opts...)...)
 	})
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
 }
 
 func (c *client) MultiSearchByID(
@@ -213,16 +195,12 @@ func (c *client) MultiSearchByID(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
+	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Search_Responses, error) {
 		return vald.NewValdClient(conn).MultiSearchByID(ctx, in, append(copts, opts...)...)
 	})
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
 }
 
 func (c *client) LinearSearch(
@@ -234,16 +212,12 @@ func (c *client) LinearSearch(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
+	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Search_Response, error) {
 		return vald.NewValdClient(conn).LinearSearch(ctx, in, append(copts, opts...)...)
 	})
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
 }
 
 func (c *client) LinearSearchByID(
@@ -255,58 +229,48 @@ func (c *client) LinearSearchByID(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
+	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Search_Response, error) {
 		return vald.NewValdClient(conn).LinearSearchByID(ctx, in, append(copts, opts...)...)
 	})
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
 }
 
 func (c *client) StreamLinearSearch(
 	ctx context.Context, opts ...grpc.CallOption,
 ) (res vald.Search_StreamLinearSearchClient, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.StreamSearchRPCName), apiName+"/"+vald.StreamSearchRPCName)
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.StreamLinearSearchRPCName), apiName+"/"+vald.StreamLinearSearchRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
+	// the stream is opened with the method ctx: the per-attempt ctx is cancelled by backoff.Do on return.
+	return grpc.RoundRobin(ctx, c.c, func(_ context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (vald.Search_StreamLinearSearchClient, error) {
 		return vald.NewValdClient(conn).StreamLinearSearch(ctx, append(copts, opts...)...)
 	})
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
 }
 
 func (c *client) StreamLinearSearchByID(
 	ctx context.Context, opts ...grpc.CallOption,
 ) (res vald.Search_StreamLinearSearchByIDClient, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.StreamSearchByIDRPCName), apiName+"/"+vald.StreamSearchByIDRPCName)
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.StreamLinearSearchByIDRPCName), apiName+"/"+vald.StreamLinearSearchByIDRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
+	// the stream is opened with the method ctx: the per-attempt ctx is cancelled by backoff.Do on return.
+	return grpc.RoundRobin(ctx, c.c, func(_ context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (vald.Search_StreamSearchByIDClient, error) {
 		return vald.NewValdClient(conn).StreamLinearSearchByID(ctx, append(copts, opts...)...)
 	})
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
 }
 
 func (c *client) MultiLinearSearch(
@@ -318,16 +282,12 @@ func (c *client) MultiLinearSearch(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
+	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Search_Responses, error) {
 		return vald.NewValdClient(conn).MultiLinearSearch(ctx, in, append(copts, opts...)...)
 	})
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
 }
 
 func (c *client) MultiLinearSearchByID(
@@ -339,16 +299,12 @@ func (c *client) MultiLinearSearchByID(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
+	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Search_Responses, error) {
 		return vald.NewValdClient(conn).MultiLinearSearchByID(ctx, in, append(copts, opts...)...)
 	})
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
 }
 
 func (c *client) Insert(
@@ -360,16 +316,12 @@ func (c *client) Insert(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
+	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Object_Location, error) {
 		return vald.NewValdClient(conn).Insert(ctx, in, append(copts, opts...)...)
 	})
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
 }
 
 func (c *client) StreamInsert(
@@ -381,16 +333,13 @@ func (c *client) StreamInsert(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
+	// the stream is opened with the method ctx: the per-attempt ctx is cancelled by backoff.Do on return.
+	return grpc.RoundRobin(ctx, c.c, func(_ context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (vald.Insert_StreamInsertClient, error) {
 		return vald.NewValdClient(conn).StreamInsert(ctx, append(copts, opts...)...)
 	})
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
 }
 
 func (c *client) MultiInsert(
@@ -402,16 +351,12 @@ func (c *client) MultiInsert(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
+	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Object_Locations, error) {
 		return vald.NewValdClient(conn).MultiInsert(ctx, in, append(copts, opts...)...)
 	})
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
 }
 
 func (c *client) Update(
@@ -423,16 +368,12 @@ func (c *client) Update(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
+	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Object_Location, error) {
 		return vald.NewValdClient(conn).Update(ctx, in, append(copts, opts...)...)
 	})
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
 }
 
 func (c *client) StreamUpdate(
@@ -444,16 +385,13 @@ func (c *client) StreamUpdate(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
+	// the stream is opened with the method ctx: the per-attempt ctx is cancelled by backoff.Do on return.
+	return grpc.RoundRobin(ctx, c.c, func(_ context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (vald.Update_StreamUpdateClient, error) {
 		return vald.NewValdClient(conn).StreamUpdate(ctx, append(copts, opts...)...)
 	})
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
 }
 
 func (c *client) MultiUpdate(
@@ -465,16 +403,12 @@ func (c *client) MultiUpdate(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
+	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Object_Locations, error) {
 		return vald.NewValdClient(conn).MultiUpdate(ctx, in, append(copts, opts...)...)
 	})
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
 }
 
 func (c *client) UpdateTimestamp(
@@ -486,16 +420,12 @@ func (c *client) UpdateTimestamp(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
+	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Object_Location, error) {
 		return vald.NewValdClient(conn).UpdateTimestamp(ctx, in, append(copts, opts...)...)
 	})
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
 }
 
 func (c *client) Upsert(
@@ -507,16 +437,12 @@ func (c *client) Upsert(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
+	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Object_Location, error) {
 		return vald.NewValdClient(conn).Upsert(ctx, in, append(copts, opts...)...)
 	})
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
 }
 
 func (c *client) StreamUpsert(
@@ -528,16 +454,13 @@ func (c *client) StreamUpsert(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
+	// the stream is opened with the method ctx: the per-attempt ctx is cancelled by backoff.Do on return.
+	return grpc.RoundRobin(ctx, c.c, func(_ context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (vald.Upsert_StreamUpsertClient, error) {
 		return vald.NewValdClient(conn).StreamUpsert(ctx, append(copts, opts...)...)
 	})
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
 }
 
 func (c *client) MultiUpsert(
@@ -549,16 +472,12 @@ func (c *client) MultiUpsert(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
+	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Object_Locations, error) {
 		return vald.NewValdClient(conn).MultiUpsert(ctx, in, append(copts, opts...)...)
 	})
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
 }
 
 func (c *client) Remove(
@@ -570,16 +489,12 @@ func (c *client) Remove(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
+	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Object_Location, error) {
 		return vald.NewValdClient(conn).Remove(ctx, in, append(copts, opts...)...)
 	})
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
 }
 
 func (c *client) StreamRemove(
@@ -591,16 +506,13 @@ func (c *client) StreamRemove(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
+	// the stream is opened with the method ctx: the per-attempt ctx is cancelled by backoff.Do on return.
+	return grpc.RoundRobin(ctx, c.c, func(_ context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (vald.Remove_StreamRemoveClient, error) {
 		return vald.NewValdClient(conn).StreamRemove(ctx, append(copts, opts...)...)
 	})
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
 }
 
 func (c *client) MultiRemove(
@@ -612,16 +524,12 @@ func (c *client) MultiRemove(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
+	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Object_Locations, error) {
 		return vald.NewValdClient(conn).MultiRemove(ctx, in, append(copts, opts...)...)
 	})
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
 }
 
 func (c *client) Flush(
@@ -633,16 +541,12 @@ func (c *client) Flush(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
+	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Info_Index_Count, error) {
 		return vald.NewValdClient(conn).Flush(ctx, in, append(copts, opts...)...)
 	})
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
 }
 
 func (c *client) RemoveByTimestamp(
@@ -654,16 +558,12 @@ func (c *client) RemoveByTimestamp(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
+	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Object_Locations, error) {
 		return vald.NewValdClient(conn).RemoveByTimestamp(ctx, in, append(copts, opts...)...)
 	})
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
 }
 
 func (c *client) GetObject(
@@ -675,16 +575,12 @@ func (c *client) GetObject(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
+	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Object_Vector, error) {
 		return vald.NewValdClient(conn).GetObject(ctx, in, append(copts, opts...)...)
 	})
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
 }
 
 func (c *client) StreamGetObject(
@@ -696,16 +592,13 @@ func (c *client) StreamGetObject(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
+	// the stream is opened with the method ctx: the per-attempt ctx is cancelled by backoff.Do on return.
+	return grpc.RoundRobin(ctx, c.c, func(_ context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (vald.Object_StreamGetObjectClient, error) {
 		return vald.NewValdClient(conn).StreamGetObject(ctx, append(copts, opts...)...)
 	})
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
 }
 
 func (c *client) StreamListObject(
@@ -717,16 +610,13 @@ func (c *client) StreamListObject(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
+	// the stream is opened with the method ctx: the per-attempt ctx is cancelled by backoff.Do on return.
+	return grpc.RoundRobin(ctx, c.c, func(_ context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (vald.Object_StreamListObjectClient, error) {
 		return vald.NewValdClient(conn).StreamListObject(ctx, in, append(copts, opts...)...)
 	})
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
 }
 
 func (c *client) IndexInfo(
@@ -738,16 +628,12 @@ func (c *client) IndexInfo(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
+	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Info_Index_Count, error) {
 		return vald.NewValdClient(conn).IndexInfo(ctx, in, append(copts, opts...)...)
 	})
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
 }
 
 func (c *client) IndexDetail(
@@ -759,16 +645,12 @@ func (c *client) IndexDetail(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
+	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Info_Index_Detail, error) {
 		return vald.NewValdClient(conn).IndexDetail(ctx, in, append(copts, opts...)...)
 	})
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
 }
 
 func (c *client) IndexStatistics(
@@ -780,16 +662,12 @@ func (c *client) IndexStatistics(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
+	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Info_Index_Statistics, error) {
 		return vald.NewValdClient(conn).IndexStatistics(ctx, in, append(copts, opts...)...)
 	})
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
 }
 
 func (c *client) IndexStatisticsDetail(
@@ -801,16 +679,12 @@ func (c *client) IndexStatisticsDetail(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
+	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Info_Index_StatisticsDetail, error) {
 		return vald.NewValdClient(conn).IndexStatisticsDetail(ctx, in, append(copts, opts...)...)
 	})
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
 }
 
 func (c *client) IndexProperty(
@@ -822,16 +696,12 @@ func (c *client) IndexProperty(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
+	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Info_Index_PropertyDetail, error) {
 		return vald.NewValdClient(conn).IndexProperty(ctx, in, append(copts, opts...)...)
 	})
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
 }
 
 func (c *client) GetTimestamp(
@@ -843,16 +713,12 @@ func (c *client) GetTimestamp(
 			span.End()
 		}
 	}()
-	res, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
+	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (*payload.Object_Timestamp, error) {
 		return vald.NewValdClient(conn).GetTimestamp(ctx, in, append(copts, opts...)...)
 	})
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
 }
 
 func (*singleClient) Start(context.Context) (<-chan error, error) {
@@ -1182,7 +1048,7 @@ func (c *singleClient) MultiRemove(
 func (c *singleClient) Flush(
 	ctx context.Context, in *payload.Flush_Request, opts ...grpc.CallOption,
 ) (res *payload.Info_Index_Count, err error) {
-	ctx, span := trace.StartSpan(ctx, apiName+"/singleClient.Flush")
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.FlushRPCName), apiName+"/"+vald.FlushRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -1254,7 +1120,7 @@ func (c *singleClient) IndexInfo(
 func (c *singleClient) IndexDetail(
 	ctx context.Context, in *payload.Empty, opts ...grpc.CallOption,
 ) (res *payload.Info_Index_Detail, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.IndexDetailRPCName), apiName+"/"+vald.IndexDetailRPCName)
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.IndexDetailRPCName), apiName+"/"+vald.IndexDetailRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -1278,7 +1144,7 @@ func (c *singleClient) IndexStatistics(
 func (c *singleClient) IndexStatisticsDetail(
 	ctx context.Context, in *payload.Empty, opts ...grpc.CallOption,
 ) (res *payload.Info_Index_StatisticsDetail, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.IndexStatisticsDetailRPCName), apiName+"/"+vald.IndexStatisticsDetailRPCName)
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.IndexStatisticsDetailRPCName), apiName+"/"+vald.IndexStatisticsDetailRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -1302,7 +1168,7 @@ func (c *singleClient) IndexProperty(
 func (c *singleClient) GetTimestamp(
 	ctx context.Context, in *payload.Object_TimestampRequest, opts ...grpc.CallOption,
 ) (res *payload.Object_Timestamp, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.GetTimestampRPCName), apiName+"/"+vald.GetTimestampRPCName)
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.GetTimestampRPCName), apiName+"/"+vald.GetTimestampRPCName)
 	defer func() {
 		if span != nil {
 			span.End()

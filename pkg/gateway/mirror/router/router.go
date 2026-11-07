@@ -22,7 +22,6 @@ import (
 
 type router struct {
 	handler rest.Handler
-	timeout string
 }
 
 // New returns REST route&method information from handler interface.
@@ -61,14 +60,6 @@ func New(opts ...Option) http.Handler {
 				Pattern:     "/search",
 				HandlerFunc: h.Search,
 			},
-			{
-				Name: "Search By ID",
-				Methods: []string{
-					http.MethodGet,
-				},
-				Pattern:     "/search/{id}",
-				HandlerFunc: h.SearchByID,
-			},
 
 			{
 				Name: "Multi Search",
@@ -77,6 +68,14 @@ func New(opts ...Option) http.Handler {
 				},
 				Pattern:     "/search/multi",
 				HandlerFunc: h.MultiSearch,
+			},
+			{
+				Name: "Search By ID",
+				Methods: []string{
+					http.MethodGet,
+				},
+				Pattern:     "/search/{id}",
+				HandlerFunc: h.SearchByID,
 			},
 			{
 				Name: "Multi Search By ID",
@@ -143,14 +142,6 @@ func New(opts ...Option) http.Handler {
 				HandlerFunc: h.MultiUpsert,
 			},
 			{
-				Name: "Remove",
-				Methods: []string{
-					http.MethodDelete,
-				},
-				Pattern:     "/delete/{id}",
-				HandlerFunc: h.Remove,
-			},
-			{
 				Name: "RemoveByTimestamp",
 				Methods: []string{
 					http.MethodDelete,
@@ -166,6 +157,14 @@ func New(opts ...Option) http.Handler {
 				},
 				Pattern:     "/delete/multi",
 				HandlerFunc: h.MultiRemove,
+			},
+			{
+				Name: "Remove",
+				Methods: []string{
+					http.MethodDelete,
+				},
+				Pattern:     "/delete/{id}",
+				HandlerFunc: h.Remove,
 			},
 			{
 				Name: "GetObject",

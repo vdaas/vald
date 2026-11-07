@@ -49,6 +49,10 @@ func Init(opts ...Option) {
 		for _, opt := range append(defaultOptions, opts...) {
 			opt(o)
 		}
+		if o.logger != nil {
+			l = o.logger
+			return
+		}
 		l = getLogger(o)
 	})
 }

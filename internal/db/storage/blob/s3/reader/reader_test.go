@@ -20,6 +20,7 @@ import (
 	"reflect"
 	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -133,9 +134,7 @@ func Test_reader_Open(t *testing.T) {
 	type fields struct {
 		eg             errgroup.Group
 		service        s3iface.S3API
-		pr             io.ReadCloser
 		ctxio          ctxio.IO
-		wg             *sync.WaitGroup
 		bucket         string
 		backoffOpts    []backoff.Option
 		maxChunkSize   int64
@@ -149,7 +148,7 @@ func Test_reader_Open(t *testing.T) {
 		checkFunc  func(want, error) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
-		hookFunc   func(*reader)
+		hookFunc   func(io.ReadCloser)
 		args       args
 		name       string
 		fields     fields
@@ -197,6 +196,7 @@ func Test_reader_Open(t *testing.T) {
 			eg, _ := errgroup.New(ctx)
 
 			wantErr := errors.New("err")
+			var rc io.ReadCloser
 			return test{
 				name: "returns nil when backoff is enabled and s3 service returns an error",
 				args: args{
@@ -218,10 +218,17 @@ func Test_reader_Open(t *testing.T) {
 				want: want{
 					err: nil,
 				},
+				hookFunc: func(r io.ReadCloser) {
+					rc = r
+				},
 				afterFunc: func(t *testing.T, _ args) {
 					t.Helper()
 
-					if err := eg.Wait(); !errors.Is(err, wantErr) {
+					// the read error is delivered to the consumer through the stream, not to the errgroup.
+					if err := eg.Wait(); err != nil {
+						t.Errorf("want: %v, but got: %v", nil, err)
+					}
+					if _, err := readAllWithin(t, rc); !errors.Is(err, wantErr) {
 						t.Errorf("want: %v, but got: %v", wantErr, err)
 					}
 
@@ -236,6 +243,7 @@ func Test_reader_Open(t *testing.T) {
 			eg, _ := errgroup.New(ctx)
 
 			wantErr := errors.New("err")
+			var rc io.ReadCloser
 			return test{
 				name: "returns nil when backoff is disabled and s3 service returns an error",
 				args: args{
@@ -252,10 +260,17 @@ func Test_reader_Open(t *testing.T) {
 				want: want{
 					err: nil,
 				},
+				hookFunc: func(r io.ReadCloser) {
+					rc = r
+				},
 				afterFunc: func(t *testing.T, _ args) {
 					t.Helper()
 
-					if err := eg.Wait(); !errors.Is(err, wantErr) {
+					// the read error is delivered to the consumer through the stream, not to the errgroup.
+					if err := eg.Wait(); err != nil {
+						t.Errorf("want: %v, but got: %v", nil, err)
+					}
+					if _, err := readAllWithin(t, rc); !errors.Is(err, wantErr) {
 						t.Errorf("want: %v, but got: %v", wantErr, err)
 					}
 
@@ -270,6 +285,7 @@ func Test_reader_Open(t *testing.T) {
 			eg, _ := errgroup.New(ctx)
 
 			wantErr := errors.New("err")
+			var rc io.ReadCloser
 			return test{
 				name: "returns nil when backoff is disabled and the reader creation fails",
 				args: args{
@@ -301,10 +317,17 @@ func Test_reader_Open(t *testing.T) {
 				want: want{
 					err: nil,
 				},
+				hookFunc: func(r io.ReadCloser) {
+					rc = r
+				},
 				afterFunc: func(t *testing.T, _ args) {
 					t.Helper()
 
-					if err := eg.Wait(); !errors.Is(err, wantErr) {
+					// the read error is delivered to the consumer through the stream, not to the errgroup.
+					if err := eg.Wait(); err != nil {
+						t.Errorf("want: %v, but got: %v", nil, err)
+					}
+					if _, err := readAllWithin(t, rc); !errors.Is(err, wantErr) {
 						t.Errorf("want: %v, but got: %v", wantErr, err)
 					}
 
@@ -319,6 +342,7 @@ func Test_reader_Open(t *testing.T) {
 			eg, _ := errgroup.New(ctx)
 
 			wantErr := errors.New("err")
+			var rc io.ReadCloser
 			return test{
 				name: "returns nil when backoff is disabled and the reader copy fails",
 				args: args{
@@ -354,10 +378,17 @@ func Test_reader_Open(t *testing.T) {
 				want: want{
 					err: nil,
 				},
+				hookFunc: func(r io.ReadCloser) {
+					rc = r
+				},
 				afterFunc: func(t *testing.T, _ args) {
 					t.Helper()
 
-					if err := eg.Wait(); !errors.Is(err, wantErr) {
+					// the read error is delivered to the consumer through the stream, not to the errgroup.
+					if err := eg.Wait(); err != nil {
+						t.Errorf("want: %v, but got: %v", nil, err)
+					}
+					if _, err := readAllWithin(t, rc); !errors.Is(err, wantErr) {
 						t.Errorf("want: %v, but got: %v", wantErr, err)
 					}
 
@@ -412,7 +443,7 @@ func Test_reader_Open(t *testing.T) {
 				want: want{
 					err: nil,
 				},
-				hookFunc: func(r *reader) {
+				hookFunc: func(r io.ReadCloser) {
 					go func() {
 						bytes := [][]byte{
 							make([]byte, 10),
@@ -468,17 +499,15 @@ func Test_reader_Open(t *testing.T) {
 				eg:             test.fields.eg,
 				service:        test.fields.service,
 				bucket:         test.fields.bucket,
-				pr:             test.fields.pr,
-				wg:             test.fields.wg,
 				ctxio:          test.fields.ctxio,
 				backoffEnabled: test.fields.backoffEnabled,
 				backoffOpts:    test.fields.backoffOpts,
 				maxChunkSize:   test.fields.maxChunkSize,
 			}
 
-			err := r.Open(test.args.ctx, test.args.key)
+			rc, err := r.Open(test.args.ctx, test.args.key)
 			if test.hookFunc != nil {
-				test.hookFunc(r)
+				test.hookFunc(rc)
 			}
 			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
@@ -487,13 +516,10 @@ func Test_reader_Open(t *testing.T) {
 	}
 }
 
-func Test_reader_Close(t *testing.T) {
+func Test_stream_Close(t *testing.T) {
 	type fields struct {
-		eg      errgroup.Group
-		pr      io.ReadCloser
-		service *s3.S3
-		wg      *sync.WaitGroup
-		bucket  string
+		pr io.ReadCloser
+		wg *sync.WaitGroup
 	}
 	type want struct {
 		err error
@@ -566,12 +592,9 @@ func Test_reader_Close(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			r := &reader{
-				eg:      test.fields.eg,
-				service: test.fields.service,
-				bucket:  test.fields.bucket,
-				pr:      test.fields.pr,
-				wg:      test.fields.wg,
+			r := &stream{
+				pr: test.fields.pr,
+				wg: test.fields.wg,
 			}
 
 			err := r.Close()
@@ -582,16 +605,13 @@ func Test_reader_Close(t *testing.T) {
 	}
 }
 
-func Test_reader_Read(t *testing.T) {
+func Test_stream_Read(t *testing.T) {
 	type args struct {
 		p []byte
 	}
 	type fields struct {
-		eg      errgroup.Group
-		pr      io.ReadCloser
-		service *s3.S3
-		wg      *sync.WaitGroup
-		bucket  string
+		pr io.ReadCloser
+		wg *sync.WaitGroup
 	}
 	type want struct {
 		err   error
@@ -678,12 +698,9 @@ func Test_reader_Read(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			r := &reader{
-				eg:      test.fields.eg,
-				service: test.fields.service,
-				bucket:  test.fields.bucket,
-				pr:      test.fields.pr,
-				wg:      test.fields.wg,
+			r := &stream{
+				pr: test.fields.pr,
+				wg: test.fields.wg,
 			}
 
 			gotN, err := r.Read(test.args.p)
@@ -704,9 +721,7 @@ func Test_reader_getObjectWithBackoff(t *testing.T) {
 	type fields struct {
 		eg             errgroup.Group
 		service        s3iface.S3API
-		pr             io.ReadCloser
 		ctxio          ctxio.IO
-		wg             *sync.WaitGroup
 		bucket         string
 		backoffOpts    []backoff.Option
 		maxChunkSize   int64
@@ -816,15 +831,13 @@ func Test_reader_getObjectWithBackoff(t *testing.T) {
 				eg:             test.fields.eg,
 				service:        test.fields.service,
 				bucket:         test.fields.bucket,
-				pr:             test.fields.pr,
-				wg:             test.fields.wg,
 				backoffEnabled: test.fields.backoffEnabled,
 				backoffOpts:    test.fields.backoffOpts,
 				maxChunkSize:   test.fields.maxChunkSize,
 				ctxio:          test.fields.ctxio,
 			}
 
-			got, err := r.getObjectWithBackoff(test.args.ctx, test.args.key, test.args.offset, test.args.length)
+			got, err := r.getObjectWithBackoff(test.args.ctx, nil, test.args.key, test.args.offset, test.args.length)
 			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -842,9 +855,7 @@ func Test_reader_getObject(t *testing.T) {
 	type fields struct {
 		eg             errgroup.Group
 		service        s3iface.S3API
-		pr             io.ReadCloser
 		ctxio          ctxio.IO
-		wg             *sync.WaitGroup
 		bucket         string
 		backoffOpts    []backoff.Option
 		maxChunkSize   int64
@@ -1112,8 +1123,6 @@ func Test_reader_getObject(t *testing.T) {
 				eg:             test.fields.eg,
 				service:        test.fields.service,
 				bucket:         test.fields.bucket,
-				pr:             test.fields.pr,
-				wg:             test.fields.wg,
 				backoffEnabled: test.fields.backoffEnabled,
 				backoffOpts:    test.fields.backoffOpts,
 				maxChunkSize:   test.fields.maxChunkSize,
@@ -1129,3 +1138,419 @@ func Test_reader_getObject(t *testing.T) {
 }
 
 // NOT IMPLEMENTED BELOW
+
+// Test_reader_getObjectWithBackoff_concurrentNonRetryableErrors calls getObjectWithBackoff concurrently
+// with errors that must not be retried. The errors.As targets used to be package-level variables,
+// which is a data race under -race.
+func Test_reader_getObjectWithBackoff_concurrentNonRetryableErrors(t *testing.T) {
+	t.Parallel()
+
+	const callers = 32
+	tests := []struct {
+		isWant func(error) bool
+		name   string
+		code   string
+	}{
+		{
+			name:   "no such bucket is not retried",
+			code:   s3.ErrCodeNoSuchBucket,
+			isWant: errors.IsErrBlobNoSuchBucket,
+		},
+		{
+			name:   "no such key is not retried",
+			code:   s3.ErrCodeNoSuchKey,
+			isWant: errors.IsErrBlobNoSuchKey,
+		},
+		{
+			name: "invalid chunk range is not retried",
+			code: "InvalidRange",
+			isWant: func(err error) bool {
+				var target *errors.ErrBlobInvalidChunkRange
+				return errors.As(err, &target)
+			},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			var calls atomic.Int64
+			r := &reader{
+				service: &MockS3API{
+					GetObjectWithContextFunc: func(aws.Context, *s3.GetObjectInput, ...request.Option) (*s3.GetObjectOutput, error) {
+						calls.Add(1)
+						return nil, awserr.New(test.code, "err", nil)
+					},
+				},
+				backoffEnabled: true,
+			}
+			bo := backoff.New(backoff.WithRetryCount(1))
+
+			start := make(chan struct{})
+			errs := make(chan error, callers)
+			for range callers {
+				go func() {
+					<-start
+					_, err := r.getObjectWithBackoff(context.Background(), bo, "vald", 0, 10)
+					errs <- err
+				}()
+			}
+			close(start)
+
+			timeout := time.After(10 * time.Second)
+			for range callers {
+				select {
+				case err := <-errs:
+					if !test.isWant(err) {
+						t.Errorf("got error: %v", err)
+					}
+				case <-timeout:
+					t.Fatal("timed out waiting for getObjectWithBackoff callers")
+				}
+			}
+			if got := calls.Load(); got != callers {
+				t.Errorf("service called %d times, want %d (no retry)", got, callers)
+			}
+		})
+	}
+}
+
+// testTimeout bounds every blocking operation in the regression tests below.
+const testTimeout = 5 * time.Second
+
+// readAllWithin reads r until EOF or error in its own goroutine and fails the test if it blocks for testTimeout.
+func readAllWithin(t *testing.T, r io.Reader) ([]byte, error) {
+	t.Helper()
+	type result struct {
+		err error
+		b   []byte
+	}
+	ch := make(chan result, 1)
+	go func() {
+		var buf bytes.Buffer
+		_, err := buf.ReadFrom(r)
+		ch <- result{err: err, b: buf.Bytes()}
+	}()
+	select {
+	case res := <-ch:
+		return res.b, res.err
+	case <-time.After(testTimeout):
+		t.Fatal("timed out reading")
+		return nil, nil
+	}
+}
+
+func newBody(s string) *s3.GetObjectOutput {
+	return &s3.GetObjectOutput{Body: io.NopCloser(bytes.NewReader([]byte(s)))}
+}
+
+func Test_reader_Read_returnsGoroutineError(t *testing.T) {
+	t.Parallel()
+	errGet := errors.New("get object failed")
+	tests := []struct {
+		name    string
+		get     func(call int32) (*s3.GetObjectOutput, error)
+		wantErr error
+		want    string
+	}{
+		{
+			name: "returns the error instead of io.EOF when the first chunk fails",
+			get: func(int32) (*s3.GetObjectOutput, error) {
+				return nil, errGet
+			},
+			wantErr: errGet,
+		},
+		{
+			name: "returns the data read so far and the error when a later chunk fails",
+			get: func(call int32) (*s3.GetObjectOutput, error) {
+				if call == 1 {
+					return newBody("abcd"), nil
+				}
+				return nil, errGet
+			},
+			wantErr: errGet,
+			want:    "abcd",
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(tt *testing.T) {
+			tt.Parallel()
+			var calls atomic.Int32
+			r := &reader{
+				eg: errgroup.Get(),
+				service: &MockS3API{
+					GetObjectWithContextFunc: func(aws.Context, *s3.GetObjectInput, ...request.Option) (*s3.GetObjectOutput, error) {
+						return tc.get(calls.Add(1))
+					},
+				},
+				ctxio:        ctxio.New(),
+				maxChunkSize: 4,
+			}
+			rc, err := r.Open(tt.Context(), "key")
+			if err != nil {
+				tt.Fatal(err)
+			}
+			got, err := readAllWithin(tt, rc)
+			if !errors.Is(err, tc.wantErr) {
+				tt.Errorf("Read error = %v, want %v", err, tc.wantErr)
+			}
+			if string(got) != tc.want {
+				tt.Errorf("read %q, want %q", got, tc.want)
+			}
+			if err := rc.Close(); err != nil {
+				tt.Errorf("Close() = %v, want nil", err)
+			}
+		})
+	}
+}
+
+func Test_reader_Close_waitsForGoroutine(t *testing.T) {
+	t.Parallel()
+	release := make(chan struct{})
+	var once sync.Once
+	releaseGet := func() { once.Do(func() { close(release) }) }
+	defer releaseGet()
+	ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
+	defer cancel()
+	r := &reader{
+		eg: errgroup.Get(),
+		service: &MockS3API{
+			GetObjectWithContextFunc: func(ctx aws.Context, _ *s3.GetObjectInput, _ ...request.Option) (*s3.GetObjectOutput, error) {
+				select {
+				case <-release:
+					return newBody("abcd"), nil
+				case <-ctx.Done():
+					return nil, ctx.Err()
+				}
+			},
+		},
+		ctxio:        ctxio.New(),
+		maxChunkSize: 4,
+	}
+	rc, err := r.Open(ctx, "key")
+	if err != nil {
+		t.Fatal(err)
+	}
+	done := make(chan error, 1)
+	go func() { done <- rc.Close() }()
+
+	// The goroutine is still inside GetObject, so Close must not have returned yet.
+	select {
+	case err := <-done:
+		t.Fatalf("Close returned before the goroutine finished: %v", err)
+	case <-time.After(50 * time.Millisecond):
+	}
+
+	releaseGet()
+	select {
+	case err := <-done:
+		if err != nil {
+			t.Errorf("Close() = %v, want nil", err)
+		}
+	case <-time.After(testTimeout):
+		t.Fatal("Close did not return after the goroutine finished")
+	}
+}
+
+func Test_reader_getObject_closesBodyOnWrapError(t *testing.T) {
+	t.Parallel()
+	var closed atomic.Bool
+	errWrap := errors.New("wrap failed")
+	r := &reader{
+		service: &MockS3API{
+			GetObjectWithContextFunc: func(aws.Context, *s3.GetObjectInput, ...request.Option) (*s3.GetObjectOutput, error) {
+				return &s3.GetObjectOutput{Body: &MockReadCloser{
+					CloseFunc: func() error {
+						closed.Store(true)
+						return nil
+					},
+				}}, nil
+			},
+		},
+		ctxio: &MockIO{
+			NewReadCloserWithContextFunc: func(context.Context, io.ReadCloser) (io.ReadCloser, error) {
+				return nil, errWrap
+			},
+		},
+	}
+	if _, err := r.getObject(t.Context(), "key", 0, 4); !errors.Is(err, errWrap) {
+		t.Errorf("getObject() error = %v, want %v", err, errWrap)
+	}
+	if !closed.Load() {
+		t.Error("resp.Body was not closed")
+	}
+}
+
+// Test_reader_Open_streamsAreIndependent simulates a restore retry that does not wait for the previous
+// attempt: the consumer of the old stream is still blocked in Read when a new Open happens, and the old
+// stream is closed only afterwards. Open returns a handle per stream, so the old Read and Close must
+// only use the pipe, wait group and backoff of the old stream. The new stream must deliver its full
+// content, and closing it must succeed. The new stream's retry loop is held until the end, so closing
+// the backoff of the new stream from the old Close would block the old Close.
+func Test_reader_Open_streamsAreIndependent(t *testing.T) {
+	t.Parallel()
+	ctx, cancel := context.WithTimeout(t.Context(), 2*testTimeout)
+	defer cancel()
+
+	var (
+		releaseOld, releaseNew = make(chan struct{}), make(chan struct{})
+		oldInGet, newInRetry   = make(chan struct{}), make(chan struct{})
+		newCalls               atomic.Int32
+	)
+	r := &reader{
+		eg: errgroup.Get(),
+		service: &MockS3API{
+			GetObjectWithContextFunc: func(ctx aws.Context, in *s3.GetObjectInput, _ ...request.Option) (*s3.GetObjectOutput, error) {
+				if *in.Key == "old" {
+					close(oldInGet)
+					select {
+					case <-releaseOld:
+						return newBody("abcd"), nil
+					case <-ctx.Done():
+						return nil, ctx.Err()
+					}
+				}
+				// the first call fails with a retryable error, so the second one runs inside bo.Do
+				switch newCalls.Add(1) {
+				case 1:
+					return nil, awserr.New("Invalid", "", nil)
+				case 2:
+				default:
+					// the next chunk request after the full chunk: empty, which ends the stream
+					return newBody(""), nil
+				}
+				close(newInRetry)
+				select {
+				case <-releaseNew:
+					return newBody("abcd"), nil
+				case <-ctx.Done():
+					return nil, ctx.Err()
+				}
+			},
+		},
+		ctxio:          ctxio.New(),
+		maxChunkSize:   4,
+		backoffEnabled: true,
+		backoffOpts:    []backoff.Option{backoff.WithInitialDuration("1ms"), backoff.WithRetryCount(3)},
+	}
+	wait := func(ch <-chan struct{}, what string) {
+		t.Helper()
+		select {
+		case <-ch:
+		case <-time.After(testTimeout):
+			t.Fatalf("timed out waiting for %s", what)
+		}
+	}
+	waitErr := func(ch <-chan error, what string) error {
+		t.Helper()
+		select {
+		case err := <-ch:
+			return err
+		case <-time.After(testTimeout):
+			t.Fatalf("timed out waiting for %s", what)
+			return nil
+		}
+	}
+
+	oldRC, err := r.Open(ctx, "old")
+	if err != nil {
+		t.Fatal(err)
+	}
+	wait(oldInGet, "the old stream to call GetObject")
+
+	// The old consumer reads the old stream, which has no data yet.
+	oldReadDone := make(chan error, 1)
+	go func() {
+		_, rerr := oldRC.Read(make([]byte, 1))
+		oldReadDone <- rerr
+	}()
+
+	// The retry opens the new stream before the old one is closed.
+	newRC, err := r.Open(ctx, "new")
+	if err != nil {
+		t.Fatal(err)
+	}
+	wait(newInRetry, "the new stream to enter its retry loop")
+
+	oldCloseDone := make(chan error, 1)
+	go func() { oldCloseDone <- oldRC.Close() }()
+
+	// Closing the old stream closes only the old pipe, which ends the blocked old Read.
+	if rerr := waitErr(oldReadDone, "the old Read to end"); !errors.Is(rerr, io.ErrClosedPipe) {
+		t.Fatalf("Read of the old stream = %v, want %v", rerr, io.ErrClosedPipe)
+	}
+
+	// Let the old goroutine finish. The old Close must return although the new backoff is still busy.
+	close(releaseOld)
+	if cerr := waitErr(oldCloseDone, "Close of the old stream (it must not wait for the new stream)"); cerr != nil {
+		t.Errorf("Close() of the old stream = %v, want nil", cerr)
+	}
+
+	// A later Read of the old stream must not read from the new stream. The new stream has no data yet,
+	// so reading from it would block here.
+	oldReadAgain := make(chan error, 1)
+	go func() {
+		_, rerr := oldRC.Read(make([]byte, 1))
+		oldReadAgain <- rerr
+	}()
+	if rerr := waitErr(oldReadAgain, "the second Read of the old stream"); !errors.Is(rerr, io.ErrClosedPipe) {
+		t.Errorf("second Read of the old stream = %v, want %v", rerr, io.ErrClosedPipe)
+	}
+
+	// The new stream must be intact.
+	close(releaseNew)
+	got, err := readAllWithin(t, newRC)
+	if err != nil || string(got) != "abcd" {
+		t.Errorf("read of the new stream = %q, %v, want %q, nil", got, err, "abcd")
+	}
+	if cerr := newRC.Close(); cerr != nil {
+		t.Errorf("Close() of the new stream = %v, want nil", cerr)
+	}
+}
+
+// Test_reader_Close_beforeEOFIsNotGroupError pins that a consumer closing the
+// stream before reading everything (the restorer stops early when the target
+// already exists) is a normal stop for the goroutine. Returning the resulting
+// io.ErrClosedPipe recorded it on the errgroup, which is the process-wide group
+// in the sidecar, so the daemon shutdown failed.
+func Test_reader_Close_beforeEOFIsNotGroupError(t *testing.T) {
+	t.Parallel()
+	ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
+	defer cancel()
+	eg, _ := errgroup.New(ctx)
+	r := &reader{
+		eg: eg,
+		service: &MockS3API{
+			GetObjectWithContextFunc: func(aws.Context, *s3.GetObjectInput, ...request.Option) (*s3.GetObjectOutput, error) {
+				// Nothing reads the stream, so the copy into the pipe blocks on
+				// this body until Close closes the reading end.
+				return newBody(string(make([]byte, 64<<10))), nil
+			},
+		},
+		ctxio:        ctxio.New(),
+		maxChunkSize: 1 << 20,
+	}
+	rc, err := r.Open(ctx, "key")
+	if err != nil {
+		t.Fatal(err)
+	}
+	closed := make(chan error, 1)
+	go func() { closed <- rc.Close() }()
+	select {
+	case err := <-closed:
+		if err != nil {
+			t.Errorf("Close() = %v, want nil", err)
+		}
+	case <-time.After(testTimeout):
+		t.Fatal("Close did not return")
+	}
+	waited := make(chan error, 1)
+	go func() { waited <- eg.Wait() }()
+	select {
+	case err := <-waited:
+		if err != nil {
+			t.Errorf("eg.Wait() = %v, want nil: closing the stream early is not a failure", err)
+		}
+	case <-time.After(testTimeout):
+		t.Fatal("eg.Wait did not return")
+	}
+}
