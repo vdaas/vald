@@ -2153,6 +2153,12 @@ agent:
       valueFrom:
         fieldRef:
           fieldPath: metadata.namespace
+    # GOMEMLIMIT tracks the memory limit so the Go GC tightens before the pod
+    # nears it (the NGT index itself lives in the C heap, outside this limit).
+    - name: GOMEMLIMIT
+      valueFrom:
+        resourceFieldRef:
+          resource: limits.memory
   # @schema {"name": "agent.volumeMounts", "alias": "volumeMounts"}
   # agent.volumeMounts -- volume mounts
   volumeMounts: []
@@ -2225,6 +2231,9 @@ agent:
   resources:
     requests:
       cpu: 300m
+      memory: 4Gi
+    # memory limits = requests (Guaranteed memory QoS) to avoid OOM kills during graph construction
+    limits:
       memory: 4Gi
   # @schema {"name": "agent.readreplica", "type": "object"}
   # agent.readreplica -- readreplica deployment annotations
