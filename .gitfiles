@@ -2589,6 +2589,8 @@ tests/v2/e2e/metrics/testdata/AsTSV.golden
 tests/v2/e2e/metrics/testdata/AsYAML.golden
 trivy.yaml
 versions/BUF_VERSION
+versions/BUILDKIT_SYFT_SCANNER_VERSION
+versions/BUILDKIT_VERSION
 versions/BUSYBOX_VERSION
 versions/CHAOS_MESH_VERSION
 versions/CMAKE_VERSION
