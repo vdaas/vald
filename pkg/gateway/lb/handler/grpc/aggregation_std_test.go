@@ -45,8 +45,9 @@ func TestValdStdAggr_FrontInsertKeepsCapacity(t *testing.T) {
 	if want := []string{"a", "b", "c", "d"}; !slices.Equal(got, want) {
 		t.Errorf("ids = %v, want %v", got, want)
 	}
-	if c := cap(res); c != num*replica {
-		t.Errorf("cap(results) = %d, want %d (preallocated buffer reused)", c, num*replica)
+	// result is preallocated for num entries plus the one add holds before trimming.
+	if c := cap(res); c != num+1 {
+		t.Errorf("cap(results) = %d, want %d (preallocated buffer reused)", c, num+1)
 	}
 }
 

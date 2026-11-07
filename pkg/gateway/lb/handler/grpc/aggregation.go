@@ -498,12 +498,20 @@ func preallocLen(n int) int {
 // (capped at maxAggrPrealloc).
 // The returned Aggregator is initialized (including its error group) and ready to Start and receive results.
 func newStd(num, fnum, replica int) Aggregator {
+	// dch absorbs a burst from every agent, so it keeps the num*replica hint.
 	hint := preallocLen(num * replica)
+	// result never holds more than num entries (+1 before the trim in add), so
+	// sizing it by every agent's answer only wasted memory. seen keeps the dch
+	// hint: it records every distinct ID that reaches add, which exceeds num.
+	rhint := hint
+	if num > 0 {
+		rhint = preallocLen(num + 1)
+	}
 	vsa := &valdStdAggr{
 		num:    num,
 		fnum:   fnum,
 		dch:    make(chan DistPayload, hint),
-		result: make([]*payload.Object_Distance, 0, hint),
+		result: make([]*payload.Object_Distance, 0, rhint),
 		eg:     errgroup.Get(),
 	}
 	vsa.maxDist.Store(math.Float64bits(math.MaxFloat64))
@@ -517,7 +525,7 @@ func (v *valdStdAggr) Start(ctx context.Context) {
 	// touched by add, which runs solely on the goroutine started below, so a
 	// plain map suffices. The first-dequeued entry of an ID wins, whether or not
 	// it is kept.
-	seen := make(map[string]struct{}, cap(v.result))
+	seen := make(map[string]struct{}, cap(v.dch))
 	add := func(distance float64, dist *payload.Object_Distance) {
 		if _, ok := seen[dist.GetId()]; ok {
 			return
