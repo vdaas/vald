@@ -1011,6 +1011,7 @@ internal/core/algorithm/ngt/doc.go
 internal/core/algorithm/ngt/ngt.go
 internal/core/algorithm/ngt/ngt_bench_test.go
 internal/core/algorithm/ngt/ngt_close_test.go
+internal/core/algorithm/ngt/ngt_search_bench_test.go
 internal/core/algorithm/ngt/ngt_test.go
 internal/core/algorithm/ngt/option.go
 internal/core/algorithm/ngt/option_test.go
@@ -1367,6 +1368,8 @@ internal/net/grpc/client_dial_options_test.go
 internal/net/grpc/client_do_cb_test.go
 internal/net/grpc/client_evict_test.go
 internal/net/grpc/client_monitor_test.go
+internal/net/grpc/client_resource_exhausted_test.go
+internal/net/grpc/client_retry_bench_test.go
 internal/net/grpc/client_span_test.go
 internal/net/grpc/client_test.go
 internal/net/grpc/codec.go
@@ -1959,6 +1962,7 @@ pkg/agent/core/ngt/service/doc.go
 pkg/agent/core/ngt/service/export_duration_test.go
 pkg/agent/core/ngt/service/export_test.go
 pkg/agent/core/ngt/service/ngt.go
+pkg/agent/core/ngt/service/ngt_bench_test.go
 pkg/agent/core/ngt/service/ngt_cancel_test.go
 pkg/agent/core/ngt/service/ngt_init_regression_test.go
 pkg/agent/core/ngt/service/ngt_multi_error_test.go
@@ -2073,6 +2077,7 @@ pkg/discoverer/k8s/service/conversion.go
 pkg/discoverer/k8s/service/conversion_metrics_test.go
 pkg/discoverer/k8s/service/conversion_test.go
 pkg/discoverer/k8s/service/discover.go
+pkg/discoverer/k8s/service/discover_bench_test.go
 pkg/discoverer/k8s/service/discover_duration_test.go
 pkg/discoverer/k8s/service/discover_namespace_test.go
 pkg/discoverer/k8s/service/discover_test.go
@@ -2127,6 +2132,7 @@ pkg/gateway/lb/handler/grpc/aggregation_batch_test.go
 pkg/gateway/lb/handler/grpc/aggregation_deduplication_test.go
 pkg/gateway/lb/handler/grpc/aggregation_distance_test.go
 pkg/gateway/lb/handler/grpc/aggregation_prealloc_test.go
+pkg/gateway/lb/handler/grpc/aggregation_std_bench_test.go
 pkg/gateway/lb/handler/grpc/aggregation_std_test.go
 pkg/gateway/lb/handler/grpc/aggregation_test.go
 pkg/gateway/lb/handler/grpc/doc.go
@@ -2161,7 +2167,11 @@ pkg/gateway/lb/handler/grpc/retry_errors_test.go
 pkg/gateway/lb/handler/grpc/search.go
 pkg/gateway/lb/handler/grpc/search_benchmark_test.go
 pkg/gateway/lb/handler/grpc/search_broadcast_error_test.go
+pkg/gateway/lb/handler/grpc/search_by_id_bench_test.go
+pkg/gateway/lb/handler/grpc/search_by_id_fallback_test.go
 pkg/gateway/lb/handler/grpc/search_partial_failure_test.go
+pkg/gateway/lb/handler/grpc/search_quorum_bench_test.go
+pkg/gateway/lb/handler/grpc/search_quorum_test.go
 pkg/gateway/lb/handler/grpc/search_test.go
 pkg/gateway/lb/handler/grpc/stream_list_object_test.go
 pkg/gateway/lb/handler/grpc/timestamp_precedence_test.go
