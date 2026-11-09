@@ -2875,7 +2875,7 @@ func (s *server) doStreamListObject(
 	}
 
 	var mu, rmu sync.Mutex
-	var egCnt int64
+	var egCnt atomic.Int64
 	for {
 		select {
 		case <-egctx.Done():
@@ -2889,7 +2889,7 @@ func (s *server) doStreamListObject(
 			return err
 		default:
 			eg.Go(safety.RecoverFunc(func() (err error) {
-				id := fmt.Sprintf("stream-%020d", atomic.AddInt64(&egCnt, 1))
+				id := fmt.Sprintf("stream-%020d", egCnt.Add(1))
 				_, span := trace.StartSpan(egctx, apiName+"/streamListObject/"+id)
 				defer trace.End(span)
 
