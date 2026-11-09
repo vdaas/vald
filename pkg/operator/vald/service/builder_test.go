@@ -208,10 +208,8 @@ func TestVrsBuilder_Build_OverlayAppliedPerCluster(t *testing.T) {
 //nolint:goconst
 func minimalVor() *v1.ValdOperatorRelease {
 	return &v1.ValdOperatorRelease{
-		ObjectMeta: k8s.ObjectMeta{
-			Name:      "test",
-			Namespace: "test-ns",
-		},
+		Name:      "test",
+		Namespace: "test-ns",
 		Spec: v1.ValdOperatorReleaseSpec{
 			Infrastructure: []v1.ValdOperatorReleaseInfra{
 				{

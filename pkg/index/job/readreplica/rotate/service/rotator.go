@@ -208,18 +208,16 @@ func (s *subProcess) createSnapshot(
 		return nil, nil, fmt.Errorf("the name(%s) doesn't seem to have replica id", cur.GetObjectMeta().GetName())
 	}
 	newSnap = &k8s.VolumeSnapshot{
-		ObjectMeta: k8s.ObjectMeta{
-			Name:      fmt.Sprintf("%s%d", newNameBase, time.Now().Unix()),
-			Namespace: cur.GetNamespace(),
-			Labels:    cur.GetObjectMeta().GetLabels(),
-			OwnerReferences: []k8s.OwnerReference{
-				{
-					APIVersion: "apps/v1",
-					Kind:       "Deployment",
-					Name:       deployment.GetName(),
-					UID:        deployment.GetUID(),
-					Controller: new(true),
-				},
+		Name:      fmt.Sprintf("%s%d", newNameBase, time.Now().Unix()),
+		Namespace: cur.GetNamespace(),
+		Labels:    cur.GetObjectMeta().GetLabels(),
+		OwnerReferences: []k8s.OwnerReference{
+			{
+				APIVersion: "apps/v1",
+				Kind:       "Deployment",
+				Name:       deployment.GetName(),
+				UID:        deployment.GetUID(),
+				Controller: new(true),
 			},
 		},
 		Spec: cur.Spec,
@@ -256,18 +254,16 @@ func (s *subProcess) createPVC(
 
 	// remove timestamp from old pvc name
 	newPvc = &k8s.PersistentVolumeClaim{
-		ObjectMeta: k8s.ObjectMeta{
-			Name:      fmt.Sprintf("%s%d", newNameBase, time.Now().Unix()),
-			Namespace: cur.GetNamespace(),
-			Labels:    cur.GetObjectMeta().GetLabels(),
-			OwnerReferences: []k8s.OwnerReference{
-				{
-					APIVersion: "apps/v1",
-					Kind:       "Deployment",
-					Name:       deployment.GetName(),
-					UID:        deployment.GetUID(),
-					Controller: new(true),
-				},
+		Name:      fmt.Sprintf("%s%d", newNameBase, time.Now().Unix()),
+		Namespace: cur.GetNamespace(),
+		Labels:    cur.GetObjectMeta().GetLabels(),
+		OwnerReferences: []k8s.OwnerReference{
+			{
+				APIVersion: "apps/v1",
+				Kind:       "Deployment",
+				Name:       deployment.GetName(),
+				UID:        deployment.GetUID(),
+				Controller: new(true),
 			},
 		},
 		Spec: k8s.PersistentVolumeClaimSpec{

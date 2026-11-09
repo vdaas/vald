@@ -121,10 +121,8 @@ func TestResolveNodePoolCapability(t *testing.T) {
 
 func makeNode(name string, labels map[string]string) *k8s.Node {
 	return &k8s.Node{
-		ObjectMeta: k8s.ObjectMeta{
-			Name:   name,
-			Labels: labels,
-		},
+		Name:   name,
+		Labels: labels,
 	}
 }
 
