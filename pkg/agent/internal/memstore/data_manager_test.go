@@ -13,6 +13,79 @@
 // limitations under the License.
 package memstore
 
+import (
+	"testing"
+
+	"github.com/stretchr/testify/require"
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/pkg/agent/internal/kvs"
+	"github.com/vdaas/vald/pkg/agent/internal/vqueue"
+)
+
+func TestSameTimestampOperations(t *testing.T) {
+	const (
+		uuid             = "same-timestamp-object"
+		timestamp int64  = 200
+		oid       uint32 = 1
+	)
+	indexedVector := []float32{1, 2, 3}
+	queuedVector := []float32{4, 5, 6}
+	tests := []struct {
+		name       string
+		indexed    bool
+		operations []string
+		exists     bool
+		vector     []float32
+		timestamp  int64
+		readIndex  bool
+	}{
+		{name: "indexed insert then delete", indexed: true, operations: []string{"insert", "delete"}},
+		{name: "indexed delete then insert", indexed: true, operations: []string{"delete", "insert"}, exists: true, vector: queuedVector, timestamp: timestamp},
+		{name: "unindexed insert then delete", operations: []string{"insert", "delete"}},
+		{name: "unindexed delete then insert", operations: []string{"delete", "insert"}, exists: true, vector: queuedVector, timestamp: timestamp},
+		{name: "indexed without pending operations", indexed: true, exists: true, vector: indexedVector, timestamp: 100, readIndex: true},
+		{name: "missing without pending operations"},
+		{name: "indexed delete only", indexed: true, operations: []string{"delete"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			kv := kvs.New()
+			vq, err := vqueue.New()
+			require.NoError(t, err)
+			if tt.indexed {
+				kv.Set(uuid, oid, 100)
+			}
+			for _, operation := range tt.operations {
+				switch operation {
+				case "insert":
+					require.NoError(t, vq.PushInsert(uuid, queuedVector, timestamp))
+				case "delete":
+					require.NoError(t, vq.PushDelete(uuid, timestamp))
+				}
+			}
+
+			_, exists := Exists(kv, vq, uuid)
+			require.Equal(t, tt.exists, exists)
+
+			readIndex := false
+			vec, ts, err := GetObject(kv, vq, uuid, func(id uint32) ([]float32, error) {
+				readIndex = true
+				require.Equal(t, oid, id)
+				return indexedVector, nil
+			})
+			require.Equal(t, tt.readIndex, readIndex)
+			if !tt.exists {
+				require.EqualError(t, err, errors.ErrObjectIDNotFound(uuid).Error())
+				require.Nil(t, vec)
+				return
+			}
+			require.NoError(t, err)
+			require.Equal(t, tt.vector, vec)
+			require.Equal(t, tt.timestamp, ts)
+		})
+	}
+}
+
 // NOT IMPLEMENTED BELOW
 //
 // func TestExists(t *testing.T) {

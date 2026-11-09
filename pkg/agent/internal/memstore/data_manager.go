@@ -35,7 +35,7 @@ func Exists(kv kvs.BidiMap, vq vqueue.Queue, uuid string) (oid uint32, ok bool) 
 		if kts < its {
 			kv.Set(uuid, oid, its)
 		}
-		if dts > its {
+		if dts != 0 && dts >= its {
 			log.Debugf(
 				"Exists\tuuid: %s's data found in kvsdb and not found in insert vqueue, but delete vqueue data exists. the object will be delete soon\terror: %v",
 				uuid,
@@ -65,7 +65,7 @@ func GetObject(
 		kv.Set(uuid, oid, its)
 	}
 
-	if ok && dts > its {
+	if dts != 0 && dts >= its {
 		log.Debugf("GetObject\tuuid: %s's data found in kvsdb and not found in insert vqueue, but delete vqueue data exists. the object will be delete soon", uuid)
 		return nil, 0, errors.ErrObjectIDNotFound(uuid)
 	}
