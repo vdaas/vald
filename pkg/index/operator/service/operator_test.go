@@ -79,22 +79,18 @@ func Test_operator_podOnReconcile(t *testing.T) {
 				name:               "returns requeue: false when last snapshot time is after the last save time",
 				readReplicaEnabled: true,
 				agentPod: &k8s.Pod{
-					ObjectMeta: k8s.ObjectMeta{
-						Labels: map[string]string{
-							k8s.PodIndexLabel: "0",
-						},
-						Annotations: map[string]string{
-							vald.LastTimeSaveIndexTimestampAnnotationsKey: saveTime.Format(vald.TimeFormat),
-						},
+					Labels: map[string]string{
+						k8s.PodIndexLabel: "0",
+					},
+					Annotations: map[string]string{
+						vald.LastTimeSaveIndexTimestampAnnotationsKey: saveTime.Format(vald.TimeFormat),
 					},
 				},
 				readReplicaDeployment: &k8s.Deployment{
-					ObjectMeta: k8s.ObjectMeta{
-						Name:   testDeploymentName,
-						Labels: map[string]string{readReplicaLabelKey: "0"},
-						Annotations: map[string]string{
-							vald.LastTimeSnapshotTimestampAnnotationsKey: rotateTime.Format(vald.TimeFormat),
-						},
+					Name:   testDeploymentName,
+					Labels: map[string]string{readReplicaLabelKey: "0"},
+					Annotations: map[string]string{
+						vald.LastTimeSnapshotTimestampAnnotationsKey: rotateTime.Format(vald.TimeFormat),
 					},
 				},
 				want: want{
@@ -113,22 +109,18 @@ func Test_operator_podOnReconcile(t *testing.T) {
 				name:               "returns requeue: false and calls client.Create once when last snapshot time is before the last save time",
 				readReplicaEnabled: true,
 				agentPod: &k8s.Pod{
-					ObjectMeta: k8s.ObjectMeta{
-						Labels: map[string]string{
-							k8s.PodIndexLabel: "0",
-						},
-						Annotations: map[string]string{
-							vald.LastTimeSaveIndexTimestampAnnotationsKey: saveTime.Format(vald.TimeFormat),
-						},
+					Labels: map[string]string{
+						k8s.PodIndexLabel: "0",
+					},
+					Annotations: map[string]string{
+						vald.LastTimeSaveIndexTimestampAnnotationsKey: saveTime.Format(vald.TimeFormat),
 					},
 				},
 				readReplicaDeployment: &k8s.Deployment{
-					ObjectMeta: k8s.ObjectMeta{
-						Name:   testDeploymentName,
-						Labels: map[string]string{readReplicaLabelKey: "0"},
-						Annotations: map[string]string{
-							vald.LastTimeSnapshotTimestampAnnotationsKey: rotateTime.Format(vald.TimeFormat),
-						},
+					Name:   testDeploymentName,
+					Labels: map[string]string{readReplicaLabelKey: "0"},
+					Annotations: map[string]string{
+						vald.LastTimeSnapshotTimestampAnnotationsKey: rotateTime.Format(vald.TimeFormat),
 					},
 				},
 				want: want{
@@ -147,30 +139,24 @@ func Test_operator_podOnReconcile(t *testing.T) {
 				name:               "returns requeue: true when there is already one running job when rotation job concurrency is 1",
 				readReplicaEnabled: true,
 				agentPod: &k8s.Pod{
-					ObjectMeta: k8s.ObjectMeta{
-						Labels: map[string]string{
-							k8s.PodIndexLabel: "0",
-						},
-						Annotations: map[string]string{
-							vald.LastTimeSaveIndexTimestampAnnotationsKey: saveTime.Format(vald.TimeFormat),
-						},
+					Labels: map[string]string{
+						k8s.PodIndexLabel: "0",
+					},
+					Annotations: map[string]string{
+						vald.LastTimeSaveIndexTimestampAnnotationsKey: saveTime.Format(vald.TimeFormat),
 					},
 				},
 				readReplicaDeployment: &k8s.Deployment{
-					ObjectMeta: k8s.ObjectMeta{
-						Name:   testDeploymentName,
-						Labels: map[string]string{readReplicaLabelKey: "0"},
-						Annotations: map[string]string{
-							vald.LastTimeSnapshotTimestampAnnotationsKey: rotateTime.Format(vald.TimeFormat),
-						},
+					Name:   testDeploymentName,
+					Labels: map[string]string{readReplicaLabelKey: "0"},
+					Annotations: map[string]string{
+						vald.LastTimeSnapshotTimestampAnnotationsKey: rotateTime.Format(vald.TimeFormat),
 					},
 				},
 				runningJobs: []k8s.Job{
 					{
-						ObjectMeta: k8s.ObjectMeta{
-							Name:   testRunningJob1,
-							Labels: map[string]string{readReplicaLabelKey: rotatorName},
-						},
+						Name:   testRunningJob1,
+						Labels: map[string]string{readReplicaLabelKey: rotatorName},
 						Status: k8s.JobStatus{
 							Active: 1,
 						},
@@ -193,30 +179,24 @@ func Test_operator_podOnReconcile(t *testing.T) {
 				name:               "returns requeue: false and create job when there is one running job when rotation job concurrency is 2",
 				readReplicaEnabled: true,
 				agentPod: &k8s.Pod{
-					ObjectMeta: k8s.ObjectMeta{
-						Labels: map[string]string{
-							k8s.PodIndexLabel: "0",
-						},
-						Annotations: map[string]string{
-							vald.LastTimeSaveIndexTimestampAnnotationsKey: saveTime.Format(vald.TimeFormat),
-						},
+					Labels: map[string]string{
+						k8s.PodIndexLabel: "0",
+					},
+					Annotations: map[string]string{
+						vald.LastTimeSaveIndexTimestampAnnotationsKey: saveTime.Format(vald.TimeFormat),
 					},
 				},
 				readReplicaDeployment: &k8s.Deployment{
-					ObjectMeta: k8s.ObjectMeta{
-						Name:   testDeploymentName,
-						Labels: map[string]string{readReplicaLabelKey: "0"},
-						Annotations: map[string]string{
-							vald.LastTimeSnapshotTimestampAnnotationsKey: rotateTime.Format(vald.TimeFormat),
-						},
+					Name:   testDeploymentName,
+					Labels: map[string]string{readReplicaLabelKey: "0"},
+					Annotations: map[string]string{
+						vald.LastTimeSnapshotTimestampAnnotationsKey: rotateTime.Format(vald.TimeFormat),
 					},
 				},
 				runningJobs: []k8s.Job{
 					{
-						ObjectMeta: k8s.ObjectMeta{
-							Name:   testRunningJob1,
-							Labels: map[string]string{readReplicaLabelKey: rotatorName},
-						},
+						Name:   testRunningJob1,
+						Labels: map[string]string{readReplicaLabelKey: rotatorName},
 						Status: k8s.JobStatus{
 							Active: 1,
 						},
@@ -239,39 +219,31 @@ func Test_operator_podOnReconcile(t *testing.T) {
 				name:               "returns requeue: true when there are two running jobs when rotation job concurrency is 2",
 				readReplicaEnabled: true,
 				agentPod: &k8s.Pod{
-					ObjectMeta: k8s.ObjectMeta{
-						Labels: map[string]string{
-							k8s.PodIndexLabel: "0",
-						},
-						Annotations: map[string]string{
-							vald.LastTimeSaveIndexTimestampAnnotationsKey: saveTime.Format(vald.TimeFormat),
-						},
+					Labels: map[string]string{
+						k8s.PodIndexLabel: "0",
+					},
+					Annotations: map[string]string{
+						vald.LastTimeSaveIndexTimestampAnnotationsKey: saveTime.Format(vald.TimeFormat),
 					},
 				},
 				readReplicaDeployment: &k8s.Deployment{
-					ObjectMeta: k8s.ObjectMeta{
-						Name:   testDeploymentName,
-						Labels: map[string]string{readReplicaLabelKey: "0"},
-						Annotations: map[string]string{
-							vald.LastTimeSnapshotTimestampAnnotationsKey: rotateTime.Format(vald.TimeFormat),
-						},
+					Name:   testDeploymentName,
+					Labels: map[string]string{readReplicaLabelKey: "0"},
+					Annotations: map[string]string{
+						vald.LastTimeSnapshotTimestampAnnotationsKey: rotateTime.Format(vald.TimeFormat),
 					},
 				},
 				runningJobs: []k8s.Job{
 					{
-						ObjectMeta: k8s.ObjectMeta{
-							Name:   testRunningJob1,
-							Labels: map[string]string{readReplicaLabelKey: rotatorName},
-						},
+						Name:   testRunningJob1,
+						Labels: map[string]string{readReplicaLabelKey: rotatorName},
 						Status: k8s.JobStatus{
 							Active: 1,
 						},
 					},
 					{
-						ObjectMeta: k8s.ObjectMeta{
-							Name:   "already running job2",
-							Labels: map[string]string{readReplicaLabelKey: rotatorName},
-						},
+						Name:   "already running job2",
+						Labels: map[string]string{readReplicaLabelKey: rotatorName},
 						Status: k8s.JobStatus{
 							Active: 1,
 						},
@@ -334,9 +306,7 @@ func Test_operator_podOnReconcile(t *testing.T) {
 			}
 
 			op.rotatorJob = &k8s.Job{
-				ObjectMeta: k8s.ObjectMeta{
-					Name: "foo job",
-				},
+				Name: "foo job",
 			}
 
 			res, err := op.podOnReconcile(tt.Context(), test.agentPod)
@@ -367,12 +337,10 @@ func Test_operator_ensureJobConcurrency(t *testing.T) {
 	// idx leaves the pod template annotations nil.
 	newJob := func(name string, status k8s.JobStatus, idx string) k8s.Job {
 		job := k8s.Job{
-			ObjectMeta: k8s.ObjectMeta{
-				Name:      name,
-				Namespace: namespace,
-				Labels:    map[string]string{"app": rotatorName},
-			},
-			Status: status,
+			Name:      name,
+			Namespace: namespace,
+			Labels:    map[string]string{"app": rotatorName},
+			Status:    status,
 		}
 		if idx != "" {
 			job.Spec.Template.Annotations = map[string]string{targetKey: idx}

@@ -597,10 +597,8 @@ func Test_operator_jobReconcile(t *testing.T) {
 					jobList: map[string][]k8s.Job{
 						"scenario-insert": {
 							{
-								ObjectMeta: k8s.ObjectMeta{
-									Name:      "scenario-insert",
-									Namespace: "default",
-								},
+								Name:      "scenario-insert",
+								Namespace: "default",
 								Status: k8s.JobStatus{
 									Active: 1,
 								},
@@ -687,10 +685,8 @@ func Test_operator_jobReconcile(t *testing.T) {
 					jobList: map[string][]k8s.Job{
 						"scenario-insert": {
 							{
-								ObjectMeta: k8s.ObjectMeta{
-									Name:      "scenario-completed-insert",
-									Namespace: "default",
-								},
+								Name:      "scenario-completed-insert",
+								Namespace: "default",
 								Status: k8s.JobStatus{
 									Active:    0,
 									Succeeded: 1,
@@ -784,10 +780,8 @@ func Test_operator_jobReconcile(t *testing.T) {
 					jobList: map[string][]k8s.Job{
 						"scenario-insert": {
 							{
-								ObjectMeta: k8s.ObjectMeta{
-									Name:      "scenario-insert",
-									Namespace: "benchmark",
-								},
+								Name:      "scenario-insert",
+								Namespace: "benchmark",
 								Status: k8s.JobStatus{
 									Active: 1,
 								},
@@ -974,11 +968,9 @@ func Test_operator_benchJobReconcile(t *testing.T) {
 						m := map[string]*scenario{
 							"scenario": {
 								Crd: &v1.ValdBenchmarkScenario{
-									ObjectMeta: k8s.ObjectMeta{
-										Name:       "scenario",
-										Namespace:  "default",
-										Generation: 1,
-									},
+									Name:       "scenario",
+									Namespace:  "default",
+									Generation: 1,
 									Spec: v1.ValdBenchmarkScenarioSpec{
 										Target: &v1.BenchmarkTarget{
 											Host: "localhost",
@@ -1029,11 +1021,9 @@ func Test_operator_benchJobReconcile(t *testing.T) {
 					scenarios: map[string]*scenario{
 						"scenario": {
 							Crd: &v1.ValdBenchmarkScenario{
-								ObjectMeta: k8s.ObjectMeta{
-									Name:       "scenario",
-									Namespace:  "default",
-									Generation: 1,
-								},
+								Name:       "scenario",
+								Namespace:  "default",
+								Generation: 1,
 								Spec: v1.ValdBenchmarkScenarioSpec{
 									Target: &v1.BenchmarkTarget{
 										Host: "localhost",
@@ -1165,11 +1155,9 @@ func Test_operator_benchJobReconcile(t *testing.T) {
 						m := map[string]*scenario{
 							"scenario": {
 								Crd: &v1.ValdBenchmarkScenario{
-									ObjectMeta: k8s.ObjectMeta{
-										Name:       "scenario",
-										Namespace:  "default",
-										Generation: 2,
-									},
+									Name:       "scenario",
+									Namespace:  "default",
+									Generation: 2,
 									Spec: v1.ValdBenchmarkScenarioSpec{
 										Target: &v1.BenchmarkTarget{
 											Host: "localhost",
@@ -1263,11 +1251,9 @@ func Test_operator_benchJobReconcile(t *testing.T) {
 					scenarios: map[string]*scenario{
 						"scenario": {
 							Crd: &v1.ValdBenchmarkScenario{
-								ObjectMeta: k8s.ObjectMeta{
-									Name:       "scenario",
-									Namespace:  "default",
-									Generation: 2,
-								},
+								Name:       "scenario",
+								Namespace:  "default",
+								Generation: 2,
 								Spec: v1.ValdBenchmarkScenarioSpec{
 									Target: &v1.BenchmarkTarget{
 										Host: "localhost",
@@ -1399,11 +1385,9 @@ func Test_operator_benchJobReconcile(t *testing.T) {
 						m := map[string]*scenario{
 							"scenario": {
 								Crd: &v1.ValdBenchmarkScenario{
-									ObjectMeta: k8s.ObjectMeta{
-										Name:       "scenario",
-										Namespace:  "default",
-										Generation: 1,
-									},
+									Name:       "scenario",
+									Namespace:  "default",
+									Generation: 1,
 									Spec: v1.ValdBenchmarkScenarioSpec{
 										Target: &v1.BenchmarkTarget{
 											Host: "localhost",
@@ -1497,11 +1481,9 @@ func Test_operator_benchJobReconcile(t *testing.T) {
 					scenarios: map[string]*scenario{
 						"scenario": {
 							Crd: &v1.ValdBenchmarkScenario{
-								ObjectMeta: k8s.ObjectMeta{
-									Name:       "scenario",
-									Namespace:  "default",
-									Generation: 1,
-								},
+								Name:       "scenario",
+								Namespace:  "default",
+								Generation: 1,
 								Spec: v1.ValdBenchmarkScenarioSpec{
 									Target: &v1.BenchmarkTarget{
 										Host: "localhost",
@@ -1633,11 +1615,9 @@ func Test_operator_benchJobReconcile(t *testing.T) {
 						m := map[string]*scenario{
 							"scenario": {
 								Crd: &v1.ValdBenchmarkScenario{
-									ObjectMeta: k8s.ObjectMeta{
-										Name:       "scenario",
-										Namespace:  "default",
-										Generation: 1,
-									},
+									Name:       "scenario",
+									Namespace:  "default",
+									Generation: 1,
 									Spec: v1.ValdBenchmarkScenarioSpec{
 										Target: &v1.BenchmarkTarget{
 											Host: "localhost",
@@ -1765,11 +1745,9 @@ func Test_operator_benchJobReconcile(t *testing.T) {
 					scenarios: map[string]*scenario{
 						"scenario": {
 							Crd: &v1.ValdBenchmarkScenario{
-								ObjectMeta: k8s.ObjectMeta{
-									Name:       "scenario",
-									Namespace:  "default",
-									Generation: 1,
-								},
+								Name:       "scenario",
+								Namespace:  "default",
+								Generation: 1,
 								Spec: v1.ValdBenchmarkScenarioSpec{
 									Target: &v1.BenchmarkTarget{
 										Host: "localhost",
@@ -2050,11 +2028,9 @@ func Test_operator_benchScenarioReconcile(t *testing.T) {
 					want: map[string]*scenario{
 						"scenario": {
 							Crd: &v1.ValdBenchmarkScenario{
-								ObjectMeta: k8s.ObjectMeta{
-									Name:       "scenario",
-									Namespace:  "default",
-									Generation: 1,
-								},
+								Name:       "scenario",
+								Namespace:  "default",
+								Generation: 1,
 								Spec: v1.ValdBenchmarkScenarioSpec{
 									Target: &v1.BenchmarkTarget{
 										Host: "localhost",
@@ -2172,11 +2148,9 @@ func Test_operator_benchScenarioReconcile(t *testing.T) {
 						m := map[string]*scenario{
 							"scenario": {
 								Crd: &v1.ValdBenchmarkScenario{
-									ObjectMeta: k8s.ObjectMeta{
-										Name:       "scenario",
-										Namespace:  "default",
-										Generation: 1,
-									},
+									Name:       "scenario",
+									Namespace:  "default",
+									Generation: 1,
 									Spec: v1.ValdBenchmarkScenarioSpec{
 										Target: &v1.BenchmarkTarget{
 											Host: "localhost",
@@ -2242,11 +2216,9 @@ func Test_operator_benchScenarioReconcile(t *testing.T) {
 					want: map[string]*scenario{
 						"scenario": {
 							Crd: &v1.ValdBenchmarkScenario{
-								ObjectMeta: k8s.ObjectMeta{
-									Name:       "scenario",
-									Namespace:  "default",
-									Generation: 1,
-								},
+								Name:       "scenario",
+								Namespace:  "default",
+								Generation: 1,
 								Spec: v1.ValdBenchmarkScenarioSpec{
 									Target: &v1.BenchmarkTarget{
 										Host: "localhost",
@@ -2364,11 +2336,9 @@ func Test_operator_benchScenarioReconcile(t *testing.T) {
 						m := map[string]*scenario{
 							"scenario": {
 								Crd: &v1.ValdBenchmarkScenario{
-									ObjectMeta: k8s.ObjectMeta{
-										Name:       "scenario",
-										Namespace:  "default",
-										Generation: 1,
-									},
+									Name:       "scenario",
+									Namespace:  "default",
+									Generation: 1,
 									Spec: v1.ValdBenchmarkScenarioSpec{
 										Target: &v1.BenchmarkTarget{
 											Host: "localhost",
@@ -2434,11 +2404,9 @@ func Test_operator_benchScenarioReconcile(t *testing.T) {
 					want: map[string]*scenario{
 						"scenario": {
 							Crd: &v1.ValdBenchmarkScenario{
-								ObjectMeta: k8s.ObjectMeta{
-									Name:       "scenario",
-									Namespace:  "default",
-									Generation: 2,
-								},
+								Name:       "scenario",
+								Namespace:  "default",
+								Generation: 2,
 								Spec: v1.ValdBenchmarkScenarioSpec{
 									Target: &v1.BenchmarkTarget{
 										Host: "localhost",
@@ -2556,11 +2524,9 @@ func Test_operator_benchScenarioReconcile(t *testing.T) {
 						m := map[string]*scenario{
 							"scenario": {
 								Crd: &v1.ValdBenchmarkScenario{
-									ObjectMeta: k8s.ObjectMeta{
-										Name:       "scenario",
-										Namespace:  "default",
-										Generation: 1,
-									},
+									Name:       "scenario",
+									Namespace:  "default",
+									Generation: 1,
 									Spec: v1.ValdBenchmarkScenarioSpec{
 										Target: &v1.BenchmarkTarget{
 											Host: "localhost",
@@ -2626,11 +2592,9 @@ func Test_operator_benchScenarioReconcile(t *testing.T) {
 					want: map[string]*scenario{
 						"scenario-v2": {
 							Crd: &v1.ValdBenchmarkScenario{
-								ObjectMeta: k8s.ObjectMeta{
-									Name:       "scenario-v2",
-									Namespace:  "default",
-									Generation: 1,
-								},
+								Name:       "scenario-v2",
+								Namespace:  "default",
+								Generation: 1,
 								Spec: v1.ValdBenchmarkScenarioSpec{
 									Target: &v1.BenchmarkTarget{
 										Host: "localhost",
@@ -2752,10 +2716,8 @@ func Test_operator_checkAtomics(t *testing.T) {
 	defaultScenarioMap := map[string]*scenario{
 		"scenario": {
 			Crd: &v1.ValdBenchmarkScenario{
-				ObjectMeta: k8s.ObjectMeta{
-					Name:      "scenario",
-					Namespace: "default",
-				},
+				Name:      "scenario",
+				Namespace: "default",
 				Spec: v1.ValdBenchmarkScenarioSpec{
 					Target: &v1.BenchmarkTarget{
 						Host: "localhost",

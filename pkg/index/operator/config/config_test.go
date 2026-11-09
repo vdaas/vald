@@ -100,8 +100,8 @@ server_config:
 			fileName: "valid.yaml",
 			data:     validYAML,
 			wantCfg: &Data{
-				GlobalConfig: config.GlobalConfig{Version: "v1.0.0"},
-				Server:       wantBoundServer,
+				Version: "v1.0.0",
+				Server:  wantBoundServer,
 				Observability: &config.Observability{
 					Enabled: true,
 					OTLP:    &config.OTLP{Attribute: new(config.OTLPAttribute)},
@@ -119,10 +119,8 @@ server_config:
 					ReadReplicaLabelKey:               "vald-readreplica-id",
 					JobTemplates: config.IndexJobTemplates{
 						Rotate: &k8s.Job{
-							ObjectMeta: k8s.ObjectMeta{
-								Name:      testRotatorName,
-								Namespace: testNamespace,
-							},
+							Name:      testRotatorName,
+							Namespace: testNamespace,
 						},
 					},
 				},
@@ -133,8 +131,8 @@ server_config:
 			fileName: "no_observability.yaml",
 			data:     missingObservabilityYAML,
 			wantCfg: &Data{
-				GlobalConfig: config.GlobalConfig{Version: "v1.0.0"},
-				Server:       wantBoundServer,
+				Version: "v1.0.0",
+				Server:  wantBoundServer,
 				Observability: &config.Observability{
 					OTLP:    &config.OTLP{Attribute: new(config.OTLPAttribute)},
 					Metrics: new(config.Metrics),
