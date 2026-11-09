@@ -89,12 +89,12 @@ type (
 		addVecs           []float32
 		nlist             int
 		alen              int
-		nocie             uint64
-		nogce             uint64
-		wfci              uint64
+		nocie             atomic.Uint64
+		nogce             atomic.Uint64
+		wfci              atomic.Uint64
 		kvsdbConcurrency  int
 		dim               int
-		lastNocie         uint64
+		lastNocie         atomic.Uint64
 		m                 int
 		icnt              uint64
 		dur               time.Duration
@@ -756,9 +756,9 @@ func (f *faiss) CreateIndex(ctx context.Context) error {
 		return errors.ErrUncommittedIndexNotFound
 	}
 
-	wf := atomic.AddUint64(&f.wfci, 1)
+	wf := f.wfci.Add(1)
 	if wf > 1 {
-		atomic.AddUint64(&f.wfci, ^uint64(0))
+		f.wfci.Add(^uint64(0))
 		log.Debugf("concurrent create index waiting detected this request will be ignored, concurrent: %d", wf)
 		return nil
 	}
@@ -771,12 +771,12 @@ func (f *faiss) CreateIndex(ctx context.Context) error {
 			runtime.Gosched()
 			select {
 			case <-ctx.Done():
-				atomic.AddUint64(&f.wfci, ^uint64(0))
+				f.wfci.Add(^uint64(0))
 				return ctx.Err()
 			case <-ticker.C:
 			}
 		}
-		atomic.AddUint64(&f.wfci, ^uint64(0))
+		f.wfci.Add(^uint64(0))
 		return nil
 	}()
 	if err != nil {
@@ -870,7 +870,7 @@ func (f *faiss) CreateIndex(ctx context.Context) error {
 	}
 	log.Debug("create index insert phase finished")
 
-	atomic.AddUint64(&f.nocie, 1)
+	f.nocie.Add(1)
 	log.Info("create index operation finished")
 
 	return nil
@@ -892,11 +892,11 @@ func (f *faiss) SaveIndex(ctx context.Context) error {
 }
 
 func (f *faiss) saveIndex(ctx context.Context) error {
-	nocie := atomic.LoadUint64(&f.nocie)
-	if atomic.LoadUint64(&f.lastNocie) == nocie || !f.isTrained {
+	nocie := f.nocie.Load()
+	if f.lastNocie.Load() == nocie || !f.isTrained {
 		return nil
 	}
-	atomic.SwapUint64(&f.lastNocie, nocie)
+	f.lastNocie.Swap(nocie)
 
 	err := func() error {
 		ticker := time.NewTicker(time.Second)
@@ -1206,17 +1206,17 @@ func (f *faiss) UUIDs(ctx context.Context) (uuids []string) {
 }
 
 func (f *faiss) NumberOfCreateIndexExecution() uint64 {
-	return atomic.LoadUint64(&f.nocie)
+	return f.nocie.Load()
 }
 
 func (f *faiss) NumberOfProactiveGCExecution() uint64 {
-	return atomic.LoadUint64(&f.nogce)
+	return f.nogce.Load()
 }
 
 func (f *faiss) gc() {
 	if f.enableProactiveGC {
 		runtime.GC()
-		atomic.AddUint64(&f.nogce, 1)
+		f.nogce.Add(1)
 	}
 }
 

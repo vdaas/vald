@@ -99,9 +99,7 @@ exporter:
 				},
 				want: want{
 					wantCfg: &Data{
-						GlobalConfig: config.GlobalConfig{
-							Version: "v1.0.0",
-						},
+						Version: "v1.0.0",
 						Server: &config.Servers{
 							FullShutdownDuration: "10ms",
 							ShutdownStrategy:     make([]string, 0),

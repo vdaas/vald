@@ -269,7 +269,7 @@ func TestReconciler_Reconcile_RequeueRules(t *testing.T) {
 			}
 
 			res, err := r.Reconcile(context.Background(), k8s.Request{
-				NamespacedName: k8s.NamespacedName{Name: tt.cr.Name, Namespace: tt.cr.Namespace},
+				Name: tt.cr.Name, Namespace: tt.cr.Namespace,
 			})
 			if tt.wantErr {
 				assert.Error(t, err)
@@ -436,7 +436,7 @@ func TestPhases_Index(t *testing.T) {
 //nolint:goconst
 func TestPhases_Pipeline(t *testing.T) {
 	r := &reconciler{cfg: &config.Config{}}
-	cr := &v1.ValdOperatorRelease{ObjectMeta: k8s.ObjectMeta{Name: "test", Namespace: "default"}}
+	cr := &v1.ValdOperatorRelease{Name: "test", Namespace: "default"}
 
 	ps := r.phases(cr, alwaysAvailable())
 
@@ -498,7 +498,7 @@ func makeAdvancePhases() phases {
 
 func newCR() *v1.ValdOperatorRelease {
 	return &v1.ValdOperatorRelease{
-		ObjectMeta: k8s.ObjectMeta{Name: "test", Namespace: "default"},
+		Name: "test", Namespace: "default",
 	}
 }
 
@@ -543,7 +543,7 @@ func TestReconciler_Advance_NoNext(t *testing.T) {
 
 func newCRWithInfra(infras []v1.ValdOperatorReleaseInfra) *v1.ValdOperatorRelease {
 	return &v1.ValdOperatorRelease{
-		ObjectMeta: k8s.ObjectMeta{Name: "test", Namespace: "default"},
+		Name: "test", Namespace: "default",
 		Spec: v1.ValdOperatorReleaseSpec{
 			Infrastructure: infras,
 		},

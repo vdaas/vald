@@ -114,7 +114,7 @@ type (
 		path                    string
 		podNamespace            string
 		opts                    []Option
-		nogce                   uint64
+		nogce                   atomic.Uint64
 		kvsdbConcurrency        int
 		alen                    int
 		lim                     time.Duration
@@ -130,8 +130,8 @@ type (
 		nobic                   uint64
 		idelay                  time.Duration
 		wfci                    uint64
-		nocie                   uint64
-		lastNocie               uint64
+		nocie                   atomic.Uint64
+		lastNocie               atomic.Uint64
 		cowmu                   sync.Mutex
 		smu                     sync.Mutex
 		cimu                    sync.Mutex
@@ -1257,7 +1257,7 @@ func (n *ngt) RegenerateIndexes(ctx context.Context) (err error) {
 
 	// gc
 	runtime.GC()
-	atomic.AddUint64(&n.nogce, 1)
+	n.nogce.Add(1)
 
 	if !n.inMem {
 		// delete file
@@ -1366,7 +1366,7 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 	log.Debug("create index delete phase finished")
 	n.gc()
 	log.Debug("create index insert phase started")
-	var icnt uint32
+	var icnt atomic.Uint32
 	n.vq.RangePopInsert(ctx, now, func(uuid string, vector []float32, timestamp int64) bool {
 		var oid uint
 		oid, err = n.core.Insert(vector)
@@ -1383,7 +1383,7 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 			}
 		}
 		n.kvs.Set(uuid, uint32(oid), timestamp)
-		atomic.AddUint32(&icnt, 1)
+		icnt.Add(1)
 
 		n.fmu.Lock()
 		_, ok := n.fmap[uuid]
@@ -1395,10 +1395,10 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 		return true
 	})
 	if poolSize <= 0 {
-		if n.poolSize > 0 && n.poolSize < atomic.LoadUint32(&icnt) {
+		if n.poolSize > 0 && n.poolSize < icnt.Load() {
 			poolSize = n.poolSize
 		} else {
-			poolSize = atomic.LoadUint32(&icnt)
+			poolSize = icnt.Load()
 		}
 	}
 	log.Debug("create index insert phase finished")
@@ -1410,7 +1410,7 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 		return err
 	}
 
-	atomic.AddUint64(&n.nocie, 1)
+	n.nocie.Add(1)
 	n.nopvq.Add(vqProcessedCnt)
 	log.Debug("create graph and tree phase finished")
 	log.Info("create index operation finished")
@@ -1491,7 +1491,7 @@ func (n *ngt) removeInvalidIndex(ctx context.Context) {
 	if n.kvs.Len() == 0 {
 		return
 	}
-	var dcnt uint32
+	var dcnt atomic.Uint32
 	n.kvs.Range(ctx, func(uuid string, oid uint32, _ int64) bool {
 		vec, err := n.core.GetVector(uint(oid))
 		if err != nil || vec == nil || len(vec) != n.dim {
@@ -1501,21 +1501,21 @@ func (n *ngt) removeInvalidIndex(ctx context.Context) {
 			err = n.core.Remove(uint(oid))
 			n.fmap[uuid] = int64(oid)
 			n.fmu.Unlock()
-			atomic.AddUint32(&dcnt, 1)
+			dcnt.Add(1)
 			if err != nil {
 				log.Debugf("invalid index remove operation returned error: %v", err)
 			}
 		}
 		return true
 	})
-	if atomic.LoadUint32(&dcnt) <= 0 {
+	if dcnt.Load() <= 0 {
 		return
 	}
 	var poolSize uint32
-	if n.poolSize > 0 && n.poolSize < atomic.LoadUint32(&dcnt) {
+	if n.poolSize > 0 && n.poolSize < dcnt.Load() {
 		poolSize = n.poolSize
 	} else {
-		poolSize = atomic.LoadUint32(&dcnt)
+		poolSize = dcnt.Load()
 	}
 	n.cimu.Lock()
 	defer n.cimu.Unlock()
@@ -1526,7 +1526,7 @@ func (n *ngt) removeInvalidIndex(ctx context.Context) {
 	if err != nil {
 		log.Error("an error occurred on creating graph and tree phase:", err)
 	} else {
-		atomic.AddUint64(&n.nocie, 1)
+		n.nocie.Add(1)
 	}
 	log.Debug("create graph and tree phase for removing invalid index finished")
 }
@@ -1550,11 +1550,11 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 		return errors.ErrWriteOperationToReadReplica
 	}
 
-	nocie := atomic.LoadUint64(&n.nocie)
-	if atomic.LoadUint64(&n.lastNocie) == nocie {
+	nocie := n.nocie.Load()
+	if n.lastNocie.Load() == nocie {
 		return err
 	}
-	atomic.SwapUint64(&n.lastNocie, nocie)
+	n.lastNocie.Swap(nocie)
 	err = func() error {
 		ticker := time.NewTicker(time.Second)
 		defer ticker.Stop()
@@ -1895,21 +1895,21 @@ func (n *ngt) UUIDs(ctx context.Context) (uuids []string) {
 }
 
 func (n *ngt) NumberOfCreateIndexExecution() uint64 {
-	return atomic.LoadUint64(&n.nocie)
+	return n.nocie.Load()
 }
 
 func (n *ngt) NumberOfProactiveGCExecution() uint64 {
-	return atomic.LoadUint64(&n.nogce)
+	return n.nogce.Load()
 }
 
 func (n *ngt) lastNumberOfCreateIndexExecution() uint64 {
-	return atomic.LoadUint64(&n.lastNocie)
+	return n.lastNocie.Load()
 }
 
 func (n *ngt) gc() {
 	if n.enableProactiveGC {
 		runtime.GC()
-		atomic.AddUint64(&n.nogce, 1)
+		n.nogce.Add(1)
 	}
 }
 

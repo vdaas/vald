@@ -142,8 +142,8 @@ func Test_parseReplicaID(t *testing.T) {
 				t.Fatalf("failed to add scheme: %v", err)
 			}
 			fakeClient := mock.NewFakeClientBuilder().WithScheme(scheme).WithObjects(
-				&k8s.Deployment{ObjectMeta: k8s.ObjectMeta{Name: "dep1", Labels: map[string]string{labelKey: wantID1}}},
-				&k8s.Deployment{ObjectMeta: k8s.ObjectMeta{Name: "dep2", Labels: map[string]string{labelKey: wantID2}}},
+				&k8s.Deployment{Name: "dep1", Labels: map[string]string{labelKey: wantID1}},
+				&k8s.Deployment{Name: "dep2", Labels: map[string]string{labelKey: wantID2}},
 			).Build()
 
 			mock := &mock.ValdK8sClientMock{}

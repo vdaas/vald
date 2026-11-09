@@ -159,8 +159,8 @@ func TestNodeEntries(t *testing.T) {
 	t.Parallel()
 
 	list := &k8s.NodeList{Items: []k8s.Node{
-		{ObjectMeta: k8s.ObjectMeta{Name: testNodeAName}},
-		{ObjectMeta: k8s.ObjectMeta{Name: "node-b"}},
+		{Name: testNodeAName},
+		{Name: "node-b"},
 	}}
 
 	got := nodeEntries(list)
