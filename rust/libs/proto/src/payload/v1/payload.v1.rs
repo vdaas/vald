@@ -168,6 +168,9 @@ pub mod search {
         /// Search edge size
         #[prost(int32, tag = "12")]
         pub edge_size: i32,
+        /// Algorithm-specific search options.
+        #[prost(message, repeated, tag = "13")]
+        pub options: ::prost::alloc::vec::Vec<crate::google::protobuf::Any>,
     }
     impl ::prost::Name for Config {
         const NAME: &'static str = "Config";
@@ -344,6 +347,132 @@ impl ::prost::Name for Filter {
         "/payload.v1.Filter".into()
     }
 }
+/// ZVec related messages.
+#[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
+pub struct ZVec {}
+/// Nested message and enum types in `ZVec`.
+pub mod z_vec {
+    /// Represent ZVec document options.
+    #[derive(Clone, PartialEq, ::prost::Message)]
+    pub struct DocumentOptions {
+        /// Scalar or text fields stored with the vector.
+        #[prost(map = "string, string", tag = "1")]
+        pub fields: ::std::collections::HashMap<
+            ::prost::alloc::string::String,
+            ::prost::alloc::string::String,
+        >,
+    }
+    impl ::prost::Name for DocumentOptions {
+        const NAME: &'static str = "DocumentOptions";
+        const PACKAGE: &'static str = "payload.v1";
+        fn full_name() -> ::prost::alloc::string::String {
+            "payload.v1.ZVec.DocumentOptions".into()
+        }
+        fn type_url() -> ::prost::alloc::string::String {
+            "/payload.v1.ZVec.DocumentOptions".into()
+        }
+    }
+    /// Represent ZVec search options.
+    #[derive(Clone, PartialEq, ::prost::Message)]
+    pub struct SearchOptions {
+        /// Scalar pre-filter expression.
+        #[prost(string, tag = "1")]
+        pub pre_filter: ::prost::alloc::string::String,
+        /// Hybrid recall queries.
+        #[prost(message, repeated, tag = "2")]
+        pub hybrid_queries: ::prost::alloc::vec::Vec<Query>,
+        /// Per-query weights used by weighted hybrid reranking.
+        #[prost(float, repeated, tag = "3")]
+        pub hybrid_weights: ::prost::alloc::vec::Vec<f32>,
+    }
+    impl ::prost::Name for SearchOptions {
+        const NAME: &'static str = "SearchOptions";
+        const PACKAGE: &'static str = "payload.v1";
+        fn full_name() -> ::prost::alloc::string::String {
+            "payload.v1.ZVec.SearchOptions".into()
+        }
+        fn type_url() -> ::prost::alloc::string::String {
+            "/payload.v1.ZVec.SearchOptions".into()
+        }
+    }
+    /// Represent a ZVec hybrid recall query.
+    #[derive(Clone, PartialEq, ::prost::Message)]
+    pub struct Query {
+        /// Target field name.
+        #[prost(string, tag = "1")]
+        pub field_name: ::prost::alloc::string::String,
+        #[prost(oneof = "query::Query", tags = "2, 3")]
+        pub query: ::core::option::Option<query::Query>,
+    }
+    /// Nested message and enum types in `Query`.
+    pub mod query {
+        #[derive(Clone, PartialEq, ::prost::Oneof)]
+        pub enum Query {
+            /// Vector recall query.
+            #[prost(message, tag = "2")]
+            Vector(super::Vector),
+            /// Full-text recall query.
+            #[prost(message, tag = "3")]
+            Fts(super::Fts),
+        }
+    }
+    impl ::prost::Name for Query {
+        const NAME: &'static str = "Query";
+        const PACKAGE: &'static str = "payload.v1";
+        fn full_name() -> ::prost::alloc::string::String {
+            "payload.v1.ZVec.Query".into()
+        }
+        fn type_url() -> ::prost::alloc::string::String {
+            "/payload.v1.ZVec.Query".into()
+        }
+    }
+    /// Represent a ZVec vector recall query.
+    #[derive(Clone, PartialEq, ::prost::Message)]
+    pub struct Vector {
+        #[prost(float, repeated, tag = "1")]
+        pub values: ::prost::alloc::vec::Vec<f32>,
+    }
+    impl ::prost::Name for Vector {
+        const NAME: &'static str = "Vector";
+        const PACKAGE: &'static str = "payload.v1";
+        fn full_name() -> ::prost::alloc::string::String {
+            "payload.v1.ZVec.Vector".into()
+        }
+        fn type_url() -> ::prost::alloc::string::String {
+            "/payload.v1.ZVec.Vector".into()
+        }
+    }
+    /// Represent a ZVec full-text recall query.
+    #[derive(Clone, PartialEq, Eq, Hash, ::prost::Message)]
+    pub struct Fts {
+        /// Natural-language match string.
+        #[prost(string, tag = "1")]
+        pub match_string: ::prost::alloc::string::String,
+        /// Explicit full-text query string.
+        #[prost(string, tag = "2")]
+        pub query_string: ::prost::alloc::string::String,
+    }
+    impl ::prost::Name for Fts {
+        const NAME: &'static str = "FTS";
+        const PACKAGE: &'static str = "payload.v1";
+        fn full_name() -> ::prost::alloc::string::String {
+            "payload.v1.ZVec.FTS".into()
+        }
+        fn type_url() -> ::prost::alloc::string::String {
+            "/payload.v1.ZVec.FTS".into()
+        }
+    }
+}
+impl ::prost::Name for ZVec {
+    const NAME: &'static str = "ZVec";
+    const PACKAGE: &'static str = "payload.v1";
+    fn full_name() -> ::prost::alloc::string::String {
+        "payload.v1.ZVec".into()
+    }
+    fn type_url() -> ::prost::alloc::string::String {
+        "/payload.v1.ZVec".into()
+    }
+}
 /// Insert related messages.
 #[derive(Clone, Copy, PartialEq, Eq, Hash, ::prost::Message)]
 pub struct Insert {}
@@ -438,6 +567,9 @@ pub mod insert {
         /// Insert timestamp.
         #[prost(int64, tag = "3")]
         pub timestamp: i64,
+        /// Algorithm-specific insert options.
+        #[prost(message, repeated, tag = "4")]
+        pub options: ::prost::alloc::vec::Vec<crate::google::protobuf::Any>,
     }
     impl ::prost::Name for Config {
         const NAME: &'static str = "Config";

@@ -160,7 +160,7 @@ func (x Remove_Timestamp_Operator) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use Remove_Timestamp_Operator.Descriptor instead.
 func (Remove_Timestamp_Operator) EnumDescriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{5, 3, 0}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{6, 3, 0}
 }
 
 // Search related messages.
@@ -237,6 +237,43 @@ func (*Filter) Descriptor() ([]byte, []int) {
 	return file_v1_payload_payload_proto_rawDescGZIP(), []int{1}
 }
 
+// ZVec related messages.
+type ZVec struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ZVec) Reset() {
+	*x = ZVec{}
+	mi := &file_v1_payload_payload_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ZVec) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ZVec) ProtoMessage() {}
+
+func (x *ZVec) ProtoReflect() protoreflect.Message {
+	mi := &file_v1_payload_payload_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ZVec.ProtoReflect.Descriptor instead.
+func (*ZVec) Descriptor() ([]byte, []int) {
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{2}
+}
+
 // Insert related messages.
 type Insert struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -246,7 +283,7 @@ type Insert struct {
 
 func (x *Insert) Reset() {
 	*x = Insert{}
-	mi := &file_v1_payload_payload_proto_msgTypes[2]
+	mi := &file_v1_payload_payload_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -258,7 +295,7 @@ func (x *Insert) String() string {
 func (*Insert) ProtoMessage() {}
 
 func (x *Insert) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[2]
+	mi := &file_v1_payload_payload_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -271,7 +308,7 @@ func (x *Insert) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Insert.ProtoReflect.Descriptor instead.
 func (*Insert) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{2}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{3}
 }
 
 // Update related messages
@@ -283,7 +320,7 @@ type Update struct {
 
 func (x *Update) Reset() {
 	*x = Update{}
-	mi := &file_v1_payload_payload_proto_msgTypes[3]
+	mi := &file_v1_payload_payload_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -295,7 +332,7 @@ func (x *Update) String() string {
 func (*Update) ProtoMessage() {}
 
 func (x *Update) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[3]
+	mi := &file_v1_payload_payload_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -308,7 +345,7 @@ func (x *Update) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Update.ProtoReflect.Descriptor instead.
 func (*Update) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{3}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{4}
 }
 
 // Upsert related messages.
@@ -320,7 +357,7 @@ type Upsert struct {
 
 func (x *Upsert) Reset() {
 	*x = Upsert{}
-	mi := &file_v1_payload_payload_proto_msgTypes[4]
+	mi := &file_v1_payload_payload_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -332,7 +369,7 @@ func (x *Upsert) String() string {
 func (*Upsert) ProtoMessage() {}
 
 func (x *Upsert) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[4]
+	mi := &file_v1_payload_payload_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -345,7 +382,7 @@ func (x *Upsert) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Upsert.ProtoReflect.Descriptor instead.
 func (*Upsert) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{4}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{5}
 }
 
 // Remove related messages.
@@ -357,7 +394,7 @@ type Remove struct {
 
 func (x *Remove) Reset() {
 	*x = Remove{}
-	mi := &file_v1_payload_payload_proto_msgTypes[5]
+	mi := &file_v1_payload_payload_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -369,7 +406,7 @@ func (x *Remove) String() string {
 func (*Remove) ProtoMessage() {}
 
 func (x *Remove) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[5]
+	mi := &file_v1_payload_payload_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -382,7 +419,7 @@ func (x *Remove) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Remove.ProtoReflect.Descriptor instead.
 func (*Remove) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{5}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{6}
 }
 
 // Flush related messages.
@@ -394,7 +431,7 @@ type Flush struct {
 
 func (x *Flush) Reset() {
 	*x = Flush{}
-	mi := &file_v1_payload_payload_proto_msgTypes[6]
+	mi := &file_v1_payload_payload_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -406,7 +443,7 @@ func (x *Flush) String() string {
 func (*Flush) ProtoMessage() {}
 
 func (x *Flush) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[6]
+	mi := &file_v1_payload_payload_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -419,7 +456,7 @@ func (x *Flush) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Flush.ProtoReflect.Descriptor instead.
 func (*Flush) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{6}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{7}
 }
 
 // Common messages.
@@ -431,7 +468,7 @@ type Object struct {
 
 func (x *Object) Reset() {
 	*x = Object{}
-	mi := &file_v1_payload_payload_proto_msgTypes[7]
+	mi := &file_v1_payload_payload_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -443,7 +480,7 @@ func (x *Object) String() string {
 func (*Object) ProtoMessage() {}
 
 func (x *Object) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[7]
+	mi := &file_v1_payload_payload_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -456,7 +493,7 @@ func (x *Object) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Object.ProtoReflect.Descriptor instead.
 func (*Object) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{7}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{8}
 }
 
 // Control related messages.
@@ -468,7 +505,7 @@ type Control struct {
 
 func (x *Control) Reset() {
 	*x = Control{}
-	mi := &file_v1_payload_payload_proto_msgTypes[8]
+	mi := &file_v1_payload_payload_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -480,7 +517,7 @@ func (x *Control) String() string {
 func (*Control) ProtoMessage() {}
 
 func (x *Control) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[8]
+	mi := &file_v1_payload_payload_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -493,7 +530,7 @@ func (x *Control) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Control.ProtoReflect.Descriptor instead.
 func (*Control) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{8}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{9}
 }
 
 // Discoverer related messages.
@@ -505,7 +542,7 @@ type Discoverer struct {
 
 func (x *Discoverer) Reset() {
 	*x = Discoverer{}
-	mi := &file_v1_payload_payload_proto_msgTypes[9]
+	mi := &file_v1_payload_payload_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -517,7 +554,7 @@ func (x *Discoverer) String() string {
 func (*Discoverer) ProtoMessage() {}
 
 func (x *Discoverer) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[9]
+	mi := &file_v1_payload_payload_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -530,7 +567,7 @@ func (x *Discoverer) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Discoverer.ProtoReflect.Descriptor instead.
 func (*Discoverer) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{9}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{10}
 }
 
 // Info related messages.
@@ -542,7 +579,7 @@ type Info struct {
 
 func (x *Info) Reset() {
 	*x = Info{}
-	mi := &file_v1_payload_payload_proto_msgTypes[10]
+	mi := &file_v1_payload_payload_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -554,7 +591,7 @@ func (x *Info) String() string {
 func (*Info) ProtoMessage() {}
 
 func (x *Info) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[10]
+	mi := &file_v1_payload_payload_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -567,7 +604,7 @@ func (x *Info) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Info.ProtoReflect.Descriptor instead.
 func (*Info) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{10}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{11}
 }
 
 // Mirror related messages.
@@ -579,7 +616,7 @@ type Mirror struct {
 
 func (x *Mirror) Reset() {
 	*x = Mirror{}
-	mi := &file_v1_payload_payload_proto_msgTypes[11]
+	mi := &file_v1_payload_payload_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -591,7 +628,7 @@ func (x *Mirror) String() string {
 func (*Mirror) ProtoMessage() {}
 
 func (x *Mirror) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[11]
+	mi := &file_v1_payload_payload_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -604,7 +641,7 @@ func (x *Mirror) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Mirror.ProtoReflect.Descriptor instead.
 func (*Mirror) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{11}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{12}
 }
 
 type Meta struct {
@@ -615,7 +652,7 @@ type Meta struct {
 
 func (x *Meta) Reset() {
 	*x = Meta{}
-	mi := &file_v1_payload_payload_proto_msgTypes[12]
+	mi := &file_v1_payload_payload_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -627,7 +664,7 @@ func (x *Meta) String() string {
 func (*Meta) ProtoMessage() {}
 
 func (x *Meta) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[12]
+	mi := &file_v1_payload_payload_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -640,7 +677,7 @@ func (x *Meta) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Meta.ProtoReflect.Descriptor instead.
 func (*Meta) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{12}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{13}
 }
 
 // Represent an empty message.
@@ -652,7 +689,7 @@ type Empty struct {
 
 func (x *Empty) Reset() {
 	*x = Empty{}
-	mi := &file_v1_payload_payload_proto_msgTypes[13]
+	mi := &file_v1_payload_payload_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -664,7 +701,7 @@ func (x *Empty) String() string {
 func (*Empty) ProtoMessage() {}
 
 func (x *Empty) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[13]
+	mi := &file_v1_payload_payload_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -677,7 +714,7 @@ func (x *Empty) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Empty.ProtoReflect.Descriptor instead.
 func (*Empty) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{13}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{14}
 }
 
 // Represent a search request.
@@ -693,7 +730,7 @@ type Search_Request struct {
 
 func (x *Search_Request) Reset() {
 	*x = Search_Request{}
-	mi := &file_v1_payload_payload_proto_msgTypes[14]
+	mi := &file_v1_payload_payload_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -705,7 +742,7 @@ func (x *Search_Request) String() string {
 func (*Search_Request) ProtoMessage() {}
 
 func (x *Search_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[14]
+	mi := &file_v1_payload_payload_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -746,7 +783,7 @@ type Search_MultiRequest struct {
 
 func (x *Search_MultiRequest) Reset() {
 	*x = Search_MultiRequest{}
-	mi := &file_v1_payload_payload_proto_msgTypes[15]
+	mi := &file_v1_payload_payload_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -758,7 +795,7 @@ func (x *Search_MultiRequest) String() string {
 func (*Search_MultiRequest) ProtoMessage() {}
 
 func (x *Search_MultiRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[15]
+	mi := &file_v1_payload_payload_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -794,7 +831,7 @@ type Search_IDRequest struct {
 
 func (x *Search_IDRequest) Reset() {
 	*x = Search_IDRequest{}
-	mi := &file_v1_payload_payload_proto_msgTypes[16]
+	mi := &file_v1_payload_payload_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -806,7 +843,7 @@ func (x *Search_IDRequest) String() string {
 func (*Search_IDRequest) ProtoMessage() {}
 
 func (x *Search_IDRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[16]
+	mi := &file_v1_payload_payload_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -847,7 +884,7 @@ type Search_MultiIDRequest struct {
 
 func (x *Search_MultiIDRequest) Reset() {
 	*x = Search_MultiIDRequest{}
-	mi := &file_v1_payload_payload_proto_msgTypes[17]
+	mi := &file_v1_payload_payload_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -859,7 +896,7 @@ func (x *Search_MultiIDRequest) String() string {
 func (*Search_MultiIDRequest) ProtoMessage() {}
 
 func (x *Search_MultiIDRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[17]
+	mi := &file_v1_payload_payload_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -897,7 +934,7 @@ type Search_ObjectRequest struct {
 
 func (x *Search_ObjectRequest) Reset() {
 	*x = Search_ObjectRequest{}
-	mi := &file_v1_payload_payload_proto_msgTypes[18]
+	mi := &file_v1_payload_payload_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -909,7 +946,7 @@ func (x *Search_ObjectRequest) String() string {
 func (*Search_ObjectRequest) ProtoMessage() {}
 
 func (x *Search_ObjectRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[18]
+	mi := &file_v1_payload_payload_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -957,7 +994,7 @@ type Search_MultiObjectRequest struct {
 
 func (x *Search_MultiObjectRequest) Reset() {
 	*x = Search_MultiObjectRequest{}
-	mi := &file_v1_payload_payload_proto_msgTypes[19]
+	mi := &file_v1_payload_payload_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -969,7 +1006,7 @@ func (x *Search_MultiObjectRequest) String() string {
 func (*Search_MultiObjectRequest) ProtoMessage() {}
 
 func (x *Search_MultiObjectRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[19]
+	mi := &file_v1_payload_payload_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1018,14 +1055,16 @@ type Search_Config struct {
 	// Search nprobe.
 	Nprobe uint32 `protobuf:"varint,11,opt,name=nprobe,proto3" json:"nprobe,omitempty"`
 	// Search edge size
-	EdgeSize      int32 `protobuf:"varint,12,opt,name=edge_size,json=edgeSize,proto3" json:"edge_size,omitempty"`
+	EdgeSize int32 `protobuf:"varint,12,opt,name=edge_size,json=edgeSize,proto3" json:"edge_size,omitempty"`
+	// Algorithm-specific search options.
+	Options       []*anypb.Any `protobuf:"bytes,13,rep,name=options,proto3" json:"options,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Search_Config) Reset() {
 	*x = Search_Config{}
-	mi := &file_v1_payload_payload_proto_msgTypes[20]
+	mi := &file_v1_payload_payload_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1037,7 +1076,7 @@ func (x *Search_Config) String() string {
 func (*Search_Config) ProtoMessage() {}
 
 func (x *Search_Config) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[20]
+	mi := &file_v1_payload_payload_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1137,6 +1176,13 @@ func (x *Search_Config) GetEdgeSize() int32 {
 	return 0
 }
 
+func (x *Search_Config) GetOptions() []*anypb.Any {
+	if x != nil {
+		return x.Options
+	}
+	return nil
+}
+
 // Represent a search response.
 type Search_Response struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -1150,7 +1196,7 @@ type Search_Response struct {
 
 func (x *Search_Response) Reset() {
 	*x = Search_Response{}
-	mi := &file_v1_payload_payload_proto_msgTypes[21]
+	mi := &file_v1_payload_payload_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1162,7 +1208,7 @@ func (x *Search_Response) String() string {
 func (*Search_Response) ProtoMessage() {}
 
 func (x *Search_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[21]
+	mi := &file_v1_payload_payload_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1203,7 +1249,7 @@ type Search_Responses struct {
 
 func (x *Search_Responses) Reset() {
 	*x = Search_Responses{}
-	mi := &file_v1_payload_payload_proto_msgTypes[22]
+	mi := &file_v1_payload_payload_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1215,7 +1261,7 @@ func (x *Search_Responses) String() string {
 func (*Search_Responses) ProtoMessage() {}
 
 func (x *Search_Responses) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[22]
+	mi := &file_v1_payload_payload_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1252,7 +1298,7 @@ type Search_StreamResponse struct {
 
 func (x *Search_StreamResponse) Reset() {
 	*x = Search_StreamResponse{}
-	mi := &file_v1_payload_payload_proto_msgTypes[23]
+	mi := &file_v1_payload_payload_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1264,7 +1310,7 @@ func (x *Search_StreamResponse) String() string {
 func (*Search_StreamResponse) ProtoMessage() {}
 
 func (x *Search_StreamResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[23]
+	mi := &file_v1_payload_payload_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1336,7 +1382,7 @@ type Filter_Target struct {
 
 func (x *Filter_Target) Reset() {
 	*x = Filter_Target{}
-	mi := &file_v1_payload_payload_proto_msgTypes[24]
+	mi := &file_v1_payload_payload_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1348,7 +1394,7 @@ func (x *Filter_Target) String() string {
 func (*Filter_Target) ProtoMessage() {}
 
 func (x *Filter_Target) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[24]
+	mi := &file_v1_payload_payload_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1389,7 +1435,7 @@ type Filter_Config struct {
 
 func (x *Filter_Config) Reset() {
 	*x = Filter_Config{}
-	mi := &file_v1_payload_payload_proto_msgTypes[25]
+	mi := &file_v1_payload_payload_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1401,7 +1447,7 @@ func (x *Filter_Config) String() string {
 func (*Filter_Config) ProtoMessage() {}
 
 func (x *Filter_Config) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[25]
+	mi := &file_v1_payload_payload_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1424,6 +1470,310 @@ func (x *Filter_Config) GetTargets() []*Filter_Target {
 	return nil
 }
 
+// Represent ZVec document options.
+type ZVec_DocumentOptions struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Scalar or text fields stored with the vector.
+	Fields        map[string]string `protobuf:"bytes,1,rep,name=fields,proto3" json:"fields,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ZVec_DocumentOptions) Reset() {
+	*x = ZVec_DocumentOptions{}
+	mi := &file_v1_payload_payload_proto_msgTypes[27]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ZVec_DocumentOptions) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ZVec_DocumentOptions) ProtoMessage() {}
+
+func (x *ZVec_DocumentOptions) ProtoReflect() protoreflect.Message {
+	mi := &file_v1_payload_payload_proto_msgTypes[27]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ZVec_DocumentOptions.ProtoReflect.Descriptor instead.
+func (*ZVec_DocumentOptions) Descriptor() ([]byte, []int) {
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{2, 0}
+}
+
+func (x *ZVec_DocumentOptions) GetFields() map[string]string {
+	if x != nil {
+		return x.Fields
+	}
+	return nil
+}
+
+// Represent ZVec search options.
+type ZVec_SearchOptions struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Scalar pre-filter expression.
+	PreFilter string `protobuf:"bytes,1,opt,name=pre_filter,json=preFilter,proto3" json:"pre_filter,omitempty"`
+	// Hybrid recall queries.
+	HybridQueries []*ZVec_Query `protobuf:"bytes,2,rep,name=hybrid_queries,json=hybridQueries,proto3" json:"hybrid_queries,omitempty"`
+	// Per-query weights used by weighted hybrid reranking.
+	HybridWeights []float32 `protobuf:"fixed32,3,rep,packed,name=hybrid_weights,json=hybridWeights,proto3" json:"hybrid_weights,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ZVec_SearchOptions) Reset() {
+	*x = ZVec_SearchOptions{}
+	mi := &file_v1_payload_payload_proto_msgTypes[28]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ZVec_SearchOptions) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ZVec_SearchOptions) ProtoMessage() {}
+
+func (x *ZVec_SearchOptions) ProtoReflect() protoreflect.Message {
+	mi := &file_v1_payload_payload_proto_msgTypes[28]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ZVec_SearchOptions.ProtoReflect.Descriptor instead.
+func (*ZVec_SearchOptions) Descriptor() ([]byte, []int) {
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{2, 1}
+}
+
+func (x *ZVec_SearchOptions) GetPreFilter() string {
+	if x != nil {
+		return x.PreFilter
+	}
+	return ""
+}
+
+func (x *ZVec_SearchOptions) GetHybridQueries() []*ZVec_Query {
+	if x != nil {
+		return x.HybridQueries
+	}
+	return nil
+}
+
+func (x *ZVec_SearchOptions) GetHybridWeights() []float32 {
+	if x != nil {
+		return x.HybridWeights
+	}
+	return nil
+}
+
+// Represent a ZVec hybrid recall query.
+type ZVec_Query struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Target field name.
+	FieldName string `protobuf:"bytes,1,opt,name=field_name,json=fieldName,proto3" json:"field_name,omitempty"`
+	// Types that are valid to be assigned to Query:
+	//
+	//	*ZVec_Query_Vector
+	//	*ZVec_Query_Fts
+	Query         isZVec_Query_Query `protobuf_oneof:"query"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ZVec_Query) Reset() {
+	*x = ZVec_Query{}
+	mi := &file_v1_payload_payload_proto_msgTypes[29]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ZVec_Query) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ZVec_Query) ProtoMessage() {}
+
+func (x *ZVec_Query) ProtoReflect() protoreflect.Message {
+	mi := &file_v1_payload_payload_proto_msgTypes[29]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ZVec_Query.ProtoReflect.Descriptor instead.
+func (*ZVec_Query) Descriptor() ([]byte, []int) {
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{2, 2}
+}
+
+func (x *ZVec_Query) GetFieldName() string {
+	if x != nil {
+		return x.FieldName
+	}
+	return ""
+}
+
+func (x *ZVec_Query) GetQuery() isZVec_Query_Query {
+	if x != nil {
+		return x.Query
+	}
+	return nil
+}
+
+func (x *ZVec_Query) GetVector() *ZVec_Vector {
+	if x != nil {
+		if x, ok := x.Query.(*ZVec_Query_Vector); ok {
+			return x.Vector
+		}
+	}
+	return nil
+}
+
+func (x *ZVec_Query) GetFts() *ZVec_FTS {
+	if x != nil {
+		if x, ok := x.Query.(*ZVec_Query_Fts); ok {
+			return x.Fts
+		}
+	}
+	return nil
+}
+
+type isZVec_Query_Query interface {
+	isZVec_Query_Query()
+}
+
+type ZVec_Query_Vector struct {
+	// Vector recall query.
+	Vector *ZVec_Vector `protobuf:"bytes,2,opt,name=vector,proto3,oneof"`
+}
+
+type ZVec_Query_Fts struct {
+	// Full-text recall query.
+	Fts *ZVec_FTS `protobuf:"bytes,3,opt,name=fts,proto3,oneof"`
+}
+
+func (*ZVec_Query_Vector) isZVec_Query_Query() {}
+
+func (*ZVec_Query_Fts) isZVec_Query_Query() {}
+
+// Represent a ZVec vector recall query.
+type ZVec_Vector struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Values        []float32              `protobuf:"fixed32,1,rep,packed,name=values,proto3" json:"values,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ZVec_Vector) Reset() {
+	*x = ZVec_Vector{}
+	mi := &file_v1_payload_payload_proto_msgTypes[30]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ZVec_Vector) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ZVec_Vector) ProtoMessage() {}
+
+func (x *ZVec_Vector) ProtoReflect() protoreflect.Message {
+	mi := &file_v1_payload_payload_proto_msgTypes[30]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ZVec_Vector.ProtoReflect.Descriptor instead.
+func (*ZVec_Vector) Descriptor() ([]byte, []int) {
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{2, 3}
+}
+
+func (x *ZVec_Vector) GetValues() []float32 {
+	if x != nil {
+		return x.Values
+	}
+	return nil
+}
+
+// Represent a ZVec full-text recall query.
+type ZVec_FTS struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Natural-language match string.
+	MatchString string `protobuf:"bytes,1,opt,name=match_string,json=matchString,proto3" json:"match_string,omitempty"`
+	// Explicit full-text query string.
+	QueryString   string `protobuf:"bytes,2,opt,name=query_string,json=queryString,proto3" json:"query_string,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ZVec_FTS) Reset() {
+	*x = ZVec_FTS{}
+	mi := &file_v1_payload_payload_proto_msgTypes[31]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ZVec_FTS) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ZVec_FTS) ProtoMessage() {}
+
+func (x *ZVec_FTS) ProtoReflect() protoreflect.Message {
+	mi := &file_v1_payload_payload_proto_msgTypes[31]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ZVec_FTS.ProtoReflect.Descriptor instead.
+func (*ZVec_FTS) Descriptor() ([]byte, []int) {
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{2, 4}
+}
+
+func (x *ZVec_FTS) GetMatchString() string {
+	if x != nil {
+		return x.MatchString
+	}
+	return ""
+}
+
+func (x *ZVec_FTS) GetQueryString() string {
+	if x != nil {
+		return x.QueryString
+	}
+	return ""
+}
+
 // Represent the insert request.
 type Insert_Request struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -1437,7 +1787,7 @@ type Insert_Request struct {
 
 func (x *Insert_Request) Reset() {
 	*x = Insert_Request{}
-	mi := &file_v1_payload_payload_proto_msgTypes[26]
+	mi := &file_v1_payload_payload_proto_msgTypes[33]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1449,7 +1799,7 @@ func (x *Insert_Request) String() string {
 func (*Insert_Request) ProtoMessage() {}
 
 func (x *Insert_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[26]
+	mi := &file_v1_payload_payload_proto_msgTypes[33]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1462,7 +1812,7 @@ func (x *Insert_Request) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Insert_Request.ProtoReflect.Descriptor instead.
 func (*Insert_Request) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{2, 0}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{3, 0}
 }
 
 func (x *Insert_Request) GetVector() *Object_Vector {
@@ -1490,7 +1840,7 @@ type Insert_MultiRequest struct {
 
 func (x *Insert_MultiRequest) Reset() {
 	*x = Insert_MultiRequest{}
-	mi := &file_v1_payload_payload_proto_msgTypes[27]
+	mi := &file_v1_payload_payload_proto_msgTypes[34]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1502,7 +1852,7 @@ func (x *Insert_MultiRequest) String() string {
 func (*Insert_MultiRequest) ProtoMessage() {}
 
 func (x *Insert_MultiRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[27]
+	mi := &file_v1_payload_payload_proto_msgTypes[34]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1515,7 +1865,7 @@ func (x *Insert_MultiRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Insert_MultiRequest.ProtoReflect.Descriptor instead.
 func (*Insert_MultiRequest) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{2, 1}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{3, 1}
 }
 
 func (x *Insert_MultiRequest) GetRequests() []*Insert_Request {
@@ -1540,7 +1890,7 @@ type Insert_ObjectRequest struct {
 
 func (x *Insert_ObjectRequest) Reset() {
 	*x = Insert_ObjectRequest{}
-	mi := &file_v1_payload_payload_proto_msgTypes[28]
+	mi := &file_v1_payload_payload_proto_msgTypes[35]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1552,7 +1902,7 @@ func (x *Insert_ObjectRequest) String() string {
 func (*Insert_ObjectRequest) ProtoMessage() {}
 
 func (x *Insert_ObjectRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[28]
+	mi := &file_v1_payload_payload_proto_msgTypes[35]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1565,7 +1915,7 @@ func (x *Insert_ObjectRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Insert_ObjectRequest.ProtoReflect.Descriptor instead.
 func (*Insert_ObjectRequest) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{2, 2}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{3, 2}
 }
 
 func (x *Insert_ObjectRequest) GetObject() *Object_Blob {
@@ -1600,7 +1950,7 @@ type Insert_MultiObjectRequest struct {
 
 func (x *Insert_MultiObjectRequest) Reset() {
 	*x = Insert_MultiObjectRequest{}
-	mi := &file_v1_payload_payload_proto_msgTypes[29]
+	mi := &file_v1_payload_payload_proto_msgTypes[36]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1612,7 +1962,7 @@ func (x *Insert_MultiObjectRequest) String() string {
 func (*Insert_MultiObjectRequest) ProtoMessage() {}
 
 func (x *Insert_MultiObjectRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[29]
+	mi := &file_v1_payload_payload_proto_msgTypes[36]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1625,7 +1975,7 @@ func (x *Insert_MultiObjectRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Insert_MultiObjectRequest.ProtoReflect.Descriptor instead.
 func (*Insert_MultiObjectRequest) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{2, 3}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{3, 3}
 }
 
 func (x *Insert_MultiObjectRequest) GetRequests() []*Insert_ObjectRequest {
@@ -1643,14 +1993,16 @@ type Insert_Config struct {
 	// Filter configurations.
 	Filters *Filter_Config `protobuf:"bytes,2,opt,name=filters,proto3" json:"filters,omitempty"`
 	// Insert timestamp.
-	Timestamp     int64 `protobuf:"varint,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	Timestamp int64 `protobuf:"varint,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	// Algorithm-specific insert options.
+	Options       []*anypb.Any `protobuf:"bytes,4,rep,name=options,proto3" json:"options,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Insert_Config) Reset() {
 	*x = Insert_Config{}
-	mi := &file_v1_payload_payload_proto_msgTypes[30]
+	mi := &file_v1_payload_payload_proto_msgTypes[37]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1662,7 +2014,7 @@ func (x *Insert_Config) String() string {
 func (*Insert_Config) ProtoMessage() {}
 
 func (x *Insert_Config) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[30]
+	mi := &file_v1_payload_payload_proto_msgTypes[37]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1675,7 +2027,7 @@ func (x *Insert_Config) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Insert_Config.ProtoReflect.Descriptor instead.
 func (*Insert_Config) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{2, 4}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{3, 4}
 }
 
 func (x *Insert_Config) GetSkipStrictExistCheck() bool {
@@ -1699,6 +2051,13 @@ func (x *Insert_Config) GetTimestamp() int64 {
 	return 0
 }
 
+func (x *Insert_Config) GetOptions() []*anypb.Any {
+	if x != nil {
+		return x.Options
+	}
+	return nil
+}
+
 // Represent the update request.
 type Update_Request struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -1712,7 +2071,7 @@ type Update_Request struct {
 
 func (x *Update_Request) Reset() {
 	*x = Update_Request{}
-	mi := &file_v1_payload_payload_proto_msgTypes[31]
+	mi := &file_v1_payload_payload_proto_msgTypes[38]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1724,7 +2083,7 @@ func (x *Update_Request) String() string {
 func (*Update_Request) ProtoMessage() {}
 
 func (x *Update_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[31]
+	mi := &file_v1_payload_payload_proto_msgTypes[38]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1737,7 +2096,7 @@ func (x *Update_Request) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Update_Request.ProtoReflect.Descriptor instead.
 func (*Update_Request) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{3, 0}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{4, 0}
 }
 
 func (x *Update_Request) GetVector() *Object_Vector {
@@ -1765,7 +2124,7 @@ type Update_MultiRequest struct {
 
 func (x *Update_MultiRequest) Reset() {
 	*x = Update_MultiRequest{}
-	mi := &file_v1_payload_payload_proto_msgTypes[32]
+	mi := &file_v1_payload_payload_proto_msgTypes[39]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1777,7 +2136,7 @@ func (x *Update_MultiRequest) String() string {
 func (*Update_MultiRequest) ProtoMessage() {}
 
 func (x *Update_MultiRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[32]
+	mi := &file_v1_payload_payload_proto_msgTypes[39]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1790,7 +2149,7 @@ func (x *Update_MultiRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Update_MultiRequest.ProtoReflect.Descriptor instead.
 func (*Update_MultiRequest) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{3, 1}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{4, 1}
 }
 
 func (x *Update_MultiRequest) GetRequests() []*Update_Request {
@@ -1815,7 +2174,7 @@ type Update_ObjectRequest struct {
 
 func (x *Update_ObjectRequest) Reset() {
 	*x = Update_ObjectRequest{}
-	mi := &file_v1_payload_payload_proto_msgTypes[33]
+	mi := &file_v1_payload_payload_proto_msgTypes[40]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1827,7 +2186,7 @@ func (x *Update_ObjectRequest) String() string {
 func (*Update_ObjectRequest) ProtoMessage() {}
 
 func (x *Update_ObjectRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[33]
+	mi := &file_v1_payload_payload_proto_msgTypes[40]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1840,7 +2199,7 @@ func (x *Update_ObjectRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Update_ObjectRequest.ProtoReflect.Descriptor instead.
 func (*Update_ObjectRequest) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{3, 2}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{4, 2}
 }
 
 func (x *Update_ObjectRequest) GetObject() *Object_Blob {
@@ -1875,7 +2234,7 @@ type Update_MultiObjectRequest struct {
 
 func (x *Update_MultiObjectRequest) Reset() {
 	*x = Update_MultiObjectRequest{}
-	mi := &file_v1_payload_payload_proto_msgTypes[34]
+	mi := &file_v1_payload_payload_proto_msgTypes[41]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1887,7 +2246,7 @@ func (x *Update_MultiObjectRequest) String() string {
 func (*Update_MultiObjectRequest) ProtoMessage() {}
 
 func (x *Update_MultiObjectRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[34]
+	mi := &file_v1_payload_payload_proto_msgTypes[41]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1900,7 +2259,7 @@ func (x *Update_MultiObjectRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Update_MultiObjectRequest.ProtoReflect.Descriptor instead.
 func (*Update_MultiObjectRequest) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{3, 3}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{4, 3}
 }
 
 func (x *Update_MultiObjectRequest) GetRequests() []*Update_ObjectRequest {
@@ -1925,7 +2284,7 @@ type Update_TimestampRequest struct {
 
 func (x *Update_TimestampRequest) Reset() {
 	*x = Update_TimestampRequest{}
-	mi := &file_v1_payload_payload_proto_msgTypes[35]
+	mi := &file_v1_payload_payload_proto_msgTypes[42]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1937,7 +2296,7 @@ func (x *Update_TimestampRequest) String() string {
 func (*Update_TimestampRequest) ProtoMessage() {}
 
 func (x *Update_TimestampRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[35]
+	mi := &file_v1_payload_payload_proto_msgTypes[42]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1950,7 +2309,7 @@ func (x *Update_TimestampRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Update_TimestampRequest.ProtoReflect.Descriptor instead.
 func (*Update_TimestampRequest) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{3, 4}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{4, 4}
 }
 
 func (x *Update_TimestampRequest) GetId() string {
@@ -1992,7 +2351,7 @@ type Update_Config struct {
 
 func (x *Update_Config) Reset() {
 	*x = Update_Config{}
-	mi := &file_v1_payload_payload_proto_msgTypes[36]
+	mi := &file_v1_payload_payload_proto_msgTypes[43]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2004,7 +2363,7 @@ func (x *Update_Config) String() string {
 func (*Update_Config) ProtoMessage() {}
 
 func (x *Update_Config) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[36]
+	mi := &file_v1_payload_payload_proto_msgTypes[43]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2017,7 +2376,7 @@ func (x *Update_Config) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Update_Config.ProtoReflect.Descriptor instead.
 func (*Update_Config) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{3, 5}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{4, 5}
 }
 
 func (x *Update_Config) GetSkipStrictExistCheck() bool {
@@ -2061,7 +2420,7 @@ type Upsert_Request struct {
 
 func (x *Upsert_Request) Reset() {
 	*x = Upsert_Request{}
-	mi := &file_v1_payload_payload_proto_msgTypes[37]
+	mi := &file_v1_payload_payload_proto_msgTypes[44]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2073,7 +2432,7 @@ func (x *Upsert_Request) String() string {
 func (*Upsert_Request) ProtoMessage() {}
 
 func (x *Upsert_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[37]
+	mi := &file_v1_payload_payload_proto_msgTypes[44]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2086,7 +2445,7 @@ func (x *Upsert_Request) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Upsert_Request.ProtoReflect.Descriptor instead.
 func (*Upsert_Request) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{4, 0}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{5, 0}
 }
 
 func (x *Upsert_Request) GetVector() *Object_Vector {
@@ -2114,7 +2473,7 @@ type Upsert_MultiRequest struct {
 
 func (x *Upsert_MultiRequest) Reset() {
 	*x = Upsert_MultiRequest{}
-	mi := &file_v1_payload_payload_proto_msgTypes[38]
+	mi := &file_v1_payload_payload_proto_msgTypes[45]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2126,7 +2485,7 @@ func (x *Upsert_MultiRequest) String() string {
 func (*Upsert_MultiRequest) ProtoMessage() {}
 
 func (x *Upsert_MultiRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[38]
+	mi := &file_v1_payload_payload_proto_msgTypes[45]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2139,7 +2498,7 @@ func (x *Upsert_MultiRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Upsert_MultiRequest.ProtoReflect.Descriptor instead.
 func (*Upsert_MultiRequest) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{4, 1}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{5, 1}
 }
 
 func (x *Upsert_MultiRequest) GetRequests() []*Upsert_Request {
@@ -2164,7 +2523,7 @@ type Upsert_ObjectRequest struct {
 
 func (x *Upsert_ObjectRequest) Reset() {
 	*x = Upsert_ObjectRequest{}
-	mi := &file_v1_payload_payload_proto_msgTypes[39]
+	mi := &file_v1_payload_payload_proto_msgTypes[46]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2176,7 +2535,7 @@ func (x *Upsert_ObjectRequest) String() string {
 func (*Upsert_ObjectRequest) ProtoMessage() {}
 
 func (x *Upsert_ObjectRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[39]
+	mi := &file_v1_payload_payload_proto_msgTypes[46]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2189,7 +2548,7 @@ func (x *Upsert_ObjectRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Upsert_ObjectRequest.ProtoReflect.Descriptor instead.
 func (*Upsert_ObjectRequest) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{4, 2}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{5, 2}
 }
 
 func (x *Upsert_ObjectRequest) GetObject() *Object_Blob {
@@ -2224,7 +2583,7 @@ type Upsert_MultiObjectRequest struct {
 
 func (x *Upsert_MultiObjectRequest) Reset() {
 	*x = Upsert_MultiObjectRequest{}
-	mi := &file_v1_payload_payload_proto_msgTypes[40]
+	mi := &file_v1_payload_payload_proto_msgTypes[47]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2236,7 +2595,7 @@ func (x *Upsert_MultiObjectRequest) String() string {
 func (*Upsert_MultiObjectRequest) ProtoMessage() {}
 
 func (x *Upsert_MultiObjectRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[40]
+	mi := &file_v1_payload_payload_proto_msgTypes[47]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2249,7 +2608,7 @@ func (x *Upsert_MultiObjectRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Upsert_MultiObjectRequest.ProtoReflect.Descriptor instead.
 func (*Upsert_MultiObjectRequest) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{4, 3}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{5, 3}
 }
 
 func (x *Upsert_MultiObjectRequest) GetRequests() []*Upsert_ObjectRequest {
@@ -2277,7 +2636,7 @@ type Upsert_Config struct {
 
 func (x *Upsert_Config) Reset() {
 	*x = Upsert_Config{}
-	mi := &file_v1_payload_payload_proto_msgTypes[41]
+	mi := &file_v1_payload_payload_proto_msgTypes[48]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2289,7 +2648,7 @@ func (x *Upsert_Config) String() string {
 func (*Upsert_Config) ProtoMessage() {}
 
 func (x *Upsert_Config) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[41]
+	mi := &file_v1_payload_payload_proto_msgTypes[48]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2302,7 +2661,7 @@ func (x *Upsert_Config) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Upsert_Config.ProtoReflect.Descriptor instead.
 func (*Upsert_Config) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{4, 4}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{5, 4}
 }
 
 func (x *Upsert_Config) GetSkipStrictExistCheck() bool {
@@ -2346,7 +2705,7 @@ type Remove_Request struct {
 
 func (x *Remove_Request) Reset() {
 	*x = Remove_Request{}
-	mi := &file_v1_payload_payload_proto_msgTypes[42]
+	mi := &file_v1_payload_payload_proto_msgTypes[49]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2358,7 +2717,7 @@ func (x *Remove_Request) String() string {
 func (*Remove_Request) ProtoMessage() {}
 
 func (x *Remove_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[42]
+	mi := &file_v1_payload_payload_proto_msgTypes[49]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2371,7 +2730,7 @@ func (x *Remove_Request) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Remove_Request.ProtoReflect.Descriptor instead.
 func (*Remove_Request) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{5, 0}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{6, 0}
 }
 
 func (x *Remove_Request) GetId() *Object_ID {
@@ -2399,7 +2758,7 @@ type Remove_MultiRequest struct {
 
 func (x *Remove_MultiRequest) Reset() {
 	*x = Remove_MultiRequest{}
-	mi := &file_v1_payload_payload_proto_msgTypes[43]
+	mi := &file_v1_payload_payload_proto_msgTypes[50]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2411,7 +2770,7 @@ func (x *Remove_MultiRequest) String() string {
 func (*Remove_MultiRequest) ProtoMessage() {}
 
 func (x *Remove_MultiRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[43]
+	mi := &file_v1_payload_payload_proto_msgTypes[50]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2424,7 +2783,7 @@ func (x *Remove_MultiRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Remove_MultiRequest.ProtoReflect.Descriptor instead.
 func (*Remove_MultiRequest) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{5, 1}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{6, 1}
 }
 
 func (x *Remove_MultiRequest) GetRequests() []*Remove_Request {
@@ -2446,7 +2805,7 @@ type Remove_TimestampRequest struct {
 
 func (x *Remove_TimestampRequest) Reset() {
 	*x = Remove_TimestampRequest{}
-	mi := &file_v1_payload_payload_proto_msgTypes[44]
+	mi := &file_v1_payload_payload_proto_msgTypes[51]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2458,7 +2817,7 @@ func (x *Remove_TimestampRequest) String() string {
 func (*Remove_TimestampRequest) ProtoMessage() {}
 
 func (x *Remove_TimestampRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[44]
+	mi := &file_v1_payload_payload_proto_msgTypes[51]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2471,7 +2830,7 @@ func (x *Remove_TimestampRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Remove_TimestampRequest.ProtoReflect.Descriptor instead.
 func (*Remove_TimestampRequest) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{5, 2}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{6, 2}
 }
 
 func (x *Remove_TimestampRequest) GetTimestamps() []*Remove_Timestamp {
@@ -2494,7 +2853,7 @@ type Remove_Timestamp struct {
 
 func (x *Remove_Timestamp) Reset() {
 	*x = Remove_Timestamp{}
-	mi := &file_v1_payload_payload_proto_msgTypes[45]
+	mi := &file_v1_payload_payload_proto_msgTypes[52]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2506,7 +2865,7 @@ func (x *Remove_Timestamp) String() string {
 func (*Remove_Timestamp) ProtoMessage() {}
 
 func (x *Remove_Timestamp) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[45]
+	mi := &file_v1_payload_payload_proto_msgTypes[52]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2519,7 +2878,7 @@ func (x *Remove_Timestamp) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Remove_Timestamp.ProtoReflect.Descriptor instead.
 func (*Remove_Timestamp) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{5, 3}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{6, 3}
 }
 
 func (x *Remove_Timestamp) GetTimestamp() int64 {
@@ -2549,7 +2908,7 @@ type Remove_Config struct {
 
 func (x *Remove_Config) Reset() {
 	*x = Remove_Config{}
-	mi := &file_v1_payload_payload_proto_msgTypes[46]
+	mi := &file_v1_payload_payload_proto_msgTypes[53]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2561,7 +2920,7 @@ func (x *Remove_Config) String() string {
 func (*Remove_Config) ProtoMessage() {}
 
 func (x *Remove_Config) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[46]
+	mi := &file_v1_payload_payload_proto_msgTypes[53]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2574,7 +2933,7 @@ func (x *Remove_Config) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Remove_Config.ProtoReflect.Descriptor instead.
 func (*Remove_Config) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{5, 4}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{6, 4}
 }
 
 func (x *Remove_Config) GetSkipStrictExistCheck() bool {
@@ -2599,7 +2958,7 @@ type Flush_Request struct {
 
 func (x *Flush_Request) Reset() {
 	*x = Flush_Request{}
-	mi := &file_v1_payload_payload_proto_msgTypes[47]
+	mi := &file_v1_payload_payload_proto_msgTypes[54]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2611,7 +2970,7 @@ func (x *Flush_Request) String() string {
 func (*Flush_Request) ProtoMessage() {}
 
 func (x *Flush_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[47]
+	mi := &file_v1_payload_payload_proto_msgTypes[54]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2624,7 +2983,7 @@ func (x *Flush_Request) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Flush_Request.ProtoReflect.Descriptor instead.
 func (*Flush_Request) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{6, 0}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{7, 0}
 }
 
 // Represent a request to fetch raw vector.
@@ -2640,7 +2999,7 @@ type Object_VectorRequest struct {
 
 func (x *Object_VectorRequest) Reset() {
 	*x = Object_VectorRequest{}
-	mi := &file_v1_payload_payload_proto_msgTypes[48]
+	mi := &file_v1_payload_payload_proto_msgTypes[55]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2652,7 +3011,7 @@ func (x *Object_VectorRequest) String() string {
 func (*Object_VectorRequest) ProtoMessage() {}
 
 func (x *Object_VectorRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[48]
+	mi := &file_v1_payload_payload_proto_msgTypes[55]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2665,7 +3024,7 @@ func (x *Object_VectorRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Object_VectorRequest.ProtoReflect.Descriptor instead.
 func (*Object_VectorRequest) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{7, 0}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{8, 0}
 }
 
 func (x *Object_VectorRequest) GetId() *Object_ID {
@@ -2695,7 +3054,7 @@ type Object_Distance struct {
 
 func (x *Object_Distance) Reset() {
 	*x = Object_Distance{}
-	mi := &file_v1_payload_payload_proto_msgTypes[49]
+	mi := &file_v1_payload_payload_proto_msgTypes[56]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2707,7 +3066,7 @@ func (x *Object_Distance) String() string {
 func (*Object_Distance) ProtoMessage() {}
 
 func (x *Object_Distance) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[49]
+	mi := &file_v1_payload_payload_proto_msgTypes[56]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2720,7 +3079,7 @@ func (x *Object_Distance) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Object_Distance.ProtoReflect.Descriptor instead.
 func (*Object_Distance) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{7, 1}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{8, 1}
 }
 
 func (x *Object_Distance) GetId() string {
@@ -2751,7 +3110,7 @@ type Object_StreamDistance struct {
 
 func (x *Object_StreamDistance) Reset() {
 	*x = Object_StreamDistance{}
-	mi := &file_v1_payload_payload_proto_msgTypes[50]
+	mi := &file_v1_payload_payload_proto_msgTypes[57]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2763,7 +3122,7 @@ func (x *Object_StreamDistance) String() string {
 func (*Object_StreamDistance) ProtoMessage() {}
 
 func (x *Object_StreamDistance) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[50]
+	mi := &file_v1_payload_payload_proto_msgTypes[57]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2776,7 +3135,7 @@ func (x *Object_StreamDistance) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Object_StreamDistance.ProtoReflect.Descriptor instead.
 func (*Object_StreamDistance) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{7, 2}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{8, 2}
 }
 
 func (x *Object_StreamDistance) GetPayload() isObject_StreamDistance_Payload {
@@ -2832,7 +3191,7 @@ type Object_ID struct {
 
 func (x *Object_ID) Reset() {
 	*x = Object_ID{}
-	mi := &file_v1_payload_payload_proto_msgTypes[51]
+	mi := &file_v1_payload_payload_proto_msgTypes[58]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2844,7 +3203,7 @@ func (x *Object_ID) String() string {
 func (*Object_ID) ProtoMessage() {}
 
 func (x *Object_ID) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[51]
+	mi := &file_v1_payload_payload_proto_msgTypes[58]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2857,7 +3216,7 @@ func (x *Object_ID) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Object_ID.ProtoReflect.Descriptor instead.
 func (*Object_ID) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{7, 3}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{8, 3}
 }
 
 func (x *Object_ID) GetId() string {
@@ -2877,7 +3236,7 @@ type Object_IDs struct {
 
 func (x *Object_IDs) Reset() {
 	*x = Object_IDs{}
-	mi := &file_v1_payload_payload_proto_msgTypes[52]
+	mi := &file_v1_payload_payload_proto_msgTypes[59]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2889,7 +3248,7 @@ func (x *Object_IDs) String() string {
 func (*Object_IDs) ProtoMessage() {}
 
 func (x *Object_IDs) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[52]
+	mi := &file_v1_payload_payload_proto_msgTypes[59]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2902,7 +3261,7 @@ func (x *Object_IDs) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Object_IDs.ProtoReflect.Descriptor instead.
 func (*Object_IDs) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{7, 4}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{8, 4}
 }
 
 func (x *Object_IDs) GetIds() []string {
@@ -2927,7 +3286,7 @@ type Object_Vector struct {
 
 func (x *Object_Vector) Reset() {
 	*x = Object_Vector{}
-	mi := &file_v1_payload_payload_proto_msgTypes[53]
+	mi := &file_v1_payload_payload_proto_msgTypes[60]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2939,7 +3298,7 @@ func (x *Object_Vector) String() string {
 func (*Object_Vector) ProtoMessage() {}
 
 func (x *Object_Vector) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[53]
+	mi := &file_v1_payload_payload_proto_msgTypes[60]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2952,7 +3311,7 @@ func (x *Object_Vector) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Object_Vector.ProtoReflect.Descriptor instead.
 func (*Object_Vector) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{7, 5}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{8, 5}
 }
 
 func (x *Object_Vector) GetId() string {
@@ -2987,7 +3346,7 @@ type Object_TimestampRequest struct {
 
 func (x *Object_TimestampRequest) Reset() {
 	*x = Object_TimestampRequest{}
-	mi := &file_v1_payload_payload_proto_msgTypes[54]
+	mi := &file_v1_payload_payload_proto_msgTypes[61]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2999,7 +3358,7 @@ func (x *Object_TimestampRequest) String() string {
 func (*Object_TimestampRequest) ProtoMessage() {}
 
 func (x *Object_TimestampRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[54]
+	mi := &file_v1_payload_payload_proto_msgTypes[61]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3012,7 +3371,7 @@ func (x *Object_TimestampRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Object_TimestampRequest.ProtoReflect.Descriptor instead.
 func (*Object_TimestampRequest) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{7, 6}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{8, 6}
 }
 
 func (x *Object_TimestampRequest) GetId() *Object_ID {
@@ -3035,7 +3394,7 @@ type Object_Timestamp struct {
 
 func (x *Object_Timestamp) Reset() {
 	*x = Object_Timestamp{}
-	mi := &file_v1_payload_payload_proto_msgTypes[55]
+	mi := &file_v1_payload_payload_proto_msgTypes[62]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3047,7 +3406,7 @@ func (x *Object_Timestamp) String() string {
 func (*Object_Timestamp) ProtoMessage() {}
 
 func (x *Object_Timestamp) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[55]
+	mi := &file_v1_payload_payload_proto_msgTypes[62]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3060,7 +3419,7 @@ func (x *Object_Timestamp) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Object_Timestamp.ProtoReflect.Descriptor instead.
 func (*Object_Timestamp) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{7, 7}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{8, 7}
 }
 
 func (x *Object_Timestamp) GetId() string {
@@ -3087,7 +3446,7 @@ type Object_Vectors struct {
 
 func (x *Object_Vectors) Reset() {
 	*x = Object_Vectors{}
-	mi := &file_v1_payload_payload_proto_msgTypes[56]
+	mi := &file_v1_payload_payload_proto_msgTypes[63]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3099,7 +3458,7 @@ func (x *Object_Vectors) String() string {
 func (*Object_Vectors) ProtoMessage() {}
 
 func (x *Object_Vectors) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[56]
+	mi := &file_v1_payload_payload_proto_msgTypes[63]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3112,7 +3471,7 @@ func (x *Object_Vectors) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Object_Vectors.ProtoReflect.Descriptor instead.
 func (*Object_Vectors) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{7, 8}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{8, 8}
 }
 
 func (x *Object_Vectors) GetVectors() []*Object_Vector {
@@ -3136,7 +3495,7 @@ type Object_StreamVector struct {
 
 func (x *Object_StreamVector) Reset() {
 	*x = Object_StreamVector{}
-	mi := &file_v1_payload_payload_proto_msgTypes[57]
+	mi := &file_v1_payload_payload_proto_msgTypes[64]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3148,7 +3507,7 @@ func (x *Object_StreamVector) String() string {
 func (*Object_StreamVector) ProtoMessage() {}
 
 func (x *Object_StreamVector) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[57]
+	mi := &file_v1_payload_payload_proto_msgTypes[64]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3161,7 +3520,7 @@ func (x *Object_StreamVector) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Object_StreamVector.ProtoReflect.Descriptor instead.
 func (*Object_StreamVector) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{7, 9}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{8, 9}
 }
 
 func (x *Object_StreamVector) GetPayload() isObject_StreamVector_Payload {
@@ -3220,7 +3579,7 @@ type Object_ReshapeVector struct {
 
 func (x *Object_ReshapeVector) Reset() {
 	*x = Object_ReshapeVector{}
-	mi := &file_v1_payload_payload_proto_msgTypes[58]
+	mi := &file_v1_payload_payload_proto_msgTypes[65]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3232,7 +3591,7 @@ func (x *Object_ReshapeVector) String() string {
 func (*Object_ReshapeVector) ProtoMessage() {}
 
 func (x *Object_ReshapeVector) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[58]
+	mi := &file_v1_payload_payload_proto_msgTypes[65]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3245,7 +3604,7 @@ func (x *Object_ReshapeVector) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Object_ReshapeVector.ProtoReflect.Descriptor instead.
 func (*Object_ReshapeVector) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{7, 10}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{8, 10}
 }
 
 func (x *Object_ReshapeVector) GetObject() []byte {
@@ -3275,7 +3634,7 @@ type Object_Blob struct {
 
 func (x *Object_Blob) Reset() {
 	*x = Object_Blob{}
-	mi := &file_v1_payload_payload_proto_msgTypes[59]
+	mi := &file_v1_payload_payload_proto_msgTypes[66]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3287,7 +3646,7 @@ func (x *Object_Blob) String() string {
 func (*Object_Blob) ProtoMessage() {}
 
 func (x *Object_Blob) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[59]
+	mi := &file_v1_payload_payload_proto_msgTypes[66]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3300,7 +3659,7 @@ func (x *Object_Blob) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Object_Blob.ProtoReflect.Descriptor instead.
 func (*Object_Blob) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{7, 11}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{8, 11}
 }
 
 func (x *Object_Blob) GetId() string {
@@ -3331,7 +3690,7 @@ type Object_StreamBlob struct {
 
 func (x *Object_StreamBlob) Reset() {
 	*x = Object_StreamBlob{}
-	mi := &file_v1_payload_payload_proto_msgTypes[60]
+	mi := &file_v1_payload_payload_proto_msgTypes[67]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3343,7 +3702,7 @@ func (x *Object_StreamBlob) String() string {
 func (*Object_StreamBlob) ProtoMessage() {}
 
 func (x *Object_StreamBlob) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[60]
+	mi := &file_v1_payload_payload_proto_msgTypes[67]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3356,7 +3715,7 @@ func (x *Object_StreamBlob) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Object_StreamBlob.ProtoReflect.Descriptor instead.
 func (*Object_StreamBlob) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{7, 12}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{8, 12}
 }
 
 func (x *Object_StreamBlob) GetPayload() isObject_StreamBlob_Payload {
@@ -3417,7 +3776,7 @@ type Object_Location struct {
 
 func (x *Object_Location) Reset() {
 	*x = Object_Location{}
-	mi := &file_v1_payload_payload_proto_msgTypes[61]
+	mi := &file_v1_payload_payload_proto_msgTypes[68]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3429,7 +3788,7 @@ func (x *Object_Location) String() string {
 func (*Object_Location) ProtoMessage() {}
 
 func (x *Object_Location) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[61]
+	mi := &file_v1_payload_payload_proto_msgTypes[68]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3442,7 +3801,7 @@ func (x *Object_Location) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Object_Location.ProtoReflect.Descriptor instead.
 func (*Object_Location) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{7, 13}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{8, 13}
 }
 
 func (x *Object_Location) GetName() string {
@@ -3480,7 +3839,7 @@ type Object_StreamLocation struct {
 
 func (x *Object_StreamLocation) Reset() {
 	*x = Object_StreamLocation{}
-	mi := &file_v1_payload_payload_proto_msgTypes[62]
+	mi := &file_v1_payload_payload_proto_msgTypes[69]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3492,7 +3851,7 @@ func (x *Object_StreamLocation) String() string {
 func (*Object_StreamLocation) ProtoMessage() {}
 
 func (x *Object_StreamLocation) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[62]
+	mi := &file_v1_payload_payload_proto_msgTypes[69]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3505,7 +3864,7 @@ func (x *Object_StreamLocation) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Object_StreamLocation.ProtoReflect.Descriptor instead.
 func (*Object_StreamLocation) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{7, 14}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{8, 14}
 }
 
 func (x *Object_StreamLocation) GetPayload() isObject_StreamLocation_Payload {
@@ -3561,7 +3920,7 @@ type Object_Locations struct {
 
 func (x *Object_Locations) Reset() {
 	*x = Object_Locations{}
-	mi := &file_v1_payload_payload_proto_msgTypes[63]
+	mi := &file_v1_payload_payload_proto_msgTypes[70]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3573,7 +3932,7 @@ func (x *Object_Locations) String() string {
 func (*Object_Locations) ProtoMessage() {}
 
 func (x *Object_Locations) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[63]
+	mi := &file_v1_payload_payload_proto_msgTypes[70]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3586,7 +3945,7 @@ func (x *Object_Locations) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Object_Locations.ProtoReflect.Descriptor instead.
 func (*Object_Locations) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{7, 15}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{8, 15}
 }
 
 func (x *Object_Locations) GetLocations() []*Object_Location {
@@ -3605,7 +3964,7 @@ type Object_List struct {
 
 func (x *Object_List) Reset() {
 	*x = Object_List{}
-	mi := &file_v1_payload_payload_proto_msgTypes[64]
+	mi := &file_v1_payload_payload_proto_msgTypes[71]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3617,7 +3976,7 @@ func (x *Object_List) String() string {
 func (*Object_List) ProtoMessage() {}
 
 func (x *Object_List) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[64]
+	mi := &file_v1_payload_payload_proto_msgTypes[71]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3630,7 +3989,7 @@ func (x *Object_List) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Object_List.ProtoReflect.Descriptor instead.
 func (*Object_List) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{7, 16}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{8, 16}
 }
 
 type Object_List_Request struct {
@@ -3641,7 +4000,7 @@ type Object_List_Request struct {
 
 func (x *Object_List_Request) Reset() {
 	*x = Object_List_Request{}
-	mi := &file_v1_payload_payload_proto_msgTypes[65]
+	mi := &file_v1_payload_payload_proto_msgTypes[72]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3653,7 +4012,7 @@ func (x *Object_List_Request) String() string {
 func (*Object_List_Request) ProtoMessage() {}
 
 func (x *Object_List_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[65]
+	mi := &file_v1_payload_payload_proto_msgTypes[72]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3666,7 +4025,7 @@ func (x *Object_List_Request) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Object_List_Request.ProtoReflect.Descriptor instead.
 func (*Object_List_Request) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{7, 16, 0}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{8, 16, 0}
 }
 
 type Object_List_Response struct {
@@ -3682,7 +4041,7 @@ type Object_List_Response struct {
 
 func (x *Object_List_Response) Reset() {
 	*x = Object_List_Response{}
-	mi := &file_v1_payload_payload_proto_msgTypes[66]
+	mi := &file_v1_payload_payload_proto_msgTypes[73]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3694,7 +4053,7 @@ func (x *Object_List_Response) String() string {
 func (*Object_List_Response) ProtoMessage() {}
 
 func (x *Object_List_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[66]
+	mi := &file_v1_payload_payload_proto_msgTypes[73]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3707,7 +4066,7 @@ func (x *Object_List_Response) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Object_List_Response.ProtoReflect.Descriptor instead.
 func (*Object_List_Response) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{7, 16, 1}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{8, 16, 1}
 }
 
 func (x *Object_List_Response) GetPayload() isObject_List_Response_Payload {
@@ -3764,7 +4123,7 @@ type Control_CreateIndexRequest struct {
 
 func (x *Control_CreateIndexRequest) Reset() {
 	*x = Control_CreateIndexRequest{}
-	mi := &file_v1_payload_payload_proto_msgTypes[67]
+	mi := &file_v1_payload_payload_proto_msgTypes[74]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3776,7 +4135,7 @@ func (x *Control_CreateIndexRequest) String() string {
 func (*Control_CreateIndexRequest) ProtoMessage() {}
 
 func (x *Control_CreateIndexRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[67]
+	mi := &file_v1_payload_payload_proto_msgTypes[74]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3789,7 +4148,7 @@ func (x *Control_CreateIndexRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Control_CreateIndexRequest.ProtoReflect.Descriptor instead.
 func (*Control_CreateIndexRequest) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{8, 0}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{9, 0}
 }
 
 func (x *Control_CreateIndexRequest) GetPoolSize() uint32 {
@@ -3814,7 +4173,7 @@ type Discoverer_Request struct {
 
 func (x *Discoverer_Request) Reset() {
 	*x = Discoverer_Request{}
-	mi := &file_v1_payload_payload_proto_msgTypes[68]
+	mi := &file_v1_payload_payload_proto_msgTypes[75]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3826,7 +4185,7 @@ func (x *Discoverer_Request) String() string {
 func (*Discoverer_Request) ProtoMessage() {}
 
 func (x *Discoverer_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[68]
+	mi := &file_v1_payload_payload_proto_msgTypes[75]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3839,7 +4198,7 @@ func (x *Discoverer_Request) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Discoverer_Request.ProtoReflect.Descriptor instead.
 func (*Discoverer_Request) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{9, 0}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{10, 0}
 }
 
 func (x *Discoverer_Request) GetName() string {
@@ -3872,7 +4231,7 @@ type Info_Index struct {
 
 func (x *Info_Index) Reset() {
 	*x = Info_Index{}
-	mi := &file_v1_payload_payload_proto_msgTypes[69]
+	mi := &file_v1_payload_payload_proto_msgTypes[76]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3884,7 +4243,7 @@ func (x *Info_Index) String() string {
 func (*Info_Index) ProtoMessage() {}
 
 func (x *Info_Index) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[69]
+	mi := &file_v1_payload_payload_proto_msgTypes[76]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3897,7 +4256,7 @@ func (x *Info_Index) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Info_Index.ProtoReflect.Descriptor instead.
 func (*Info_Index) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{10, 0}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{11, 0}
 }
 
 // Represent the resource stats
@@ -3913,7 +4272,7 @@ type Info_ResourceStats struct {
 
 func (x *Info_ResourceStats) Reset() {
 	*x = Info_ResourceStats{}
-	mi := &file_v1_payload_payload_proto_msgTypes[70]
+	mi := &file_v1_payload_payload_proto_msgTypes[77]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3925,7 +4284,7 @@ func (x *Info_ResourceStats) String() string {
 func (*Info_ResourceStats) ProtoMessage() {}
 
 func (x *Info_ResourceStats) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[70]
+	mi := &file_v1_payload_payload_proto_msgTypes[77]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3938,7 +4297,7 @@ func (x *Info_ResourceStats) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Info_ResourceStats.ProtoReflect.Descriptor instead.
 func (*Info_ResourceStats) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{10, 1}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{11, 1}
 }
 
 func (x *Info_ResourceStats) GetName() string {
@@ -3978,7 +4337,7 @@ type Info_CgroupStats struct {
 
 func (x *Info_CgroupStats) Reset() {
 	*x = Info_CgroupStats{}
-	mi := &file_v1_payload_payload_proto_msgTypes[71]
+	mi := &file_v1_payload_payload_proto_msgTypes[78]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3990,7 +4349,7 @@ func (x *Info_CgroupStats) String() string {
 func (*Info_CgroupStats) ProtoMessage() {}
 
 func (x *Info_CgroupStats) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[71]
+	mi := &file_v1_payload_payload_proto_msgTypes[78]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4003,7 +4362,7 @@ func (x *Info_CgroupStats) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Info_CgroupStats.ProtoReflect.Descriptor instead.
 func (*Info_CgroupStats) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{10, 2}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{11, 2}
 }
 
 func (x *Info_CgroupStats) GetCpuLimitCores() float64 {
@@ -4057,7 +4416,7 @@ type Info_Pod struct {
 
 func (x *Info_Pod) Reset() {
 	*x = Info_Pod{}
-	mi := &file_v1_payload_payload_proto_msgTypes[72]
+	mi := &file_v1_payload_payload_proto_msgTypes[79]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4069,7 +4428,7 @@ func (x *Info_Pod) String() string {
 func (*Info_Pod) ProtoMessage() {}
 
 func (x *Info_Pod) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[72]
+	mi := &file_v1_payload_payload_proto_msgTypes[79]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4082,7 +4441,7 @@ func (x *Info_Pod) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Info_Pod.ProtoReflect.Descriptor instead.
 func (*Info_Pod) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{10, 3}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{11, 3}
 }
 
 func (x *Info_Pod) GetAppName() string {
@@ -4155,7 +4514,7 @@ type Info_Node struct {
 
 func (x *Info_Node) Reset() {
 	*x = Info_Node{}
-	mi := &file_v1_payload_payload_proto_msgTypes[73]
+	mi := &file_v1_payload_payload_proto_msgTypes[80]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4167,7 +4526,7 @@ func (x *Info_Node) String() string {
 func (*Info_Node) ProtoMessage() {}
 
 func (x *Info_Node) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[73]
+	mi := &file_v1_payload_payload_proto_msgTypes[80]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4180,7 +4539,7 @@ func (x *Info_Node) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Info_Node.ProtoReflect.Descriptor instead.
 func (*Info_Node) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{10, 4}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{11, 4}
 }
 
 func (x *Info_Node) GetName() string {
@@ -4246,7 +4605,7 @@ type Info_Service struct {
 
 func (x *Info_Service) Reset() {
 	*x = Info_Service{}
-	mi := &file_v1_payload_payload_proto_msgTypes[74]
+	mi := &file_v1_payload_payload_proto_msgTypes[81]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4258,7 +4617,7 @@ func (x *Info_Service) String() string {
 func (*Info_Service) ProtoMessage() {}
 
 func (x *Info_Service) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[74]
+	mi := &file_v1_payload_payload_proto_msgTypes[81]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4271,7 +4630,7 @@ func (x *Info_Service) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Info_Service.ProtoReflect.Descriptor instead.
 func (*Info_Service) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{10, 5}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{11, 5}
 }
 
 func (x *Info_Service) GetName() string {
@@ -4329,7 +4688,7 @@ type Info_ServicePort struct {
 
 func (x *Info_ServicePort) Reset() {
 	*x = Info_ServicePort{}
-	mi := &file_v1_payload_payload_proto_msgTypes[75]
+	mi := &file_v1_payload_payload_proto_msgTypes[82]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4341,7 +4700,7 @@ func (x *Info_ServicePort) String() string {
 func (*Info_ServicePort) ProtoMessage() {}
 
 func (x *Info_ServicePort) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[75]
+	mi := &file_v1_payload_payload_proto_msgTypes[82]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4354,7 +4713,7 @@ func (x *Info_ServicePort) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Info_ServicePort.ProtoReflect.Descriptor instead.
 func (*Info_ServicePort) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{10, 6}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{11, 6}
 }
 
 func (x *Info_ServicePort) GetName() string {
@@ -4381,7 +4740,7 @@ type Info_Labels struct {
 
 func (x *Info_Labels) Reset() {
 	*x = Info_Labels{}
-	mi := &file_v1_payload_payload_proto_msgTypes[76]
+	mi := &file_v1_payload_payload_proto_msgTypes[83]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4393,7 +4752,7 @@ func (x *Info_Labels) String() string {
 func (*Info_Labels) ProtoMessage() {}
 
 func (x *Info_Labels) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[76]
+	mi := &file_v1_payload_payload_proto_msgTypes[83]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4406,7 +4765,7 @@ func (x *Info_Labels) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Info_Labels.ProtoReflect.Descriptor instead.
 func (*Info_Labels) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{10, 7}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{11, 7}
 }
 
 func (x *Info_Labels) GetLabels() map[string]string {
@@ -4426,7 +4785,7 @@ type Info_Annotations struct {
 
 func (x *Info_Annotations) Reset() {
 	*x = Info_Annotations{}
-	mi := &file_v1_payload_payload_proto_msgTypes[77]
+	mi := &file_v1_payload_payload_proto_msgTypes[84]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4438,7 +4797,7 @@ func (x *Info_Annotations) String() string {
 func (*Info_Annotations) ProtoMessage() {}
 
 func (x *Info_Annotations) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[77]
+	mi := &file_v1_payload_payload_proto_msgTypes[84]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4451,7 +4810,7 @@ func (x *Info_Annotations) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Info_Annotations.ProtoReflect.Descriptor instead.
 func (*Info_Annotations) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{10, 8}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{11, 8}
 }
 
 func (x *Info_Annotations) GetAnnotations() map[string]string {
@@ -4476,7 +4835,7 @@ type Info_CPU struct {
 
 func (x *Info_CPU) Reset() {
 	*x = Info_CPU{}
-	mi := &file_v1_payload_payload_proto_msgTypes[78]
+	mi := &file_v1_payload_payload_proto_msgTypes[85]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4488,7 +4847,7 @@ func (x *Info_CPU) String() string {
 func (*Info_CPU) ProtoMessage() {}
 
 func (x *Info_CPU) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[78]
+	mi := &file_v1_payload_payload_proto_msgTypes[85]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4501,7 +4860,7 @@ func (x *Info_CPU) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Info_CPU.ProtoReflect.Descriptor instead.
 func (*Info_CPU) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{10, 9}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{11, 9}
 }
 
 func (x *Info_CPU) GetLimit() float64 {
@@ -4540,7 +4899,7 @@ type Info_Memory struct {
 
 func (x *Info_Memory) Reset() {
 	*x = Info_Memory{}
-	mi := &file_v1_payload_payload_proto_msgTypes[79]
+	mi := &file_v1_payload_payload_proto_msgTypes[86]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4552,7 +4911,7 @@ func (x *Info_Memory) String() string {
 func (*Info_Memory) ProtoMessage() {}
 
 func (x *Info_Memory) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[79]
+	mi := &file_v1_payload_payload_proto_msgTypes[86]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4565,7 +4924,7 @@ func (x *Info_Memory) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Info_Memory.ProtoReflect.Descriptor instead.
 func (*Info_Memory) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{10, 10}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{11, 10}
 }
 
 func (x *Info_Memory) GetLimit() float64 {
@@ -4600,7 +4959,7 @@ type Info_Pods struct {
 
 func (x *Info_Pods) Reset() {
 	*x = Info_Pods{}
-	mi := &file_v1_payload_payload_proto_msgTypes[80]
+	mi := &file_v1_payload_payload_proto_msgTypes[87]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4612,7 +4971,7 @@ func (x *Info_Pods) String() string {
 func (*Info_Pods) ProtoMessage() {}
 
 func (x *Info_Pods) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[80]
+	mi := &file_v1_payload_payload_proto_msgTypes[87]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4625,7 +4984,7 @@ func (x *Info_Pods) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Info_Pods.ProtoReflect.Descriptor instead.
 func (*Info_Pods) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{10, 11}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{11, 11}
 }
 
 func (x *Info_Pods) GetPods() []*Info_Pod {
@@ -4646,7 +5005,7 @@ type Info_Nodes struct {
 
 func (x *Info_Nodes) Reset() {
 	*x = Info_Nodes{}
-	mi := &file_v1_payload_payload_proto_msgTypes[81]
+	mi := &file_v1_payload_payload_proto_msgTypes[88]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4658,7 +5017,7 @@ func (x *Info_Nodes) String() string {
 func (*Info_Nodes) ProtoMessage() {}
 
 func (x *Info_Nodes) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[81]
+	mi := &file_v1_payload_payload_proto_msgTypes[88]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4671,7 +5030,7 @@ func (x *Info_Nodes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Info_Nodes.ProtoReflect.Descriptor instead.
 func (*Info_Nodes) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{10, 12}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{11, 12}
 }
 
 func (x *Info_Nodes) GetNodes() []*Info_Node {
@@ -4692,7 +5051,7 @@ type Info_Services struct {
 
 func (x *Info_Services) Reset() {
 	*x = Info_Services{}
-	mi := &file_v1_payload_payload_proto_msgTypes[82]
+	mi := &file_v1_payload_payload_proto_msgTypes[89]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4704,7 +5063,7 @@ func (x *Info_Services) String() string {
 func (*Info_Services) ProtoMessage() {}
 
 func (x *Info_Services) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[82]
+	mi := &file_v1_payload_payload_proto_msgTypes[89]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4717,7 +5076,7 @@ func (x *Info_Services) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Info_Services.ProtoReflect.Descriptor instead.
 func (*Info_Services) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{10, 13}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{11, 13}
 }
 
 func (x *Info_Services) GetServices() []*Info_Service {
@@ -4737,7 +5096,7 @@ type Info_IPs struct {
 
 func (x *Info_IPs) Reset() {
 	*x = Info_IPs{}
-	mi := &file_v1_payload_payload_proto_msgTypes[83]
+	mi := &file_v1_payload_payload_proto_msgTypes[90]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4749,7 +5108,7 @@ func (x *Info_IPs) String() string {
 func (*Info_IPs) ProtoMessage() {}
 
 func (x *Info_IPs) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[83]
+	mi := &file_v1_payload_payload_proto_msgTypes[90]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4762,7 +5121,7 @@ func (x *Info_IPs) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Info_IPs.ProtoReflect.Descriptor instead.
 func (*Info_IPs) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{10, 14}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{11, 14}
 }
 
 func (x *Info_IPs) GetIp() []string {
@@ -4789,7 +5148,7 @@ type Info_Index_Count struct {
 
 func (x *Info_Index_Count) Reset() {
 	*x = Info_Index_Count{}
-	mi := &file_v1_payload_payload_proto_msgTypes[84]
+	mi := &file_v1_payload_payload_proto_msgTypes[91]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4801,7 +5160,7 @@ func (x *Info_Index_Count) String() string {
 func (*Info_Index_Count) ProtoMessage() {}
 
 func (x *Info_Index_Count) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[84]
+	mi := &file_v1_payload_payload_proto_msgTypes[91]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4814,7 +5173,7 @@ func (x *Info_Index_Count) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Info_Index_Count.ProtoReflect.Descriptor instead.
 func (*Info_Index_Count) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{10, 0, 0}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{11, 0, 0}
 }
 
 func (x *Info_Index_Count) GetStored() uint32 {
@@ -4860,7 +5219,7 @@ type Info_Index_Detail struct {
 
 func (x *Info_Index_Detail) Reset() {
 	*x = Info_Index_Detail{}
-	mi := &file_v1_payload_payload_proto_msgTypes[85]
+	mi := &file_v1_payload_payload_proto_msgTypes[92]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4872,7 +5231,7 @@ func (x *Info_Index_Detail) String() string {
 func (*Info_Index_Detail) ProtoMessage() {}
 
 func (x *Info_Index_Detail) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[85]
+	mi := &file_v1_payload_payload_proto_msgTypes[92]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4885,7 +5244,7 @@ func (x *Info_Index_Detail) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Info_Index_Detail.ProtoReflect.Descriptor instead.
 func (*Info_Index_Detail) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{10, 0, 1}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{11, 0, 1}
 }
 
 func (x *Info_Index_Detail) GetCounts() map[string]*Info_Index_Count {
@@ -4918,7 +5277,7 @@ type Info_Index_UUID struct {
 
 func (x *Info_Index_UUID) Reset() {
 	*x = Info_Index_UUID{}
-	mi := &file_v1_payload_payload_proto_msgTypes[86]
+	mi := &file_v1_payload_payload_proto_msgTypes[93]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4930,7 +5289,7 @@ func (x *Info_Index_UUID) String() string {
 func (*Info_Index_UUID) ProtoMessage() {}
 
 func (x *Info_Index_UUID) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[86]
+	mi := &file_v1_payload_payload_proto_msgTypes[93]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4943,7 +5302,7 @@ func (x *Info_Index_UUID) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Info_Index_UUID.ProtoReflect.Descriptor instead.
 func (*Info_Index_UUID) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{10, 0, 2}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{11, 0, 2}
 }
 
 // Represents index Statistics
@@ -4988,7 +5347,7 @@ type Info_Index_Statistics struct {
 
 func (x *Info_Index_Statistics) Reset() {
 	*x = Info_Index_Statistics{}
-	mi := &file_v1_payload_payload_proto_msgTypes[87]
+	mi := &file_v1_payload_payload_proto_msgTypes[94]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5000,7 +5359,7 @@ func (x *Info_Index_Statistics) String() string {
 func (*Info_Index_Statistics) ProtoMessage() {}
 
 func (x *Info_Index_Statistics) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[87]
+	mi := &file_v1_payload_payload_proto_msgTypes[94]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5013,7 +5372,7 @@ func (x *Info_Index_Statistics) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Info_Index_Statistics.ProtoReflect.Descriptor instead.
 func (*Info_Index_Statistics) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{10, 0, 3}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{11, 0, 3}
 }
 
 func (x *Info_Index_Statistics) GetValid() bool {
@@ -5258,7 +5617,7 @@ type Info_Index_StatisticsDetail struct {
 
 func (x *Info_Index_StatisticsDetail) Reset() {
 	*x = Info_Index_StatisticsDetail{}
-	mi := &file_v1_payload_payload_proto_msgTypes[88]
+	mi := &file_v1_payload_payload_proto_msgTypes[95]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5270,7 +5629,7 @@ func (x *Info_Index_StatisticsDetail) String() string {
 func (*Info_Index_StatisticsDetail) ProtoMessage() {}
 
 func (x *Info_Index_StatisticsDetail) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[88]
+	mi := &file_v1_payload_payload_proto_msgTypes[95]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5283,7 +5642,7 @@ func (x *Info_Index_StatisticsDetail) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Info_Index_StatisticsDetail.ProtoReflect.Descriptor instead.
 func (*Info_Index_StatisticsDetail) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{10, 0, 4}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{11, 0, 4}
 }
 
 func (x *Info_Index_StatisticsDetail) GetDetails() map[string]*Info_Index_Statistics {
@@ -5337,7 +5696,7 @@ type Info_Index_Property struct {
 
 func (x *Info_Index_Property) Reset() {
 	*x = Info_Index_Property{}
-	mi := &file_v1_payload_payload_proto_msgTypes[89]
+	mi := &file_v1_payload_payload_proto_msgTypes[96]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5349,7 +5708,7 @@ func (x *Info_Index_Property) String() string {
 func (*Info_Index_Property) ProtoMessage() {}
 
 func (x *Info_Index_Property) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[89]
+	mi := &file_v1_payload_payload_proto_msgTypes[96]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5362,7 +5721,7 @@ func (x *Info_Index_Property) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Info_Index_Property.ProtoReflect.Descriptor instead.
 func (*Info_Index_Property) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{10, 0, 5}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{11, 0, 5}
 }
 
 func (x *Info_Index_Property) GetDimension() int32 {
@@ -5620,7 +5979,7 @@ type Info_Index_PropertyDetail struct {
 
 func (x *Info_Index_PropertyDetail) Reset() {
 	*x = Info_Index_PropertyDetail{}
-	mi := &file_v1_payload_payload_proto_msgTypes[90]
+	mi := &file_v1_payload_payload_proto_msgTypes[97]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5632,7 +5991,7 @@ func (x *Info_Index_PropertyDetail) String() string {
 func (*Info_Index_PropertyDetail) ProtoMessage() {}
 
 func (x *Info_Index_PropertyDetail) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[90]
+	mi := &file_v1_payload_payload_proto_msgTypes[97]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5645,7 +6004,7 @@ func (x *Info_Index_PropertyDetail) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Info_Index_PropertyDetail.ProtoReflect.Descriptor instead.
 func (*Info_Index_PropertyDetail) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{10, 0, 6}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{11, 0, 6}
 }
 
 func (x *Info_Index_PropertyDetail) GetDetails() map[string]*Info_Index_Property {
@@ -5665,7 +6024,7 @@ type Info_Index_UUID_Committed struct {
 
 func (x *Info_Index_UUID_Committed) Reset() {
 	*x = Info_Index_UUID_Committed{}
-	mi := &file_v1_payload_payload_proto_msgTypes[92]
+	mi := &file_v1_payload_payload_proto_msgTypes[99]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5677,7 +6036,7 @@ func (x *Info_Index_UUID_Committed) String() string {
 func (*Info_Index_UUID_Committed) ProtoMessage() {}
 
 func (x *Info_Index_UUID_Committed) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[92]
+	mi := &file_v1_payload_payload_proto_msgTypes[99]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5690,7 +6049,7 @@ func (x *Info_Index_UUID_Committed) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Info_Index_UUID_Committed.ProtoReflect.Descriptor instead.
 func (*Info_Index_UUID_Committed) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{10, 0, 2, 0}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{11, 0, 2, 0}
 }
 
 func (x *Info_Index_UUID_Committed) GetUuid() string {
@@ -5710,7 +6069,7 @@ type Info_Index_UUID_Uncommitted struct {
 
 func (x *Info_Index_UUID_Uncommitted) Reset() {
 	*x = Info_Index_UUID_Uncommitted{}
-	mi := &file_v1_payload_payload_proto_msgTypes[93]
+	mi := &file_v1_payload_payload_proto_msgTypes[100]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5722,7 +6081,7 @@ func (x *Info_Index_UUID_Uncommitted) String() string {
 func (*Info_Index_UUID_Uncommitted) ProtoMessage() {}
 
 func (x *Info_Index_UUID_Uncommitted) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[93]
+	mi := &file_v1_payload_payload_proto_msgTypes[100]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5735,7 +6094,7 @@ func (x *Info_Index_UUID_Uncommitted) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Info_Index_UUID_Uncommitted.ProtoReflect.Descriptor instead.
 func (*Info_Index_UUID_Uncommitted) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{10, 0, 2, 1}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{11, 0, 2, 1}
 }
 
 func (x *Info_Index_UUID_Uncommitted) GetUuid() string {
@@ -5758,7 +6117,7 @@ type Mirror_Target struct {
 
 func (x *Mirror_Target) Reset() {
 	*x = Mirror_Target{}
-	mi := &file_v1_payload_payload_proto_msgTypes[98]
+	mi := &file_v1_payload_payload_proto_msgTypes[105]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5770,7 +6129,7 @@ func (x *Mirror_Target) String() string {
 func (*Mirror_Target) ProtoMessage() {}
 
 func (x *Mirror_Target) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[98]
+	mi := &file_v1_payload_payload_proto_msgTypes[105]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5783,7 +6142,7 @@ func (x *Mirror_Target) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Mirror_Target.ProtoReflect.Descriptor instead.
 func (*Mirror_Target) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{11, 0}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{12, 0}
 }
 
 func (x *Mirror_Target) GetHost() string {
@@ -5811,7 +6170,7 @@ type Mirror_Targets struct {
 
 func (x *Mirror_Targets) Reset() {
 	*x = Mirror_Targets{}
-	mi := &file_v1_payload_payload_proto_msgTypes[99]
+	mi := &file_v1_payload_payload_proto_msgTypes[106]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5823,7 +6182,7 @@ func (x *Mirror_Targets) String() string {
 func (*Mirror_Targets) ProtoMessage() {}
 
 func (x *Mirror_Targets) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[99]
+	mi := &file_v1_payload_payload_proto_msgTypes[106]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5836,7 +6195,7 @@ func (x *Mirror_Targets) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Mirror_Targets.ProtoReflect.Descriptor instead.
 func (*Mirror_Targets) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{11, 1}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{12, 1}
 }
 
 func (x *Mirror_Targets) GetTargets() []*Mirror_Target {
@@ -5855,7 +6214,7 @@ type Meta_Key struct {
 
 func (x *Meta_Key) Reset() {
 	*x = Meta_Key{}
-	mi := &file_v1_payload_payload_proto_msgTypes[100]
+	mi := &file_v1_payload_payload_proto_msgTypes[107]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5867,7 +6226,7 @@ func (x *Meta_Key) String() string {
 func (*Meta_Key) ProtoMessage() {}
 
 func (x *Meta_Key) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[100]
+	mi := &file_v1_payload_payload_proto_msgTypes[107]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5880,7 +6239,7 @@ func (x *Meta_Key) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Meta_Key.ProtoReflect.Descriptor instead.
 func (*Meta_Key) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{12, 0}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{13, 0}
 }
 
 func (x *Meta_Key) GetKey() string {
@@ -5899,7 +6258,7 @@ type Meta_Value struct {
 
 func (x *Meta_Value) Reset() {
 	*x = Meta_Value{}
-	mi := &file_v1_payload_payload_proto_msgTypes[101]
+	mi := &file_v1_payload_payload_proto_msgTypes[108]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5911,7 +6270,7 @@ func (x *Meta_Value) String() string {
 func (*Meta_Value) ProtoMessage() {}
 
 func (x *Meta_Value) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[101]
+	mi := &file_v1_payload_payload_proto_msgTypes[108]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5924,7 +6283,7 @@ func (x *Meta_Value) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Meta_Value.ProtoReflect.Descriptor instead.
 func (*Meta_Value) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{12, 1}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{13, 1}
 }
 
 func (x *Meta_Value) GetValue() *anypb.Any {
@@ -5944,7 +6303,7 @@ type Meta_KeyValue struct {
 
 func (x *Meta_KeyValue) Reset() {
 	*x = Meta_KeyValue{}
-	mi := &file_v1_payload_payload_proto_msgTypes[102]
+	mi := &file_v1_payload_payload_proto_msgTypes[109]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5956,7 +6315,7 @@ func (x *Meta_KeyValue) String() string {
 func (*Meta_KeyValue) ProtoMessage() {}
 
 func (x *Meta_KeyValue) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[102]
+	mi := &file_v1_payload_payload_proto_msgTypes[109]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5969,7 +6328,7 @@ func (x *Meta_KeyValue) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Meta_KeyValue.ProtoReflect.Descriptor instead.
 func (*Meta_KeyValue) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{12, 2}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{13, 2}
 }
 
 func (x *Meta_KeyValue) GetKey() *Meta_Key {
@@ -5991,7 +6350,7 @@ var File_v1_payload_payload_proto protoreflect.FileDescriptor
 const file_v1_payload_payload_proto_rawDesc = "" +
 	"\n" +
 	"\x18v1/payload/payload.proto\x12\n" +
-	"payload.v1\x1a\x1bbuf/validate/validate.proto\x1a\x19google/protobuf/any.proto\x1a\x1egoogle/protobuf/wrappers.proto\x1a\x17google/rpc/status.proto\"\xd5\v\n" +
+	"payload.v1\x1a\x1bbuf/validate/validate.proto\x1a\x19google/protobuf/any.proto\x1a\x1egoogle/protobuf/wrappers.proto\x1a\x17google/rpc/status.proto\"\x85\f\n" +
 	"\x06Search\x1a^\n" +
 	"\aRequest\x12 \n" +
 	"\x06vector\x18\x01 \x03(\x02B\b\xbaH\x05\x92\x01\x02\b\x02R\x06vector\x121\n" +
@@ -6010,7 +6369,7 @@ const file_v1_payload_payload_proto_rawDesc = "" +
 	"vectorizer\x18\x03 \x01(\v2\x19.payload.v1.Filter.TargetR\n" +
 	"vectorizer\x1aR\n" +
 	"\x12MultiObjectRequest\x12<\n" +
-	"\brequests\x18\x01 \x03(\v2 .payload.v1.Search.ObjectRequestR\brequests\x1a\xfc\x03\n" +
+	"\brequests\x18\x01 \x03(\v2 .payload.v1.Search.ObjectRequestR\brequests\x1a\xac\x04\n" +
 	"\x06Config\x12\x1d\n" +
 	"\n" +
 	"request_id\x18\x01 \x01(\tR\trequestId\x12\x19\n" +
@@ -6025,7 +6384,8 @@ const file_v1_payload_payload_proto_rawDesc = "" +
 	"\x05ratio\x18\n" +
 	" \x01(\v2\x1b.google.protobuf.FloatValueR\x05ratio\x12\x16\n" +
 	"\x06nprobe\x18\v \x01(\rR\x06nprobe\x12\x1b\n" +
-	"\tedge_size\x18\f \x01(\x05R\bedgeSize\x1a`\n" +
+	"\tedge_size\x18\f \x01(\x05R\bedgeSize\x12.\n" +
+	"\aoptions\x18\r \x03(\v2\x14.google.protobuf.AnyR\aoptions\x1a`\n" +
 	"\bResponse\x12\x1d\n" +
 	"\n" +
 	"request_id\x18\x01 \x01(\tR\trequestId\x125\n" +
@@ -6047,7 +6407,29 @@ const file_v1_payload_payload_proto_rawDesc = "" +
 	"\x04host\x18\x01 \x01(\tR\x04host\x12\x12\n" +
 	"\x04port\x18\x02 \x01(\rR\x04port\x1a=\n" +
 	"\x06Config\x123\n" +
-	"\atargets\x18\x01 \x03(\v2\x19.payload.v1.Filter.TargetR\atargets\"\xe5\x04\n" +
+	"\atargets\x18\x01 \x03(\v2\x19.payload.v1.Filter.TargetR\atargets\"\xb0\x04\n" +
+	"\x04ZVec\x1a\x92\x01\n" +
+	"\x0fDocumentOptions\x12D\n" +
+	"\x06fields\x18\x01 \x03(\v2,.payload.v1.ZVec.DocumentOptions.FieldsEntryR\x06fields\x1a9\n" +
+	"\vFieldsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\x1a\x94\x01\n" +
+	"\rSearchOptions\x12\x1d\n" +
+	"\n" +
+	"pre_filter\x18\x01 \x01(\tR\tpreFilter\x12=\n" +
+	"\x0ehybrid_queries\x18\x02 \x03(\v2\x16.payload.v1.ZVec.QueryR\rhybridQueries\x12%\n" +
+	"\x0ehybrid_weights\x18\x03 \x03(\x02R\rhybridWeights\x1a\x8c\x01\n" +
+	"\x05Query\x12\x1d\n" +
+	"\n" +
+	"field_name\x18\x01 \x01(\tR\tfieldName\x121\n" +
+	"\x06vector\x18\x02 \x01(\v2\x17.payload.v1.ZVec.VectorH\x00R\x06vector\x12(\n" +
+	"\x03fts\x18\x03 \x01(\v2\x14.payload.v1.ZVec.FTSH\x00R\x03ftsB\a\n" +
+	"\x05query\x1a \n" +
+	"\x06Vector\x12\x16\n" +
+	"\x06values\x18\x01 \x03(\x02R\x06values\x1aK\n" +
+	"\x03FTS\x12!\n" +
+	"\fmatch_string\x18\x01 \x01(\tR\vmatchString\x12!\n" +
+	"\fquery_string\x18\x02 \x01(\tR\vqueryString\"\x95\x05\n" +
 	"\x06Insert\x1ay\n" +
 	"\aRequest\x12;\n" +
 	"\x06vector\x18\x01 \x01(\v2\x19.payload.v1.Object.VectorB\b\xbaH\x05\x92\x01\x02\b\x02R\x06vector\x121\n" +
@@ -6061,11 +6443,12 @@ const file_v1_payload_payload_proto_rawDesc = "" +
 	"vectorizer\x18\x03 \x01(\v2\x19.payload.v1.Filter.TargetR\n" +
 	"vectorizer\x1aR\n" +
 	"\x12MultiObjectRequest\x12<\n" +
-	"\brequests\x18\x01 \x03(\v2 .payload.v1.Insert.ObjectRequestR\brequests\x1a\x92\x01\n" +
+	"\brequests\x18\x01 \x03(\v2 .payload.v1.Insert.ObjectRequestR\brequests\x1a\xc2\x01\n" +
 	"\x06Config\x125\n" +
 	"\x17skip_strict_exist_check\x18\x01 \x01(\bR\x14skipStrictExistCheck\x123\n" +
 	"\afilters\x18\x02 \x01(\v2\x19.payload.v1.Filter.ConfigR\afilters\x12\x1c\n" +
-	"\ttimestamp\x18\x03 \x01(\x03R\ttimestamp\"\xfe\x05\n" +
+	"\ttimestamp\x18\x03 \x01(\x03R\ttimestamp\x12.\n" +
+	"\aoptions\x18\x04 \x03(\v2\x14.google.protobuf.AnyR\aoptions\"\xfe\x05\n" +
 	"\x06Update\x1ay\n" +
 	"\aRequest\x12;\n" +
 	"\x06vector\x18\x01 \x01(\v2\x19.payload.v1.Object.VectorB\b\xbaH\x05\x92\x01\x02\b\x02R\x06vector\x121\n" +
@@ -6400,208 +6783,221 @@ func file_v1_payload_payload_proto_rawDescGZIP() []byte {
 }
 
 var file_v1_payload_payload_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_v1_payload_payload_proto_msgTypes = make([]protoimpl.MessageInfo, 103)
+var file_v1_payload_payload_proto_msgTypes = make([]protoimpl.MessageInfo, 110)
 var file_v1_payload_payload_proto_goTypes = []any{
 	(Search_AggregationAlgorithm)(0),    // 0: payload.v1.Search.AggregationAlgorithm
 	(Remove_Timestamp_Operator)(0),      // 1: payload.v1.Remove.Timestamp.Operator
 	(*Search)(nil),                      // 2: payload.v1.Search
 	(*Filter)(nil),                      // 3: payload.v1.Filter
-	(*Insert)(nil),                      // 4: payload.v1.Insert
-	(*Update)(nil),                      // 5: payload.v1.Update
-	(*Upsert)(nil),                      // 6: payload.v1.Upsert
-	(*Remove)(nil),                      // 7: payload.v1.Remove
-	(*Flush)(nil),                       // 8: payload.v1.Flush
-	(*Object)(nil),                      // 9: payload.v1.Object
-	(*Control)(nil),                     // 10: payload.v1.Control
-	(*Discoverer)(nil),                  // 11: payload.v1.Discoverer
-	(*Info)(nil),                        // 12: payload.v1.Info
-	(*Mirror)(nil),                      // 13: payload.v1.Mirror
-	(*Meta)(nil),                        // 14: payload.v1.Meta
-	(*Empty)(nil),                       // 15: payload.v1.Empty
-	(*Search_Request)(nil),              // 16: payload.v1.Search.Request
-	(*Search_MultiRequest)(nil),         // 17: payload.v1.Search.MultiRequest
-	(*Search_IDRequest)(nil),            // 18: payload.v1.Search.IDRequest
-	(*Search_MultiIDRequest)(nil),       // 19: payload.v1.Search.MultiIDRequest
-	(*Search_ObjectRequest)(nil),        // 20: payload.v1.Search.ObjectRequest
-	(*Search_MultiObjectRequest)(nil),   // 21: payload.v1.Search.MultiObjectRequest
-	(*Search_Config)(nil),               // 22: payload.v1.Search.Config
-	(*Search_Response)(nil),             // 23: payload.v1.Search.Response
-	(*Search_Responses)(nil),            // 24: payload.v1.Search.Responses
-	(*Search_StreamResponse)(nil),       // 25: payload.v1.Search.StreamResponse
-	(*Filter_Target)(nil),               // 26: payload.v1.Filter.Target
-	(*Filter_Config)(nil),               // 27: payload.v1.Filter.Config
-	(*Insert_Request)(nil),              // 28: payload.v1.Insert.Request
-	(*Insert_MultiRequest)(nil),         // 29: payload.v1.Insert.MultiRequest
-	(*Insert_ObjectRequest)(nil),        // 30: payload.v1.Insert.ObjectRequest
-	(*Insert_MultiObjectRequest)(nil),   // 31: payload.v1.Insert.MultiObjectRequest
-	(*Insert_Config)(nil),               // 32: payload.v1.Insert.Config
-	(*Update_Request)(nil),              // 33: payload.v1.Update.Request
-	(*Update_MultiRequest)(nil),         // 34: payload.v1.Update.MultiRequest
-	(*Update_ObjectRequest)(nil),        // 35: payload.v1.Update.ObjectRequest
-	(*Update_MultiObjectRequest)(nil),   // 36: payload.v1.Update.MultiObjectRequest
-	(*Update_TimestampRequest)(nil),     // 37: payload.v1.Update.TimestampRequest
-	(*Update_Config)(nil),               // 38: payload.v1.Update.Config
-	(*Upsert_Request)(nil),              // 39: payload.v1.Upsert.Request
-	(*Upsert_MultiRequest)(nil),         // 40: payload.v1.Upsert.MultiRequest
-	(*Upsert_ObjectRequest)(nil),        // 41: payload.v1.Upsert.ObjectRequest
-	(*Upsert_MultiObjectRequest)(nil),   // 42: payload.v1.Upsert.MultiObjectRequest
-	(*Upsert_Config)(nil),               // 43: payload.v1.Upsert.Config
-	(*Remove_Request)(nil),              // 44: payload.v1.Remove.Request
-	(*Remove_MultiRequest)(nil),         // 45: payload.v1.Remove.MultiRequest
-	(*Remove_TimestampRequest)(nil),     // 46: payload.v1.Remove.TimestampRequest
-	(*Remove_Timestamp)(nil),            // 47: payload.v1.Remove.Timestamp
-	(*Remove_Config)(nil),               // 48: payload.v1.Remove.Config
-	(*Flush_Request)(nil),               // 49: payload.v1.Flush.Request
-	(*Object_VectorRequest)(nil),        // 50: payload.v1.Object.VectorRequest
-	(*Object_Distance)(nil),             // 51: payload.v1.Object.Distance
-	(*Object_StreamDistance)(nil),       // 52: payload.v1.Object.StreamDistance
-	(*Object_ID)(nil),                   // 53: payload.v1.Object.ID
-	(*Object_IDs)(nil),                  // 54: payload.v1.Object.IDs
-	(*Object_Vector)(nil),               // 55: payload.v1.Object.Vector
-	(*Object_TimestampRequest)(nil),     // 56: payload.v1.Object.TimestampRequest
-	(*Object_Timestamp)(nil),            // 57: payload.v1.Object.Timestamp
-	(*Object_Vectors)(nil),              // 58: payload.v1.Object.Vectors
-	(*Object_StreamVector)(nil),         // 59: payload.v1.Object.StreamVector
-	(*Object_ReshapeVector)(nil),        // 60: payload.v1.Object.ReshapeVector
-	(*Object_Blob)(nil),                 // 61: payload.v1.Object.Blob
-	(*Object_StreamBlob)(nil),           // 62: payload.v1.Object.StreamBlob
-	(*Object_Location)(nil),             // 63: payload.v1.Object.Location
-	(*Object_StreamLocation)(nil),       // 64: payload.v1.Object.StreamLocation
-	(*Object_Locations)(nil),            // 65: payload.v1.Object.Locations
-	(*Object_List)(nil),                 // 66: payload.v1.Object.List
-	(*Object_List_Request)(nil),         // 67: payload.v1.Object.List.Request
-	(*Object_List_Response)(nil),        // 68: payload.v1.Object.List.Response
-	(*Control_CreateIndexRequest)(nil),  // 69: payload.v1.Control.CreateIndexRequest
-	(*Discoverer_Request)(nil),          // 70: payload.v1.Discoverer.Request
-	(*Info_Index)(nil),                  // 71: payload.v1.Info.Index
-	(*Info_ResourceStats)(nil),          // 72: payload.v1.Info.ResourceStats
-	(*Info_CgroupStats)(nil),            // 73: payload.v1.Info.CgroupStats
-	(*Info_Pod)(nil),                    // 74: payload.v1.Info.Pod
-	(*Info_Node)(nil),                   // 75: payload.v1.Info.Node
-	(*Info_Service)(nil),                // 76: payload.v1.Info.Service
-	(*Info_ServicePort)(nil),            // 77: payload.v1.Info.ServicePort
-	(*Info_Labels)(nil),                 // 78: payload.v1.Info.Labels
-	(*Info_Annotations)(nil),            // 79: payload.v1.Info.Annotations
-	(*Info_CPU)(nil),                    // 80: payload.v1.Info.CPU
-	(*Info_Memory)(nil),                 // 81: payload.v1.Info.Memory
-	(*Info_Pods)(nil),                   // 82: payload.v1.Info.Pods
-	(*Info_Nodes)(nil),                  // 83: payload.v1.Info.Nodes
-	(*Info_Services)(nil),               // 84: payload.v1.Info.Services
-	(*Info_IPs)(nil),                    // 85: payload.v1.Info.IPs
-	(*Info_Index_Count)(nil),            // 86: payload.v1.Info.Index.Count
-	(*Info_Index_Detail)(nil),           // 87: payload.v1.Info.Index.Detail
-	(*Info_Index_UUID)(nil),             // 88: payload.v1.Info.Index.UUID
-	(*Info_Index_Statistics)(nil),       // 89: payload.v1.Info.Index.Statistics
-	(*Info_Index_StatisticsDetail)(nil), // 90: payload.v1.Info.Index.StatisticsDetail
-	(*Info_Index_Property)(nil),         // 91: payload.v1.Info.Index.Property
-	(*Info_Index_PropertyDetail)(nil),   // 92: payload.v1.Info.Index.PropertyDetail
-	nil,                                 // 93: payload.v1.Info.Index.Detail.CountsEntry
-	(*Info_Index_UUID_Committed)(nil),   // 94: payload.v1.Info.Index.UUID.Committed
-	(*Info_Index_UUID_Uncommitted)(nil), // 95: payload.v1.Info.Index.UUID.Uncommitted
-	nil,                                 // 96: payload.v1.Info.Index.StatisticsDetail.DetailsEntry
-	nil,                                 // 97: payload.v1.Info.Index.PropertyDetail.DetailsEntry
-	nil,                                 // 98: payload.v1.Info.Labels.LabelsEntry
-	nil,                                 // 99: payload.v1.Info.Annotations.AnnotationsEntry
-	(*Mirror_Target)(nil),               // 100: payload.v1.Mirror.Target
-	(*Mirror_Targets)(nil),              // 101: payload.v1.Mirror.Targets
-	(*Meta_Key)(nil),                    // 102: payload.v1.Meta.Key
-	(*Meta_Value)(nil),                  // 103: payload.v1.Meta.Value
-	(*Meta_KeyValue)(nil),               // 104: payload.v1.Meta.KeyValue
-	(*wrapperspb.FloatValue)(nil),       // 105: google.protobuf.FloatValue
-	(*status.Status)(nil),               // 106: google.rpc.Status
-	(*anypb.Any)(nil),                   // 107: google.protobuf.Any
+	(*ZVec)(nil),                        // 4: payload.v1.ZVec
+	(*Insert)(nil),                      // 5: payload.v1.Insert
+	(*Update)(nil),                      // 6: payload.v1.Update
+	(*Upsert)(nil),                      // 7: payload.v1.Upsert
+	(*Remove)(nil),                      // 8: payload.v1.Remove
+	(*Flush)(nil),                       // 9: payload.v1.Flush
+	(*Object)(nil),                      // 10: payload.v1.Object
+	(*Control)(nil),                     // 11: payload.v1.Control
+	(*Discoverer)(nil),                  // 12: payload.v1.Discoverer
+	(*Info)(nil),                        // 13: payload.v1.Info
+	(*Mirror)(nil),                      // 14: payload.v1.Mirror
+	(*Meta)(nil),                        // 15: payload.v1.Meta
+	(*Empty)(nil),                       // 16: payload.v1.Empty
+	(*Search_Request)(nil),              // 17: payload.v1.Search.Request
+	(*Search_MultiRequest)(nil),         // 18: payload.v1.Search.MultiRequest
+	(*Search_IDRequest)(nil),            // 19: payload.v1.Search.IDRequest
+	(*Search_MultiIDRequest)(nil),       // 20: payload.v1.Search.MultiIDRequest
+	(*Search_ObjectRequest)(nil),        // 21: payload.v1.Search.ObjectRequest
+	(*Search_MultiObjectRequest)(nil),   // 22: payload.v1.Search.MultiObjectRequest
+	(*Search_Config)(nil),               // 23: payload.v1.Search.Config
+	(*Search_Response)(nil),             // 24: payload.v1.Search.Response
+	(*Search_Responses)(nil),            // 25: payload.v1.Search.Responses
+	(*Search_StreamResponse)(nil),       // 26: payload.v1.Search.StreamResponse
+	(*Filter_Target)(nil),               // 27: payload.v1.Filter.Target
+	(*Filter_Config)(nil),               // 28: payload.v1.Filter.Config
+	(*ZVec_DocumentOptions)(nil),        // 29: payload.v1.ZVec.DocumentOptions
+	(*ZVec_SearchOptions)(nil),          // 30: payload.v1.ZVec.SearchOptions
+	(*ZVec_Query)(nil),                  // 31: payload.v1.ZVec.Query
+	(*ZVec_Vector)(nil),                 // 32: payload.v1.ZVec.Vector
+	(*ZVec_FTS)(nil),                    // 33: payload.v1.ZVec.FTS
+	nil,                                 // 34: payload.v1.ZVec.DocumentOptions.FieldsEntry
+	(*Insert_Request)(nil),              // 35: payload.v1.Insert.Request
+	(*Insert_MultiRequest)(nil),         // 36: payload.v1.Insert.MultiRequest
+	(*Insert_ObjectRequest)(nil),        // 37: payload.v1.Insert.ObjectRequest
+	(*Insert_MultiObjectRequest)(nil),   // 38: payload.v1.Insert.MultiObjectRequest
+	(*Insert_Config)(nil),               // 39: payload.v1.Insert.Config
+	(*Update_Request)(nil),              // 40: payload.v1.Update.Request
+	(*Update_MultiRequest)(nil),         // 41: payload.v1.Update.MultiRequest
+	(*Update_ObjectRequest)(nil),        // 42: payload.v1.Update.ObjectRequest
+	(*Update_MultiObjectRequest)(nil),   // 43: payload.v1.Update.MultiObjectRequest
+	(*Update_TimestampRequest)(nil),     // 44: payload.v1.Update.TimestampRequest
+	(*Update_Config)(nil),               // 45: payload.v1.Update.Config
+	(*Upsert_Request)(nil),              // 46: payload.v1.Upsert.Request
+	(*Upsert_MultiRequest)(nil),         // 47: payload.v1.Upsert.MultiRequest
+	(*Upsert_ObjectRequest)(nil),        // 48: payload.v1.Upsert.ObjectRequest
+	(*Upsert_MultiObjectRequest)(nil),   // 49: payload.v1.Upsert.MultiObjectRequest
+	(*Upsert_Config)(nil),               // 50: payload.v1.Upsert.Config
+	(*Remove_Request)(nil),              // 51: payload.v1.Remove.Request
+	(*Remove_MultiRequest)(nil),         // 52: payload.v1.Remove.MultiRequest
+	(*Remove_TimestampRequest)(nil),     // 53: payload.v1.Remove.TimestampRequest
+	(*Remove_Timestamp)(nil),            // 54: payload.v1.Remove.Timestamp
+	(*Remove_Config)(nil),               // 55: payload.v1.Remove.Config
+	(*Flush_Request)(nil),               // 56: payload.v1.Flush.Request
+	(*Object_VectorRequest)(nil),        // 57: payload.v1.Object.VectorRequest
+	(*Object_Distance)(nil),             // 58: payload.v1.Object.Distance
+	(*Object_StreamDistance)(nil),       // 59: payload.v1.Object.StreamDistance
+	(*Object_ID)(nil),                   // 60: payload.v1.Object.ID
+	(*Object_IDs)(nil),                  // 61: payload.v1.Object.IDs
+	(*Object_Vector)(nil),               // 62: payload.v1.Object.Vector
+	(*Object_TimestampRequest)(nil),     // 63: payload.v1.Object.TimestampRequest
+	(*Object_Timestamp)(nil),            // 64: payload.v1.Object.Timestamp
+	(*Object_Vectors)(nil),              // 65: payload.v1.Object.Vectors
+	(*Object_StreamVector)(nil),         // 66: payload.v1.Object.StreamVector
+	(*Object_ReshapeVector)(nil),        // 67: payload.v1.Object.ReshapeVector
+	(*Object_Blob)(nil),                 // 68: payload.v1.Object.Blob
+	(*Object_StreamBlob)(nil),           // 69: payload.v1.Object.StreamBlob
+	(*Object_Location)(nil),             // 70: payload.v1.Object.Location
+	(*Object_StreamLocation)(nil),       // 71: payload.v1.Object.StreamLocation
+	(*Object_Locations)(nil),            // 72: payload.v1.Object.Locations
+	(*Object_List)(nil),                 // 73: payload.v1.Object.List
+	(*Object_List_Request)(nil),         // 74: payload.v1.Object.List.Request
+	(*Object_List_Response)(nil),        // 75: payload.v1.Object.List.Response
+	(*Control_CreateIndexRequest)(nil),  // 76: payload.v1.Control.CreateIndexRequest
+	(*Discoverer_Request)(nil),          // 77: payload.v1.Discoverer.Request
+	(*Info_Index)(nil),                  // 78: payload.v1.Info.Index
+	(*Info_ResourceStats)(nil),          // 79: payload.v1.Info.ResourceStats
+	(*Info_CgroupStats)(nil),            // 80: payload.v1.Info.CgroupStats
+	(*Info_Pod)(nil),                    // 81: payload.v1.Info.Pod
+	(*Info_Node)(nil),                   // 82: payload.v1.Info.Node
+	(*Info_Service)(nil),                // 83: payload.v1.Info.Service
+	(*Info_ServicePort)(nil),            // 84: payload.v1.Info.ServicePort
+	(*Info_Labels)(nil),                 // 85: payload.v1.Info.Labels
+	(*Info_Annotations)(nil),            // 86: payload.v1.Info.Annotations
+	(*Info_CPU)(nil),                    // 87: payload.v1.Info.CPU
+	(*Info_Memory)(nil),                 // 88: payload.v1.Info.Memory
+	(*Info_Pods)(nil),                   // 89: payload.v1.Info.Pods
+	(*Info_Nodes)(nil),                  // 90: payload.v1.Info.Nodes
+	(*Info_Services)(nil),               // 91: payload.v1.Info.Services
+	(*Info_IPs)(nil),                    // 92: payload.v1.Info.IPs
+	(*Info_Index_Count)(nil),            // 93: payload.v1.Info.Index.Count
+	(*Info_Index_Detail)(nil),           // 94: payload.v1.Info.Index.Detail
+	(*Info_Index_UUID)(nil),             // 95: payload.v1.Info.Index.UUID
+	(*Info_Index_Statistics)(nil),       // 96: payload.v1.Info.Index.Statistics
+	(*Info_Index_StatisticsDetail)(nil), // 97: payload.v1.Info.Index.StatisticsDetail
+	(*Info_Index_Property)(nil),         // 98: payload.v1.Info.Index.Property
+	(*Info_Index_PropertyDetail)(nil),   // 99: payload.v1.Info.Index.PropertyDetail
+	nil,                                 // 100: payload.v1.Info.Index.Detail.CountsEntry
+	(*Info_Index_UUID_Committed)(nil),   // 101: payload.v1.Info.Index.UUID.Committed
+	(*Info_Index_UUID_Uncommitted)(nil), // 102: payload.v1.Info.Index.UUID.Uncommitted
+	nil,                                 // 103: payload.v1.Info.Index.StatisticsDetail.DetailsEntry
+	nil,                                 // 104: payload.v1.Info.Index.PropertyDetail.DetailsEntry
+	nil,                                 // 105: payload.v1.Info.Labels.LabelsEntry
+	nil,                                 // 106: payload.v1.Info.Annotations.AnnotationsEntry
+	(*Mirror_Target)(nil),               // 107: payload.v1.Mirror.Target
+	(*Mirror_Targets)(nil),              // 108: payload.v1.Mirror.Targets
+	(*Meta_Key)(nil),                    // 109: payload.v1.Meta.Key
+	(*Meta_Value)(nil),                  // 110: payload.v1.Meta.Value
+	(*Meta_KeyValue)(nil),               // 111: payload.v1.Meta.KeyValue
+	(*wrapperspb.FloatValue)(nil),       // 112: google.protobuf.FloatValue
+	(*anypb.Any)(nil),                   // 113: google.protobuf.Any
+	(*status.Status)(nil),               // 114: google.rpc.Status
 }
 var file_v1_payload_payload_proto_depIdxs = []int32{
-	22,  // 0: payload.v1.Search.Request.config:type_name -> payload.v1.Search.Config
-	16,  // 1: payload.v1.Search.MultiRequest.requests:type_name -> payload.v1.Search.Request
-	22,  // 2: payload.v1.Search.IDRequest.config:type_name -> payload.v1.Search.Config
-	18,  // 3: payload.v1.Search.MultiIDRequest.requests:type_name -> payload.v1.Search.IDRequest
-	22,  // 4: payload.v1.Search.ObjectRequest.config:type_name -> payload.v1.Search.Config
-	26,  // 5: payload.v1.Search.ObjectRequest.vectorizer:type_name -> payload.v1.Filter.Target
-	20,  // 6: payload.v1.Search.MultiObjectRequest.requests:type_name -> payload.v1.Search.ObjectRequest
-	27,  // 7: payload.v1.Search.Config.ingress_filters:type_name -> payload.v1.Filter.Config
-	27,  // 8: payload.v1.Search.Config.egress_filters:type_name -> payload.v1.Filter.Config
+	23,  // 0: payload.v1.Search.Request.config:type_name -> payload.v1.Search.Config
+	17,  // 1: payload.v1.Search.MultiRequest.requests:type_name -> payload.v1.Search.Request
+	23,  // 2: payload.v1.Search.IDRequest.config:type_name -> payload.v1.Search.Config
+	19,  // 3: payload.v1.Search.MultiIDRequest.requests:type_name -> payload.v1.Search.IDRequest
+	23,  // 4: payload.v1.Search.ObjectRequest.config:type_name -> payload.v1.Search.Config
+	27,  // 5: payload.v1.Search.ObjectRequest.vectorizer:type_name -> payload.v1.Filter.Target
+	21,  // 6: payload.v1.Search.MultiObjectRequest.requests:type_name -> payload.v1.Search.ObjectRequest
+	28,  // 7: payload.v1.Search.Config.ingress_filters:type_name -> payload.v1.Filter.Config
+	28,  // 8: payload.v1.Search.Config.egress_filters:type_name -> payload.v1.Filter.Config
 	0,   // 9: payload.v1.Search.Config.aggregation_algorithm:type_name -> payload.v1.Search.AggregationAlgorithm
-	105, // 10: payload.v1.Search.Config.ratio:type_name -> google.protobuf.FloatValue
-	51,  // 11: payload.v1.Search.Response.results:type_name -> payload.v1.Object.Distance
-	23,  // 12: payload.v1.Search.Responses.responses:type_name -> payload.v1.Search.Response
-	23,  // 13: payload.v1.Search.StreamResponse.response:type_name -> payload.v1.Search.Response
-	106, // 14: payload.v1.Search.StreamResponse.status:type_name -> google.rpc.Status
-	26,  // 15: payload.v1.Filter.Config.targets:type_name -> payload.v1.Filter.Target
-	55,  // 16: payload.v1.Insert.Request.vector:type_name -> payload.v1.Object.Vector
-	32,  // 17: payload.v1.Insert.Request.config:type_name -> payload.v1.Insert.Config
-	28,  // 18: payload.v1.Insert.MultiRequest.requests:type_name -> payload.v1.Insert.Request
-	61,  // 19: payload.v1.Insert.ObjectRequest.object:type_name -> payload.v1.Object.Blob
-	32,  // 20: payload.v1.Insert.ObjectRequest.config:type_name -> payload.v1.Insert.Config
-	26,  // 21: payload.v1.Insert.ObjectRequest.vectorizer:type_name -> payload.v1.Filter.Target
-	30,  // 22: payload.v1.Insert.MultiObjectRequest.requests:type_name -> payload.v1.Insert.ObjectRequest
-	27,  // 23: payload.v1.Insert.Config.filters:type_name -> payload.v1.Filter.Config
-	55,  // 24: payload.v1.Update.Request.vector:type_name -> payload.v1.Object.Vector
-	38,  // 25: payload.v1.Update.Request.config:type_name -> payload.v1.Update.Config
-	33,  // 26: payload.v1.Update.MultiRequest.requests:type_name -> payload.v1.Update.Request
-	61,  // 27: payload.v1.Update.ObjectRequest.object:type_name -> payload.v1.Object.Blob
-	38,  // 28: payload.v1.Update.ObjectRequest.config:type_name -> payload.v1.Update.Config
-	26,  // 29: payload.v1.Update.ObjectRequest.vectorizer:type_name -> payload.v1.Filter.Target
-	35,  // 30: payload.v1.Update.MultiObjectRequest.requests:type_name -> payload.v1.Update.ObjectRequest
-	27,  // 31: payload.v1.Update.Config.filters:type_name -> payload.v1.Filter.Config
-	55,  // 32: payload.v1.Upsert.Request.vector:type_name -> payload.v1.Object.Vector
-	43,  // 33: payload.v1.Upsert.Request.config:type_name -> payload.v1.Upsert.Config
-	39,  // 34: payload.v1.Upsert.MultiRequest.requests:type_name -> payload.v1.Upsert.Request
-	61,  // 35: payload.v1.Upsert.ObjectRequest.object:type_name -> payload.v1.Object.Blob
-	43,  // 36: payload.v1.Upsert.ObjectRequest.config:type_name -> payload.v1.Upsert.Config
-	26,  // 37: payload.v1.Upsert.ObjectRequest.vectorizer:type_name -> payload.v1.Filter.Target
-	41,  // 38: payload.v1.Upsert.MultiObjectRequest.requests:type_name -> payload.v1.Upsert.ObjectRequest
-	27,  // 39: payload.v1.Upsert.Config.filters:type_name -> payload.v1.Filter.Config
-	53,  // 40: payload.v1.Remove.Request.id:type_name -> payload.v1.Object.ID
-	48,  // 41: payload.v1.Remove.Request.config:type_name -> payload.v1.Remove.Config
-	44,  // 42: payload.v1.Remove.MultiRequest.requests:type_name -> payload.v1.Remove.Request
-	47,  // 43: payload.v1.Remove.TimestampRequest.timestamps:type_name -> payload.v1.Remove.Timestamp
-	1,   // 44: payload.v1.Remove.Timestamp.operator:type_name -> payload.v1.Remove.Timestamp.Operator
-	53,  // 45: payload.v1.Object.VectorRequest.id:type_name -> payload.v1.Object.ID
-	27,  // 46: payload.v1.Object.VectorRequest.filters:type_name -> payload.v1.Filter.Config
-	51,  // 47: payload.v1.Object.StreamDistance.distance:type_name -> payload.v1.Object.Distance
-	106, // 48: payload.v1.Object.StreamDistance.status:type_name -> google.rpc.Status
-	53,  // 49: payload.v1.Object.TimestampRequest.id:type_name -> payload.v1.Object.ID
-	55,  // 50: payload.v1.Object.Vectors.vectors:type_name -> payload.v1.Object.Vector
-	55,  // 51: payload.v1.Object.StreamVector.vector:type_name -> payload.v1.Object.Vector
-	106, // 52: payload.v1.Object.StreamVector.status:type_name -> google.rpc.Status
-	61,  // 53: payload.v1.Object.StreamBlob.blob:type_name -> payload.v1.Object.Blob
-	106, // 54: payload.v1.Object.StreamBlob.status:type_name -> google.rpc.Status
-	63,  // 55: payload.v1.Object.StreamLocation.location:type_name -> payload.v1.Object.Location
-	106, // 56: payload.v1.Object.StreamLocation.status:type_name -> google.rpc.Status
-	63,  // 57: payload.v1.Object.Locations.locations:type_name -> payload.v1.Object.Location
-	55,  // 58: payload.v1.Object.List.Response.vector:type_name -> payload.v1.Object.Vector
-	106, // 59: payload.v1.Object.List.Response.status:type_name -> google.rpc.Status
-	73,  // 60: payload.v1.Info.ResourceStats.cgroup_stats:type_name -> payload.v1.Info.CgroupStats
-	80,  // 61: payload.v1.Info.Pod.cpu:type_name -> payload.v1.Info.CPU
-	81,  // 62: payload.v1.Info.Pod.memory:type_name -> payload.v1.Info.Memory
-	75,  // 63: payload.v1.Info.Pod.node:type_name -> payload.v1.Info.Node
-	80,  // 64: payload.v1.Info.Node.cpu:type_name -> payload.v1.Info.CPU
-	81,  // 65: payload.v1.Info.Node.memory:type_name -> payload.v1.Info.Memory
-	82,  // 66: payload.v1.Info.Node.Pods:type_name -> payload.v1.Info.Pods
-	77,  // 67: payload.v1.Info.Service.ports:type_name -> payload.v1.Info.ServicePort
-	78,  // 68: payload.v1.Info.Service.labels:type_name -> payload.v1.Info.Labels
-	79,  // 69: payload.v1.Info.Service.annotations:type_name -> payload.v1.Info.Annotations
-	98,  // 70: payload.v1.Info.Labels.labels:type_name -> payload.v1.Info.Labels.LabelsEntry
-	99,  // 71: payload.v1.Info.Annotations.annotations:type_name -> payload.v1.Info.Annotations.AnnotationsEntry
-	74,  // 72: payload.v1.Info.Pods.pods:type_name -> payload.v1.Info.Pod
-	75,  // 73: payload.v1.Info.Nodes.nodes:type_name -> payload.v1.Info.Node
-	76,  // 74: payload.v1.Info.Services.services:type_name -> payload.v1.Info.Service
-	93,  // 75: payload.v1.Info.Index.Detail.counts:type_name -> payload.v1.Info.Index.Detail.CountsEntry
-	96,  // 76: payload.v1.Info.Index.StatisticsDetail.details:type_name -> payload.v1.Info.Index.StatisticsDetail.DetailsEntry
-	97,  // 77: payload.v1.Info.Index.PropertyDetail.details:type_name -> payload.v1.Info.Index.PropertyDetail.DetailsEntry
-	86,  // 78: payload.v1.Info.Index.Detail.CountsEntry.value:type_name -> payload.v1.Info.Index.Count
-	89,  // 79: payload.v1.Info.Index.StatisticsDetail.DetailsEntry.value:type_name -> payload.v1.Info.Index.Statistics
-	91,  // 80: payload.v1.Info.Index.PropertyDetail.DetailsEntry.value:type_name -> payload.v1.Info.Index.Property
-	100, // 81: payload.v1.Mirror.Targets.targets:type_name -> payload.v1.Mirror.Target
-	107, // 82: payload.v1.Meta.Value.value:type_name -> google.protobuf.Any
-	102, // 83: payload.v1.Meta.KeyValue.key:type_name -> payload.v1.Meta.Key
-	103, // 84: payload.v1.Meta.KeyValue.value:type_name -> payload.v1.Meta.Value
-	85,  // [85:85] is the sub-list for method output_type
-	85,  // [85:85] is the sub-list for method input_type
-	85,  // [85:85] is the sub-list for extension type_name
-	85,  // [85:85] is the sub-list for extension extendee
-	0,   // [0:85] is the sub-list for field type_name
+	112, // 10: payload.v1.Search.Config.ratio:type_name -> google.protobuf.FloatValue
+	113, // 11: payload.v1.Search.Config.options:type_name -> google.protobuf.Any
+	58,  // 12: payload.v1.Search.Response.results:type_name -> payload.v1.Object.Distance
+	24,  // 13: payload.v1.Search.Responses.responses:type_name -> payload.v1.Search.Response
+	24,  // 14: payload.v1.Search.StreamResponse.response:type_name -> payload.v1.Search.Response
+	114, // 15: payload.v1.Search.StreamResponse.status:type_name -> google.rpc.Status
+	27,  // 16: payload.v1.Filter.Config.targets:type_name -> payload.v1.Filter.Target
+	34,  // 17: payload.v1.ZVec.DocumentOptions.fields:type_name -> payload.v1.ZVec.DocumentOptions.FieldsEntry
+	31,  // 18: payload.v1.ZVec.SearchOptions.hybrid_queries:type_name -> payload.v1.ZVec.Query
+	32,  // 19: payload.v1.ZVec.Query.vector:type_name -> payload.v1.ZVec.Vector
+	33,  // 20: payload.v1.ZVec.Query.fts:type_name -> payload.v1.ZVec.FTS
+	62,  // 21: payload.v1.Insert.Request.vector:type_name -> payload.v1.Object.Vector
+	39,  // 22: payload.v1.Insert.Request.config:type_name -> payload.v1.Insert.Config
+	35,  // 23: payload.v1.Insert.MultiRequest.requests:type_name -> payload.v1.Insert.Request
+	68,  // 24: payload.v1.Insert.ObjectRequest.object:type_name -> payload.v1.Object.Blob
+	39,  // 25: payload.v1.Insert.ObjectRequest.config:type_name -> payload.v1.Insert.Config
+	27,  // 26: payload.v1.Insert.ObjectRequest.vectorizer:type_name -> payload.v1.Filter.Target
+	37,  // 27: payload.v1.Insert.MultiObjectRequest.requests:type_name -> payload.v1.Insert.ObjectRequest
+	28,  // 28: payload.v1.Insert.Config.filters:type_name -> payload.v1.Filter.Config
+	113, // 29: payload.v1.Insert.Config.options:type_name -> google.protobuf.Any
+	62,  // 30: payload.v1.Update.Request.vector:type_name -> payload.v1.Object.Vector
+	45,  // 31: payload.v1.Update.Request.config:type_name -> payload.v1.Update.Config
+	40,  // 32: payload.v1.Update.MultiRequest.requests:type_name -> payload.v1.Update.Request
+	68,  // 33: payload.v1.Update.ObjectRequest.object:type_name -> payload.v1.Object.Blob
+	45,  // 34: payload.v1.Update.ObjectRequest.config:type_name -> payload.v1.Update.Config
+	27,  // 35: payload.v1.Update.ObjectRequest.vectorizer:type_name -> payload.v1.Filter.Target
+	42,  // 36: payload.v1.Update.MultiObjectRequest.requests:type_name -> payload.v1.Update.ObjectRequest
+	28,  // 37: payload.v1.Update.Config.filters:type_name -> payload.v1.Filter.Config
+	62,  // 38: payload.v1.Upsert.Request.vector:type_name -> payload.v1.Object.Vector
+	50,  // 39: payload.v1.Upsert.Request.config:type_name -> payload.v1.Upsert.Config
+	46,  // 40: payload.v1.Upsert.MultiRequest.requests:type_name -> payload.v1.Upsert.Request
+	68,  // 41: payload.v1.Upsert.ObjectRequest.object:type_name -> payload.v1.Object.Blob
+	50,  // 42: payload.v1.Upsert.ObjectRequest.config:type_name -> payload.v1.Upsert.Config
+	27,  // 43: payload.v1.Upsert.ObjectRequest.vectorizer:type_name -> payload.v1.Filter.Target
+	48,  // 44: payload.v1.Upsert.MultiObjectRequest.requests:type_name -> payload.v1.Upsert.ObjectRequest
+	28,  // 45: payload.v1.Upsert.Config.filters:type_name -> payload.v1.Filter.Config
+	60,  // 46: payload.v1.Remove.Request.id:type_name -> payload.v1.Object.ID
+	55,  // 47: payload.v1.Remove.Request.config:type_name -> payload.v1.Remove.Config
+	51,  // 48: payload.v1.Remove.MultiRequest.requests:type_name -> payload.v1.Remove.Request
+	54,  // 49: payload.v1.Remove.TimestampRequest.timestamps:type_name -> payload.v1.Remove.Timestamp
+	1,   // 50: payload.v1.Remove.Timestamp.operator:type_name -> payload.v1.Remove.Timestamp.Operator
+	60,  // 51: payload.v1.Object.VectorRequest.id:type_name -> payload.v1.Object.ID
+	28,  // 52: payload.v1.Object.VectorRequest.filters:type_name -> payload.v1.Filter.Config
+	58,  // 53: payload.v1.Object.StreamDistance.distance:type_name -> payload.v1.Object.Distance
+	114, // 54: payload.v1.Object.StreamDistance.status:type_name -> google.rpc.Status
+	60,  // 55: payload.v1.Object.TimestampRequest.id:type_name -> payload.v1.Object.ID
+	62,  // 56: payload.v1.Object.Vectors.vectors:type_name -> payload.v1.Object.Vector
+	62,  // 57: payload.v1.Object.StreamVector.vector:type_name -> payload.v1.Object.Vector
+	114, // 58: payload.v1.Object.StreamVector.status:type_name -> google.rpc.Status
+	68,  // 59: payload.v1.Object.StreamBlob.blob:type_name -> payload.v1.Object.Blob
+	114, // 60: payload.v1.Object.StreamBlob.status:type_name -> google.rpc.Status
+	70,  // 61: payload.v1.Object.StreamLocation.location:type_name -> payload.v1.Object.Location
+	114, // 62: payload.v1.Object.StreamLocation.status:type_name -> google.rpc.Status
+	70,  // 63: payload.v1.Object.Locations.locations:type_name -> payload.v1.Object.Location
+	62,  // 64: payload.v1.Object.List.Response.vector:type_name -> payload.v1.Object.Vector
+	114, // 65: payload.v1.Object.List.Response.status:type_name -> google.rpc.Status
+	80,  // 66: payload.v1.Info.ResourceStats.cgroup_stats:type_name -> payload.v1.Info.CgroupStats
+	87,  // 67: payload.v1.Info.Pod.cpu:type_name -> payload.v1.Info.CPU
+	88,  // 68: payload.v1.Info.Pod.memory:type_name -> payload.v1.Info.Memory
+	82,  // 69: payload.v1.Info.Pod.node:type_name -> payload.v1.Info.Node
+	87,  // 70: payload.v1.Info.Node.cpu:type_name -> payload.v1.Info.CPU
+	88,  // 71: payload.v1.Info.Node.memory:type_name -> payload.v1.Info.Memory
+	89,  // 72: payload.v1.Info.Node.Pods:type_name -> payload.v1.Info.Pods
+	84,  // 73: payload.v1.Info.Service.ports:type_name -> payload.v1.Info.ServicePort
+	85,  // 74: payload.v1.Info.Service.labels:type_name -> payload.v1.Info.Labels
+	86,  // 75: payload.v1.Info.Service.annotations:type_name -> payload.v1.Info.Annotations
+	105, // 76: payload.v1.Info.Labels.labels:type_name -> payload.v1.Info.Labels.LabelsEntry
+	106, // 77: payload.v1.Info.Annotations.annotations:type_name -> payload.v1.Info.Annotations.AnnotationsEntry
+	81,  // 78: payload.v1.Info.Pods.pods:type_name -> payload.v1.Info.Pod
+	82,  // 79: payload.v1.Info.Nodes.nodes:type_name -> payload.v1.Info.Node
+	83,  // 80: payload.v1.Info.Services.services:type_name -> payload.v1.Info.Service
+	100, // 81: payload.v1.Info.Index.Detail.counts:type_name -> payload.v1.Info.Index.Detail.CountsEntry
+	103, // 82: payload.v1.Info.Index.StatisticsDetail.details:type_name -> payload.v1.Info.Index.StatisticsDetail.DetailsEntry
+	104, // 83: payload.v1.Info.Index.PropertyDetail.details:type_name -> payload.v1.Info.Index.PropertyDetail.DetailsEntry
+	93,  // 84: payload.v1.Info.Index.Detail.CountsEntry.value:type_name -> payload.v1.Info.Index.Count
+	96,  // 85: payload.v1.Info.Index.StatisticsDetail.DetailsEntry.value:type_name -> payload.v1.Info.Index.Statistics
+	98,  // 86: payload.v1.Info.Index.PropertyDetail.DetailsEntry.value:type_name -> payload.v1.Info.Index.Property
+	107, // 87: payload.v1.Mirror.Targets.targets:type_name -> payload.v1.Mirror.Target
+	113, // 88: payload.v1.Meta.Value.value:type_name -> google.protobuf.Any
+	109, // 89: payload.v1.Meta.KeyValue.key:type_name -> payload.v1.Meta.Key
+	110, // 90: payload.v1.Meta.KeyValue.value:type_name -> payload.v1.Meta.Value
+	91,  // [91:91] is the sub-list for method output_type
+	91,  // [91:91] is the sub-list for method input_type
+	91,  // [91:91] is the sub-list for extension type_name
+	91,  // [91:91] is the sub-list for extension extendee
+	0,   // [0:91] is the sub-list for field type_name
 }
 
 func init() { file_v1_payload_payload_proto_init() }
@@ -6609,27 +7005,31 @@ func file_v1_payload_payload_proto_init() {
 	if File_v1_payload_payload_proto != nil {
 		return
 	}
-	file_v1_payload_payload_proto_msgTypes[23].OneofWrappers = []any{
+	file_v1_payload_payload_proto_msgTypes[24].OneofWrappers = []any{
 		(*Search_StreamResponse_Response)(nil),
 		(*Search_StreamResponse_Status)(nil),
 	}
-	file_v1_payload_payload_proto_msgTypes[50].OneofWrappers = []any{
+	file_v1_payload_payload_proto_msgTypes[29].OneofWrappers = []any{
+		(*ZVec_Query_Vector)(nil),
+		(*ZVec_Query_Fts)(nil),
+	}
+	file_v1_payload_payload_proto_msgTypes[57].OneofWrappers = []any{
 		(*Object_StreamDistance_Distance)(nil),
 		(*Object_StreamDistance_Status)(nil),
 	}
-	file_v1_payload_payload_proto_msgTypes[57].OneofWrappers = []any{
+	file_v1_payload_payload_proto_msgTypes[64].OneofWrappers = []any{
 		(*Object_StreamVector_Vector)(nil),
 		(*Object_StreamVector_Status)(nil),
 	}
-	file_v1_payload_payload_proto_msgTypes[60].OneofWrappers = []any{
+	file_v1_payload_payload_proto_msgTypes[67].OneofWrappers = []any{
 		(*Object_StreamBlob_Blob)(nil),
 		(*Object_StreamBlob_Status)(nil),
 	}
-	file_v1_payload_payload_proto_msgTypes[62].OneofWrappers = []any{
+	file_v1_payload_payload_proto_msgTypes[69].OneofWrappers = []any{
 		(*Object_StreamLocation_Location)(nil),
 		(*Object_StreamLocation_Status)(nil),
 	}
-	file_v1_payload_payload_proto_msgTypes[66].OneofWrappers = []any{
+	file_v1_payload_payload_proto_msgTypes[73].OneofWrappers = []any{
 		(*Object_List_Response_Vector)(nil),
 		(*Object_List_Response_Status)(nil),
 	}
@@ -6639,7 +7039,7 @@ func file_v1_payload_payload_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_v1_payload_payload_proto_rawDesc), len(file_v1_payload_payload_proto_rawDesc)),
 			NumEnums:      2,
-			NumMessages:   103,
+			NumMessages:   110,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

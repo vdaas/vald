@@ -128,6 +128,7 @@ async fn upsert(
                         skip_strict_exist_check: true,
                         filters: config.filters,
                         timestamp: config.timestamp,
+                        options: vec![],
                     }),
                 },
             )
@@ -288,6 +289,7 @@ impl upsert_server::Upsert for super::Agent {
                             skip_strict_exist_check: true,
                             filters: config.filters,
                             timestamp: config.timestamp,
+                            options: vec![],
                         }),
                     });
                 }
