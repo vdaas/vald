@@ -19,7 +19,7 @@ message Config {
   // The timestamp when the vector was inserted.
   int64 timestamp = 3;
 }
-</code></pre><details><summary>Insert Configuration Sample (Go)</summary><br><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</code></pre><details><summary>Insert Configuration Sample (Go)</summary><br><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
 </span></span><span style=display:flex><span>
 </span></span><span style=display:flex><span><span style=color:#f92672>import</span> (
 </span></span><span style=display:flex><span>	<span style=color:#e6db74>&#34;context&#34;</span>
@@ -101,7 +101,7 @@ message Config {
   // The timestamp when the vector was inserted.
   int64 timestamp = 3;
 }
-</code></pre><details><summary>Update Configuration Sample (Go)</summary><br><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</code></pre><details><summary>Update Configuration Sample (Go)</summary><br><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
 </span></span><span style=display:flex><span>
 </span></span><span style=display:flex><span><span style=color:#f92672>import</span> (
 </span></span><span style=display:flex><span>	<span style=color:#e6db74>&#34;context&#34;</span>
@@ -185,7 +185,7 @@ message Config {
   // The timestamp when the vector was inserted.
   int64 timestamp = 3;
 }
-</code></pre><details><summary>Upsert Configuration Sample (Go)</summary><br><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</code></pre><details><summary>Upsert Configuration Sample (Go)</summary><br><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
 </span></span><span style=display:flex><span>
 </span></span><span style=display:flex><span><span style=color:#f92672>import</span> (
 </span></span><span style=display:flex><span>	<span style=color:#e6db74>&#34;context&#34;</span>
@@ -299,7 +299,7 @@ enum AggregationAlgorithm {
 }
 </code></pre><p><code>AggregationAlgorithm</code> is available from <code>v1.7.6</code>.
 You can select 1 algorithm from 4 algorithms (Unknown is same as <code>ConcurrentQueue</code>) based on desired search performance.
-This table shows the description and recommended situation for each algorithm.</p><table><thead><tr><th style=text-align:left>Algorithm</th><th style=text-align:left>Description</th><th style=text-align:left>Recommended Situation</th></tr></thead><tbody><tr><td style=text-align:left><code>ConcurrentQueue</code></td><td style=text-align:left>Traditional Vald proprietary aggregation algorithm</td><td style=text-align:left>Good performance when asynchronous aggregation from a large number of Agents and a huge number of threads.</td></tr><tr><td style=text-align:left><code>SortSlice</code></td><td style=text-align:left>Aggregate and rerank all agent results together to eliminate duplicates</td><td style=text-align:left>Good performance when there are small top-K and small number of Agents.</td></tr><tr><td style=text-align:left><code>SortPoolSlice</code></td><td style=text-align:left>Memory reduce version of <code>SortSlice</code></td><td style=text-align:left>Same as <code>SortSlice</code>.</td></tr><tr><td style=text-align:left><code>PairingHeap</code></td><td style=text-align:left>Aggregation method using PairingHeap that supports Multi threads.</td><td style=text-align:left>Faster under the medium scale top-K and the medium number of Agents, which is difficult to achive performance with <code>SortSlice</code>.</td></tr></tbody></table><details><summary>Search Configuration Sample (Go)</summary><br><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+This table shows the description and recommended situation for each algorithm.</p><table><thead><tr><th style=text-align:left>Algorithm</th><th style=text-align:left>Description</th><th style=text-align:left>Recommended Situation</th></tr></thead><tbody><tr><td style=text-align:left><code>ConcurrentQueue</code></td><td style=text-align:left>Traditional Vald proprietary aggregation algorithm</td><td style=text-align:left>Good performance when asynchronous aggregation from a large number of Agents and a huge number of threads.</td></tr><tr><td style=text-align:left><code>SortSlice</code></td><td style=text-align:left>Aggregate and rerank all agent results together to eliminate duplicates</td><td style=text-align:left>Good performance when there are small top-K and small number of Agents.</td></tr><tr><td style=text-align:left><code>SortPoolSlice</code></td><td style=text-align:left>Memory reduce version of <code>SortSlice</code></td><td style=text-align:left>Same as <code>SortSlice</code>.</td></tr><tr><td style=text-align:left><code>PairingHeap</code></td><td style=text-align:left>Aggregation method using PairingHeap that supports Multi threads.</td><td style=text-align:left>Faster under the medium scale top-K and the medium number of Agents, which is difficult to achive performance with <code>SortSlice</code>.</td></tr></tbody></table><details><summary>Search Configuration Sample (Go)</summary><br><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
 </span></span><span style=display:flex><span>
 </span></span><span style=display:flex><span><span style=color:#f92672>import</span> (
 </span></span><span style=display:flex><span>	<span style=color:#e6db74>&#34;context&#34;</span>
@@ -422,7 +422,7 @@ message Config {
   // The timestamp when the vector was removed.
   int64 timestamp = 3;
 }
-</code></pre><details><summary>Remove Configuration Sample (Go)</summary><br><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</code></pre><details><summary>Remove Configuration Sample (Go)</summary><br><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
 </span></span><span style=display:flex><span>
 </span></span><span style=display:flex><span><span style=color:#f92672>import</span> (
 </span></span><span style=display:flex><span>	<span style=color:#e6db74>&#34;context&#34;</span>
