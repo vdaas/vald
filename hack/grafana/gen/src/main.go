@@ -46,6 +46,7 @@ func ValdClusterOverview() *dashboard.DashboardBuilder {
 	addLatencyPanel(builder, "Vald Agent: ", "$ReplicaSet", "$PodName", "$ContainerName", ".*Index$", false)
 	addBackoffPanel(builder)
 	addBackoffPerRPCPanel(builder)
+	addBackoffNonRPCPanel(builder)
 	addCircuitBreakerState(builder)
 	addLatencyPanel(builder, "Vald Agent Index: ", "$ReplicaSet", "$PodName", "$ContainerName", ".*Index$", true)
 	repeatOverview(builder)

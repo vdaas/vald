@@ -106,6 +106,22 @@ func addBackoffPerRPCPanel(builder *dashboard.DashboardBuilder) {
 	builder.WithPanel(panel)
 }
 
+func addBackoffNonRPCPanel(builder *dashboard.DashboardBuilder) {
+	panel := timeseries.NewPanelBuilder().
+		Title("Backoff Retry Count (Non-RPC) (Vald LB Gateway)").
+		Span(widthHalf).Height(heightTall).
+		WithTarget(prometheusQuery(
+			promql.Increase(promql.Subquery(promql.Sum(promql.Vector(backoffRetryCount).
+				Label(namespaceKey, namespaceVariable).
+				LabelMatchRegexp(nameKey, nameVariable).
+				LabelMatchRegexp(podKey, "$ValdGatewayPodName").
+				LabelMatchRegexp("backoff_name", "github.com/.*")).
+				By([]string{"backoff_name"})).Range(intervalVariable + ":")).String(),
+		).Format("time_series").LegendFormat("{{backoff_name}}")).
+		FillOpacity(opacity)
+	builder.WithPanel(panel)
+}
+
 func circuitBreakerQuery(state string) string {
 	return promql.Increase(promql.Subquery(promql.Sum(promql.LabelReplace(
 		promql.Vector(circuitBreakerState).

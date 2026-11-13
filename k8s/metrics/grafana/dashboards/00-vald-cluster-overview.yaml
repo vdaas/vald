@@ -540,6 +540,33 @@ data:
           "type": "timeseries",
           "targets": [
             {
+              "expr": "increase((sum by (backoff_name) (backoff_retry_count{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$ValdGatewayPodName\",backoff_name=~\"github.com/.*\"}))[$interval:])",
+              "format": "time_series",
+              "legendFormat": "{{backoff_name}}",
+              "refId": ""
+            }
+          ],
+          "title": "Backoff Retry Count (Non-RPC) (Vald LB Gateway)",
+          "transparent": false,
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 36
+          },
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+                "fillOpacity": 10
+              }
+            },
+            "overrides": []
+          }
+        },
+        {
+          "type": "timeseries",
+          "targets": [
+            {
               "expr": "increase((sum by (rpc, state) (label_replace(circuit_breaker_state{exported_kubernetes_namespace=\"$Namespace\",kubernetes_name=~\"$ReplicaSet\",target_pod=~\"$ValdGatewayPodName\",state=\"open\"}, \"rpc\", \"$1\", \"name\", \"(.*/.*)/.*\")))[$interval:])",
               "format": "time_series",
               "legendFormat": "{{rpc}} ({{state}})",
@@ -557,7 +584,7 @@ data:
           "gridPos": {
             "h": 8,
             "w": 12,
-            "x": 0,
+            "x": 12,
             "y": 36
           },
           "fieldConfig": {
@@ -596,8 +623,8 @@ data:
           "gridPos": {
             "h": 8,
             "w": 12,
-            "x": 12,
-            "y": 36
+            "x": 0,
+            "y": 44
           },
           "fieldConfig": {
             "defaults": {
@@ -614,7 +641,7 @@ data:
             "h": 1,
             "w": 24,
             "x": 0,
-            "y": 44
+            "y": 52
           },
           "id": 0,
           "panels": [],
@@ -635,7 +662,7 @@ data:
             "h": 8,
             "w": 3,
             "x": 0,
-            "y": 45
+            "y": 53
           }
         },
         {
@@ -726,7 +753,7 @@ data:
             "h": 8,
             "w": 5,
             "x": 3,
-            "y": 45
+            "y": 53
           },
           "fieldConfig": {
             "defaults": {
@@ -752,7 +779,7 @@ data:
             "h": 8,
             "w": 8,
             "x": 8,
-            "y": 45
+            "y": 53
           },
           "fieldConfig": {
             "defaults": {
@@ -776,7 +803,7 @@ data:
             "h": 8,
             "w": 8,
             "x": 16,
-            "y": 45
+            "y": 53
           },
           "fieldConfig": {
             "defaults": {
