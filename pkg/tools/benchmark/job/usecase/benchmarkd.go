@@ -50,13 +50,13 @@ func New(cfg *config.Data) (r runner.Interface, err error) {
 	log.Info("pkg/tools/benchmark/job/cmd start")
 	eg := errgroup.Get()
 
+	// Target is optional (the file config may omit it when the CR lookup fails),
+	// so read its metadata only when it is set.
+	var meta map[string]string
 	if cfg.Job.Target != nil {
 		addr := cfg.Job.Target.Host + ":" + strconv.Itoa(cfg.Job.Target.Port)
-		if cfg.Job.ClientConfig.Addrs == nil {
-			cfg.Job.ClientConfig.Addrs = []string{addr}
-		} else {
-			cfg.Job.ClientConfig.Addrs = append(cfg.Job.ClientConfig.Addrs, addr)
-		}
+		cfg.Job.ClientConfig.Addrs = append(cfg.Job.ClientConfig.Addrs, addr)
+		meta = cfg.Job.Target.Meta
 	}
 
 	// bind metrics interceptor
@@ -121,7 +121,7 @@ func New(cfg *config.Data) (r runner.Interface, err error) {
 		service.WithK8sClient(cfg.K8sClient),
 		service.WithRPS(cfg.Job.RPS),
 		service.WithConcurencyLimit(cfg.Job.ConcurrencyLimit),
-		service.WithMetadata(cfg.Job.Target.Meta),
+		service.WithMetadata(meta),
 	)
 	if err != nil {
 		return nil, err
@@ -235,17 +235,22 @@ func (r *run) PreStop(ctx context.Context) error {
 }
 
 func (r *run) Stop(ctx context.Context) (errs error) {
-	if r.observability != nil {
-		if err := r.observability.Stop(ctx); err != nil {
-			errs = errors.Join(errs, err)
-		}
-	}
 	if r.job != nil {
 		if err := r.job.Stop(ctx); err != nil {
 			errs = errors.Join(errs, err)
 		}
 	}
-	return errors.Join(errs, r.server.Shutdown(ctx))
+	// Shut the server down first so spans and metrics of the requests it drains
+	// are still exported before observability is stopped.
+	if err := r.server.Shutdown(ctx); err != nil {
+		errs = errors.Join(errs, err)
+	}
+	if r.observability != nil {
+		if err := r.observability.Stop(ctx); err != nil {
+			errs = errors.Join(errs, err)
+		}
+	}
+	return errs
 }
 
 func (r *run) PostStop(ctx context.Context) error {

@@ -359,6 +359,10 @@ func TestSerialize(t *testing.T) {
 
 func TestAnyToErrorDetail(t *testing.T) {
 	t.Parallel()
+	unknownAny := &types.Any{
+		TypeUrl: "type.googleapis.com/vald.test.UnregisteredMessage",
+		Value:   []byte{0x0a, 0x01, 0x61},
+	}
 	type args struct {
 		a *types.Any
 	}
@@ -393,6 +397,16 @@ func TestAnyToErrorDetail(t *testing.T) {
 				}(),
 			},
 			want: &spb.Status{Code: 1},
+		},
+		{
+			// UnmarshalNew fails in the default branch (type URL not in the registry);
+			// the original Any is returned. The warning log is not asserted: the
+			// logger is process-global and these tests run in parallel.
+			name: "returns original Any for unregistered type URL",
+			args: args{
+				a: unknownAny,
+			},
+			want: unknownAny,
 		},
 	}
 	for _, tt := range tests {

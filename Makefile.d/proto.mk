@@ -23,8 +23,8 @@ proto/all: \
 .PHONY: proto/clean
 ## clean proto artifacts
 proto/clean:
-	cat $(ROOTDIR)/.gitfiles | grep -E '^apis/grpc/.*\.pb\.go$$' | sed -e 's%^%$(ROOTDIR)/%' | xargs -I {} -P $(CORES) rm -f "{}"
-	cat $(ROOTDIR)/.gitfiles | grep -E '^apis/grpc/.*\.pb\.json\.go$$' | sed -e 's%^%$(ROOTDIR)/%' | xargs -I {} -P $(CORES) rm -f "{}"
+	cat $(ROOTDIR)/.gitfiles | grep -E '^apis/grpc/.*\.pb\.go$$' | sed -e 's%^%$(ROOTDIR)/%' | $(XARGS) rm -f "{}"
+	cat $(ROOTDIR)/.gitfiles | grep -E '^apis/grpc/.*\.pb\.json\.go$$' | sed -e 's%^%$(ROOTDIR)/%' | $(XARGS) rm -f "{}"
 	rm -rf $(ROOTDIR)/apis/swagger $(ROOTDIR)/apis/docs
 
 .PHONY: proto/paths/print
@@ -45,7 +45,7 @@ proto/clean/deps:
 	rm -rf $(GOBIN)/protoc-gen-doc
 
 $(ROOTDIR)/apis/proto/v1/rpc/errdetails/error_details.proto:
-	curl -fsSL https://raw.githubusercontent.com/googleapis/googleapis/master/google/rpc/error_details.proto -o $(ROOTDIR)/apis/proto/v1/rpc/errdetails/error_details.proto
+	$(CURL) https://raw.githubusercontent.com/googleapis/googleapis/master/google/rpc/error_details.proto -o $(ROOTDIR)/apis/proto/v1/rpc/errdetails/error_details.proto
 	sed -i -e "s/package google.rpc/package rpc.v1/" $(ROOTDIR)/apis/proto/v1/rpc/errdetails/error_details.proto
 	sed -i -e "s%google.golang.org/genproto/googleapis/rpc/errdetails;errdetails%$(GOPKG)/apis/grpc/v1/rpc/errdetails%" $(ROOTDIR)/apis/proto/v1/rpc/errdetails/error_details.proto
 	sed -i -e "s/com.google.rpc/org.vdaas.vald.api.v1.rpc/" $(ROOTDIR)/apis/proto/v1/rpc/errdetails/error_details.proto
@@ -87,7 +87,7 @@ $(ROOTDIR)/apis/docs/v1/mirror.md: $(ROOTDIR)/apis/proto/v1/mirror/mirror.proto 
 ## replace generated proto code
 proto/replace: \
 	files
-	@cat $(ROOTDIR)/.gitfiles | grep -E '^(\./)?apis/grpc/.*\.go$$' | xargs -I {} -P$(CORES) bash -c ' \
+	@cat $(ROOTDIR)/.gitfiles | grep -E '^(\./)?apis/grpc/.*\.go$$' | $(XARGS) $(SHELL_STRICT_EXEC) ' \
 	echo "Replacing gRPC Go {}" && \
 	sed -i -E "s%google.golang.org/grpc/codes%$(GOPKG)/internal/net/grpc/codes%g" {} && \
 	sed -i -E "s%google.golang.org/grpc/status%$(GOPKG)/internal/net/grpc/status%g" {} && \

@@ -52,6 +52,10 @@ func WithReconcileCheckDuration(ts string) Option {
 		if err != nil {
 			return err
 		}
+		if t <= 0 {
+			// time.NewTicker panics for non-positive intervals
+			return errors.NewErrInvalidOption("reconcileCheckDuration", ts)
+		}
 		o.rcd = t
 		return nil
 	}

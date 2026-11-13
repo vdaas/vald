@@ -115,6 +115,8 @@ func Test_server_Insert(t *testing.T) {
 
 			- float32
 				- case 5: Insert vector with NaN value fail (vector type is float32)
+				- case 5.1: Insert vector with +Inf value fail (vector type is float32)
+				- case 5.2: Insert vector with -Inf value fail (vector type is float32)
 
 			- case 6: Insert nil insert request fail
 				* IncompatibleDimensionSize error will be returned.
@@ -889,11 +891,133 @@ func Test_server_Insert(t *testing.T) {
 					},
 				},
 				want: want{
-					wantRes: &payload.Object_Location{
-						Name: name,
-						Uuid: id,
-						Ips:  []string{ip},
+					err: func() error {
+						err := errors.ErrNaNOrInfVector
+						return status.WrapWithInvalidArgument("Insert API vector with NaN or Inf value detected",
+							err,
+							&errdetails.RequestInfo{
+								RequestId:   id,
+								ServingData: errdetails.Serialize(req),
+							},
+							&errdetails.BadRequest{
+								FieldViolations: []*errdetails.BadRequestFieldViolation{
+									{
+										Field:       vectorField,
+										Description: err.Error(),
+									},
+								},
+							},
+							&errdetails.ResourceInfo{
+								ResourceType: ngtResourceType + "/ngt.Insert",
+								ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
+							})
+					}(),
+				},
+			}
+		}(),
+		func() test {
+			bad := float32(math.Inf(+1.0))
+			req := &payload.Insert_Request{
+				Vector: &payload.Object_Vector{
+					Id:     id,
+					Vector: vector.GenSameValueVec(f32VecDim, bad),
+				},
+			}
+
+			return test{
+				name: "Boundary Value Testing case 5.1: Insert vector with +Inf value fail (vector type is float32)",
+				args: args{
+					req: req,
+				},
+				fields: fields{
+					name: name,
+					ip:   ip,
+					svcCfg: &config.NGT{
+						Dimension:    f32VecDim,
+						DistanceType: ngt.Angle.String(),
+						ObjectType:   ngt.Float.String(),
+						KVSDB:        kvsdbCfg,
+						VQueue:       vqueueCfg,
 					},
+					svcOpts: []service.Option{
+						service.WithEnableInMemoryMode(true),
+					},
+				},
+				want: want{
+					err: func() error {
+						err := errors.ErrNaNOrInfVector
+						return status.WrapWithInvalidArgument("Insert API vector with NaN or Inf value detected",
+							err,
+							&errdetails.RequestInfo{
+								RequestId:   id,
+								ServingData: errdetails.Serialize(req),
+							},
+							&errdetails.BadRequest{
+								FieldViolations: []*errdetails.BadRequestFieldViolation{
+									{
+										Field:       vectorField,
+										Description: err.Error(),
+									},
+								},
+							},
+							&errdetails.ResourceInfo{
+								ResourceType: ngtResourceType + "/ngt.Insert",
+								ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
+							})
+					}(),
+				},
+			}
+		}(),
+		func() test {
+			bad := float32(math.Inf(-1.0))
+			req := &payload.Insert_Request{
+				Vector: &payload.Object_Vector{
+					Id:     id,
+					Vector: vector.GenSameValueVec(f32VecDim, bad),
+				},
+			}
+
+			return test{
+				name: "Boundary Value Testing case 5.2: Insert vector with -Inf value fail (vector type is float32)",
+				args: args{
+					req: req,
+				},
+				fields: fields{
+					name: name,
+					ip:   ip,
+					svcCfg: &config.NGT{
+						Dimension:    f32VecDim,
+						DistanceType: ngt.Angle.String(),
+						ObjectType:   ngt.Float.String(),
+						KVSDB:        kvsdbCfg,
+						VQueue:       vqueueCfg,
+					},
+					svcOpts: []service.Option{
+						service.WithEnableInMemoryMode(true),
+					},
+				},
+				want: want{
+					err: func() error {
+						err := errors.ErrNaNOrInfVector
+						return status.WrapWithInvalidArgument("Insert API vector with NaN or Inf value detected",
+							err,
+							&errdetails.RequestInfo{
+								RequestId:   id,
+								ServingData: errdetails.Serialize(req),
+							},
+							&errdetails.BadRequest{
+								FieldViolations: []*errdetails.BadRequestFieldViolation{
+									{
+										Field:       vectorField,
+										Description: err.Error(),
+									},
+								},
+							},
+							&errdetails.ResourceInfo{
+								ResourceType: ngtResourceType + "/ngt.Insert",
+								ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
+							})
+					}(),
 				},
 			}
 		}(),
@@ -1496,9 +1620,9 @@ func Test_server_StreamInsert(t *testing.T) {
 			- case 3.2: Success to StreamInsert with max value vector (vector type is float32)
 
 			- float32 (with 100 insert request in a single StreamInsert connection)
-				- case 4.1: Success to StreamInsert with NaN value (vector type is float32)
-				- case 4.2: Success to StreamInsert with +Inf value (vector type is float32)
-				- case 4.3: Success to StreamInsert with -Inf value (vector type is float32)
+				- case 4.1: Fail to StreamInsert with NaN value (vector type is float32)
+				- case 4.2: Fail to StreamInsert with +Inf value (vector type is float32)
+				- case 4.3: Fail to StreamInsert with -Inf value (vector type is float32)
 				- case 4.4: Success to StreamInsert with -0 value (vector type is float32)
 			- others  (with 100 insert request in a single StreamInsert connection)
 				- case 5.1: Fail to StreamInsert with nil insert request
@@ -1930,7 +2054,7 @@ func Test_server_StreamInsert(t *testing.T) {
 			reqs.Requests[0].Vector.Vector = vector.GenSameValueVec(intVecDim, float32(math.NaN()))
 
 			return test{
-				name: "Boundary Value Testing case 4.1: Success to StreamInsert with NaN value (vector type is float32)",
+				name: "Boundary Value Testing case 4.1: Fail to StreamInsert with NaN value (vector type is float32)",
 				args: args{
 					insertReqs: reqs.Requests,
 				},
@@ -1942,7 +2066,12 @@ func Test_server_StreamInsert(t *testing.T) {
 					ngtCfg: defaultF32SvcCfg,
 				},
 				want: want{
-					rpcResp: request.GenObjectStreamLocation(insertCnt, name, ip),
+					errCode: codes.InvalidArgument,
+					rpcResp: func() []*payload.Object_StreamLocation {
+						l := request.GenObjectStreamLocation(insertCnt, name, ip)
+						l[0] = genObjectStreamLoc(codes.InvalidArgument)
+						return l
+					}(),
 				},
 			}
 		}(),
@@ -1955,7 +2084,7 @@ func Test_server_StreamInsert(t *testing.T) {
 			reqs.Requests[0].Vector.Vector = vector.GenSameValueVec(intVecDim, float32(math.Inf(+1.0)))
 
 			return test{
-				name: "Boundary Value Testing case 4.2: Success to StreamInsert with +Inf value (vector type is float32)",
+				name: "Boundary Value Testing case 4.2: Fail to StreamInsert with +Inf value (vector type is float32)",
 				args: args{
 					insertReqs: reqs.Requests,
 				},
@@ -1967,7 +2096,12 @@ func Test_server_StreamInsert(t *testing.T) {
 					ngtCfg: defaultF32SvcCfg,
 				},
 				want: want{
-					rpcResp: request.GenObjectStreamLocation(insertCnt, name, ip),
+					errCode: codes.InvalidArgument,
+					rpcResp: func() []*payload.Object_StreamLocation {
+						l := request.GenObjectStreamLocation(insertCnt, name, ip)
+						l[0] = genObjectStreamLoc(codes.InvalidArgument)
+						return l
+					}(),
 				},
 			}
 		}(),
@@ -1980,7 +2114,7 @@ func Test_server_StreamInsert(t *testing.T) {
 			reqs.Requests[0].Vector.Vector = vector.GenSameValueVec(intVecDim, float32(math.Inf(-1.0)))
 
 			return test{
-				name: "Boundary Value Testing case 4.3: Success to StreamInsert with -Inf value (vector type is float32)",
+				name: "Boundary Value Testing case 4.3: Fail to StreamInsert with -Inf value (vector type is float32)",
 				args: args{
 					insertReqs: reqs.Requests,
 				},
@@ -1992,7 +2126,12 @@ func Test_server_StreamInsert(t *testing.T) {
 					ngtCfg: defaultF32SvcCfg,
 				},
 				want: want{
-					rpcResp: request.GenObjectStreamLocation(insertCnt, name, ip),
+					errCode: codes.InvalidArgument,
+					rpcResp: func() []*payload.Object_StreamLocation {
+						l := request.GenObjectStreamLocation(insertCnt, name, ip)
+						l[0] = genObjectStreamLoc(codes.InvalidArgument)
+						return l
+					}(),
 				},
 			}
 		}(),
@@ -2822,9 +2961,9 @@ func Test_server_MultiInsert(t *testing.T) {
 				- case 5.6: Fail to MultiInsert with all vector with maximum dimension (vector type is float32)
 
 			- float32 (with 100 insert request in a single MultiInsert request)
-				- case 6.1: Success to MultiInsert with NaN value (vector type is float32)
-				- case 6.2: Success to MultiInsert with +Inf value (vector type is float32)
-				- case 6.3: Success to MultiInsert with -Inf value (vector type is float32)
+				- case 6.1: Fail to MultiInsert with NaN value (vector type is float32)
+				- case 6.2: Fail to MultiInsert with +Inf value (vector type is float32)
+				- case 6.3: Fail to MultiInsert with -Inf value (vector type is float32)
 				- case 6.4: Success to MultiInsert with -0 value (vector type is float32)
 
 			- others  (with 100 insert request in a single MultiInsert request)
@@ -4061,10 +4200,11 @@ func Test_server_MultiInsert(t *testing.T) {
 		}(),
 		func() test {
 			insertNum := 100
+			req := request.GenSameVecMultiInsertReq(insertNum, vector.GenSameValueVec(f32VecDim, float32(math.NaN())), nil)
 			return test{
-				name: "Boundary Value Testing case 6.1: Success to MultiInsert with NaN value (vector type is float32)",
+				name: "Boundary Value Testing case 6.1: Fail to MultiInsert with NaN value (vector type is float32)",
 				args: args{
-					reqs: request.GenSameVecMultiInsertReq(insertNum, vector.GenSameValueVec(f32VecDim, float32(math.NaN())), nil),
+					reqs: req,
 				},
 				fields: fields{
 					name:              name,
@@ -4074,16 +4214,37 @@ func Test_server_MultiInsert(t *testing.T) {
 					streamConcurrency: 0,
 				},
 				want: want{
-					wantRes: request.GenObjectLocations(insertNum, name, ip),
+					err: func() error {
+						err := errors.ErrNaNOrInfVector
+						return status.WrapWithInvalidArgument("MultiInsert API vector with NaN or Inf value detected",
+							err,
+							&errdetails.RequestInfo{
+								RequestId:   req.Requests[0].Vector.Id,
+								ServingData: errdetails.Serialize(req),
+							},
+							&errdetails.BadRequest{
+								FieldViolations: []*errdetails.BadRequestFieldViolation{
+									{
+										Field:       vectorField,
+										Description: err.Error(),
+									},
+								},
+							},
+							&errdetails.ResourceInfo{
+								ResourceType: ngtResourceType + "/ngt.MultiInsert",
+								ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
+							})
+					}(),
 				},
 			}
 		}(),
 		func() test {
 			insertNum := 100
+			req := request.GenSameVecMultiInsertReq(insertNum, vector.GenSameValueVec(f32VecDim, float32(math.Inf(+1.0))), nil)
 			return test{
-				name: "Boundary Value Testing case 6.2: Success to MultiInsert with +Inf value (vector type is float32)",
+				name: "Boundary Value Testing case 6.2: Fail to MultiInsert with +Inf value (vector type is float32)",
 				args: args{
-					reqs: request.GenSameVecMultiInsertReq(insertNum, vector.GenSameValueVec(f32VecDim, float32(math.Inf(+1.0))), nil),
+					reqs: req,
 				},
 				fields: fields{
 					name:              name,
@@ -4093,16 +4254,37 @@ func Test_server_MultiInsert(t *testing.T) {
 					streamConcurrency: 0,
 				},
 				want: want{
-					wantRes: request.GenObjectLocations(insertNum, name, ip),
+					err: func() error {
+						err := errors.ErrNaNOrInfVector
+						return status.WrapWithInvalidArgument("MultiInsert API vector with NaN or Inf value detected",
+							err,
+							&errdetails.RequestInfo{
+								RequestId:   req.Requests[0].Vector.Id,
+								ServingData: errdetails.Serialize(req),
+							},
+							&errdetails.BadRequest{
+								FieldViolations: []*errdetails.BadRequestFieldViolation{
+									{
+										Field:       vectorField,
+										Description: err.Error(),
+									},
+								},
+							},
+							&errdetails.ResourceInfo{
+								ResourceType: ngtResourceType + "/ngt.MultiInsert",
+								ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
+							})
+					}(),
 				},
 			}
 		}(),
 		func() test {
 			insertNum := 100
+			req := request.GenSameVecMultiInsertReq(insertNum, vector.GenSameValueVec(f32VecDim, float32(math.Inf(-1.0))), nil)
 			return test{
-				name: "Boundary Value Testing case 6.3: Success to MultiInsert with -Inf value (vector type is float32)",
+				name: "Boundary Value Testing case 6.3: Fail to MultiInsert with -Inf value (vector type is float32)",
 				args: args{
-					reqs: request.GenSameVecMultiInsertReq(insertNum, vector.GenSameValueVec(f32VecDim, float32(math.Inf(-1.0))), nil),
+					reqs: req,
 				},
 				fields: fields{
 					name:              name,
@@ -4112,7 +4294,27 @@ func Test_server_MultiInsert(t *testing.T) {
 					streamConcurrency: 0,
 				},
 				want: want{
-					wantRes: request.GenObjectLocations(insertNum, name, ip),
+					err: func() error {
+						err := errors.ErrNaNOrInfVector
+						return status.WrapWithInvalidArgument("MultiInsert API vector with NaN or Inf value detected",
+							err,
+							&errdetails.RequestInfo{
+								RequestId:   req.Requests[0].Vector.Id,
+								ServingData: errdetails.Serialize(req),
+							},
+							&errdetails.BadRequest{
+								FieldViolations: []*errdetails.BadRequestFieldViolation{
+									{
+										Field:       vectorField,
+										Description: err.Error(),
+									},
+								},
+							},
+							&errdetails.ResourceInfo{
+								ResourceType: ngtResourceType + "/ngt.MultiInsert",
+								ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
+							})
+					}(),
 				},
 			}
 		}(),

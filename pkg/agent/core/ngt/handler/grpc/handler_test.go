@@ -16,13 +16,16 @@ package grpc
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/log/logger"
+	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/test/data/request"
 	"github.com/vdaas/vald/internal/test/data/vector"
@@ -30,9 +33,46 @@ import (
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
 )
 
+// Test_errMatcher pins that errMatcher(err)(target) agrees with
+// errors.Is(err, target) for message-matched targets, including the Unicode
+// case folding of strings.EqualFold.
+func Test_errMatcher(t *testing.T) {
+	t.Parallel()
+	join := errors.Join(errors.New("a"), errors.Wrap(errors.Join(errors.New("b"), errors.New("c")), "w"))
+	tests := []struct {
+		err    error
+		target error
+		name   string
+	}{
+		{name: "leaf of flat join", err: errors.Join(errors.New("a"), errors.New("b")), target: errors.New("b")},
+		{name: "missing", err: errors.Join(errors.New("a"), errors.New("b")), target: errors.New("c")},
+		{name: "nested leaf", err: join, target: errors.New("c")},
+		{name: "wrapper layer", err: join, target: errors.New("w: b\nc")},
+		{name: "joined message itself", err: errors.Join(errors.New("a"), errors.New("b")), target: errors.New("a\nb")},
+		{name: "ASCII case", err: errors.New("uuid ABC not found"), target: errors.New("UUID abc NOT found")},
+		{name: "long s folds to s", err: errors.New("\u017f"), target: errors.New("S")},
+		{name: "Kelvin folds to k", err: errors.New("\u212a"), target: errors.New("k")},
+		{name: "different length", err: errors.New("ab"), target: errors.New("a")},
+		{name: "invalid UTF-8 is the replacement rune", err: errors.New("\xff"), target: errors.New("\ufffd")},
+		{name: "non-letter", err: errors.New("[1]"), target: errors.New("{1}")},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			want := errors.Is(test.err, test.target)
+			if got := errMatcher(test.err)(test.target); got != want {
+				t.Errorf("errMatcher(%q)(%q) = %t, errors.Is = %t", test.err, test.target, got, want)
+			}
+		})
+	}
+}
+
 func TestMain(m *testing.M) {
 	log.Init(log.WithLoggerType(logger.NOP.String()))
-	info.Init("")
+	if err := info.Init(""); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
 	goleak.VerifyTestMain(m)
 }
 

@@ -260,8 +260,9 @@ func New(opts ...Option) (Cassandra, error) {
 				if hf == nil {
 					hf = wlhf
 				} else {
+					prev := hf
 					hf = gocql.HostFilterFunc(func(host *gocql.HostInfo) bool {
-						return hf.Accept(host) || wlhf.Accept(host)
+						return prev.Accept(host) || wlhf.Accept(host)
 					})
 				}
 			}
@@ -302,7 +303,7 @@ func New(opts ...Option) (Cassandra, error) {
 // Open creates a session to cassandra and return any error occurred.
 func (c *client) Open(ctx context.Context) (err error) {
 	if c.session, err = c.cluster.CreateSession(); err != nil {
-		log.Errorf("failed to create session %#v", c)
+		log.Errorf("failed to create session: hosts=%v port=%d cqlVersion=%s err=%v", c.hosts, c.port, c.cqlVersion, err)
 		return errors.ErrCassandraFailedToCreateSession(err, c.hosts, c.port, c.cqlVersion)
 	}
 	if c.rawDialer != nil {
@@ -313,7 +314,9 @@ func (c *client) Open(ctx context.Context) (err error) {
 
 // Close closes the session to cassandra.
 func (c *client) Close(context.Context) error {
-	c.session.Close()
+	if c.session != nil {
+		c.session.Close()
+	}
 	return nil
 }
 
@@ -368,38 +371,4 @@ func In(column string) Cmp {
 // Contains return the contains comparator.
 func Contains(column string) Cmp {
 	return qb.Contains(column)
-}
-
-// WrapErrorWithKeys wraps the cassandra error to Vald internal error.
-func WrapErrorWithKeys(err error, keys ...string) error {
-	switch {
-	case errors.Is(err, ErrNotFound):
-		return errors.ErrCassandraNotFound(keys...)
-	case errors.Is(err, ErrUnavailable):
-		return errors.ErrCassandraUnavailable
-	case errors.Is(err, ErrUnsupported):
-		return err
-	case errors.Is(err, ErrTooManyStmts):
-		return err
-	case errors.Is(err, ErrUseStmt):
-		return err
-	case errors.Is(err, ErrSessionClosed):
-		return err
-	case errors.Is(err, ErrNoConnections):
-		return err
-	case errors.Is(err, ErrNoKeyspace):
-		return err
-	case errors.Is(err, ErrKeyspaceDoesNotExist):
-		return err
-	case errors.Is(err, ErrNoMetadata):
-		return err
-	case errors.Is(err, ErrNoHosts):
-		return err
-	case errors.Is(err, ErrNoConnectionsStarted):
-		return err
-	case errors.Is(err, ErrHostQueryFailed):
-		return err
-	default:
-		return err
-	}
 }

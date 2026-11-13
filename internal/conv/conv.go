@@ -42,6 +42,9 @@ func Atob(s string) (b []byte) {
 
 // F32stos converts from float32 slice to type string.
 func F32stos(fs []float32) (s string) {
+	if len(fs) == 0 {
+		return ""
+	}
 	// skipcq: GSC-G103
 	return Btoa(unsafe.Slice((*byte)(unsafe.Pointer(&fs[0])), len(fs)*4))
 }

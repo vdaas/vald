@@ -17,7 +17,6 @@ package logging
 import (
 	"context"
 	"fmt"
-	"path"
 	"time"
 
 	"github.com/vdaas/vald/internal/encoding/json"
@@ -25,6 +24,8 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
+	"github.com/vdaas/vald/internal/strings"
+	"github.com/vdaas/vald/internal/sync"
 )
 
 const (
@@ -34,6 +35,23 @@ const (
 	rpcCompletedMessage = "rpc completed"
 	rpcFailedMessage    = "rpc failed"
 )
+
+var grpcEntityCache sync.Map[string, *AccessLogGRPCEntity]
+
+func getCachedGRPCEntity(kind, fullMethod string) *AccessLogGRPCEntity {
+	key := kind + ":" + fullMethod
+	if val, ok := grpcEntityCache.Load(key); ok {
+		return val
+	}
+	service, method := parseMethod(fullMethod)
+	entity := &AccessLogGRPCEntity{
+		Kind:    kind,
+		Service: service,
+		Method:  method,
+	}
+	actual, _ := grpcEntityCache.LoadOrStore(key, entity)
+	return actual
+}
 
 type AccessLogEntity struct {
 	Error     error                `json:"error,omitempty"     yaml:"error"`
@@ -73,6 +91,21 @@ func (e AccessLogEntity) String() (str string) {
 	return str
 }
 
+// lazyAccessLog defers AccessLogEntity.String (a JSON encoding) until the logger
+// actually formats its arguments, so that it is not paid when the level is disabled.
+// fmt-based backends render it through String, and the glg JSON format encodes it
+// through MarshalText as the same JSON string the pre-rendered value produced.
+// Being a defined type, it does not inherit AccessLogEntity's methods.
+type lazyAccessLog AccessLogEntity
+
+func (l *lazyAccessLog) String() string {
+	return (*AccessLogEntity)(l).String()
+}
+
+func (l *lazyAccessLog) MarshalText() ([]byte, error) {
+	return []byte(l.String()), nil
+}
+
 func AccessLogInterceptor() grpc.UnaryServerInterceptor {
 	return func(
 		ctx context.Context,
@@ -93,14 +126,10 @@ func AccessLogInterceptor() grpc.UnaryServerInterceptor {
 
 		end := time.Now()
 
-		service, method := parseMethod(info.FullMethod)
+		grpcEntity := getCachedGRPCEntity(grpcKindUnary, info.FullMethod)
 
 		entity := &AccessLogEntity{
-			GRPC: &AccessLogGRPCEntity{
-				Kind:    grpcKindUnary,
-				Service: service,
-				Method:  method,
-			},
+			GRPC:      grpcEntity,
 			StartTime: start.UnixNano(),
 			EndTime:   end.UnixNano(),
 			Latency:   end.Sub(start).Nanoseconds(),
@@ -112,9 +141,9 @@ func AccessLogInterceptor() grpc.UnaryServerInterceptor {
 
 		if err != nil {
 			entity.Error = err
-			log.Warn(rpcFailedMessage, entity.String())
+			log.Warn(rpcFailedMessage, (*lazyAccessLog)(entity))
 		} else {
-			log.Debug(rpcCompletedMessage, entity.String())
+			log.Debug(rpcCompletedMessage, (*lazyAccessLog)(entity))
 		}
 
 		return resp, err
@@ -141,14 +170,10 @@ func AccessLogStreamInterceptor() grpc.StreamServerInterceptor {
 
 		end := time.Now()
 
-		service, method := parseMethod(info.FullMethod)
+		grpcEntity := getCachedGRPCEntity(grpcKindStream, info.FullMethod)
 
 		entity := &AccessLogEntity{
-			GRPC: &AccessLogGRPCEntity{
-				Kind:    grpcKindStream,
-				Service: service,
-				Method:  method,
-			},
+			GRPC:      grpcEntity,
 			StartTime: start.UnixNano(),
 			EndTime:   end.UnixNano(),
 			Latency:   end.Sub(start).Nanoseconds(),
@@ -160,9 +185,9 @@ func AccessLogStreamInterceptor() grpc.StreamServerInterceptor {
 
 		if err != nil {
 			entity.Error = err
-			log.Warn(rpcFailedMessage, entity.String())
+			log.Warn(rpcFailedMessage, (*lazyAccessLog)(entity))
 		} else {
-			log.Debug(rpcCompletedMessage, entity.String())
+			log.Debug(rpcCompletedMessage, (*lazyAccessLog)(entity))
 		}
 
 		return err
@@ -170,8 +195,16 @@ func AccessLogStreamInterceptor() grpc.StreamServerInterceptor {
 }
 
 func parseMethod(fullMethod string) (service, method string) {
-	service = path.Dir(fullMethod)[1:]
-	method = path.Base(fullMethod)
-
-	return service, method
+	if len(fullMethod) == 0 {
+		return "", ""
+	}
+	s := fullMethod
+	if s[0] == '/' {
+		s = s[1:]
+	}
+	idx := strings.LastIndexByte(s, '/')
+	if idx < 0 {
+		return "", s
+	}
+	return s[:idx], s[idx+1:]
 }

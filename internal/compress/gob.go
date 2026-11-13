@@ -84,16 +84,28 @@ func (g *gobCompressor) Writer(dst io.WriteCloser) (io.WriteCloser, error) {
 type gobReader struct {
 	src     io.ReadCloser
 	decoder gob.Decoder
+	// buf holds the most recently decoded gob message, and off is the number
+	// of bytes of buf that have already been handed to the caller.
+	buf []byte
+	off int
 }
 
 // Read returns the number of bytes for read p (0 <= n <= len(p)).
+// Each gob message written by gobWriter.Write is decoded into an internal buffer
+// and served to the caller across as many Read calls as needed.
 // If any errors occurs, it will return an error.
 func (gr *gobReader) Read(p []byte) (n int, err error) {
-	if err = gr.decoder.Decode(&p); err != nil {
-		return 0, err
+	for gr.off >= len(gr.buf) {
+		gr.buf, gr.off = gr.buf[:0], 0
+		if err = gr.decoder.Decode(&gr.buf); err != nil {
+			gr.buf = gr.buf[:0]
+			return 0, err
+		}
 	}
+	n = copy(p, gr.buf[gr.off:])
+	gr.off += n
 
-	return len(p), nil
+	return n, nil
 }
 
 // Close closes the reader.

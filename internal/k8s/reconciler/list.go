@@ -23,7 +23,6 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -68,13 +67,11 @@ func NewListReconciler[L any, PL resource.ListPtr[L]](
 	name string, obj k8s.Object, onReconcile func(ctx context.Context, list PL), opts ...ListOption,
 ) k8s.ResourceController {
 	r := &listReconciler[L, PL]{
-		listCore: listCore{
-			baseReconciler:  baseReconciler{name: name},
-			obj:             obj,
-			errorRequeue:    defaultErrorRequeueDuration,
-			notFoundRequeue: defaultNotFoundRequeueDuration,
-		},
-		onReconcile: onReconcile,
+		name:            name,
+		obj:             obj,
+		errorRequeue:    defaultErrorRequeueDuration,
+		notFoundRequeue: defaultNotFoundRequeueDuration,
+		onReconcile:     onReconcile,
 	}
 	for _, opt := range opts {
 		if opt != nil {
@@ -218,7 +215,7 @@ func (r *listReconciler[L, PL]) Watches() (
 	handler.EventHandler,
 	[]builder.WatchesOption,
 ) {
-	req := reconcile.Request{NamespacedName: types.NamespacedName{Name: r.name}}
+	req := reconcile.Request{Name: r.name}
 	return r.obj, handler.EnqueueRequestsFromMapFunc(func(context.Context, k8s.Object) []reconcile.Request {
 		return []reconcile.Request{req}
 	}), nil

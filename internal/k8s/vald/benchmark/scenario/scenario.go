@@ -31,7 +31,6 @@ func New(opts ...Option) (BenchmarkWatcher, error) {
 	return vald.NewListWatcher(
 		v1.AddToScheme,
 		func(sc *v1.ValdBenchmarkScenario) v1.ValdBenchmarkScenario { return *sc },
-		vald.SkipNonCriticalOptionError,
 		opts...,
 	)
 }

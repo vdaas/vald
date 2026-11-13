@@ -43,16 +43,9 @@ func (s *server) Upsert(
 
 	vec := req.GetVector()
 	uuid := vec.GetId()
-	reqInfo := &errdetails.RequestInfo{
-		RequestId:   uuid,
-		ServingData: errdetails.Serialize(req),
-	}
-	resInfo := &errdetails.ResourceInfo{
-		ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpsertRPCName,
-		ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-	}
 	if len(uuid) == 0 {
-		err = status.WrapWithInvalidArgument(vald.UpsertRPCName+" API invalid uuid", errors.ErrInvalidMetaDataConfig, reqInfo, resInfo,
+		err = errors.ErrInvalidMetaDataConfig
+		err = status.WrapWithInvalidArgument(vald.UpsertRPCName+" API invalid uuid", err, append(s.errDetails(ctx, vald.UpsertRPCName, uuid, req),
 			&errdetails.BadRequest{
 				FieldViolations: []*errdetails.BadRequestFieldViolation{
 					{
@@ -60,14 +53,14 @@ func (s *server) Upsert(
 						Description: err.Error(),
 					},
 				},
-			})
+			})...)
 		return errhandler.HandleError[payload.Object_Location](span, codes.InvalidArgument, err)
 	}
 
 	vl := len(vec.GetVector())
 	if vl < algorithm.MinimumVectorDimensionSize {
 		err = errors.ErrInvalidDimensionSize(vl, 0)
-		err = status.WrapWithInvalidArgument(vald.UpsertRPCName+" API invalid vector argument", err, reqInfo, resInfo,
+		err = status.WrapWithInvalidArgument(vald.UpsertRPCName+" API invalid vector argument", err, append(s.errDetails(ctx, vald.UpsertRPCName, uuid, req),
 			&errdetails.BadRequest{
 				FieldViolations: []*errdetails.BadRequestFieldViolation{
 					{
@@ -75,7 +68,10 @@ func (s *server) Upsert(
 						Description: err.Error(),
 					},
 				},
-			}, info.Get())
+			}, info.Get())...)
+		return errhandler.HandleError[payload.Object_Location](span, codes.InvalidArgument, err)
+	}
+	if err = s.validateVectorValue(ctx, vald.UpsertRPCName, uuid, req, vec.GetVector()); err != nil {
 		return errhandler.HandleError[payload.Object_Location](span, codes.InvalidArgument, err)
 	}
 	var shouldInsert bool
@@ -99,8 +95,7 @@ func (s *server) Upsert(
 			err = status.WrapWithAlreadyExists(
 				vald.GetObjectRPCName+" API for "+vald.UpsertRPCName+" API ID = "+uuid+"'s same vector data already exists",
 				errors.ErrSameVectorAlreadyExists(uuid, vec.GetVector(), req.GetVector().GetVector()),
-				reqInfo,
-				resInfo,
+				s.errDetails(ctx, vald.UpsertRPCName, uuid, req)...,
 			)
 			attrs = trace.StatusCodeAlreadyExists(err.Error())
 		}
@@ -114,13 +109,13 @@ func (s *server) Upsert(
 			var attrs trace.Attributes
 			switch {
 			case errors.Is(err, errors.ErrGRPCClientConnNotFound("*")):
-				err = status.WrapWithInternal(vald.ExistsRPCName+" API for "+vald.UpsertRPCName+" API connection not found", err, reqInfo, resInfo)
+				err = status.WrapWithInternal(vald.ExistsRPCName+" API for "+vald.UpsertRPCName+" API connection not found", err, s.errDetails(ctx, vald.UpsertRPCName, uuid, req)...)
 				attrs = trace.StatusCodeInternal(err.Error())
 			case errors.Is(err, context.Canceled):
-				err = status.WrapWithCanceled(vald.ExistsRPCName+" API for "+vald.UpsertRPCName+" API canceled", err, reqInfo, resInfo)
+				err = status.WrapWithCanceled(vald.ExistsRPCName+" API for "+vald.UpsertRPCName+" API canceled", err, s.errDetails(ctx, vald.UpsertRPCName, uuid, req)...)
 				attrs = trace.StatusCodeCancelled(err.Error())
 			case errors.Is(err, context.DeadlineExceeded):
-				err = status.WrapWithDeadlineExceeded(vald.ExistsRPCName+" API for "+vald.UpsertRPCName+" API deadline exceeded", err, reqInfo, resInfo)
+				err = status.WrapWithDeadlineExceeded(vald.ExistsRPCName+" API for "+vald.UpsertRPCName+" API deadline exceeded", err, s.errDetails(ctx, vald.UpsertRPCName, uuid, req)...)
 				attrs = trace.StatusCodeDeadlineExceeded(err.Error())
 			default:
 				err = nil
@@ -130,7 +125,7 @@ func (s *server) Upsert(
 				return nil, err
 			}
 		}
-		shouldInsert = err != nil || id == nil || len(id.GetId()) == 0
+		shouldInsert = id == nil || len(id.GetId()) == 0
 	}
 
 	var operation string
@@ -217,14 +212,22 @@ func (s *server) MultiUpsert(
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.UpsertRPCServiceName+"/"+vald.MultiUpsertRPCName), apiName+"/"+vald.MultiUpsertRPCName)
 	defer trace.End(span)
 	var (
-		emu sync.Mutex
-		lmu sync.Mutex
+		errList []error
+		emu     sync.Mutex
+		lmu     sync.Mutex
 	)
 	eg, ectx := errgroup.New(ctx)
-	eg.SetLimit(s.multiConcurrency)
+	eg.SetLimit(s.multiLimit(ctx, false))
 	locs = &payload.Object_Locations{
 		Locations: make([]*payload.Object_Location, len(reqs.GetRequests())),
 	}
+	// The invalid-argument details are identical for every invalid request of
+	// the batch, so serialize the whole batch and resolve Addrs once, lazily.
+	var (
+		detailsBuilt bool
+		servingData  string
+		resourceName string
+	)
 	for i, r := range reqs.GetRequests() {
 		if r != nil && r.GetVector() != nil && len(r.GetVector().GetVector()) >= algorithm.MinimumVectorDimensionSize && r.GetVector().GetId() != "" {
 			idx := i
@@ -237,11 +240,7 @@ func (s *server) MultiUpsert(
 					st, _ := status.FromError(err)
 					errhandler.RecordSpanStatus(sspan, st, err)
 					emu.Lock()
-					if errs == nil {
-						errs = err
-					} else {
-						errs = errors.Join(errs, err)
-					}
+					errList = append(errList, err)
 					emu.Unlock()
 				} else if res != nil && res.GetUuid() == req.GetVector().GetId() && res.GetIps() != nil {
 					lmu.Lock()
@@ -258,19 +257,24 @@ func (s *server) MultiUpsert(
 			switch {
 			case r.GetVector() == nil, len(r.GetVector().GetVector()) < algorithm.MinimumVectorDimensionSize:
 				err = errors.ErrInvalidDimensionSize(len(r.GetVector().GetVector()), 0)
-				field = "vector"
+				field = vectorField
 			case r.GetVector().GetId() == "":
 				err = errors.ErrInvalidUUID(r.GetVector().GetId())
 				field = "uuid"
 			}
+			if !detailsBuilt {
+				servingData = errdetails.Serialize(reqs)
+				resourceName = fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx))
+				detailsBuilt = true
+			}
 			err = status.WrapWithInvalidArgument(vald.MultiUpsertRPCName+" API invalid vector argument", err,
 				&errdetails.RequestInfo{
 					RequestId:   r.GetVector().GetId(),
-					ServingData: errdetails.Serialize(reqs),
+					ServingData: servingData,
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.MultiUpsertRPCName,
-					ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
+					ResourceName: resourceName,
 				},
 				&errdetails.BadRequest{
 					FieldViolations: []*errdetails.BadRequestFieldViolation{
@@ -281,25 +285,15 @@ func (s *server) MultiUpsert(
 					},
 				}, info.Get())
 			emu.Lock()
-			if errs == nil {
-				errs = err
-			} else {
-				errs = errors.Join(errs, err)
-			}
+			errList = append(errList, err)
 			emu.Unlock()
 
 		}
 	}
-	err := eg.Wait()
-	if err != nil {
-		emu.Lock()
-		if errs == nil {
-			errs = err
-		} else {
-			errs = errors.Join(errs, err)
-		}
-		emu.Unlock()
+	if err := eg.Wait(); err != nil {
+		errList = append(errList, err)
 	}
+	errs = errors.Join(errList...)
 
 	if errs != nil {
 		st, _ := status.FromError(errs)

@@ -17,6 +17,9 @@ name: "ChatOps help"
 on:
   pull_request:
     types: [opened]
+defaults:
+  run:
+    shell: bash
 jobs:
   dump-contexts-to-log:
     timeout-minutes: 30

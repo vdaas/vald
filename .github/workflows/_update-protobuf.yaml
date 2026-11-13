@@ -26,6 +26,9 @@ on:
         required: true
       DISPATCH_TOKEN:
         required: true
+defaults:
+  run:
+    shell: bash
 jobs:
   dispatch:
     timeout-minutes: 30

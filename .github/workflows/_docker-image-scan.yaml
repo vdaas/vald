@@ -21,6 +21,9 @@ on:
         type: string
         description: "Build target. e.g. `agent-ngt`"
         required: true
+defaults:
+  run:
+    shell: bash
 jobs:
   scan:
     timeout-minutes: 30

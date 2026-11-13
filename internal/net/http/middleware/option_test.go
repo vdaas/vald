@@ -57,6 +57,45 @@ func TestWithErrorGroup(t *testing.T) {
 				return nil
 			},
 		},
+		{
+			name: "set default value when dur is empty",
+			dur:  "",
+			checkFunc: func(opt TimeoutOption) error {
+				got := new(timeout)
+				opt(got)
+
+				if got.dur != 3*time.Second {
+					return errors.Errorf("invalid param was set")
+				}
+				return nil
+			},
+		},
+		{
+			name: "set default value when dur is zero",
+			dur:  "0s",
+			checkFunc: func(opt TimeoutOption) error {
+				got := new(timeout)
+				opt(got)
+
+				if got.dur != 3*time.Second {
+					return errors.Errorf("invalid param was set")
+				}
+				return nil
+			},
+		},
+		{
+			name: "set default value when dur is negative",
+			dur:  "-1s",
+			checkFunc: func(opt TimeoutOption) error {
+				got := new(timeout)
+				opt(got)
+
+				if got.dur != 3*time.Second {
+					return errors.Errorf("invalid param was set")
+				}
+				return nil
+			},
+		},
 	}
 
 	for _, tc := range tests {

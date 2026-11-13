@@ -13,6 +13,209 @@
 // limitations under the License.
 package rest
 
+import (
+	"context"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"testing"
+
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
+	"github.com/vdaas/vald/apis/grpc/v1/vald"
+)
+
+const (
+	testID    = "uuid"
+	testAgent = "agent"
+)
+
+// recordServer records the request each RPC receives and returns a fixed response.
+type recordServer struct {
+	vald.UnimplementedValdServer
+	got any
+}
+
+func (s *recordServer) GetTimestamp(
+	_ context.Context, req *payload.Object_TimestampRequest,
+) (*payload.Object_Timestamp, error) {
+	s.got = req
+	return &payload.Object_Timestamp{Id: testID, Timestamp: 5}, nil
+}
+
+func (s *recordServer) UpdateTimestamp(
+	_ context.Context, req *payload.Update_TimestampRequest,
+) (*payload.Object_Location, error) {
+	s.got = req
+	return &payload.Object_Location{Name: testAgent}, nil
+}
+
+func (s *recordServer) RemoveByTimestamp(
+	_ context.Context, req *payload.Remove_TimestampRequest,
+) (*payload.Object_Locations, error) {
+	s.got = req
+	return &payload.Object_Locations{Locations: []*payload.Object_Location{{Name: testAgent}}}, nil
+}
+
+func (s *recordServer) IndexInfo(
+	_ context.Context, req *payload.Empty,
+) (*payload.Info_Index_Count, error) {
+	s.got = req
+	return &payload.Info_Index_Count{Stored: 7}, nil
+}
+
+func (s *recordServer) IndexDetail(
+	_ context.Context, req *payload.Empty,
+) (*payload.Info_Index_Detail, error) {
+	s.got = req
+	return &payload.Info_Index_Detail{Replica: 3}, nil
+}
+
+func (s *recordServer) IndexStatistics(
+	_ context.Context, req *payload.Empty,
+) (*payload.Info_Index_Statistics, error) {
+	s.got = req
+	return &payload.Info_Index_Statistics{Valid: true}, nil
+}
+
+func (s *recordServer) IndexStatisticsDetail(
+	_ context.Context, req *payload.Empty,
+) (*payload.Info_Index_StatisticsDetail, error) {
+	s.got = req
+	return &payload.Info_Index_StatisticsDetail{
+		Details: map[string]*payload.Info_Index_Statistics{testAgent: {Valid: true}},
+	}, nil
+}
+
+func (s *recordServer) IndexProperty(
+	_ context.Context, req *payload.Empty,
+) (*payload.Info_Index_PropertyDetail, error) {
+	s.got = req
+	return &payload.Info_Index_PropertyDetail{
+		Details: map[string]*payload.Info_Index_Property{testAgent: {}},
+	}, nil
+}
+
+func TestHandler_indexAndTimestampDelegateToVald(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		call     func(Handler, http.ResponseWriter, *http.Request) (int, error)
+		checkReq func(any) bool
+		name     string
+		method   string
+		body     string
+		wantBody string
+	}{
+		{
+			name:     "GetTimestamp",
+			call:     Handler.GetTimestamp,
+			method:   http.MethodGet,
+			body:     `{"id":{"id":"uuid"}}`,
+			wantBody: `"timestamp":"5"`,
+			checkReq: func(got any) bool {
+				req, ok := got.(*payload.Object_TimestampRequest)
+				return ok && req.GetId().GetId() == testID
+			},
+		},
+		{
+			name:     "UpdateTimestamp",
+			call:     Handler.UpdateTimestamp,
+			method:   http.MethodPost,
+			body:     `{"id":"uuid","timestamp":5}`,
+			wantBody: `"name":"agent"`,
+			checkReq: func(got any) bool {
+				req, ok := got.(*payload.Update_TimestampRequest)
+				return ok && req.GetId() == testID && req.GetTimestamp() == 5
+			},
+		},
+		{
+			name:     "RemoveByTimestamp",
+			call:     Handler.RemoveByTimestamp,
+			method:   http.MethodPost,
+			body:     `{"timestamps":[{"timestamp":5}]}`,
+			wantBody: `"locations"`,
+			checkReq: func(got any) bool {
+				req, ok := got.(*payload.Remove_TimestampRequest)
+				return ok && len(req.GetTimestamps()) == 1 &&
+					req.GetTimestamps()[0].GetTimestamp() == 5
+			},
+		},
+		{
+			name:     "IndexInfo",
+			call:     Handler.IndexInfo,
+			method:   http.MethodGet,
+			wantBody: `"stored":7`,
+			checkReq: func(got any) bool {
+				_, ok := got.(*payload.Empty)
+				return ok
+			},
+		},
+		{
+			name:     "IndexDetail",
+			call:     Handler.IndexDetail,
+			method:   http.MethodGet,
+			wantBody: `"replica":3`,
+			checkReq: func(got any) bool {
+				_, ok := got.(*payload.Empty)
+				return ok
+			},
+		},
+		{
+			name:     "IndexStatistics",
+			call:     Handler.IndexStatistics,
+			method:   http.MethodGet,
+			wantBody: `"valid":true`,
+			checkReq: func(got any) bool {
+				_, ok := got.(*payload.Empty)
+				return ok
+			},
+		},
+		{
+			name:     "IndexStatisticsDetail",
+			call:     Handler.IndexStatisticsDetail,
+			method:   http.MethodGet,
+			wantBody: `"details"`,
+			checkReq: func(got any) bool {
+				_, ok := got.(*payload.Empty)
+				return ok
+			},
+		},
+		{
+			name:     "IndexProperty",
+			call:     Handler.IndexProperty,
+			method:   http.MethodGet,
+			wantBody: `"details"`,
+			checkReq: func(got any) bool {
+				_, ok := got.(*payload.Empty)
+				return ok
+			},
+		},
+	}
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			srv := new(recordServer)
+			h := New(WithVald(srv))
+			req := httptest.NewRequestWithContext(
+				tt.Context(), test.method, "/", strings.NewReader(test.body))
+			rec := httptest.NewRecorder()
+			code, err := test.call(h, rec, req)
+			if err != nil {
+				tt.Fatalf("unexpected error: %v", err)
+			}
+			if code != http.StatusOK {
+				tt.Errorf("code = %d, want %d", code, http.StatusOK)
+			}
+			if !test.checkReq(srv.got) {
+				tt.Errorf("vald received %#v, want the decoded request", srv.got)
+			}
+			if body := rec.Body.String(); !strings.Contains(body, test.wantBody) {
+				tt.Errorf("body = %q, want it to contain %q", body, test.wantBody)
+			}
+		})
+	}
+}
+
 // NOT IMPLEMENTED BELOW
 //
 // func TestNew(t *testing.T) {

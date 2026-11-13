@@ -188,6 +188,46 @@ func Test_cache_Start(t *testing.T) {
 	}
 }
 
+// startExpiredRecorder records StartExpired calls without starting a goroutine.
+type startExpiredRecorder struct {
+	gache.Gache[any]
+	durs []time.Duration
+}
+
+func (r *startExpiredRecorder) StartExpired(_ context.Context, dur time.Duration) gache.Gache[any] {
+	r.durs = append(r.durs, dur)
+	return r
+}
+
+// gache.StartExpired builds a time.NewTicker from the duration inside a goroutine,
+// which panics (and kills the process) for a non-positive interval.
+func TestCache_Start_NonPositiveExpireCheckDuration(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name   string
+		dur    time.Duration
+		called bool
+	}{
+		{name: "unset (zero) does not start the expire daemon", dur: 0},
+		{name: "negative does not start the expire daemon", dur: -time.Second},
+		{name: "positive starts the expire daemon", dur: time.Second, called: true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			rec := new(startExpiredRecorder)
+			c := &cache[any]{gache: rec, expireCheckDur: tt.dur}
+			c.Start(t.Context())
+			if got := len(rec.durs) != 0; got != tt.called {
+				t.Fatalf("StartExpired called = %v, want %v", got, tt.called)
+			}
+			if tt.called && rec.durs[0] != tt.dur {
+				t.Errorf("StartExpired dur = %v, want %v", rec.durs[0], tt.dur)
+			}
+		})
+	}
+}
+
 func Test_cache_Get(t *testing.T) {
 	type args struct {
 		key string

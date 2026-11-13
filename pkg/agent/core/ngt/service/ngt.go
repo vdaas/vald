@@ -26,7 +26,6 @@ import (
 	"runtime"
 	"slices"
 	"strconv"
-	"sync/atomic"
 	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
@@ -44,6 +43,7 @@ import (
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/atomic"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/pkg/agent/internal/kvs"
 	"github.com/vdaas/vald/pkg/agent/internal/memstore"
@@ -161,6 +161,9 @@ const (
 	originIndexDirName = "origin"
 	brokenIndexDirName = "broken"
 
+	// inflightIndexingPollInterval is how often waitForInflightIndexing re-checks the indexing state.
+	inflightIndexingPollInterval = 100 * time.Millisecond
+
 	// use this only for tests. usually just leave the ctx value empty and let time.Now() be used.
 	saveIndexTimeKey contextSaveIndexTimeKey = "saveIndexTimeKey"
 )
@@ -247,7 +250,8 @@ func (n *ngt) copyNGT(src *ngt) {
 	n.vq = src.vq
 
 	// counters
-	n.wfci = src.wfci
+	// wfci is not copied: it counts CreateIndex callers waiting on this instance, and
+	// resetting it to the fresh instance's zero would wrap it when such a waiter leaves.
 	n.nobic = src.nobic
 	n.nopvq = atomic.Uint64{}
 
@@ -517,7 +521,9 @@ func (n *ngt) load(ctx context.Context, path string, opts ...core.Option) (err e
 				},
 			)
 			if err != nil {
-				return err
+				// keep the timeout identity: initNGT must not start another
+				// load while the abandoned one is still running.
+				return errors.Join(errors.ErrIndexLoadTimeout, err)
 			}
 			return errors.ErrIndexLoadTimeout
 		}
@@ -617,14 +623,19 @@ func needsBackup(backupPath string) bool {
 	metadataPath := filepath.Join(backupPath, metadata.AgentMetadataFileName)
 	meta, err := metadata.Load(metadataPath)
 	if err != nil {
-		return false
-	}
-
-	if meta.IsInvalid || meta.NGT.IndexCount > 0 {
+		// An empty or truncated metadata.json next to index data is a broken index
+		// (e.g. a crash while writing it), so back it up instead of letting rebuild delete it.
+		log.Warnf("metadata %s is unreadable, the index will be backed up: %v", metadataPath, err)
 		return true
 	}
 
-	return false
+	// Load reports a "null" or EOF decode as ErrMetadataFileEmpty; keep the nil guard as
+	// a defensive check. NGT is an omitempty pointer and is guarded below
+	// (this runs in New, without recover).
+	if meta == nil {
+		return true
+	}
+	return meta.IsInvalid || (meta.NGT != nil && meta.NGT.IndexCount > 0)
 }
 
 // rebuild rebuilds the index directory with a clean state. When it is required, it moves the current broken index
@@ -674,10 +685,16 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 
 	ctx := context.TODO()
 	err = n.load(ctx, n.path, opts...)
+	// A timed-out load leaves its goroutines running and still writing n.core,
+	// n.kvs and n.fmap, so no fallback may run alongside it; the process is
+	// expected to exit on this error.
+	if errors.Is(err, errors.ErrIndexLoadTimeout) {
+		return err
+	}
 	var current uint64
 	if err != nil {
 		if !n.enableCopyOnWrite {
-			log.Debug("failed to load vald index from %s\t error: %v", n.path, err)
+			log.Debugf("failed to load vald index from %s\t error: %v", n.path, err)
 			if n.kvs == nil {
 				n.kvs = kvs.New(kvs.WithConcurrency(n.kvsdbConcurrency))
 			} else if n.kvs.Len() > 0 {
@@ -712,6 +729,9 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 		return nil
 	}
 	err = n.load(ctx, n.oldPath, opts...)
+	if errors.Is(err, errors.ErrIndexLoadTimeout) {
+		return err
+	}
 	if err == nil {
 		if current != 0 && n.kvs.Len() < current {
 			log.Warnf(
@@ -722,8 +742,13 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 				n.oldPath,
 			)
 			err = n.load(ctx, n.path, opts...)
-			if err == nil {
+			// The primary has the same too-few kvsdb as on the first load, so
+			// accept that error as long as its index was loaded.
+			if err == nil || errors.Is(err, errors.ErrIndicesAreTooFewComparedToMetadata) && n.core != nil {
 				return nil
+			}
+			if errors.Is(err, errors.ErrIndexLoadTimeout) {
+				return err
 			}
 		} else {
 			return nil
@@ -731,9 +756,26 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 	}
 	log.Warnf("failed to load vald secondary index from %s and %s\t error: %v\ttrying to load from non-CoW index data from %s for backwards compatibility", n.path, n.oldPath, err, n.basePath)
 	err = n.load(ctx, n.basePath, opts...)
+	if errors.Is(err, errors.ErrIndexLoadTimeout) {
+		return err
+	}
 	if err == nil {
-		file.CopyDir(ctx, n.basePath, n.path)
+		if cerr := file.CopyDir(ctx, n.basePath, n.path); cerr != nil {
+			log.Warnf("failed to copy backwards-compatible index from %s to %s: %v", n.basePath, n.path, cerr)
+		}
 		return nil
+	}
+	if current != 0 {
+		// No other index is usable, so start up with the too-few primary rather
+		// than an empty index; its reload reports the same too-few error.
+		log.Warnf("failed to load vald backwards index from %s\t error: %v\ttrying to load from primary index data again from %s and start up with them", n.basePath, err, n.path)
+		err = n.load(ctx, n.path, opts...)
+		if err == nil || errors.Is(err, errors.ErrIndicesAreTooFewComparedToMetadata) && n.core != nil {
+			return nil
+		}
+		if errors.Is(err, errors.ErrIndexLoadTimeout) {
+			return err
+		}
 	}
 	tpath := n.tmpPath.Load().(string)
 	log.Warnf(
@@ -901,11 +943,9 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 			err = nil
 			select {
 			case <-ctx.Done():
-				err = n.CreateIndex(ctx, n.poolSize)
-				if errors.IsNot(err, errors.ErrUncommittedIndexNotFound) {
-					ech <- err
-					return errors.Join(ctx.Err(), err)
-				}
+				// No final CreateIndex here: ctx is already done, so createIndexLocked would refuse
+				// to touch the vqueue. Close (PostStop) runs the final CreateIndex/SaveIndex with a
+				// live ctx.
 				return ctx.Err()
 			case <-tick.C:
 				if n.vq != nil && !n.IsFlushing() && n.vq.IVQLen() >= n.alen {
@@ -946,6 +986,9 @@ func (n *ngt) Search(
 		}
 		if errors.Is(err, errors.ErrSearchResultEmptyButNoDataStored) && n.Len() == 0 {
 			return nil, nil
+		}
+		if errors.Is(err, errors.ErrNaNOrInfVector) {
+			return nil, err
 		}
 		log.Errorf("cgo error detected during search: ngt api returned error %v", err)
 		return nil, err
@@ -990,6 +1033,9 @@ func (n *ngt) LinearSearch(
 		}
 		if errors.Is(err, errors.ErrSearchResultEmptyButNoDataStored) && n.Len() == 0 {
 			return nil, nil
+		}
+		if errors.Is(err, errors.ErrNaNOrInfVector) {
+			return nil, err
 		}
 		log.Errorf("cgo error detected during linear search: ngt api returned error %v", err)
 		return nil, err
@@ -1067,17 +1113,18 @@ func (n *ngt) InsertMultipleWithTime(vecs map[string][]float32, t int64) (err er
 }
 
 func (n *ngt) insertMultiple(vecs map[string][]float32, now int64, validation bool) (err error) {
+	var errs []error
 	for uuid, vec := range vecs {
 		ierr := n.insert(uuid, vec, now, validation)
 		if ierr != nil {
-			if err != nil {
-				err = errors.Join(ierr, err)
-			} else {
-				err = ierr
-			}
+			errs = append(errs, ierr)
 		}
 	}
-	return err
+	// Join once into a flat error: joining per failure nested the result one
+	// level per ID and rebuilt every message, which is quadratic in failures.
+	// Reversing keeps the previous newest-first message order.
+	slices.Reverse(errs)
+	return errors.Join(errs...)
 }
 
 func (n *ngt) Update(uuid string, vec []float32) (err error) {
@@ -1098,6 +1145,11 @@ func (n *ngt) UpdateWithTime(uuid string, vec []float32, t int64) (err error) {
 }
 
 func (n *ngt) update(uuid string, vec []float32, t int64) (err error) {
+	// the insert runs at t+1, which wraps negative for MaxInt64 and would be
+	// dropped after the delete; reject before anything is deleted.
+	if t == math.MaxInt64 {
+		return errors.ErrInvalidTimestamp(t)
+	}
 	if err = n.readyForUpdate(uuid, vec, t); err != nil {
 		return err
 	}
@@ -1127,9 +1179,18 @@ func (n *ngt) UpdateMultipleWithTime(vecs map[string][]float32, t int64) (err er
 }
 
 func (n *ngt) updateMultiple(vecs map[string][]float32, t int64) (err error) {
+	// see update: t+1 must not wrap.
+	if t == math.MaxInt64 {
+		return errors.ErrInvalidTimestamp(t)
+	}
 	uuids := make([]string, 0, len(vecs))
+	// readyForUpdate failures are returned like update does (NotFound,
+	// InvalidArgument, AlreadyExists for an identical vector); the other IDs
+	// are still updated.
+	var errs []error
 	for uuid, vec := range vecs {
-		if err = n.readyForUpdate(uuid, vec, t); err != nil {
+		if rerr := n.readyForUpdate(uuid, vec, t); rerr != nil {
+			errs = append(errs, rerr)
 			delete(vecs, uuid)
 		} else {
 			uuids = append(uuids, uuid)
@@ -1137,19 +1198,20 @@ func (n *ngt) updateMultiple(vecs map[string][]float32, t int64) (err error) {
 	}
 	err = n.deleteMultiple(uuids, t, true) // `true` is to return NotFound error with non-existent ID
 	if err != nil {
-		return err
+		return errors.Join(append(errs, err)...)
 	}
 	t++
-	return n.insertMultiple(vecs, t, false)
+	if err = n.insertMultiple(vecs, t, false); err != nil {
+		errs = append(errs, err)
+	}
+	return errors.Join(errs...)
 }
 
 func (n *ngt) UpdateTimestamp(uuid string, ts int64, force bool) (err error) {
 	if n.IsFlushing() {
 		return errors.ErrFlushingIsInProgress
 	}
-	return memstore.UpdateTimestamp(n.kvs, n.vq, uuid, ts, force, func(oid uint32) ([]float32, error) {
-		return n.core.GetVector(uint(oid))
-	})
+	return memstore.UpdateTimestamp(n.kvs, n.vq, uuid, ts, force)
 }
 
 func (n *ngt) Delete(uuid string) (err error) {
@@ -1204,17 +1266,18 @@ func (n *ngt) DeleteMultipleWithTime(uuids []string, t int64) (err error) {
 }
 
 func (n *ngt) deleteMultiple(uuids []string, now int64, validation bool) (err error) {
+	var errs []error
 	for _, uuid := range uuids {
 		ierr := n.delete(uuid, now, validation)
 		if ierr != nil {
-			if err != nil {
-				err = errors.Join(ierr, err)
-			} else {
-				err = ierr
-			}
+			errs = append(errs, ierr)
 		}
 	}
-	return err
+	// Join once into a flat error: joining per failure nested the result one
+	// level per ID and rebuilt every message, which is quadratic in failures.
+	// Reversing keeps the previous newest-first message order.
+	slices.Reverse(errs)
+	return errors.Join(errs...)
 }
 
 // RegenerateIndexes deletes the KVS and file, and then re-generate the NGT instance.
@@ -1280,7 +1343,12 @@ func (n *ngt) RegenerateIndexes(ctx context.Context) (err error) {
 	if err != nil {
 		return err
 	}
+	old := n.core
 	n.copyNGT(nn)
+	// Free the replaced index; core.Close waits for in-flight calls on it.
+	if old != nil {
+		old.Close()
+	}
 
 	return n.loadStatistics(ctx)
 }
@@ -1329,23 +1397,54 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 	if err != nil {
 		return err
 	}
+	// created reports whether core.CreateIndex succeeded, so the k8s export below runs after
+	// the cimu/indexing window is released (search must not stay blocked on the API server)
+	// but only for a completed index creation.
+	created, err := n.createIndexLocked(ctx, poolSize)
+	if created && n.enableExportIndexInfo {
+		log.Info("exporting index info to k8s resource")
+		if eerr := n.exportMetricsOnCreateIndex(ctx); eerr != nil {
+			log.Errorf("failed to export index info to k8s resource: %v", eerr)
+			err = errors.Join(err, eerr)
+		}
+	}
+	return err
+}
+
+func (n *ngt) createIndexLocked(ctx context.Context, poolSize uint32) (created bool, err error) {
 	n.cimu.Lock()
 	defer n.cimu.Unlock()
 	n.indexing.Store(true)
 	now := time.Now().UnixNano()
-	defer n.indexing.Store(false)
-	defer n.gc()
-	ic = n.vq.IVQLen() + n.vq.DVQLen()
+	// Search is refused while indexing is set, so clear it as soon as the graph build
+	// finishes; the post-build statistics walk (read lock) and proactive GC run after it.
+	// cimu stays held until return, so another CreateIndex still cannot start early.
+	defer func() {
+		n.indexing.Store(false)
+		n.gc()
+	}()
+	ic := n.vq.IVQLen() + n.vq.DVQLen()
 	if ic == 0 {
-		return errors.ErrUncommittedIndexNotFound
+		return false, errors.ErrUncommittedIndexNotFound
+	}
+	// A done ctx makes the vqueue ranges stop after their first entry, so do not start a run
+	// that could apply only part of the queue; the entries stay queued for the next run.
+	if err = ctx.Err(); err != nil {
+		return false, err
 	}
 	log.Infof("create index operation started, uncommitted indexes = %d", ic)
 	log.Debug("create index delete phase started")
 	// vqProcessedCnt is a temporary counter to store the number of processed vqueue items.
 	// This will be added to nopvq after CreateIndex operation succeeds.
 	var vqProcessedCnt uint64
-	n.vq.RangePopDelete(ctx, now, func(uuid string) bool {
+	n.vq.RangePopDelete(ctx, now, func(uuid string, dts int64) bool {
 		log.Debugf("start delete operation for kvsdb id: %s", uuid)
+		// Newest wins: a delete older than the indexed object (e.g. a stale Remove, or the
+		// delete half of a stale Update whose insert is skipped below) must not remove it.
+		if _, kts, ok := n.kvs.Get(uuid); ok && kts > dts {
+			log.Debugf("skipped delete operation for kvsdb id: %s, delete timestamp %d is older than the indexed timestamp %d", uuid, dts, kts)
+			return false
+		}
 		oid, ok := n.kvs.Delete(uuid)
 		if !ok {
 			log.Warn(errors.ErrObjectIDNotFound(uuid))
@@ -1365,35 +1464,63 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 	})
 	log.Debug("create index delete phase finished")
 	n.gc()
-	log.Debug("create index insert phase started")
+	// RangePopDelete stops early only when ctx is done. Applying inserts after a partial delete
+	// phase could apply the insert half of an Update whose delete is still queued: kvs.Set would
+	// repoint the uuid to the new oid and leave the old oid orphaned in the core. Keep the inserts
+	// queued, but still build the graph when deletes were applied so that this run is counted
+	// (nocie) and the deletes get saved.
+	skipped := ctx.Err()
+	if skipped != nil && vqProcessedCnt == 0 {
+		return false, skipped
+	}
 	var icnt atomic.Uint32
-	n.vq.RangePopInsert(ctx, now, func(uuid string, vector []float32, timestamp int64) bool {
-		var oid uint
-		oid, err = n.core.Insert(vector)
-		if err != nil {
-			log.Warnf("failed to insert vector uuid: %s vec: %v to ngt index. error: %v", uuid, vector, err)
-			if errors.Is(err, errors.ErrIncompatibleDimensionSize(len(vector), n.dim)) {
-				log.Error(err)
+	if skipped != nil {
+		log.Warnf("create index insert phase skipped after %d deletes because the context is done: %v", vqProcessedCnt, skipped)
+	} else {
+		log.Debug("create index insert phase started")
+		n.vq.RangePopInsert(ctx, now, func(uuid string, vector []float32, timestamp int64) bool {
+			// Newest wins: an insert not newer than the indexed object (e.g. the insert half
+			// of a stale Update whose delete was skipped above) is dropped.
+			ooid, kts, exists := n.kvs.Get(uuid)
+			if exists && kts >= timestamp {
+				log.Debugf("skipped insert operation for kvsdb id: %s, insert timestamp %d is not newer than the indexed timestamp %d", uuid, timestamp, kts)
 				return true
 			}
+			var oid uint
 			oid, err = n.core.Insert(vector)
 			if err != nil {
-				log.Errorf("failed to retry insert vector uuid: %s vec: %v to ngt index. error: %v", uuid, vector, err)
-				return true
+				log.Warnf("failed to insert vector uuid: %s vec: %v to ngt index. error: %v", uuid, vector, err)
+				if errors.Is(err, errors.ErrIncompatibleDimensionSize(len(vector), n.dim)) ||
+					errors.Is(err, errors.ErrNaNOrInfVector) {
+					log.Error(err)
+					return true
+				}
+				oid, err = n.core.Insert(vector)
+				if err != nil {
+					log.Errorf("failed to retry insert vector uuid: %s vec: %v to ngt index. error: %v", uuid, vector, err)
+					return true
+				}
 			}
-		}
-		n.kvs.Set(uuid, uint32(oid), timestamp)
-		icnt.Add(1)
+			n.kvs.Set(uuid, uint32(oid), timestamp) //nolint:gosec // oid comes from NGT, whose ObjectID is a C unsigned int, so it always fits in uint32
+			icnt.Add(1)
+			if exists {
+				// The uuid still pointed to an older object whose delete was skipped or never
+				// queued; Set repointed it, so remove the old object instead of orphaning it.
+				if rerr := n.core.Remove(uint(ooid)); rerr != nil {
+					log.Errorf("failed to remove replaced oid: %d of uuid: %s from ngt index. error: %v", ooid, uuid, rerr)
+				}
+			}
 
-		n.fmu.Lock()
-		_, ok := n.fmap[uuid]
-		if ok {
-			delete(n.fmap, uuid)
-		}
-		n.fmu.Unlock()
-		vqProcessedCnt++
-		return true
-	})
+			n.fmu.Lock()
+			_, ok := n.fmap[uuid]
+			if ok {
+				delete(n.fmap, uuid)
+			}
+			n.fmu.Unlock()
+			vqProcessedCnt++
+			return true
+		})
+	}
 	if poolSize <= 0 {
 		if n.poolSize > 0 && n.poolSize < icnt.Load() {
 			poolSize = n.poolSize
@@ -1407,32 +1534,33 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 	err = n.core.CreateIndex(poolSize)
 	if err != nil {
 		log.Error("an error occurred on creating graph and tree phase:", err)
-		return err
+		return false, err
 	}
 
+	n.indexing.Store(false)
 	n.nocie.Add(1)
 	n.nopvq.Add(vqProcessedCnt)
+	created = true
 	log.Debug("create graph and tree phase finished")
 	log.Info("create index operation finished")
 
-	if n.enableExportIndexInfo {
-		log.Info("exporting index info to k8s resource")
-		if err := n.exportMetricsOnCreateIndex(ctx); err != nil {
-			log.Errorf("failed to export index info to k8s resource: %v", err)
-			return err
-		}
+	if skipped != nil {
+		return created, skipped
 	}
-	return n.loadStatistics(ctx)
+	return created, n.loadStatistics(ctx)
 }
 
 func (n *ngt) loadStatistics(ctx context.Context) (err error) {
 	if n.IsStatisticsEnabled() {
 		log.Info("loading index statistics to cache")
-		var stats *core.GraphStatistics
+		var (
+			stats *core.GraphStatistics
+			serr  error // written only by the goroutine; read after done
+		)
 		done := make(chan struct{})
 		n.eg.Go(safety.RecoverFunc(func() error {
 			defer close(done)
-			stats, err = n.core.GetGraphStatistics(ctx, core.AdditionalStatistics)
+			stats, serr = n.core.GetGraphStatistics(ctx, core.AdditionalStatistics)
 			return nil
 		}))
 		select {
@@ -1440,7 +1568,7 @@ func (n *ngt) loadStatistics(ctx context.Context) (err error) {
 			return ctx.Err()
 		case <-done:
 		}
-		if err != nil {
+		if err = serr; err != nil {
 			log.Errorf("failed to load index statistics to cache: %v", err)
 			return err
 		}
@@ -1554,7 +1682,15 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 	if n.lastNocie.Load() == nocie {
 		return err
 	}
-	n.lastNocie.Swap(nocie)
+	// Mark this generation as saved up front so concurrent saves are deduplicated,
+	// but roll it back if the save fails; otherwise every later SaveIndex would
+	// skip until the next CreateIndex and the new index would never be persisted.
+	prev := n.lastNocie.Swap(nocie)
+	defer func() {
+		if err != nil {
+			n.lastNocie.CompareAndSwap(nocie, prev)
+		}
+	}()
 	err = func() error {
 		ticker := time.NewTicker(time.Second)
 		defer ticker.Stop()
@@ -1616,7 +1752,13 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 				mt = nil
 			}()
 			var mu sync.Mutex
-			n.kvs.Range(ectx, func(key string, id uint32, ts int64) bool {
+			// Take the snapshot with a non-cancelable context: kvs.Range silently
+			// stops early on cancellation, and the kvsdb/timestamp files below are
+			// truncated and rewritten from this snapshot (and kvsLen is recorded as
+			// the metadata IndexCount), so a partial range would persist a truncated
+			// uuid->id map. The file writes and the index save below do not observe
+			// ctx either, so the snapshot now completes like they do.
+			n.kvs.Range(context.WithoutCancel(ectx), func(key string, id uint32, ts int64) bool {
 				mu.Lock()
 				m[key] = id
 				mt[key] = ts
@@ -1813,7 +1955,7 @@ func (n *ngt) moveAndSwitchSavedData(ctx context.Context) (err error) {
 	path := n.tmpPath.Load().(string)
 	err = file.MoveDir(ctx, path, n.path)
 	if err != nil {
-		log.Warnf("failed to move temporary index data from %s to %s error: %v, trying to rollback secondary backup data from %s to %s", path, n.path, n.oldPath, n.path, err)
+		log.Warnf("failed to move temporary index data from %s to %s error: %v, trying to rollback secondary backup data from %s to %s", path, n.path, err, n.oldPath, n.path)
 		return file.MoveDir(ctx, n.oldPath, n.path)
 	}
 	defer log.Warnf("finished to copy index from %s => %s => %s", path, n.path, n.oldPath)
@@ -1955,6 +2097,14 @@ func (n *ngt) Close(ctx context.Context) (err error) {
 			log.Info("skip create and save index operation on close because this is read replica")
 			return err
 		}
+		// An auto-index CreateIndex/SaveIndex started by Start may still be running: its batch is
+		// already popped from the vqueue (so the CreateIndex below sees nothing to do) while nocie
+		// is not bumped yet (so the SaveIndex below is deduplicated). Wait for it, bounded by ctx,
+		// so the final SaveIndex persists that batch. Both flags are cleared by defers, and a
+		// CreateIndex waiter (wfci) leaves its wait loop on its own ctx or once indexing ends.
+		if werr := n.waitForInflightIndexing(ctx); werr != nil {
+			log.Warnf("stopped waiting for in-flight create/save index operation on close: %v", werr)
+		}
 		cerr := n.CreateIndex(ctx, n.poolSize)
 		if errors.IsNot(cerr, errors.ErrUncommittedIndexNotFound, context.Canceled, context.DeadlineExceeded) {
 			if err != nil {
@@ -1973,6 +2123,20 @@ func (n *ngt) Close(ctx context.Context) (err error) {
 		}
 	}
 	return err
+}
+
+// waitForInflightIndexing blocks until no CreateIndex/SaveIndex is running or waiting, or ctx is done.
+func (n *ngt) waitForInflightIndexing(ctx context.Context) error {
+	ticker := time.NewTicker(inflightIndexingPollInterval)
+	defer ticker.Stop()
+	for n.IsIndexing() || n.IsSaving() || atomic.LoadUint64(&n.wfci) > 0 {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-ticker.C:
+		}
+	}
+	return nil
 }
 
 func (n *ngt) BrokenIndexCount() uint64 {
@@ -2058,17 +2222,23 @@ func (n *ngt) toSearchResponse(
 	res = &payload.Search_Response{
 		Results: make([]*payload.Object_Distance, 0, len(sr)),
 	}
+	// One backing array for all results instead of one allocation per result.
+	dists := make([]payload.Object_Distance, len(sr))
 	for _, d := range sr {
 		if err = d.Error; d.ID == 0 && err != nil {
 			log.Warnf("an error occurred while searching: %v", err)
 			continue
 		}
+		if math.IsNaN(float64(d.Distance)) {
+			// same policy as the LB aggregation rankable: a NaN distance is not rankable
+			continue
+		}
 		key, _, ok := n.kvs.GetInverse(d.ID)
 		if ok {
-			res.Results = append(res.GetResults(), &payload.Object_Distance{
-				Id:       key,
-				Distance: d.Distance,
-			})
+			dist := &dists[len(res.Results)]
+			dist.Id = key
+			dist.Distance = d.Distance
+			res.Results = append(res.Results, dist)
 		} else {
 			log.Warn("not found", d.ID, d.Distance)
 		}

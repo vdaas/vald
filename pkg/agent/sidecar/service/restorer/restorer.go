@@ -86,12 +86,21 @@ func (r *restorer) Start(ctx context.Context) (<-chan error, error) {
 			defer r.bo.Close()
 		}
 
+		var ok bool
 		for {
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
-			case err = <-sech:
-			case err = <-rech:
+			case err, ok = <-sech:
+				if !ok {
+					// closed channels are always ready; stop selecting them
+					// or this loop busy-spins until ctx ends.
+					sech = nil
+				}
+			case err, ok = <-rech:
+				if !ok {
+					rech = nil
+				}
 			}
 			if err != nil {
 				select {
@@ -125,11 +134,9 @@ func (r *restorer) startRestore(ctx context.Context) (<-chan error, error) {
 	restore := func(ctx context.Context) (any, bool, error) {
 		err := r.restore(ctx)
 		if err != nil {
+			// Only the final result is reported on ech (below): an attempt that a
+			// later retry recovers from must not fail the init container.
 			log.Errorf("restoring failed: %s", err)
-			select {
-			case <-ctx.Done():
-			case ech <- err:
-			}
 			return nil, true, err
 		}
 
@@ -177,24 +184,52 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 
 	log.Infof("started to restore directory %s", r.dir)
 
+	// written holds the regular files this attempt created (including one that
+	// may be partially written). On failure they are removed so that a retry
+	// does not hit them and mistake them for pre-existing data.
+	var written []string
+	defer func() {
+		if err == nil {
+			return
+		}
+		for _, path := range written {
+			if rerr := os.Remove(path); rerr != nil && !errors.Is(rerr, fs.ErrNotExist) {
+				log.Warnf("failed to remove %s left by a failed restore: %v", path, rerr)
+			}
+		}
+	}()
+
 	var (
 		pr io.ReadCloser
 		pw io.WriteCloser
 	)
-	pr, pw = io.Pipe()
-	pr, err = io.NewReadCloserWithContext(ctx, pr)
+	// rpw is kept unwrapped because only *io.PipeWriter has CloseWithError.
+	rpr, rpw := io.Pipe()
+	pr, err = io.NewReadCloserWithContext(ctx, rpr)
 	if err != nil {
 		log.Warn(err)
 		return err
 	}
 	defer pr.Close()
-	pw, err = io.NewWriteCloserWithContext(ctx, pw)
+	pw, err = io.NewWriteCloserWithContext(ctx, rpw)
 	if err != nil {
 		log.Warn(err)
 		return err
 	}
 	r.eg.Go(safety.RecoverFunc(func() (err error) {
-		defer pw.Close()
+		defer func() {
+			// Propagate the read/copy error to the pipe reader. A plain Close()
+			// surfaces a clean io.EOF, so a truncated archive would be accepted
+			// as complete. On success err is nil and this behaves like Close().
+			if e := rpw.CloseWithError(err); e != nil {
+				log.Errorf("error on closing pipe writer: %s", e)
+			}
+			// restore receives the error through the pipe. It is not returned to
+			// the errgroup as well: that may be the process-wide group, where a
+			// failed attempt would cancel the daemon context and end the restore
+			// retry loop.
+			err = nil
+		}()
 		sr, err := r.storage.Reader(ctx)
 		if err != nil {
 			if errors.Is(err, io.EOF) {
@@ -222,23 +257,41 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 				log.Infof("finished to read and copy data from storage to io pipe by returning io.EOF error: %v", err)
 				return nil
 			}
+			// restore() closed its end of the pipe because it has already decided
+			// the result (e.g. the target file already exists). That is a normal
+			// stop, not a failure: returning it would record an error on the
+			// shared errgroup and fail the daemon shutdown.
+			if errors.Is(err, io.ErrClosedPipe) {
+				return nil
+			}
 			return err
 		}
 
 		return nil
 	}))
 
+	// When another task of the errgroup fails, the errgroup cancels ctx with that
+	// error as the cause, and the loop may see the cancellation first.
+	// Report the cause so the failure is not masked as "context canceled".
+	canceled := func(err error) error {
+		if cause := context.Cause(ctx); cause != nil && errors.Is(err, context.Canceled) {
+			return cause
+		}
+		return err
+	}
+
 	tr := tar.NewReader(pr)
 
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return canceled(ctx.Err())
 		default:
 		}
 
 		header, err := tr.Next()
 		if err != nil {
+			err = canceled(err)
 			log.Warn(err)
 			if errors.Is(err, io.EOF) {
 				log.Infof("finished to restore directory %s finished by returning io.EOF error: %v", r.dir, err)
@@ -273,8 +326,12 @@ func (r *restorer) restore(ctx context.Context) (err error) {
 				if errors.Is(err, errors.ErrFileAlreadyExists(target)) {
 					return nil
 				}
+				// WriteFile only reaches open/copy for a target that did not
+				// exist, so the target (possibly partial) belongs to this attempt.
+				written = append(written, target)
 				return err
 			}
+			written = append(written, target)
 		}
 	}
 }

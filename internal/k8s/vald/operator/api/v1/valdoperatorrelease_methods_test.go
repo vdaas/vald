@@ -74,11 +74,9 @@ func TestMachineResource_GetResourceList(t *testing.T) {
 
 func newValdOperatorReleaseFixture() *ValdOperatorRelease {
 	return &ValdOperatorRelease{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "fixture",
-			Namespace: "default",
-			Labels:    map[string]string{"role": "green"},
-		},
+		Name:      "fixture",
+		Namespace: "default",
+		Labels:    map[string]string{"role": "green"},
 		Spec: ValdOperatorReleaseSpec{
 			Infrastructure: []ValdOperatorReleaseInfra{
 				{

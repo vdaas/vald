@@ -2357,6 +2357,35 @@ func TestWithHooks(t *testing.T) {
 	}
 }
 
+// time.NewTicker panics for a non-positive interval, so the option must never store one.
+func TestWithInitialPingDuration_NonPositive(t *testing.T) {
+	t.Parallel()
+	// invalidDuration does not parse as a time.Duration.
+	const invalidDuration = "invalid"
+	tests := []struct {
+		name string
+		dur  string
+		want time.Duration
+	}{
+		{name: "zero falls back to 50ms", dur: "0s", want: 50 * time.Millisecond},
+		{name: "negative falls back to 50ms", dur: "-1s", want: 50 * time.Millisecond},
+		{name: "invalid falls back to 50ms", dur: invalidDuration, want: 50 * time.Millisecond},
+		{name: "positive is kept", dur: "10ms", want: 10 * time.Millisecond},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			r := new(redisClient)
+			if err := WithInitialPingDuration(tt.dur)(r); err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if r.initialPingDuration != tt.want {
+				t.Errorf("initialPingDuration = %v, want %v", r.initialPingDuration, tt.want)
+			}
+		})
+	}
+}
+
 // NOT IMPLEMENTED BELOW
 //
 // func TestWithNetwork(t *testing.T) {

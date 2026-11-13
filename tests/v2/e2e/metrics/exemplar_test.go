@@ -378,6 +378,39 @@ func BenchmarkExemplar_Offer(b *testing.B) {
 	})
 }
 
+func TestShardedExemplar_DetailedSnapshot_MergesAverageFromAllShards(t *testing.T) {
+	e, err := NewExemplar(WithExemplarCapacity(4), WithExemplarNumShards(2))
+	if err != nil {
+		t.Fatal(err)
+	}
+	se, ok := e.(*shardedExemplar)
+	if !ok {
+		t.Fatalf("expected *shardedExemplar, got %T", e)
+	}
+	if len(se.shards) != 2 {
+		t.Fatalf("expected 2 shards, got %d", len(se.shards))
+	}
+
+	// Offer directly to each shard so the test does not depend on shard hashing.
+	// While a shard holds fewer than k items every offer is also kept as an average sample.
+	se.shards[0].Offer(10*time.Millisecond, "shard0", nil, "")
+	se.shards[1].Offer(20*time.Millisecond, "shard1", nil, "")
+
+	details, err := se.DetailedSnapshot()
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := make(map[string]struct{}, len(details.Average))
+	for _, item := range details.Average {
+		got[item.RequestID] = struct{}{}
+	}
+	for _, id := range []string{"shard0", "shard1"} {
+		if _, ok := got[id]; !ok {
+			t.Errorf("average samples lack %q from its shard: %v", id, got)
+		}
+	}
+}
+
 func TestExemplar_Categories(t *testing.T) {
 	type args struct {
 		opts []ExemplarOption

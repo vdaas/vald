@@ -14,6 +14,172 @@
 
 package usecase
 
+import (
+	"context"
+	"reflect"
+	"slices"
+	"testing"
+
+	iconf "github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/errors"
+	memmetrics "github.com/vdaas/vald/internal/observability/metrics/mem"
+	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
+)
+
+type stopOrderObs struct{ calls *[]string }
+
+func (*stopOrderObs) PreStart(context.Context) error { return nil }
+
+func (*stopOrderObs) Start(context.Context) <-chan error { return nil }
+
+func (o *stopOrderObs) Stop(context.Context) error {
+	*o.calls = append(*o.calls, "observability")
+	return nil
+}
+
+type stopOrderSrv struct{ calls *[]string }
+
+func (*stopOrderSrv) ListenAndServe(context.Context) <-chan error { return nil }
+
+func (s *stopOrderSrv) Shutdown(context.Context) error {
+	*s.calls = append(*s.calls, "server")
+	return nil
+}
+
+// Stop used to stop observability before shutting the server down, so the
+// telemetry of the requests drained during Shutdown was dropped.
+func TestRun_Stop_shutsDownServerBeforeObservability(t *testing.T) {
+	t.Parallel()
+	var calls []string
+	r := &run{
+		server:        &stopOrderSrv{calls: &calls},
+		observability: &stopOrderObs{calls: &calls},
+	}
+	if err := r.Stop(t.Context()); err != nil {
+		t.Fatalf("Stop() = %v, want nil", err)
+	}
+	if want := []string{"server", "observability"}; !slices.Equal(calls, want) {
+		t.Errorf("Stop() call order = %v, want %v", calls, want)
+	}
+}
+
+type closeStub struct {
+	service.NGT
+	err error
+}
+
+func (s *closeStub) Close(context.Context) error { return s.err }
+
+type obsStub struct{ err error }
+
+func (*obsStub) PreStart(context.Context) error { return nil }
+
+func (*obsStub) Start(context.Context) <-chan error { return nil }
+
+func (s *obsStub) Stop(context.Context) error { return s.err }
+
+type srvStub struct{ err error }
+
+func (*srvStub) ListenAndServe(context.Context) <-chan error { return nil }
+
+func (s *srvStub) Shutdown(context.Context) error { return s.err }
+
+func TestRun_PostStop(t *testing.T) {
+	t.Parallel()
+
+	closeErr := errors.New("close failed")
+	tests := []struct {
+		err  error
+		name string
+	}{
+		{name: "propagates the Close error", err: closeErr},
+		{name: "returns nil when Close succeeds"},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			r := &run{ngt: &closeStub{err: tc.err}}
+			if got := r.PostStop(t.Context()); !errors.Is(got, tc.err) {
+				t.Errorf("PostStop() = %v, want %v", got, tc.err)
+			}
+		})
+	}
+}
+
+func TestRun_Stop(t *testing.T) {
+	t.Parallel()
+
+	obsErr := errors.New("observability stop failed")
+	srvErr := errors.New("shutdown failed")
+	tests := []struct {
+		name    string
+		obs     *obsStub
+		srvErr  error
+		wantErr []error
+	}{
+		{name: "propagates the observability Stop error", obs: &obsStub{err: obsErr}, wantErr: []error{obsErr}},
+		{name: "propagates the server Shutdown error", obs: &obsStub{}, srvErr: srvErr, wantErr: []error{srvErr}},
+		{name: "joins both errors", obs: &obsStub{err: obsErr}, srvErr: srvErr, wantErr: []error{obsErr, srvErr}},
+		{name: "returns the server error without observability", srvErr: srvErr, wantErr: []error{srvErr}},
+		{name: "returns nil on success", obs: &obsStub{}},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			r := &run{server: &srvStub{err: tc.srvErr}}
+			if tc.obs != nil {
+				r.observability = tc.obs
+			}
+			got := r.Stop(t.Context())
+			if len(tc.wantErr) == 0 {
+				if got != nil {
+					t.Fatalf("Stop() = %v, want nil", got)
+				}
+				return
+			}
+			for _, want := range tc.wantErr {
+				if !errors.Is(got, want) {
+					t.Errorf("Stop() = %v, want it to wrap %v", got, want)
+				}
+			}
+		})
+	}
+}
+
+func TestWithMemMetrics(t *testing.T) {
+	t.Parallel()
+	memType := reflect.TypeOf(memmetrics.New())
+	tests := []struct {
+		cfg     *iconf.Observability
+		name    string
+		wantMem int
+	}{
+		{name: "nil observability config", cfg: nil, wantMem: 1},
+		{name: "nil metrics config", cfg: &iconf.Observability{}, wantMem: 1},
+		{name: "enable_memory false", cfg: &iconf.Observability{Metrics: &iconf.Metrics{}}, wantMem: 1},
+		{
+			name:    "enable_memory true is added by NewWithConfig",
+			cfg:     &iconf.Observability{Metrics: &iconf.Metrics{EnableMemory: true}},
+			wantMem: 0,
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			got := withMemMetrics(tc.cfg)
+			var n int
+			for _, m := range got {
+				if reflect.TypeOf(m) == memType {
+					n++
+				}
+			}
+			if n != tc.wantMem {
+				t.Errorf("mem metrics count = %d, want %d", n, tc.wantMem)
+			}
+		})
+	}
+}
+
 // NOT IMPLEMENTED BELOW
 //
 // func TestNew(t *testing.T) {

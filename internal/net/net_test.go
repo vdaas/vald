@@ -24,6 +24,7 @@ import (
 	"reflect"
 	"slices"
 	"testing"
+	"time"
 
 	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/errors"
@@ -31,8 +32,12 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/log/logger"
 	"github.com/vdaas/vald/internal/strings"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
+
+// bracketedIPv6 is an IPv6 literal in the bracketed host form, without a port.
+const bracketedIPv6 = "[2001:db8::1]"
 
 func TestMain(m *testing.M) {
 	log.Init(log.WithLoggerType(logger.NOP.String()))
@@ -301,6 +306,19 @@ func TestParse(t *testing.T) {
 			},
 		},
 		{
+			name: "parse success with bracketed IPv6 address without port",
+			args: args{
+				addr: bracketedIPv6,
+			},
+			want: want{
+				wantHost: "2001:db8::1",
+				wantPort: uint16(80),
+				isV4:     false,
+				isV6:     true,
+				isLocal:  false,
+			},
+		},
+		{
 			name: "return true if it is local address",
 			args: args{
 				addr: "localhost:8080",
@@ -503,6 +521,20 @@ func TestSplitHostPort(t *testing.T) {
 				err: &net.AddrError{
 					Addr: "2001:db8::1",
 					Err:  "too many colons in address",
+				},
+			},
+		},
+		{
+			name: "return the unbracketed host and default port when port number missing in bracketed IPv6 address",
+			args: args{
+				hostport: bracketedIPv6,
+			},
+			want: want{
+				wantHost: "2001:db8::1",
+				wantPort: uint16(80),
+				err: &net.AddrError{
+					Addr: bracketedIPv6,
+					Err:  "missing port in address",
 				},
 			},
 		},
@@ -1295,6 +1327,195 @@ func TestDistinctAddrs(t *testing.T) {
 	}
 }
 
+// TestIsIPLiteral_cornerCases checks IsIPLiteral
+// against corner cases: leading/trailing whitespace, IPv4-in-IPv6,
+// zone IDs (e.g. fe80::1%eth0), invalid formats, ports, and bracketed without ports.
+func TestIsIPLiteral_cornerCases(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		addr string
+		want bool
+	}{
+		// 1. Whitespace Corner Cases
+		{name: "leading space IPv4", addr: " 192.168.1.1", want: false},
+		{name: "trailing space IPv4", addr: "192.168.1.1 ", want: false},
+		{name: "surrounding space IPv4", addr: " 192.168.1.1 ", want: false},
+		{name: "tab padded IPv4", addr: "\t192.168.1.1\t", want: false},
+		{name: "newline padded IPv4", addr: "\n192.168.1.1\n", want: false},
+		{name: "leading space IPv6", addr: " ::1", want: false},
+		{name: "trailing space IPv6", addr: "::1 ", want: false},
+		{name: "leading space with port", addr: " 192.168.1.1:8080", want: false},
+		// Note on trailing space with port: net.SplitHostPort splits before parsing host,
+		// so host "192.168.1.1" parses as IP literal while port string contains the space.
+		{name: "trailing space on port", addr: "192.168.1.1:8080 ", want: true},
+		{name: "bracketed IPv6 with leading space", addr: " [::1]:8080", want: false},
+		{name: "bracketed IPv6 with trailing space on port", addr: "[::1]:8080 ", want: true},
+
+		// 2. IPv4-in-IPv6 / IPv4-mapped IPv6
+		{name: "IPv4-mapped IPv6 standard", addr: "::ffff:192.0.2.1", want: true},
+		{name: "IPv4-mapped IPv6 loopback", addr: "::ffff:127.0.0.1", want: true},
+		{name: "IPv4-mapped IPv6 bracketed", addr: "[::ffff:192.0.2.1]", want: true},
+		{name: "IPv4-mapped IPv6 bracketed with port", addr: "[::ffff:192.0.2.1]:8080", want: true},
+		{name: "IPv4-mapped IPv6 uppercase", addr: "::FFFF:192.0.2.1", want: true},
+		{name: "IPv4-compatible IPv6 (deprecated)", addr: "::192.0.2.1", want: true},
+
+		// 3. Zone IDs (RFC 4007 / RFC 6874)
+		{name: "IPv6 link-local with zone ID eth0", addr: "fe80::1%eth0", want: true},
+		{name: "IPv6 link-local bracketed with zone ID eth0", addr: "[fe80::1%eth0]", want: true},
+		{name: "IPv6 link-local bracketed with zone ID and port", addr: "[fe80::1%eth0]:8080", want: true},
+		{name: "IPv6 link-local with numeric zone ID", addr: "fe80::1%1", want: true},
+		{name: "IPv6 link-local bracketed with numeric zone ID", addr: "[fe80::1%1]", want: true},
+		{name: "IPv6 link-local bracketed with numeric zone and port", addr: "[fe80::1%1]:443", want: true},
+		{name: "IPv6 zone ID without brackets but with port", addr: "fe80::1%eth0:8080", want: true},
+
+		// 4. Bracketed Literals without Ports
+		{name: "bracketed IPv6 loopback", addr: "[::1]", want: true},
+		{name: "bracketed IPv6 unspecified", addr: "[::]", want: true},
+		{name: "bracketed full IPv6", addr: "[2001:db8::1]", want: true},
+		{name: "bracketed IPv4", addr: "[192.168.1.1]", want: true},
+		{name: "bracketed empty", addr: "[]", want: false},
+		{name: "bracketed whitespace", addr: "[ ]", want: false},
+		{name: "bracketed hostname", addr: "[localhost]", want: false},
+		{name: "bracketed domain", addr: "[example.com]", want: false},
+		{name: "unclosed opening bracket", addr: "[::1", want: false},
+		{name: "unopened closing bracket", addr: "::1]", want: false},
+		{name: "double bracketed", addr: "[[::1]]", want: false},
+
+		// 5. Invalid Formats & Edge Cases
+		{name: "IPv4 octet overflow", addr: "256.256.256.256", want: false},
+		{name: "IPv4 5 octets", addr: "1.2.3.4.5", want: false},
+		{name: "IPv4 3 octets", addr: "1.2.3", want: false},
+		{name: "IPv4 trailing dot", addr: "192.168.1.1.", want: false},
+		{name: "IPv6 triple colon", addr: ":::1", want: false},
+		{name: "IPv6 invalid hex", addr: "2001:xyz::1", want: false},
+		{name: "empty string", addr: "", want: false},
+		{name: "single colon", addr: ":", want: false},
+		{name: "double colon alone (unspecified IPv6)", addr: "::", want: true},
+		{name: "just port", addr: ":8080", want: false},
+
+		// 6. Hostnames with and without Ports (Must be false)
+		{name: "hostname localhost", addr: "localhost", want: false},
+		{name: "hostname localhost with port", addr: "localhost:8080", want: false},
+		{name: "fully qualified domain", addr: "vald-agent.default.svc.cluster.local", want: false},
+		{name: "fully qualified domain with port", addr: "vald-agent.default.svc.cluster.local:8081", want: false},
+		{name: "hostname with numbers", addr: "host-1.local", want: false},
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			got := IsIPLiteral(test.addr)
+			if got != test.want {
+				tt.Errorf("IsIPLiteral(%q) = %v, want %v", test.addr, got, test.want)
+			}
+		})
+	}
+}
+
+// TestParse_robustness stress-tests Parse with
+// missing port addresses, empty hostnames, malformed strings, and concurrent invocations.
+func TestParse_robustness(t *testing.T) {
+	t.Parallel()
+
+	inputs := []struct {
+		addr        string
+		checkHost   string
+		checkPort   uint16
+		expectError bool
+	}{
+		// Missing port addresses
+		{addr: "192.168.1.1", expectError: false, checkHost: "192.168.1.1", checkPort: defaultPort},
+		{addr: "127.0.0.1", expectError: false, checkHost: "127.0.0.1", checkPort: defaultPort},
+		{addr: "[::1]", expectError: false, checkHost: "::1", checkPort: defaultPort},
+		{addr: "::1", expectError: false, checkHost: "::1", checkPort: defaultPort},
+		{addr: "[2001:db8::1]", expectError: false, checkHost: "2001:db8::1", checkPort: defaultPort},
+
+		// Empty hostnames
+		{addr: ":8080", expectError: false, checkHost: "127.0.0.1", checkPort: 8080},
+		{addr: ":", expectError: false, checkHost: "127.0.0.1", checkPort: defaultPort},
+		{addr: ":0", expectError: false, checkHost: "127.0.0.1", checkPort: defaultPort},
+		{addr: "", expectError: false, checkHost: "localhost", checkPort: defaultPort},
+
+		// Malformed inputs (graceful error, no panic)
+		{addr: "   ", expectError: true},
+		{addr: "   :8080", expectError: true},
+		{addr: "invalid_unresolvable_hostname_999999.local", expectError: true},
+		{addr: "256.256.256.256:8080", expectError: true},
+		{addr: "[::1:8080", expectError: true},
+	}
+
+	for _, tc := range inputs {
+		test := tc
+		t.Run("input_"+test.addr, func(tt *testing.T) {
+			tt.Parallel()
+			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+			defer cancel()
+
+			host, port, _, _, _, err := Parse(ctx, test.addr)
+			if test.expectError {
+				if err == nil {
+					tt.Errorf("Parse(%q) expected error, got nil (host=%q, port=%d)", test.addr, host, port)
+				}
+			} else {
+				if err != nil {
+					tt.Errorf("Parse(%q) unexpected error: %v", test.addr, err)
+				}
+				if test.checkHost != "" && host != test.checkHost {
+					tt.Errorf("Parse(%q) host = %q, want %q", test.addr, host, test.checkHost)
+				}
+				if test.checkPort != 0 && port != test.checkPort {
+					tt.Errorf("Parse(%q) port = %d, want %d", test.addr, port, test.checkPort)
+				}
+			}
+		})
+	}
+}
+
+// TestParse_concurrent verifies thread-safety, zero panics,
+// and zero memory growth under concurrent execution of Parse.
+func TestParse_concurrent(t *testing.T) {
+	t.Parallel()
+
+	const concurrency = 20
+	const iterations = 500
+
+	inputs := []string{
+		"127.0.0.1",
+		"127.0.0.1:8080",
+		":8080",
+		"[::1]",
+		"[::1]:9090",
+		":",
+		"localhost:8080",
+	}
+
+	eg, _ := errgroup.New(context.Background())
+	for i := range concurrency {
+		eg.Go(func() error {
+			for j := range iterations {
+				addr := inputs[(i+j)%len(inputs)]
+				ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+				host, port, _, _, _, err := Parse(ctx, addr)
+				cancel()
+				if err != nil {
+					return fmt.Errorf("unexpected Parse error for %q: %w", addr, err)
+				}
+				if host == "" || port == 0 {
+					return fmt.Errorf("invalid Parse result for %q: host=%q port=%d", addr, host, port)
+				}
+			}
+			return nil
+		})
+	}
+
+	if err := eg.Wait(); err != nil {
+		t.Fatalf("concurrent Parse stress failed: %v", err)
+	}
+}
+
 // NOT IMPLEMENTED BELOW
 //
 // func TestIsUDP(t *testing.T) {
@@ -1306,8 +1527,8 @@ func TestDistinctAddrs(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want, bool) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -1391,8 +1612,8 @@ func TestDistinctAddrs(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want, bool) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -1479,8 +1700,8 @@ func TestDistinctAddrs(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want, []netip.Addr, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -1561,3 +1782,143 @@ func TestDistinctAddrs(t *testing.T) {
 // 		})
 // 	}
 // }
+
+// TestScanPorts_contextDone verifies that ScanPorts terminates and reports the context error
+// (not partial ports, not ErrNoPortAvailable) when the context is already done.
+// The uint16 loop variable used to wrap to 0 after 65535, so start == 0 && end == 65535 never
+// finished. The contexts are done up front so that no real large scan is performed.
+func TestScanPorts_contextDone(t *testing.T) {
+	t.Parallel()
+	type test struct {
+		ctxFunc func(*testing.T) (context.Context, context.CancelFunc)
+		want    error
+		name    string
+		start   uint16
+		end     uint16
+		openSrv bool
+	}
+	cancelled := func(t *testing.T) (context.Context, context.CancelFunc) {
+		t.Helper()
+		ctx, cancel := context.WithCancel(t.Context())
+		cancel()
+		return ctx, cancel
+	}
+	expired := func(t *testing.T) (context.Context, context.CancelFunc) {
+		t.Helper()
+		return context.WithDeadline(t.Context(), time.Now().Add(-time.Second))
+	}
+	tests := []test{
+		{
+			name:    "cancelled context on the full range returns context.Canceled",
+			ctxFunc: cancelled,
+			start:   0,
+			end:     math.MaxUint16,
+			want:    context.Canceled,
+		},
+		{
+			name:    "expired deadline on the full range returns context.DeadlineExceeded",
+			ctxFunc: expired,
+			start:   0,
+			end:     math.MaxUint16,
+			want:    context.DeadlineExceeded,
+		},
+		{
+			name:    "pre-cancelled context over a range with an open port returns context.Canceled and no ports",
+			ctxFunc: cancelled,
+			openSrv: true,
+			want:    context.Canceled,
+		},
+	}
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			start, end := test.start, test.end
+			if test.openSrv {
+				srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+					w.WriteHeader(http.StatusOK)
+				}))
+				defer srv.Close()
+				_, p, err := SplitHostPort(srv.URL[len("http://"):])
+				if err != nil {
+					tt.Fatal(err)
+				}
+				start, end = p, p
+			}
+			ctx, cancel := test.ctxFunc(tt)
+			defer cancel()
+
+			type result struct {
+				err   error
+				ports []uint16
+			}
+			done := make(chan result, 1)
+			go func() {
+				ports, err := ScanPorts(ctx, start, end, "localhost")
+				done <- result{ports: ports, err: err}
+			}()
+
+			select {
+			case r := <-done:
+				if !errors.Is(r.err, test.want) {
+					tt.Errorf("got error: %v, want: %v", r.err, test.want)
+				}
+				if len(r.ports) != 0 {
+					tt.Errorf("unexpected ports returned for a done context: %v", r.ports)
+				}
+			case <-time.After(30 * time.Second):
+				tt.Fatal("timed out waiting for ScanPorts to terminate")
+			}
+		})
+	}
+}
+
+func TestIsIPLiteral(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name string
+		addr string
+		want bool
+	}{
+		{name: "IPv4 literal", addr: "192.168.1.1", want: true},
+		{name: "IPv4 loopback", addr: "127.0.0.1", want: true},
+		{name: "IPv4 with port", addr: "192.168.1.1:8080", want: true},
+		{name: "IPv6 loopback", addr: "::1", want: true},
+		{name: "IPv6 literal", addr: "2001:db8::1", want: true},
+		{name: "IPv6 bracketed", addr: "[::1]", want: true},
+		{name: "IPv6 bracketed with port", addr: "[::1]:8080", want: true},
+		{name: "IPv6 full bracketed with port", addr: "[2001:db8::1]:443", want: true},
+		{name: "IPv4-mapped IPv6", addr: "::ffff:192.0.2.1", want: true},
+		{name: "hostname localhost", addr: "localhost", want: false},
+		{name: "hostname with port", addr: "localhost:8080", want: false},
+		{name: "hostname domain", addr: "example.com", want: false},
+		{name: "hostname domain with port", addr: "example.com:443", want: false},
+		{name: "Kubernetes headless service", addr: "vald-agent-headless.default.svc.cluster.local:8081", want: false},
+		{name: "empty string", addr: "", want: false},
+		{name: "invalid IP", addr: "999.999.999.999", want: false},
+	}
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			got := IsIPLiteral(test.addr)
+			if got != test.want {
+				tt.Errorf("IsIPLiteral(%q) = %v, want %v", test.addr, got, test.want)
+			}
+		})
+	}
+}
+
+func Test_isMissingPortErr(t *testing.T) {
+	t.Parallel()
+	_, _, err := net.SplitHostPort("localhost")
+	if !isMissingPortErr(err) {
+		t.Errorf("isMissingPortErr(%v) = false, want true for missing port error", err)
+	}
+	if isMissingPortErr(nil) {
+		t.Error("isMissingPortErr(nil) = true, want false")
+	}
+	if isMissingPortErr(errors.New("other error")) {
+		t.Error("isMissingPortErr(other error) = true, want false")
+	}
+}

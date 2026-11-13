@@ -27,7 +27,7 @@ dockerfile:
 	- @$(MAKE) yamlfmt/install
 	@echo "Formatting generated workflow files..."
 	- @find $(ROOTDIR)/.github/workflows -name 'dockers-*-image.yaml' \
-		| xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P"$(CORES)" bash -c ' \
+		| $(XARGS) $(SHELL_STRICT_EXEC) ' \
 		yamlfmt {} && \
 		bunx prettier --log-level warn --write {}'
 
@@ -47,7 +47,7 @@ workflow:
 	- @$(MAKE) yamlfmt/install
 	@echo "Formatting generated workflow files..."
 	- @find $(ROOTDIR)/.github/workflows -name 'dockers-*-image.yaml' \
-		| xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P"$(CORES)" bash -c ' \
+		| $(XARGS) $(SHELL_STRICT_EXEC) ' \
 		yamlfmt {} && \
 		bunx prettier --log-level warn --write {}'
 

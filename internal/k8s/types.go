@@ -46,6 +46,7 @@ type (
 	ObjectKey                 = client.ObjectKey
 	DeleteAllOfOptions        = client.DeleteAllOfOptions
 	DeleteOptions             = client.DeleteOptions
+	DeleteOption              = client.DeleteOption
 	ListOptions               = client.ListOptions
 	ListOption                = client.ListOption
 	CreateOption              = client.CreateOption
@@ -68,6 +69,7 @@ type (
 	Job                       = batchv1.Job
 	JobList                   = batchv1.JobList
 	JobStatus                 = batchv1.JobStatus
+	JobCondition              = batchv1.JobCondition
 	Result                    = reconcile.Result
 	OwnerReference            = metav1.OwnerReference
 	PersistentVolumeClaim     = corev1.PersistentVolumeClaim
@@ -130,6 +132,12 @@ const (
 	ConditionFalse   = metav1.ConditionFalse
 	ConditionUnknown = metav1.ConditionUnknown
 
+	// core (Pod/Job) condition status and Job condition type constants.
+	CoreConditionTrue  = corev1.ConditionTrue
+	CoreConditionFalse = corev1.ConditionFalse
+	JobComplete        = batchv1.JobComplete
+	JobFailed          = batchv1.JobFailed
+
 	// toleration constants.
 	TolerationOpEqual     = corev1.TolerationOpEqual
 	TaintEffectNoSchedule = corev1.TaintEffectNoSchedule
@@ -147,6 +155,7 @@ const (
 //nolint:gochecknoglobals // immutable function aliases confining k8s.io imports to this package
 var (
 	AddCoreToScheme      = corev1.AddToScheme
+	IsAlreadyExists      = apierrors.IsAlreadyExists
 	IsNotFound           = apierrors.IsNotFound
 	NestedFloat64        = unstructured.NestedFloat64
 	NewJSONPath          = jsonpath.New

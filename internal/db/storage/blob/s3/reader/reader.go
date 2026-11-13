@@ -35,26 +35,40 @@ import (
 type reader struct {
 	eg             errgroup.Group
 	service        s3iface.S3API
-	pr             io.ReadCloser
 	ctxio          ctxio.IO
-	bo             backoff.Backoff
-	wg             *sync.WaitGroup
 	bucket         string
 	backoffOpts    []backoff.Option
 	maxChunkSize   int64
 	backoffEnabled bool
 }
 
-var (
-	errBlobNoSuchBucket      = new(errors.ErrBlobNoSuchBucket)
-	errBlobNoSuchKey         = new(errors.ErrBlobNoSuchKey)
-	errBlobInvalidChunkRange = new(errors.ErrBlobInvalidChunkRange)
-)
+// stream is the state of a single Open. Every Open returns its own stream, so Read and Close
+// of an earlier stream never touch the pipe, wait group or backoff of a later one.
+type stream struct {
+	pr io.ReadCloser
+	bo backoff.Backoff
+	wg *sync.WaitGroup
+	// cancel stops the goroutine started by Open, including its backoff sleeps, which
+	// closing the pipe does not interrupt. It is nil for a stream built without Open.
+	cancel context.CancelFunc
+}
 
-// Reader is an interface that groups the basic Read and Close and Open methods.
+// isBlobNotRetryable reports whether err is one of the blob errors that must not be retried.
+// errors.As writes to its target, so the targets are local to stay race-free across concurrent callers.
+func isBlobNotRetryable(err error) bool {
+	var (
+		noSuchBucket      *errors.ErrBlobNoSuchBucket
+		noSuchKey         *errors.ErrBlobNoSuchKey
+		invalidChunkRange *errors.ErrBlobInvalidChunkRange
+	)
+	return errors.As(err, &noSuchBucket) ||
+		errors.As(err, &noSuchKey) ||
+		errors.As(err, &invalidChunkRange)
+}
+
+// Reader is an interface that opens an independent stream for each key.
 type Reader interface {
-	Open(ctx context.Context, key string) error
-	io.ReadCloser
+	Open(ctx context.Context, key string) (io.ReadCloser, error)
 }
 
 // New returns Reader implementation.
@@ -71,81 +85,92 @@ func New(opts ...Option) (Reader, error) {
 	return r, nil
 }
 
-// Open creates io.Pipe. After reading the data from s3, make it available with Read method.
+// Open creates io.Pipe and returns a stream that makes the data read from s3 available with its Read method.
 // Open method returns an error to align the interface, but it doesn't actually return an error.
-func (r *reader) Open(ctx context.Context, key string) (err error) {
-	var pw io.WriteCloser
+// An error that occurs while reading from s3 is returned from Read instead of io.EOF.
+// The returned io.ReadCloser is independent of the streams returned by other Open calls.
+func (r *reader) Open(ctx context.Context, key string) (io.ReadCloser, error) {
+	pr, pw := io.Pipe()
+	wg := new(sync.WaitGroup)
+	ctx, cancel := context.WithCancel(ctx)
+	var bo backoff.Backoff
+	if r.backoffEnabled {
+		bo = backoff.New(r.backoffOpts...)
+	}
+	wg.Add(1)
+	r.eg.Go(func() error {
+		defer wg.Done()
+		defer cancel()
 
-	r.pr, pw = io.Pipe()
+		err := safety.RecoverFunc(func() (err error) {
+			var offset int64
 
-	r.wg = new(sync.WaitGroup)
-	r.wg.Add(1)
-	r.eg.Go(safety.RecoverFunc(func() (err error) {
-		defer r.wg.Done()
-		defer pw.Close()
-
-		var offset int64
-
-		if r.backoffEnabled {
-			r.bo = backoff.New(r.backoffOpts...)
-		}
-
-		for {
-			select {
-			case <-ctx.Done():
-				return ctx.Err()
-			default:
-			}
-
-			body, err := func() (io.Reader, error) {
-				if r.backoffEnabled {
-					return r.getObjectWithBackoff(ctx, key, offset, r.maxChunkSize)
+			for {
+				select {
+				case <-ctx.Done():
+					return ctx.Err()
+				default:
 				}
-				return r.getObject(ctx, key, offset, r.maxChunkSize)
-			}()
-			if err != nil {
-				if errors.As(err, &errBlobNoSuchBucket) ||
-					errors.As(err, &errBlobNoSuchKey) ||
-					errors.As(err, &errBlobInvalidChunkRange) {
-					log.Warn(err)
+
+				body, err := func() (io.Reader, error) {
+					if r.backoffEnabled {
+						return r.getObjectWithBackoff(ctx, bo, key, offset, r.maxChunkSize)
+					}
+					return r.getObject(ctx, key, offset, r.maxChunkSize)
+				}()
+				if err != nil {
+					if isBlobNotRetryable(err) {
+						log.Warn(err)
+						return nil
+					}
+					return err
+				}
+
+				body, err = r.ctxio.NewReaderWithContext(ctx, body)
+				if err != nil {
+					return err
+				}
+
+				chunk, err := io.Copy(pw, body)
+				if err != nil && !errors.Is(err, io.EOF) {
+					// The consumer closed the stream before reading everything;
+					// stop without reporting an error to the shared errgroup.
+					if errors.Is(err, io.ErrClosedPipe) {
+						return nil
+					}
+					return err
+				}
+
+				if chunk < r.maxChunkSize {
 					return nil
 				}
-				return err
-			}
 
-			body, err = r.ctxio.NewReaderWithContext(ctx, body)
-			if err != nil {
-				return err
+				offset += chunk
 			}
-
-			chunk, err := io.Copy(pw, body)
-			if err != nil && !errors.Is(err, io.EOF) {
-				return err
-			}
-
-			if chunk < r.maxChunkSize {
-				return nil
-			}
-
-			offset += chunk
+		})()
+		// CloseWithError(nil) is io.EOF for the reader, so only a real failure is propagated as an error.
+		if cerr := pw.CloseWithError(err); cerr != nil {
+			log.Warn(cerr)
 		}
-	}))
+		// Read returns the error to the consumer. It is not returned to the errgroup as well:
+		// that may be the process-wide group, where every failed read would be recorded until
+		// shutdown and cancel the group's context.
+		return nil
+	})
 
-	return nil
+	return &stream{pr: pr, wg: wg, bo: bo, cancel: cancel}, nil
 }
 
 func (r *reader) getObjectWithBackoff(
-	ctx context.Context, key string, offset, length int64,
+	ctx context.Context, bo backoff.Backoff, key string, offset, length int64,
 ) (res io.Reader, err error) {
-	if !r.backoffEnabled || r.bo == nil {
+	if !r.backoffEnabled || bo == nil {
 		return r.getObject(ctx, key, offset, length)
 	}
-	_, err = r.bo.Do(ctx, func(ctx context.Context) (any, bool, error) {
+	_, err = bo.Do(ctx, func(ctx context.Context) (any, bool, error) {
 		res, err = r.getObject(ctx, key, offset, length)
 		if err != nil {
-			if errors.As(err, &errBlobNoSuchBucket) ||
-				errors.As(err, &errBlobNoSuchKey) ||
-				errors.As(err, &errBlobInvalidChunkRange) {
+			if isBlobNotRetryable(err) {
 				return res, false, err
 			}
 			return res, true, err
@@ -188,10 +213,20 @@ func (r *reader) getObject(
 
 	res, err := r.ctxio.NewReadCloserWithContext(ctx, resp.Body)
 	if err != nil {
+		if resp.Body != nil {
+			if e := resp.Body.Close(); e != nil {
+				log.Warn(e)
+			}
+		}
 		return nil, err
 	}
 
+	// Presize to the chunk length so a large chunk is not grown by repeated doubling. The
+	// Content-Length header is the server's claim, so it is capped at the length requested.
 	buf := new(bytes.Buffer)
+	if resp.ContentLength != nil && *resp.ContentLength > 0 && length > 0 {
+		buf.Grow(int(min(*resp.ContentLength, length)))
+	}
 
 	defer func() {
 		e := res.Close()
@@ -208,27 +243,35 @@ func (r *reader) getObject(
 	return buf, nil
 }
 
-// Close closes the reader.
-func (r *reader) Close() error {
-	if r.bo != nil {
-		defer r.bo.Close()
-	}
-	if r.pr != nil {
-		return r.pr.Close()
+// Close closes the stream and waits for the goroutine started by its Open to finish.
+func (s *stream) Close() (err error) {
+	if s.pr != nil {
+		err = s.pr.Close()
 	}
 
-	if r.wg != nil {
-		r.wg.Wait()
+	// Closing the pipe does not wake a goroutine that sleeps in a backoff retry, so without
+	// this Wait would block until the retries are exhausted.
+	if s.cancel != nil {
+		s.cancel()
 	}
 
-	return nil
+	// the goroutine uses bo, so wait for it before closing the backoff.
+	if s.wg != nil {
+		s.wg.Wait()
+	}
+
+	if s.bo != nil {
+		s.bo.Close()
+	}
+
+	return err
 }
 
 // Read reads up to len(p) bytes and returns the number of bytes read.
-func (r *reader) Read(p []byte) (n int, err error) {
-	if r.pr == nil {
+func (s *stream) Read(p []byte) (n int, err error) {
+	if s.pr == nil {
 		return 0, errors.ErrStorageReaderNotOpened
 	}
 
-	return r.pr.Read(p)
+	return s.pr.Read(p)
 }

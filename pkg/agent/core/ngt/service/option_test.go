@@ -1389,6 +1389,35 @@ func TestWithExportIndexInfoDuration(t *testing.T) {
 	}
 }
 
+// time.NewTicker panics for a non-positive interval, so the option must ignore it
+// and leave the previously configured (default) value untouched without failing.
+func TestWithExportIndexInfoDuration_NonPositive(t *testing.T) {
+	t.Parallel()
+	const initial = 7 * time.Second
+	tests := []struct {
+		name string
+		dur  string
+		want time.Duration
+	}{
+		{name: "zero is ignored", dur: "0s", want: initial},
+		{name: "negative is ignored", dur: "-1s", want: initial},
+		{name: "positive is applied", dur: "2s", want: 2 * time.Second},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			o := new(ngt)
+			o.exportIndexInfoDuration = initial
+			if err := WithExportIndexInfoDuration(tt.dur)(o); err != nil {
+				t.Errorf("unexpected error: %v", err)
+			}
+			if o.exportIndexInfoDuration != tt.want {
+				t.Errorf("exportIndexInfoDuration = %v, want %v", o.exportIndexInfoDuration, tt.want)
+			}
+		})
+	}
+}
+
 // NOT IMPLEMENTED BELOW
 //
 // func TestWithIsReadReplica(t *testing.T) {

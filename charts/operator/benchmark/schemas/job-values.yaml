@@ -148,8 +148,8 @@ object_config:
     # @schema {"name": "object_config.filter_config.host", "type": "string"}
     # object_config.filter_config.host -- filter target host
     host: 0.0.0.0
-    # @schema {"name": "object_config.filter_config.host", "type": "integer"}
-    # object_config.filter_config.port -- filter target host
+    # @schema {"name": "object_config.filter_config.port", "type": "integer"}
+    # object_config.filter_config.port -- filter target port
     port: 8081
 # @schema {"name": "client_config", "type": "object"}
 # client_config -- gRPC client config for request to the Vald cluster
@@ -328,7 +328,7 @@ client_config:
         # client_config.dial_option.net.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
         tcp_fast_open: true
         # @schema {"name": "client_config.dial_option.net.socket_option.tcp_no_delay", "type": "boolean"}
-        # client_config.dial_option.net.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
+        # client_config.dial_option.net.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)
         tcp_no_delay: true
         # @schema {"name": "client_config.dial_option.net.socket_option.tcp_cork", "type": "boolean"}
         # client_config.dial_option.net.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
@@ -459,7 +459,7 @@ server_config:
           # server_config.servers.rest.server.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
           tcp_fast_open: true
           # @schema {"name": "server_config.servers.rest.server.socket_option.tcp_no_delay", "type": "boolean"}
-          # server_config.servers.rest.server.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
+          # server_config.servers.rest.server.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)
           tcp_no_delay: true
           # @schema {"name": "server_config.servers.rest.server.socket_option.tcp_cork", "type": "boolean"}
           # server_config.servers.rest.server.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
@@ -574,7 +574,7 @@ server_config:
           reuse_addr: true
           # server_config.servers.grpc.server.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
           tcp_fast_open: true
-          # server_config.servers.grpc.server.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
+          # server_config.servers.grpc.server.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)
           tcp_no_delay: true
           # server_config.servers.grpc.server.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
           tcp_cork: false
@@ -711,7 +711,7 @@ server_config:
           reuse_addr: true
           # server_config.healths.liveness.server.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
           tcp_fast_open: true
-          # server_config.healths.liveness.server.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
+          # server_config.healths.liveness.server.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)
           tcp_no_delay: true
           # server_config.healths.liveness.server.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
           tcp_cork: false
@@ -807,7 +807,7 @@ server_config:
           reuse_addr: true
           # server_config.healths.readiness.server.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
           tcp_fast_open: true
-          # server_config.healths.readiness.server.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
+          # server_config.healths.readiness.server.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)
           tcp_no_delay: true
           # server_config.healths.readiness.server.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
           tcp_cork: false

@@ -18,18 +18,10 @@ import "github.com/vdaas/vald/pkg/gateway/lb/handler/rest"
 
 type Option func(*router)
 
-var defaultOptions = []Option{
-	WithTimeout("3s"),
-}
+var defaultOptions = []Option{}
 
 func WithHandler(h rest.Handler) Option {
 	return func(r *router) {
 		r.handler = h
-	}
-}
-
-func WithTimeout(timeout string) Option {
-	return func(r *router) {
-		r.timeout = timeout
 	}
 }

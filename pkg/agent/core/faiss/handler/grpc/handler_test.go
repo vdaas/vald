@@ -13,6 +13,82 @@
 // limitations under the License.
 package grpc
 
+import (
+	"fmt"
+	"math"
+	"testing"
+
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
+	"github.com/vdaas/vald/internal/info"
+	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/log/logger"
+	"github.com/vdaas/vald/internal/net/grpc/codes"
+	"github.com/vdaas/vald/internal/net/grpc/status"
+	"github.com/vdaas/vald/internal/os"
+	"github.com/vdaas/vald/internal/test/goleak"
+	"github.com/vdaas/vald/pkg/agent/core/faiss/service"
+)
+
+// TestMain initializes the global logger and info provider once, before any parallel test runs,
+// and checks the package for leaked goroutines.
+func TestMain(m *testing.M) {
+	log.Init(log.WithLoggerType(logger.NOP.String()))
+	if err := info.Init(""); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	goleak.VerifyTestMain(m)
+}
+
+// stubFaiss returns a fixed error from Search; every other method panics through the nil embedded interface.
+type stubFaiss struct {
+	service.Faiss
+	err error
+	dim int
+}
+
+func (f *stubFaiss) GetDimensionSize() int { return f.dim }
+
+func (f *stubFaiss) Search(_, _, _ uint32, _ []float32) (*payload.Search_Response, error) {
+	return nil, f.err
+}
+
+// stubFaissWrite records whether the service was reached; every other method panics through the nil embedded interface.
+type stubFaissWrite struct {
+	stubFaiss
+	called bool
+}
+
+func (f *stubFaissWrite) InsertWithTime(string, []float32, int64) error {
+	f.called = true
+	return nil
+}
+
+func (f *stubFaissWrite) UpdateWithTime(string, []float32, int64) error {
+	f.called = true
+	return nil
+}
+
+// nanOrInfValues are the non-finite vector components that must be rejected up front.
+func nanOrInfValues() map[string]float32 {
+	return map[string]float32{
+		"NaN":  float32(math.NaN()),
+		"+Inf": float32(math.Inf(1)),
+		"-Inf": float32(math.Inf(-1)),
+	}
+}
+
+func wantInvalidArgument(t *testing.T, err error) {
+	t.Helper()
+	st, ok := status.FromError(err)
+	if !ok {
+		t.Fatalf("got non-status error: %v", err)
+	}
+	if st.Code() != codes.InvalidArgument {
+		t.Errorf("code = %v, want %v", st.Code(), codes.InvalidArgument)
+	}
+}
+
 // NOT IMPLEMENTED BELOW
 //
 // func TestNew(t *testing.T) {

@@ -14,6 +14,35 @@
 
 package usecase
 
+import (
+	"testing"
+
+	iconf "github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/strings"
+	"github.com/vdaas/vald/pkg/manager/index/config"
+)
+
+// auto_save_index_wait_duration must reach the indexer service: an unparsable value is
+// rejected by service.WithSaveIndexDuration, which only happens when New passes it through.
+func TestNew_wiresAutoSaveIndexWaitDuration(t *testing.T) {
+	t.Parallel()
+	cfg := &config.Data{
+		Server:        new(iconf.Servers),
+		Observability: new(iconf.Observability),
+		Indexer: &iconf.Indexer{
+			Discoverer:                new(iconf.DiscovererClient),
+			AutoSaveIndexWaitDuration: "invalid",
+		},
+	}
+	_, err := New(cfg)
+	if err == nil {
+		t.Fatal("New() error = nil, want the WithSaveIndexDuration option failure")
+	}
+	if want := "service.WithSaveIndexDuration.func"; !strings.Contains(err.Error(), want) {
+		t.Errorf("New() error = %v, want it to mention %q", err, want)
+	}
+}
+
 // NOT IMPLEMENTED BELOW
 //
 // func TestNew(t *testing.T) {

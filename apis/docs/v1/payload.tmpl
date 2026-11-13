@@ -80,7 +80,7 @@
     | field | type | label | description |
     | :---: | :--- | :---- | :---------- |
       {{- range .Fields }}
-    | {{ .Name }} | {{ .LongType }} | {{.Label }} | {{ .Description }} |
+    | {{ .Name }} | {{ .LongType }} | {{.Label }} | {{ .Description | replace "\n" " " }} |
       {{- end }}
     {{- else }}
     empty

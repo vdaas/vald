@@ -23,7 +23,6 @@ import (
 
 type router struct {
 	handler rest.Handler
-	timeout string
 }
 
 // New returns REST route&method information from handler interface.
@@ -54,14 +53,6 @@ func New(opts ...Option) http.Handler {
 				Pattern:     "/search",
 				HandlerFunc: h.Search,
 			},
-			{
-				Name: "Search By ID",
-				Methods: []string{
-					http.MethodGet,
-				},
-				Pattern:     "/search/{id}",
-				HandlerFunc: h.SearchByID,
-			},
 
 			{
 				Name: "Multi Search",
@@ -72,12 +63,52 @@ func New(opts ...Option) http.Handler {
 				HandlerFunc: h.MultiSearch,
 			},
 			{
+				Name: "Search By ID",
+				Methods: []string{
+					http.MethodGet,
+				},
+				Pattern:     "/search/{id}",
+				HandlerFunc: h.SearchByID,
+			},
+			{
 				Name: "Multi Search By ID",
 				Methods: []string{
 					http.MethodGet,
 				},
 				Pattern:     "/search/multi/{id}",
 				HandlerFunc: h.MultiSearchByID,
+			},
+			{
+				Name: "Linear_Search",
+				Methods: []string{
+					http.MethodPost,
+				},
+				Pattern:     "/linearsearch",
+				HandlerFunc: h.LinearSearch,
+			},
+			{
+				Name: "Multi Linear_Search",
+				Methods: []string{
+					http.MethodPost,
+				},
+				Pattern:     "/linearsearch/multi",
+				HandlerFunc: h.MultiLinearSearch,
+			},
+			{
+				Name: "Linear_Search By ID",
+				Methods: []string{
+					http.MethodGet,
+				},
+				Pattern:     "/linearsearch/{id}",
+				HandlerFunc: h.LinearSearchByID,
+			},
+			{
+				Name: "Multi Linear_Search By ID",
+				Methods: []string{
+					http.MethodGet,
+				},
+				Pattern:     "/linearsearch/multi/{id}",
+				HandlerFunc: h.MultiLinearSearchByID,
 			},
 			{
 				Name: "Insert",
@@ -136,14 +167,6 @@ func New(opts ...Option) http.Handler {
 				HandlerFunc: h.MultiUpsert,
 			},
 			{
-				Name: "Remove",
-				Methods: []string{
-					http.MethodDelete,
-				},
-				Pattern:     "/delete/{id}",
-				HandlerFunc: h.Remove,
-			},
-			{
 				Name: "Multiple Remove",
 				Methods: []string{
 					http.MethodDelete,
@@ -151,6 +174,14 @@ func New(opts ...Option) http.Handler {
 				},
 				Pattern:     "/delete/multi",
 				HandlerFunc: h.MultiRemove,
+			},
+			{
+				Name: "Remove",
+				Methods: []string{
+					http.MethodDelete,
+				},
+				Pattern:     "/delete/{id}",
+				HandlerFunc: h.Remove,
 			},
 			{
 				Name: "Flush",
@@ -167,6 +198,78 @@ func New(opts ...Option) http.Handler {
 				},
 				Pattern:     "/object/{id}",
 				HandlerFunc: h.GetObject,
+			},
+			{
+				Name: "Exists",
+				Methods: []string{
+					http.MethodGet,
+				},
+				Pattern:     "/exists/{id}",
+				HandlerFunc: h.Exists,
+			},
+			{
+				Name: "GetTimestamp",
+				Methods: []string{
+					http.MethodGet,
+				},
+				Pattern:     "/object/meta/{id}",
+				HandlerFunc: h.GetTimestamp,
+			},
+			{
+				Name: "UpdateTimestamp",
+				Methods: []string{
+					http.MethodPost,
+				},
+				Pattern:     "/update/timestamp",
+				HandlerFunc: h.UpdateTimestamp,
+			},
+			{
+				Name: "RemoveByTimestamp",
+				Methods: []string{
+					http.MethodPost,
+				},
+				Pattern:     "/remove/timestamp",
+				HandlerFunc: h.RemoveByTimestamp,
+			},
+			{
+				Name: "IndexInfo",
+				Methods: []string{
+					http.MethodGet,
+				},
+				Pattern:     "/index/info",
+				HandlerFunc: h.IndexInfo,
+			},
+			{
+				Name: "IndexDetail",
+				Methods: []string{
+					http.MethodGet,
+				},
+				Pattern:     "/index/detail",
+				HandlerFunc: h.IndexDetail,
+			},
+			{
+				Name: "IndexStatistics",
+				Methods: []string{
+					http.MethodGet,
+				},
+				Pattern:     "/index/statistics",
+				HandlerFunc: h.IndexStatistics,
+			},
+			{
+				Name: "IndexStatisticsDetail",
+				Methods: []string{
+					http.MethodGet,
+				},
+				Pattern:     "/index/statistics/detail",
+				HandlerFunc: h.IndexStatisticsDetail,
+			},
+			{
+				Name: "IndexProperty",
+				Methods: []string{
+					http.MethodGet,
+				},
+				Pattern:     "/index/property",
+				HandlerFunc: h.IndexProperty,
 			},
 		}...))
 }

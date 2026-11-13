@@ -16,15 +16,74 @@
 package discoverer
 
 import (
+	"context"
 	"reflect"
+	"slices"
 	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/grpc/pool"
+	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/test/mock"
 )
+
+// disconnectStub overrides only the grpc.Client methods used by disconnectOldAddrs.
+type disconnectStub struct {
+	grpc.Client
+	disconnected map[string]struct{}
+	mu           sync.Mutex
+}
+
+func (s *disconnectStub) Disconnect(_ context.Context, addr string) error {
+	s.mu.Lock()
+	s.disconnected[addr] = struct{}{}
+	s.mu.Unlock()
+	return errors.New("disconnect failed")
+}
+
+func (*disconnectStub) RangeConcurrent(
+	context.Context, int, func(context.Context, string, *grpc.ClientConn, ...grpc.CallOption) error,
+) error {
+	return nil
+}
+
+// Test_client_disconnectOldAddrs_noRace is meaningful under -race: the goroutines started for each
+// stale address must not write the function's named return value that the main path also assigns.
+func Test_client_disconnectOldAddrs_noRace(t *testing.T) {
+	t.Parallel()
+
+	stub := &disconnectStub{disconnected: make(map[string]struct{})}
+	eg, _ := errgroup.New(t.Context())
+	c := &client{
+		client:   stub,
+		eg:       eg,
+		autoconn: true,
+	}
+
+	oldAddrs := []string{"a:1", "b:1", "c:1", "d:1", "keep:1"}
+	err := c.disconnectOldAddrs(t.Context(), oldAddrs, []string{"keep:1"})
+	require.NoError(t, err)
+
+	done := make(chan error, 1)
+	go func() { done <- eg.Wait() }()
+	select {
+	case werr := <-done:
+		require.NoError(t, werr)
+	case <-time.After(10 * time.Second):
+		t.Fatal("timed out waiting for disconnect goroutines")
+	}
+
+	stub.mu.Lock()
+	defer stub.mu.Unlock()
+	require.Len(t, stub.disconnected, 4)
+	require.NotContains(t, stub.disconnected, "keep:1")
+}
 
 func Test_client_GetReadClient(t *testing.T) {
 	type fields struct {
@@ -151,6 +210,52 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 	require.NoError(t, err)
 
 	require.EqualValues(t, uint64(49), c.roundRobin.Load(), "atomic operation did not happen in the concurrent calls")
+}
+
+// A nil Memory must sort as usage 0. Treating it as "equal to everything" is
+// not a strict weak ordering, and [5, nil, 1] stayed unsorted with it.
+func Test_compareMemory_nilMemory(t *testing.T) {
+	t.Parallel()
+	mem := func(u float64) *payload.Info_Memory { return &payload.Info_Memory{Usage: u} }
+	const (
+		nilName = "nil"
+		low     = "low"
+		high    = "high"
+	)
+	want := []string{nilName, low, high}
+
+	t.Run("nodes", func(t *testing.T) {
+		t.Parallel()
+		nodes := []*payload.Info_Node{
+			{Name: high, Memory: mem(5)},
+			{Name: nilName},
+			{Name: low, Memory: mem(1)},
+		}
+		slices.SortFunc(nodes, compareNodeMemory)
+		got := make([]string, 0, len(nodes))
+		for _, n := range nodes {
+			got = append(got, n.GetName())
+		}
+		if !slices.Equal(got, want) {
+			t.Errorf("node order = %v, want %v", got, want)
+		}
+	})
+	t.Run("pods", func(t *testing.T) {
+		t.Parallel()
+		pods := []*payload.Info_Pod{
+			{Name: high, Memory: mem(5)},
+			{Name: nilName},
+			{Name: low, Memory: mem(1)},
+		}
+		slices.SortFunc(pods, comparePodMemory)
+		got := make([]string, 0, len(pods))
+		for _, p := range pods {
+			got = append(got, p.GetName())
+		}
+		if !slices.Equal(got, want) {
+			t.Errorf("pod order = %v, want %v", got, want)
+		}
+	})
 }
 
 // NOT IMPLEMENTED BELOW
@@ -2094,3 +2199,34 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 // 		})
 // 	}
 // }
+
+// connectStub overrides only the grpc.Client methods used by connect.
+type connectStub struct {
+	grpc.Client
+	err   error
+	dopts []grpc.DialOption
+}
+
+func (*connectStub) GetDialOption() []grpc.DialOption {
+	return []grpc.DialOption{grpc.WithStatsHandler(nil)}
+}
+
+func (s *connectStub) Connect(
+	_ context.Context, _ string, dopts ...grpc.DialOption,
+) (pool.Conn, error) {
+	s.dopts = dopts
+	return nil, s.err
+}
+
+// connect used to pass GetDialOption() to Connect, which already merges the client's
+// own dial options, so every dial option was applied twice.
+func Test_client_connect_noDuplicateDialOptions(t *testing.T) {
+	t.Parallel()
+	stub := &connectStub{err: errors.New("connect stub")}
+	c := &client{
+		client:   stub,
+		autoconn: true,
+	}
+	require.ErrorIs(t, c.connect(t.Context(), "a:1"), stub.err)
+	require.Empty(t, stub.dopts)
+}

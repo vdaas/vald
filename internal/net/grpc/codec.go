@@ -44,7 +44,10 @@ func (c Codec) Marshal(obj any) (data mem.BufferSlice, err error) {
 	switch m := obj.(type) {
 	case vtprotoMessage:
 		size := m.SizeVT()
-		if mem.IsBelowBufferPoolingThreshold(size) { // less than 1KB
+		if size == 0 {
+			return mem.BufferSlice{mem.SliceBuffer{}}, nil
+		}
+		if c.buffer == nil {
 			buf := make([]byte, size)
 			n, err := m.MarshalToSizedBufferVT(buf[:size])
 			if err != nil {
@@ -52,7 +55,10 @@ func (c Codec) Marshal(obj any) (data mem.BufferSlice, err error) {
 			}
 			return mem.BufferSlice{mem.SliceBuffer(buf[:n])}, nil
 		}
-		buf := c.buffer.Get(size)
+		// Request at least 2KB so cap(*buf) > 1024, satisfying grpc/mem.IsBelowBufferPoolingThreshold
+		// and preventing grpc/mem.NewBuffer from dropping the pool reference.
+		allocSize := max(size, 2048)
+		buf := c.buffer.Get(allocSize)
 		n, err := m.MarshalToSizedBufferVT((*buf)[:size])
 		if err != nil {
 			c.buffer.Put(buf)
@@ -75,10 +81,18 @@ func (c Codec) Marshal(obj any) (data mem.BufferSlice, err error) {
 func (c Codec) Unmarshal(data mem.BufferSlice, obj any) (err error) {
 	switch m := obj.(type) {
 	case vtprotoMessage:
+		if c.buffer == nil {
+			buf := data.Materialize()
+			return m.UnmarshalVT(buf)
+		}
 		buf := data.MaterializeToBuffer(c.buffer)
 		defer buf.Free()
 		return m.UnmarshalVT(buf.ReadOnlyData())
 	case proto.Message:
+		if c.buffer == nil {
+			buf := data.Materialize()
+			return proto.Unmarshal(buf, m)
+		}
 		buf := data.MaterializeToBuffer(c.buffer)
 		defer buf.Free()
 		return proto.Unmarshal(buf.ReadOnlyData(), m)
@@ -129,9 +143,6 @@ func InitCodec(size int) {
 			}
 			return defaultTiers
 		}([]int{
-			256,       // 256B
-			512,       // 512B
-			1 << 10,   // 1KB
 			2 << 10,   // 2KB
 			4 << 10,   // 4KB (go page size)
 			8 << 10,   // 8KB

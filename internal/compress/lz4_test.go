@@ -321,6 +321,50 @@ func Test_lz4Compressor_CompressVector(t *testing.T) {
 	}
 }
 
+// Test_lz4Compressor_CompressVector_nonPositiveLevelIsFast guards that a non-positive level reaches
+// pierrec/lz4 as 0 (the fast compressor): the library treats every other value, including the Helm
+// default -1, as high compression.
+func Test_lz4Compressor_CompressVector_nonPositiveLevelIsFast(t *testing.T) {
+	t.Parallel()
+	for _, tc := range []struct {
+		name  string
+		level int
+		want  int
+	}{
+		{name: "the Helm default -1 is mapped to 0", level: -1, want: 0},
+		{name: "0 stays 0", level: 0, want: 0},
+		{name: "a positive level is passed through", level: 9, want: 9},
+	} {
+		t.Run(tc.name, func(tt *testing.T) {
+			got := -100
+			l := &lz4Compressor{
+				gobc: &MockCompressor{
+					CompressVectorFunc: func([]float32) ([]byte, error) {
+						return []byte("vdaas/vald"), nil
+					},
+				},
+				compressionLevel: tc.level,
+				lz4: &lz4.MockLZ4{
+					NewWriterLevelFunc: func(w io.Writer, level int) lz4.Writer {
+						got = level
+						return &lz4.MockWriter{
+							WriteFunc: w.Write,
+							FlushFunc: func() error { return nil },
+							CloseFunc: func() error { return nil },
+						}
+					},
+				},
+			}
+			if _, err := l.CompressVector([]float32{0.1}); err != nil {
+				tt.Fatal(err)
+			}
+			if got != tc.want {
+				tt.Errorf("level passed to NewWriterLevel = %d, want %d", got, tc.want)
+			}
+		})
+	}
+}
+
 func Test_E2E_lz4Compressor_CompressVector(t *testing.T) {
 	type args struct {
 		vector []float32
@@ -655,6 +699,61 @@ func Test_lz4Compressor_Writer(t *testing.T) {
 					dst: dst,
 				},
 				fields: fields{
+					lz4: &lz4.MockLZ4{
+						NewWriterFunc: func(io.Writer) lz4.Writer {
+							return w
+						},
+					},
+				},
+				want: want{
+					want: &lz4Writer{
+						dst: dst,
+						w:   w,
+					},
+				},
+			}
+		}(),
+		func() test {
+			var (
+				dst = new(lz4.MockWriter)
+				w   = new(lz4.MockWriter)
+			)
+			return test{
+				name: "returns a writer with the configured compression level when the level is positive",
+				args: args{
+					dst: dst,
+				},
+				fields: fields{
+					compressionLevel: 9,
+					lz4: &lz4.MockLZ4{
+						NewWriterLevelFunc: func(_ io.Writer, level int) lz4.Writer {
+							if level != 9 {
+								return nil
+							}
+							return w
+						},
+					},
+				},
+				want: want{
+					want: &lz4Writer{
+						dst: dst,
+						w:   w,
+					},
+				},
+			}
+		}(),
+		func() test {
+			var (
+				dst = new(lz4.MockWriter)
+				w   = new(lz4.MockWriter)
+			)
+			return test{
+				name: "returns a default (fast) writer when the level is negative",
+				args: args{
+					dst: dst,
+				},
+				fields: fields{
+					compressionLevel: -1,
 					lz4: &lz4.MockLZ4{
 						NewWriterFunc: func(io.Writer) lz4.Writer {
 							return w

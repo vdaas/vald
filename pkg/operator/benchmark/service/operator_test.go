@@ -25,8 +25,10 @@ import (
 	v1 "github.com/vdaas/vald/internal/k8s/vald/benchmark/api/v1"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync/atomic"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/test/goleak"
 	"github.com/vdaas/vald/internal/test/mock"
+	k8smock "github.com/vdaas/vald/internal/test/mock/k8s"
 )
 
 // mockCtrl is used for mock the request to the Kubernetes API.
@@ -863,6 +865,7 @@ func Test_operator_benchJobReconcile(t *testing.T) {
 		jobImageRepository string
 		jobImageTag        string
 		jobImagePullPolicy string
+		configMapName      string
 	}
 	type want struct {
 		scenarios map[string]*scenario
@@ -963,6 +966,7 @@ func Test_operator_benchJobReconcile(t *testing.T) {
 					jobNamespace:       "default",
 					jobImageRepository: "vdaas/vald-benchmark-job",
 					jobImagePullPolicy: "Always",
+					configMapName:      "benchmark-job-test-configmap",
 					scenarios: func() *atomic.Pointer[map[string]*scenario] {
 						ap := atomic.Pointer[map[string]*scenario]{}
 						m := map[string]*scenario{
@@ -1150,6 +1154,7 @@ func Test_operator_benchJobReconcile(t *testing.T) {
 					jobNamespace:       "default",
 					jobImageRepository: "vdaas/vald-benchmark-job",
 					jobImagePullPolicy: "Always",
+					configMapName:      "benchmark-job-test-configmap",
 					scenarios: func() *atomic.Pointer[map[string]*scenario] {
 						ap := atomic.Pointer[map[string]*scenario]{}
 						m := map[string]*scenario{
@@ -1849,6 +1854,7 @@ func Test_operator_benchJobReconcile(t *testing.T) {
 				jobImageRepository: test.fields.jobImageRepository,
 				jobImageTag:        test.fields.jobImageTag,
 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
+				configMapName:      test.fields.configMapName,
 				ctrl:               test.fields.ctrl,
 			}
 			storeInto(&o.scenarios, test.fields.scenarios)
@@ -3089,6 +3095,761 @@ func Test_operator_checkAtomics(t *testing.T) {
 				tt.Errorf("error = %v", err)
 			}
 		})
+	}
+}
+
+// The Scenario label value is name+generation with no separator, so scenario
+// "bench" at generation 12 and scenario "bench1" at generation 2 share the
+// label "bench12". Deleting the old generation of one scenario must not delete
+// the other scenario's jobs.
+func Test_operator_deleteBenchmarkJob_onlyOwnedJobs(t *testing.T) {
+	t.Parallel()
+	const (
+		insertJob = "bench-insert"
+		searchJob = "bench-search"
+	)
+	job := func(name, owner string) v1.ValdBenchmarkJob {
+		var bj v1.ValdBenchmarkJob
+		bj.Name = name
+		bj.SetOwnerReferences([]k8s.OwnerReference{{Kind: ScenarioKind, Name: owner}})
+		return bj
+	}
+	tests := []struct {
+		name      string
+		deleteErr map[string]error
+		want      []string
+		wantErr   bool
+	}{
+		{
+			name: "deletes only jobs owned by the scenario",
+			want: []string{insertJob, searchJob},
+		},
+		{
+			name:      "ignores NotFound and reports other delete errors",
+			deleteErr: map[string]error{insertJob: k8smock.NewNotFoundError(insertJob), searchJob: errors.New("boom")},
+			want:      []string{insertJob, searchJob},
+			wantErr:   true,
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			var deleted []string
+			var gotLabel, gotNS string
+			cli := &k8smock.ClientMock{
+				ListFunc: func(_ context.Context, list k8s.ObjectList, opts ...k8s.ListOption) error {
+					lo := new(k8s.ListOptions)
+					for _, o := range opts {
+						o.ApplyToList(lo)
+					}
+					gotNS = lo.Namespace
+					if lo.LabelSelector != nil {
+						gotLabel = lo.LabelSelector.String()
+					}
+					l, ok := list.(*v1.ValdBenchmarkJobList)
+					if !ok {
+						t.Fatalf("unexpected list type %T", list)
+					}
+					l.Items = []v1.ValdBenchmarkJob{
+						job(insertJob, "bench"),
+						job("bench1-insert", "bench1"),
+						job(searchJob, "bench"),
+					}
+					return nil
+				},
+				DeleteFunc: func(_ context.Context, obj k8s.Object, _ ...k8s.DeleteOption) error {
+					deleted = append(deleted, obj.GetName())
+					return tc.deleteErr[obj.GetName()]
+				},
+			}
+			o := &operator{
+				jobNamespace: "ns",
+				ctrl: &mockCtrl{GetManagerFunc: func() k8s.Manager {
+					return &k8smock.ManagerMock{GetClientFunc: func() k8s.Client { return cli }}
+				}},
+			}
+			err := o.deleteBenchmarkJob(t.Context(), "bench", "", 12)
+			if (err != nil) != tc.wantErr {
+				t.Fatalf("err = %v, wantErr %v", err, tc.wantErr)
+			}
+			if gotLabel != Scenario+"=bench12" || gotNS != "ns" {
+				t.Errorf("list selector = %q ns = %q", gotLabel, gotNS)
+			}
+			if len(deleted) != len(tc.want) {
+				t.Fatalf("deleted = %v, want %v", deleted, tc.want)
+			}
+			for i := range tc.want {
+				if deleted[i] != tc.want[i] {
+					t.Errorf("deleted = %v, want %v", deleted, tc.want)
+				}
+			}
+		})
+	}
+}
+
+// A scenario deleted and re-created with the same name shares the label with
+// the old instance; deleting by the old instance's UID must keep the jobs of
+// the new one.
+func Test_operator_deleteBenchmarkJob_onlyOwnedUID(t *testing.T) {
+	t.Parallel()
+	job := func(name string, uid k8s.UID) v1.ValdBenchmarkJob {
+		var bj v1.ValdBenchmarkJob
+		bj.Name = name
+		bj.SetOwnerReferences([]k8s.OwnerReference{{Kind: ScenarioKind, Name: "bench", UID: uid}})
+		return bj
+	}
+	tests := []struct {
+		name string
+		uid  k8s.UID
+		want []string
+	}{
+		{name: "old UID deletes only the old instance's jobs", uid: "uid-old", want: []string{"old-insert"}},
+		{name: "new UID deletes only the new instance's jobs", uid: "uid-new", want: []string{"new-insert"}},
+		{name: "unknown UID matches by name", uid: "", want: []string{"old-insert", "new-insert"}},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			var deleted []string
+			cli := &k8smock.ClientMock{
+				ListFunc: func(_ context.Context, list k8s.ObjectList, _ ...k8s.ListOption) error {
+					l, ok := list.(*v1.ValdBenchmarkJobList)
+					if !ok {
+						t.Fatalf("unexpected list type %T", list)
+					}
+					l.Items = []v1.ValdBenchmarkJob{job("old-insert", "uid-old"), job("new-insert", "uid-new")}
+					return nil
+				},
+				DeleteFunc: func(_ context.Context, obj k8s.Object, _ ...k8s.DeleteOption) error {
+					deleted = append(deleted, obj.GetName())
+					return nil
+				},
+			}
+			o := &operator{
+				jobNamespace: "ns",
+				ctrl: &mockCtrl{GetManagerFunc: func() k8s.Manager {
+					return &k8smock.ManagerMock{GetClientFunc: func() k8s.Client { return cli }}
+				}},
+			}
+			if err := o.deleteBenchmarkJob(t.Context(), "bench", tc.uid, 1); err != nil {
+				t.Fatalf("err = %v", err)
+			}
+			if len(deleted) != len(tc.want) {
+				t.Fatalf("deleted = %v, want %v", deleted, tc.want)
+			}
+			for i := range tc.want {
+				if deleted[i] != tc.want[i] {
+					t.Errorf("deleted = %v, want %v", deleted, tc.want)
+				}
+			}
+		})
+	}
+}
+
+// fakeBenchJobServer is a minimal API server for ValdBenchmarkJobs shared by
+// the operator instances of a test, so a new instance (an operator restart)
+// sees the jobs created by the previous one.
+type fakeBenchJobServer struct {
+	failCreate map[int]bool // 1-based Create call numbers that fail
+	jobs       []v1.ValdBenchmarkJob
+	statuses   []v1.ValdBenchmarkScenarioStatus
+	creates    int
+	failList   bool
+}
+
+func (s *fakeBenchJobServer) ctrl(t *testing.T) *mockCtrl {
+	t.Helper()
+	create := func(_ context.Context, obj k8s.Object) error {
+		s.creates++
+		if s.failCreate[s.creates] {
+			return errors.New("create failed")
+		}
+		bj, ok := obj.(*v1.ValdBenchmarkJob)
+		if !ok {
+			return errors.Errorf("unexpected object %T", obj)
+		}
+		s.jobs = append(s.jobs, *bj.DeepCopy())
+		return nil
+	}
+	statusUpdate := func(_ context.Context, obj k8s.Object) error {
+		if sc, ok := obj.(*v1.ValdBenchmarkScenario); ok {
+			s.statuses = append(s.statuses, sc.Status)
+		}
+		return nil
+	}
+	cli, ok := k8smock.NewHookManagerMock(create, nil, statusUpdate).GetClient().(*k8smock.ClientMock)
+	if !ok {
+		t.Fatal("NewHookManagerMock client is not a *k8smock.ClientMock")
+	}
+	cli.ListFunc = func(_ context.Context, list k8s.ObjectList, opts ...k8s.ListOption) error {
+		if s.failList {
+			return errors.New("list failed")
+		}
+		l, ok := list.(*v1.ValdBenchmarkJobList)
+		if !ok {
+			return errors.Errorf("unexpected list type %T", list)
+		}
+		var (
+			ns  string
+			sel map[string]string
+		)
+		for _, o := range opts {
+			switch v := o.(type) {
+			case k8s.InNamespace:
+				ns = string(v)
+			case k8s.MatchingLabels:
+				sel = v
+			default:
+				return errors.Errorf("unexpected list option %T", o)
+			}
+		}
+		l.Items = nil
+	jobs:
+		for _, bj := range s.jobs {
+			if ns != "" && bj.GetNamespace() != ns {
+				continue
+			}
+			for k, v := range sel {
+				if bj.GetLabels()[k] != v {
+					continue jobs
+				}
+			}
+			l.Items = append(l.Items, *bj.DeepCopy())
+		}
+		return nil
+	}
+	return &mockCtrl{GetManagerFunc: func() k8s.Manager {
+		return &k8smock.ManagerMock{GetClientFunc: func() k8s.Client { return cli }}
+	}}
+}
+
+// TestOperator_benchScenarioReconcile_ResumesAfterRestart pins that a
+// scenario whose benchmark job creation was cut short is resumed by a
+// restarted operator (empty cache): only the spec jobs that do not exist yet
+// are created, chained after the existing ones, and the scenario becomes
+// Healthy. Before the fix a NotReady scenario was never resumed after a
+// restart, and an Available one re-created the existing jobs.
+func TestOperator_benchScenarioReconcile_ResumesAfterRestart(t *testing.T) {
+	t.Parallel()
+
+	const (
+		name = "scenario"
+		ns   = "default"
+	)
+	jobTypes := []string{jobTypeInsert, jobTypeSearch, "upsert"}
+	newScenario := func(status v1.ValdBenchmarkScenarioStatus) v1.ValdBenchmarkScenario {
+		jobs := make([]*v1.BenchmarkJobSpec, 0, len(jobTypes))
+		for _, jt := range jobTypes {
+			jobs = append(jobs, &v1.BenchmarkJobSpec{JobType: jt})
+		}
+		sc := v1.ValdBenchmarkScenario{
+			Name: name, Namespace: ns, Generation: 1,
+			Spec:   v1.ValdBenchmarkScenarioSpec{Jobs: jobs},
+			Status: status,
+
+			Kind: ScenarioKind,
+		}
+		return sc
+	}
+	tests := []struct {
+		name string
+		// restartStatus is the scenario status seen by the restarted operator.
+		restartStatus v1.ValdBenchmarkScenarioStatus
+		// failOn is the Create call of the first operator that fails (0: none).
+		failOn int
+		// orphanAfter adds, before the restart, a second job of jobTypes[i]
+		// after the same predecessor as the first one (a failed Create that
+		// still reached the API server); -1: none.
+		orphanAfter int
+	}{
+		{
+			name:          "NotReady scenario with the first job created resumes",
+			failOn:        2,
+			restartStatus: v1.BenchmarkScenarioNotReady,
+			orphanAfter:   -1,
+		},
+		{
+			name:          "NotReady scenario with two jobs created resumes",
+			failOn:        3,
+			restartStatus: v1.BenchmarkScenarioNotReady,
+			orphanAfter:   -1,
+		},
+		{
+			name:          "NotReady scenario with no job created creates all",
+			failOn:        1,
+			restartStatus: v1.BenchmarkScenarioNotReady,
+			orphanAfter:   -1,
+		},
+		{
+			name:          "Available scenario whose jobs were all created before its status was written creates none",
+			restartStatus: v1.BenchmarkScenarioAvailable,
+			orphanAfter:   -1,
+		},
+		{
+			name:          "a duplicate job after the same predecessor does not break the chain",
+			failOn:        3,
+			restartStatus: v1.BenchmarkScenarioNotReady,
+			orphanAfter:   1,
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			srv := &fakeBenchJobServer{failCreate: map[int]bool{tc.failOn: true}}
+			first := &operator{jobNamespace: ns, ctrl: srv.ctrl(t)}
+			first.benchScenarioReconcile(t.Context(), map[string]v1.ValdBenchmarkScenario{
+				name: newScenario(v1.BenchmarkScenarioAvailable),
+			})
+			before := len(srv.jobs)
+			wantBefore := len(jobTypes)
+			if tc.failOn > 0 {
+				wantBefore = tc.failOn - 1
+			}
+			if before != wantBefore {
+				t.Fatalf("first operator created %d jobs, want %d", before, wantBefore)
+			}
+			// the earliest job after a predecessor wins: the orphan sorts after
+			// the original because its name has a larger suffix.
+			if tc.orphanAfter >= 0 {
+				orphan := *srv.jobs[tc.orphanAfter].DeepCopy()
+				orphan.Name += "9"
+				srv.jobs = append(srv.jobs, orphan)
+			}
+
+			// restart: a new operator with an empty cache, same API server.
+			srv.statuses = nil
+			restarted := &operator{jobNamespace: ns, ctrl: srv.ctrl(t)}
+			restarted.benchScenarioReconcile(t.Context(), map[string]v1.ValdBenchmarkScenario{
+				name: newScenario(tc.restartStatus),
+			})
+
+			var chain []v1.ValdBenchmarkJob
+			for _, bj := range srv.jobs {
+				if tc.orphanAfter < 0 || bj.Name != srv.jobs[tc.orphanAfter].Name+"9" {
+					chain = append(chain, bj)
+				}
+			}
+			if len(chain) != len(jobTypes) {
+				names := make([]string, 0, len(chain))
+				for _, bj := range chain {
+					names = append(names, bj.Name)
+				}
+				t.Fatalf("jobs after the restart = %v, want one per spec job %v", names, jobTypes)
+			}
+			for i, bj := range chain {
+				if bj.Spec.JobType != jobTypes[i] {
+					t.Errorf("job %d has type %q, want %q", i, bj.Spec.JobType, jobTypes[i])
+				}
+				wantPrev := ""
+				if i > 0 {
+					wantPrev = chain[i-1].Name
+				}
+				if got := bj.GetAnnotations()[BeforeJobName]; got != wantPrev {
+					t.Errorf("job %d waits for %q, want %q", i, got, wantPrev)
+				}
+			}
+			if len(srv.statuses) == 0 || srv.statuses[len(srv.statuses)-1] != v1.BenchmarkScenarioHealthy {
+				t.Errorf("scenario status writes after the restart = %v, want it to end with %q", srv.statuses, v1.BenchmarkScenarioHealthy)
+			}
+			sc := restarted.getAtomicScenario()[name]
+			if sc == nil {
+				t.Fatal("restarted operator does not cache the scenario")
+			}
+			if sc.jobsIncomplete {
+				t.Error("scenario is still marked incomplete after the resumed creation")
+			}
+			for _, bj := range chain {
+				if _, ok := sc.BenchJobStatus[bj.Name]; !ok {
+					t.Errorf("scenario does not track job %s: %v", bj.Name, sc.BenchJobStatus)
+				}
+			}
+
+			// a further reconcile creates nothing.
+			n := len(srv.jobs)
+			restarted.benchScenarioReconcile(t.Context(), map[string]v1.ValdBenchmarkScenario{
+				name: newScenario(v1.BenchmarkScenarioHealthy),
+			})
+			if len(srv.jobs) != n {
+				t.Errorf("reconcile after the resumed creation created %d more jobs", len(srv.jobs)-n)
+			}
+		})
+	}
+}
+
+// TestOperator_benchScenarioReconcile_RestartListFailureCreatesNothing pins
+// that when the existing jobs of an uncached scenario cannot be listed no job
+// is created (it could duplicate one) and the scenario stays uncached, so the
+// next reconcile retries and then resumes.
+func TestOperator_benchScenarioReconcile_RestartListFailureCreatesNothing(t *testing.T) {
+	t.Parallel()
+
+	const (
+		name = "scenario"
+		ns   = "default"
+	)
+	sc := v1.ValdBenchmarkScenario{
+		Name: name, Namespace: ns, Generation: 1,
+		Spec: v1.ValdBenchmarkScenarioSpec{Jobs: []*v1.BenchmarkJobSpec{
+			{JobType: jobTypeInsert}, {JobType: jobTypeSearch},
+		}},
+		Status: v1.BenchmarkScenarioNotReady,
+
+		Kind: ScenarioKind,
+	}
+	list := map[string]v1.ValdBenchmarkScenario{name: sc}
+
+	srv := &fakeBenchJobServer{failList: true}
+	o := &operator{jobNamespace: ns, ctrl: srv.ctrl(t)}
+	o.benchScenarioReconcile(t.Context(), list)
+	if srv.creates != 0 {
+		t.Fatalf("created %d jobs although the existing ones could not be listed", srv.creates)
+	}
+	if _, ok := o.getAtomicScenario()[name]; ok {
+		t.Fatal("scenario is cached although its job state is unknown")
+	}
+
+	srv.failList = false
+	o.benchScenarioReconcile(t.Context(), list)
+	if len(srv.jobs) != len(sc.Spec.Jobs) {
+		t.Fatalf("created %d jobs on the retry, want %d", len(srv.jobs), len(sc.Spec.Jobs))
+	}
+}
+
+// TestOperator_refreshStatuses_RetriesFailedJobList pins that a scenario whose
+// existing jobs could not be listed is retried by the periodic refresh, so the
+// retry does not depend on another scenario event.
+func TestOperator_refreshStatuses_RetriesFailedJobList(t *testing.T) {
+	t.Parallel()
+
+	const (
+		name = "scenario"
+		ns   = "default"
+	)
+	sc := v1.ValdBenchmarkScenario{
+		Name: name, Namespace: ns, Generation: 1,
+		Spec: v1.ValdBenchmarkScenarioSpec{Jobs: []*v1.BenchmarkJobSpec{
+			{JobType: jobTypeInsert}, {JobType: jobTypeSearch},
+		}},
+
+		Kind: ScenarioKind,
+	}
+
+	srv := &fakeBenchJobServer{failList: true}
+	o := &operator{jobNamespace: ns, ctrl: srv.ctrl(t)}
+	o.benchScenarioReconcile(t.Context(), map[string]v1.ValdBenchmarkScenario{name: sc})
+	if srv.creates != 0 {
+		t.Fatalf("created %d jobs although the existing ones could not be listed", srv.creates)
+	}
+
+	// the list still fails: nothing is created and the retry is kept.
+	o.refreshStatuses(t.Context())
+	if srv.creates != 0 {
+		t.Fatalf("refresh created %d jobs although the list failed", srv.creates)
+	}
+
+	srv.failList = false
+	o.refreshStatuses(t.Context())
+	if len(srv.jobs) != len(sc.Spec.Jobs) {
+		t.Fatalf("refresh created %d jobs, want %d", len(srv.jobs), len(sc.Spec.Jobs))
+	}
+	got := o.getAtomicScenario()[name]
+	if got == nil || got.Crd.Status != v1.BenchmarkScenarioHealthy {
+		t.Fatalf("scenario after the retry = %+v, want it cached as %q", got, v1.BenchmarkScenarioHealthy)
+	}
+	if len(srv.statuses) == 0 || srv.statuses[len(srv.statuses)-1] != v1.BenchmarkScenarioHealthy {
+		t.Errorf("scenario status writes = %v, want it to end with %q", srv.statuses, v1.BenchmarkScenarioHealthy)
+	}
+
+	// the retry is done once.
+	o.refreshStatuses(t.Context())
+	if len(srv.jobs) != len(sc.Spec.Jobs) {
+		t.Errorf("a further refresh created %d more jobs", len(srv.jobs)-len(sc.Spec.Jobs))
+	}
+}
+
+// TestOperator_benchScenarioReconcile_RecreatedScenarioIgnoresOldJobs pins
+// that a scenario deleted and re-created with the same name does not adopt the
+// jobs of the old instance, which share its Scenario label until the GC
+// removes them: the new instance creates its own jobs.
+func TestOperator_benchScenarioReconcile_RecreatedScenarioIgnoresOldJobs(t *testing.T) {
+	t.Parallel()
+
+	const (
+		name = "scenario"
+		ns   = "default"
+	)
+	newScenario := func(uid k8s.UID) v1.ValdBenchmarkScenario {
+		sc := v1.ValdBenchmarkScenario{
+			Name: name, Namespace: ns, Generation: 1, UID: uid,
+			Spec: v1.ValdBenchmarkScenarioSpec{Jobs: []*v1.BenchmarkJobSpec{
+				{JobType: jobTypeInsert}, {JobType: jobTypeSearch},
+			}},
+
+			Kind: ScenarioKind,
+		}
+		return sc
+	}
+
+	srv := &fakeBenchJobServer{}
+	old := &operator{jobNamespace: ns, ctrl: srv.ctrl(t)}
+	old.benchScenarioReconcile(t.Context(), map[string]v1.ValdBenchmarkScenario{name: newScenario("uid-old")})
+	if len(srv.jobs) != 2 {
+		t.Fatalf("old instance created %d jobs, want 2", len(srv.jobs))
+	}
+	for i := range srv.jobs {
+		srv.jobs[i].Status = v1.BenchmarkJobCompleted
+	}
+
+	// the re-created scenario is uncached: the old one left the scenario list.
+	o := &operator{jobNamespace: ns, ctrl: srv.ctrl(t)}
+	o.benchScenarioReconcile(t.Context(), map[string]v1.ValdBenchmarkScenario{name: newScenario("uid-new")})
+	if len(srv.jobs) != 4 {
+		t.Fatalf("jobs after the re-creation = %d, want the 2 old ones plus 2 new ones", len(srv.jobs))
+	}
+	sc := o.getAtomicScenario()[name]
+	if sc == nil {
+		t.Fatal("re-created scenario is not cached")
+	}
+	for _, bj := range srv.jobs[2:] {
+		owners := bj.GetOwnerReferences()
+		if len(owners) != 1 || owners[0].UID != "uid-new" {
+			t.Errorf("job %s owners = %v, want the new instance", bj.Name, owners)
+		}
+		if st, ok := sc.BenchJobStatus[bj.Name]; !ok || st != v1.BenchmarkJobNotReady {
+			t.Errorf("job %s tracked as %q (%v), want %q", bj.Name, st, ok, v1.BenchmarkJobNotReady)
+		}
+	}
+	for _, bj := range srv.jobs[:2] {
+		if _, ok := sc.BenchJobStatus[bj.Name]; ok {
+			t.Errorf("re-created scenario tracks job %s of the old instance", bj.Name)
+		}
+	}
+}
+
+const (
+	completionScenario  = "scenario"
+	completionNamespace = "default"
+	completionUID       = k8s.UID("scenario-uid")
+
+	// BenchmarkJobSpec.JobType values of insert and search jobs.
+	jobTypeInsert = "insert"
+	jobTypeSearch = "search"
+)
+
+func completionScenarioCRD(status v1.ValdBenchmarkScenarioStatus) v1.ValdBenchmarkScenario {
+	return v1.ValdBenchmarkScenario{
+		Name:       completionScenario,
+		Namespace:  completionNamespace,
+		UID:        completionUID,
+		Generation: 1,
+		Spec: v1.ValdBenchmarkScenarioSpec{
+			Jobs: []*v1.BenchmarkJobSpec{{JobType: jobTypeInsert}, {JobType: jobTypeSearch}},
+		},
+		Status: status,
+	}
+}
+
+func completedBenchJob(name string) v1.ValdBenchmarkJob {
+	return v1.ValdBenchmarkJob{
+		Name:      name,
+		Namespace: completionNamespace,
+		OwnerReferences: []k8s.OwnerReference{{
+			Kind: ScenarioKind,
+			Name: completionScenario,
+			UID:  completionUID,
+		}},
+		Status: v1.BenchmarkJobCompleted,
+	}
+}
+
+// TestOperator_refreshStatuses_CompletesScenarioOfDeletedJobs pins that a
+// Healthy scenario whose completed benchmark jobs are deleted (and so pruned
+// from its tracked statuses) is still completed by the status refresh.
+func TestOperator_refreshStatuses_CompletesScenarioOfDeletedJobs(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		listed map[string]v1.ValdBenchmarkJob
+		name   string
+	}{
+		{
+			name:   "one of two jobs deleted",
+			listed: map[string]v1.ValdBenchmarkJob{"a": completedBenchJob("a")},
+		},
+		{
+			name:   "every job deleted",
+			listed: map[string]v1.ValdBenchmarkJob{},
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			var statuses []v1.ValdBenchmarkScenarioStatus
+			o := &operator{ctrl: newClientMockCtrl(nil, nil, func(_ context.Context, obj k8s.Object) error {
+				if sc, ok := obj.(*v1.ValdBenchmarkScenario); ok {
+					statuses = append(statuses, sc.Status)
+				}
+				return nil
+			})}
+			crd := completionScenarioCRD(v1.BenchmarkScenarioHealthy)
+			scenarios := map[string]*scenario{completionScenario: {
+				Crd: &crd,
+				BenchJobStatus: map[string]v1.BenchmarkJobStatus{
+					"a": v1.BenchmarkJobCompleted,
+					"b": v1.BenchmarkJobCompleted,
+				},
+			}}
+			o.scenarios.Store(&scenarios)
+
+			o.benchJobReconcile(t.Context(), tc.listed)
+			o.refreshStatuses(t.Context())
+
+			want := []v1.ValdBenchmarkScenarioStatus{v1.BenchmarkScenarioCompleted}
+			if !reflect.DeepEqual(statuses, want) {
+				t.Errorf("scenario status writes = %v, want %v", statuses, want)
+			}
+		})
+	}
+}
+
+// TestOperator_refreshStatuses_CompletesRestartedScenarioInAnyReconcileOrder
+// pins that a Healthy scenario whose jobs have all completed is completed
+// after an operator restart even when the benchmark job reconcile runs before
+// the scenario is cached, and that it is not completed before its jobs are
+// observed.
+func TestOperator_refreshStatuses_CompletesRestartedScenarioInAnyReconcileOrder(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name      string
+		jobsFirst bool
+	}{
+		{name: "benchmark jobs reconciled first", jobsFirst: true},
+		{name: "scenario reconciled first"},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			var statuses []v1.ValdBenchmarkScenarioStatus
+			o := &operator{
+				jobNamespace: completionNamespace,
+				ctrl: newClientMockCtrl(
+					func(_ context.Context, obj k8s.Object) error {
+						return errors.Errorf("unexpected create of %s", obj.GetName())
+					},
+					nil,
+					func(_ context.Context, obj k8s.Object) error {
+						if sc, ok := obj.(*v1.ValdBenchmarkScenario); ok {
+							statuses = append(statuses, sc.Status)
+						}
+						return nil
+					},
+				),
+			}
+			jobs := map[string]v1.ValdBenchmarkJob{
+				"a": completedBenchJob("a"),
+				"b": completedBenchJob("b"),
+			}
+			scenarios := map[string]v1.ValdBenchmarkScenario{
+				completionScenario: completionScenarioCRD(v1.BenchmarkScenarioHealthy),
+			}
+			if tc.jobsFirst {
+				o.benchJobReconcile(t.Context(), jobs)
+				o.benchScenarioReconcile(t.Context(), scenarios)
+			} else {
+				o.benchScenarioReconcile(t.Context(), scenarios)
+				// the jobs are not observed yet: not completed.
+				o.refreshStatuses(t.Context())
+				if len(statuses) != 0 {
+					t.Fatalf("scenario status writes before its jobs are observed = %v, want none", statuses)
+				}
+				o.benchJobReconcile(t.Context(), jobs)
+			}
+			if err := o.checkAtomics(); err != nil {
+				t.Errorf("checkAtomics() = %v, want nil", err)
+			}
+			o.refreshStatuses(t.Context())
+
+			want := []v1.ValdBenchmarkScenarioStatus{v1.BenchmarkScenarioCompleted}
+			if !reflect.DeepEqual(statuses, want) {
+				t.Errorf("scenario status writes = %v, want %v", statuses, want)
+			}
+		})
+	}
+}
+
+// TestOperator_refreshStatuses_RetriesIncompleteScenarioJobs pins that the
+// status refresh keeps retrying the job creation of a scenario that is
+// already NotReady (so a failed retry writes no status and fires no scenario
+// event) until every job is created, and then marks it Healthy.
+func TestOperator_refreshStatuses_RetriesIncompleteScenarioJobs(t *testing.T) {
+	t.Parallel()
+
+	var (
+		creates  int
+		created  []string
+		statuses []v1.ValdBenchmarkScenarioStatus
+	)
+	o := &operator{
+		jobNamespace: completionNamespace,
+		ctrl: newClientMockCtrl(
+			func(_ context.Context, obj k8s.Object) error {
+				creates++
+				// the first refresh fails; the second one succeeds.
+				if creates == 1 {
+					return errors.New("create failed")
+				}
+				created = append(created, obj.GetName())
+				return nil
+			},
+			nil,
+			func(_ context.Context, obj k8s.Object) error {
+				if sc, ok := obj.(*v1.ValdBenchmarkScenario); ok {
+					statuses = append(statuses, sc.Status)
+				}
+				return nil
+			},
+		),
+	}
+	crd := completionScenarioCRD(v1.BenchmarkScenarioNotReady)
+	scenarios := map[string]*scenario{completionScenario: {
+		Crd:            &crd,
+		BenchJobStatus: map[string]v1.BenchmarkJobStatus{},
+		jobsIncomplete: true,
+	}}
+	o.scenarios.Store(&scenarios)
+
+	o.refreshStatuses(t.Context())
+	if creates != 1 {
+		t.Fatalf("first refresh made %d create calls, want 1", creates)
+	}
+	if len(statuses) != 0 {
+		t.Fatalf("scenario status writes after a failed retry = %v, want none", statuses)
+	}
+	if sc := o.getAtomicScenario()[completionScenario]; !sc.jobsIncomplete {
+		t.Fatalf("scenario not marked incomplete after a failed retry")
+	}
+
+	o.refreshStatuses(t.Context())
+	if len(created) != len(crd.Spec.Jobs) {
+		t.Fatalf("created jobs = %v, want %d", created, len(crd.Spec.Jobs))
+	}
+	want := []v1.ValdBenchmarkScenarioStatus{v1.BenchmarkScenarioHealthy}
+	if !reflect.DeepEqual(statuses, want) {
+		t.Errorf("scenario status writes = %v, want %v", statuses, want)
+	}
+	sc := o.getAtomicScenario()[completionScenario]
+	if sc.jobsIncomplete || len(sc.BenchJobStatus) != len(crd.Spec.Jobs) {
+		t.Errorf("scenario incomplete=%v tracks %v, want complete with %d jobs", sc.jobsIncomplete, sc.BenchJobStatus, len(crd.Spec.Jobs))
+	}
+
+	// a further refresh creates nothing.
+	o.refreshStatuses(t.Context())
+	if len(created) != len(crd.Spec.Jobs) {
+		t.Errorf("refresh after a complete creation created %v", created[len(crd.Spec.Jobs):])
 	}
 }
 
@@ -5249,3 +6010,1059 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		})
 // 	}
 // }
+
+// TestOperator_Start_ErrorRelayStopsOnCancelWhenConsumerGone pins that the relay
+// goroutine does not block forever on its error channel once the consumer has
+// stopped reading: after the buffer is full, cancelling ctx must end it.
+func TestOperator_Start_ErrorRelayStopsOnCancelWhenConsumerGone(t *testing.T) {
+	t.Parallel()
+
+	const sendTimeout = 5 * time.Second
+
+	scch := make(chan error)
+	eg, egctx := errgroup.New(t.Context())
+	ctx, cancel := context.WithCancel(egctx)
+	defer cancel()
+
+	o := &operator{
+		eg:  eg,
+		rcd: time.Hour,
+		ctrl: &mockCtrl{
+			StartFunc: func(context.Context) (<-chan error, error) { return scch, nil },
+		},
+	}
+	// the returned channel is intentionally never read.
+	if _, err := o.Start(ctx); err != nil {
+		t.Fatalf("Start() error = %v, want nil", err)
+	}
+
+	// one more error than the channel buffer: the last one cannot be buffered.
+	for range startErrChanBufferSize + 1 {
+		select {
+		case scch <- errors.New("controller error"):
+		case <-time.After(sendTimeout):
+			t.Fatal("relay goroutine did not receive the controller error")
+		}
+	}
+
+	cancel()
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		if err := eg.Wait(); err != nil {
+			t.Logf("eg.Wait() = %v", err)
+		}
+	}()
+	select {
+	case <-done:
+	case <-time.After(sendTimeout):
+		t.Fatal("relay goroutine stayed blocked on the error channel after ctx cancel")
+	}
+}
+
+// doneCountCtx counts Done() calls. A select loop evaluates ctx.Done() on every
+// iteration, so the count is a deterministic measure of how often it spins.
+type doneCountCtx struct {
+	context.Context //nolint:containedctx // test wrapper that counts Done() calls
+	n               atomic.Int64
+}
+
+func (c *doneCountCtx) Done() <-chan struct{} {
+	c.n.Add(1)
+	return c.Context.Done()
+}
+
+// TestOperator_Start_ClosedControllerChannelDoesNotSpin pins that the relay
+// loop stops selecting the controller error channel once it is closed (the
+// controller's manager returned while ctx is still live). A closed channel is
+// always ready, so without nil-ing it the loop busy-spins; the spin shows up
+// as an unbounded number of ctx.Done() evaluations.
+func TestOperator_Start_ClosedControllerChannelDoesNotSpin(t *testing.T) {
+	t.Parallel()
+
+	ch := make(chan error)
+	close(ch)
+
+	eg, egctx := errgroup.New(t.Context())
+	cctx, cancel := context.WithCancel(egctx)
+	defer cancel()
+	ctx := &doneCountCtx{Context: cctx}
+
+	o := &operator{
+		eg:  eg,
+		rcd: time.Hour,
+		ctrl: &mockCtrl{
+			StartFunc: func(context.Context) (<-chan error, error) { return ch, nil },
+		},
+	}
+	if _, err := o.Start(ctx); err != nil {
+		t.Fatalf("Start() error = %v, want nil", err)
+	}
+
+	time.Sleep(100 * time.Millisecond)
+	if n := ctx.n.Load(); n > 100 {
+		t.Errorf("ctx.Done() evaluated %d times with a closed controller channel; the relay loop is busy-spinning", n)
+	}
+
+	cancel()
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		if err := eg.Wait(); err != nil {
+			t.Logf("eg.Wait() = %v", err)
+		}
+	}()
+	select {
+	case <-done:
+	case <-time.After(5 * time.Second):
+		t.Fatal("relay goroutine did not exit on context cancel")
+	}
+}
+
+// newClientMockCtrl returns a controller whose manager routes Create, Get and
+// Status().Update to the given hooks (nil means success).
+func newClientMockCtrl(
+	create func(context.Context, k8s.Object) error,
+	get func(context.Context, k8s.ObjectKey, k8s.Object) error,
+	statusUpdate func(context.Context, k8s.Object) error,
+) *mockCtrl {
+	return &mockCtrl{
+		StartFunc: func(context.Context) (<-chan error, error) { return nil, nil },
+		GetManagerFunc: func() k8s.Manager {
+			return k8smock.NewHookManagerMock(create, get, statusUpdate)
+		},
+	}
+}
+
+// TestOperator_benchJobReconcile_CreateJobFailureIsRetried pins that a job
+// whose creation failed is not cached as created (neither as a new job nor as
+// the new generation of an already cached job) and is not marked healthy, so
+// that the next reconcile retries the creation.
+func TestOperator_benchJobReconcile_CreateJobFailureIsRetried(t *testing.T) {
+	t.Parallel()
+
+	const name = "bench-job"
+	tests := []struct {
+		// cached is the job already held in cbjl before the first reconcile (nil: none).
+		cached *v1.ValdBenchmarkJob
+		name   string
+		// wantStatusAfterRetry is the cached status expected after the retry succeeded.
+		wantStatusAfterRetry v1.BenchmarkJobStatus
+		// listed is the job reported by the reconciler.
+		listed v1.ValdBenchmarkJob
+		// wantCachedGenAfterFailure is the generation expected in cbjl after the
+		// failed creation; -1 means the job must be absent.
+		wantCachedGenAfterFailure int64
+	}{
+		{
+			name:                      "new job",
+			listed:                    v1.ValdBenchmarkJob{ObjectMeta: k8s.ObjectMeta{Name: name, Namespace: "default"}},
+			wantCachedGenAfterFailure: -1,
+			wantStatusAfterRetry:      v1.BenchmarkJobHealthy,
+		},
+		{
+			name: "new generation of a cached job",
+			cached: &v1.ValdBenchmarkJob{
+				Name: name, Namespace: "default", Generation: 1,
+				Status: v1.BenchmarkJobHealthy,
+			},
+			listed: v1.ValdBenchmarkJob{
+				ObjectMeta: k8s.ObjectMeta{Name: name, Namespace: "default", Generation: 2},
+				Status:     v1.BenchmarkJobAvailable,
+			},
+			wantCachedGenAfterFailure: 1,
+			wantStatusAfterRetry:      v1.BenchmarkJobAvailable,
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			createErr := errors.New("create failed")
+			creates := 0
+			var statusUpdated []string
+			o := &operator{
+				jobNamespace:       "default",
+				jobImageRepository: "vdaas/vald-benchmark-job",
+				jobImageTag:        "latest",
+				jobImagePullPolicy: "Always",
+				configMapName:      "vald-benchmark-operator-config",
+				ctrl: newClientMockCtrl(
+					func(context.Context, k8s.Object) error {
+						creates++
+						if creates == 1 {
+							return createErr
+						}
+						return nil
+					},
+					nil,
+					func(_ context.Context, obj k8s.Object) error {
+						statusUpdated = append(statusUpdated, obj.GetName())
+						return nil
+					},
+				),
+			}
+			if tc.cached != nil {
+				cached := map[string]*v1.ValdBenchmarkJob{name: tc.cached}
+				o.benchjobs.Store(&cached)
+			}
+			list := map[string]v1.ValdBenchmarkJob{name: tc.listed}
+
+			// first reconcile: createJob fails.
+			o.benchJobReconcile(t.Context(), list)
+			if creates != 1 {
+				t.Fatalf("Create called %d times, want 1", creates)
+			}
+			got, ok := o.getAtomicBenchJob()[name]
+			switch {
+			case tc.wantCachedGenAfterFailure < 0 && ok:
+				t.Errorf("job %q was cached although its creation failed", name)
+			case tc.wantCachedGenAfterFailure >= 0 && !ok:
+				t.Fatalf("cached job %q disappeared after a failed creation", name)
+			case ok && got.GetGeneration() != tc.wantCachedGenAfterFailure:
+				t.Errorf("cached generation = %d after a failed creation, want %d", got.GetGeneration(), tc.wantCachedGenAfterFailure)
+			}
+			if len(statusUpdated) != 0 {
+				t.Errorf("status updated for %v although the creation failed", statusUpdated)
+			}
+
+			// second reconcile: the job is retried and, on success, cached.
+			o.benchJobReconcile(t.Context(), list)
+			if creates != 2 {
+				t.Fatalf("Create called %d times after the second reconcile, want 2", creates)
+			}
+			got, ok = o.getAtomicBenchJob()[name]
+			if !ok {
+				t.Fatalf("job %q is not cached after a successful retry", name)
+			}
+			if got.GetGeneration() != tc.listed.GetGeneration() {
+				t.Errorf("cached generation = %d after the retry, want %d", got.GetGeneration(), tc.listed.GetGeneration())
+			}
+			if got.Status != tc.wantStatusAfterRetry {
+				t.Errorf("cached job status = %q, want %q", got.Status, tc.wantStatusAfterRetry)
+			}
+		})
+	}
+}
+
+// TestOperator_benchJobReconcile_CreateJobAlreadyExistsIsCreated pins that an
+// AlreadyExists error from Create (the job was created before, e.g. before an
+// operator restart) counts as created: the job is cached on the first
+// reconcile instead of failing on every reconcile and never being tracked.
+// createJob wraps the Create error, so this also covers that the wrapped error
+// is still recognized.
+func TestOperator_benchJobReconcile_CreateJobAlreadyExistsIsCreated(t *testing.T) {
+	t.Parallel()
+
+	const name = "bench-job"
+	tests := []struct {
+		// cached is the job already held in cbjl before the reconcile (nil: none).
+		cached *v1.ValdBenchmarkJob
+		name   string
+		// wantStatus is the cached status expected after the reconcile.
+		wantStatus v1.BenchmarkJobStatus
+		// listed is the job reported by the reconciler.
+		listed v1.ValdBenchmarkJob
+		// wantStatusUpdated is whether the CR status is expected to be updated.
+		wantStatusUpdated bool
+		// wantGen is the cached generation expected after the reconcile.
+		wantGen int64
+	}{
+		{
+			name:              "new job",
+			listed:            v1.ValdBenchmarkJob{ObjectMeta: k8s.ObjectMeta{Name: name, Namespace: "default"}},
+			wantGen:           0,
+			wantStatus:        v1.BenchmarkJobHealthy,
+			wantStatusUpdated: true,
+		},
+		{
+			// the job name is shared across generations, so AlreadyExists here means the
+			// old version job is not gone yet: keep the old generation cached so the next
+			// reconcile retries delete+create instead of never applying the new spec.
+			name: "new generation of a cached job keeps the old generation",
+			cached: &v1.ValdBenchmarkJob{
+				Name: name, Namespace: "default", Generation: 1,
+				Status: v1.BenchmarkJobHealthy,
+			},
+			listed: v1.ValdBenchmarkJob{
+				ObjectMeta: k8s.ObjectMeta{Name: name, Namespace: "default", Generation: 2},
+				Status:     v1.BenchmarkJobAvailable,
+			},
+			wantGen:    1,
+			wantStatus: v1.BenchmarkJobHealthy,
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			var statusUpdated []string
+			o := &operator{
+				jobNamespace:       "default",
+				jobImageRepository: "vdaas/vald-benchmark-job",
+				jobImageTag:        "latest",
+				jobImagePullPolicy: "Always",
+				configMapName:      "vald-benchmark-operator-config",
+				ctrl: newClientMockCtrl(
+					func(context.Context, k8s.Object) error {
+						return k8smock.NewAlreadyExistsError(name)
+					},
+					nil,
+					func(_ context.Context, obj k8s.Object) error {
+						statusUpdated = append(statusUpdated, obj.GetName())
+						return nil
+					},
+				),
+			}
+			if tc.cached != nil {
+				cached := map[string]*v1.ValdBenchmarkJob{name: tc.cached}
+				o.benchjobs.Store(&cached)
+			}
+
+			o.benchJobReconcile(t.Context(), map[string]v1.ValdBenchmarkJob{name: tc.listed})
+
+			got, ok := o.getAtomicBenchJob()[name]
+			if !ok {
+				t.Fatalf("job %q is not cached although it already exists", name)
+			}
+			if got.GetGeneration() != tc.wantGen {
+				t.Errorf("cached generation = %d, want %d", got.GetGeneration(), tc.wantGen)
+			}
+			if got.Status != tc.wantStatus {
+				t.Errorf("cached status = %q, want %q", got.Status, tc.wantStatus)
+			}
+			if tc.wantStatusUpdated != (len(statusUpdated) != 0) {
+				t.Errorf("status updated for %v, want updated = %t", statusUpdated, tc.wantStatusUpdated)
+			}
+		})
+	}
+}
+
+// TestOperator_checkJobsStatus_GetFailureDoesNotSkipOthers pins that a failing
+// Get for one job neither aborts the status update of the other jobs nor is
+// swallowed: the remaining job is updated and the Get error is returned.
+func TestOperator_checkJobsStatus_GetFailureDoesNotSkipOthers(t *testing.T) {
+	t.Parallel()
+
+	const (
+		failing = "job-get-fails"
+		healthy = "job-succeeded"
+	)
+	getErr := errors.New("get failed")
+	var updated []string
+	o := &operator{
+		ctrl: newClientMockCtrl(
+			nil,
+			func(_ context.Context, key k8s.ObjectKey, obj k8s.Object) error {
+				if key.Name == failing {
+					return getErr
+				}
+				job, ok := obj.(*k8s.Job)
+				if !ok {
+					return errors.New("unexpected object type")
+				}
+				job.Status.Succeeded = 1
+				return nil
+			},
+			func(_ context.Context, obj k8s.Object) error {
+				updated = append(updated, obj.GetName())
+				return nil
+			},
+		),
+	}
+	cached := map[string]*v1.ValdBenchmarkJob{}
+	for _, n := range []string{failing, healthy} {
+		cached[n] = &v1.ValdBenchmarkJob{
+			Name: n, Namespace: "default",
+			Status: v1.BenchmarkJobHealthy,
+		}
+	}
+	o.benchjobs.Store(&cached)
+
+	err := o.checkJobsStatus(t.Context(), map[string]string{
+		failing: "default",
+		healthy: "default",
+	})
+	if !errors.Is(err, getErr) {
+		t.Errorf("checkJobsStatus() error = %v, want it to wrap %v", err, getErr)
+	}
+	if len(updated) != 1 || updated[0] != healthy {
+		t.Errorf("status updated for %v, want only [%s]", updated, healthy)
+	}
+	got := o.getAtomicBenchJob()
+	if st := got[healthy].Status; st != v1.BenchmarkJobCompleted {
+		t.Errorf("cached status of %s = %q, want %q", healthy, st, v1.BenchmarkJobCompleted)
+	}
+	if st := got[failing].Status; st != v1.BenchmarkJobHealthy {
+		t.Errorf("cached status of %s = %q, want unchanged %q", failing, st, v1.BenchmarkJobHealthy)
+	}
+}
+
+// TestOperator_refreshStatuses_DoesNotLoseConcurrentReconcile pins that the
+// periodic status refresh and a benchmark job reconcile do not overwrite each
+// other's cache updates. The refresh is started while the reconcile is inside
+// its createJob call; without serialization the reconcile then stores a copy
+// taken before the refresh and reverts the refreshed status.
+func TestOperator_refreshStatuses_DoesNotLoseConcurrentReconcile(t *testing.T) {
+	t.Parallel()
+
+	const (
+		existing = "job-existing"
+		added    = "job-added"
+	)
+	inCreate := make(chan struct{})
+	release := make(chan struct{})
+	o := &operator{
+		jobImageRepository: "vdaas/vald-benchmark-job",
+		jobImagePullPolicy: "Always",
+		configMapName:      "refresh-test-configmap",
+		ctrl: newClientMockCtrl(
+			func(ctx context.Context, obj k8s.Object) error {
+				if obj.GetName() != added {
+					return nil
+				}
+				close(inCreate)
+				select {
+				case <-release:
+					return nil
+				case <-ctx.Done():
+					return ctx.Err()
+				}
+			},
+			func(_ context.Context, _ k8s.ObjectKey, obj k8s.Object) error {
+				if job, ok := obj.(*k8s.Job); ok {
+					job.Status.Succeeded = 1
+				}
+				return nil
+			},
+			nil,
+		),
+	}
+	existingJob := v1.ValdBenchmarkJob{
+		Name: existing, Namespace: "default",
+		Status: v1.BenchmarkJobHealthy,
+	}
+	cached := map[string]*v1.ValdBenchmarkJob{existing: &existingJob}
+	o.benchjobs.Store(&cached)
+	jobs := map[string]string{existing: "default"}
+	o.jobs.Store(&jobs)
+
+	ctx, cancel := context.WithTimeout(t.Context(), 10*time.Second)
+	defer cancel()
+	reconcileDone := make(chan struct{})
+	go func() {
+		defer close(reconcileDone)
+		o.benchJobReconcile(ctx, map[string]v1.ValdBenchmarkJob{
+			existing: existingJob,
+			added:    {ObjectMeta: k8s.ObjectMeta{Name: added, Namespace: "default"}},
+		})
+	}()
+	select {
+	case <-inCreate:
+	case <-ctx.Done():
+		t.Fatal("benchJobReconcile did not reach createJob")
+	}
+	refreshDone := make(chan struct{})
+	go func() {
+		defer close(refreshDone)
+		o.refreshStatuses(ctx)
+	}()
+	// Give an unserialized refresh the chance to finish inside the createJob
+	// window; a serialized one stays blocked until the reconcile returns.
+	select {
+	case <-refreshDone:
+	case <-time.After(200 * time.Millisecond):
+	}
+	close(release)
+	for _, done := range []chan struct{}{reconcileDone, refreshDone} {
+		select {
+		case <-done:
+		case <-ctx.Done():
+			t.Fatal("reconcile or refresh did not finish")
+		}
+	}
+
+	got := o.getAtomicBenchJob()
+	if _, ok := got[added]; !ok {
+		t.Errorf("job %s added by the reconcile was lost", added)
+	}
+	if bj, ok := got[existing]; !ok || bj.Status != v1.BenchmarkJobCompleted {
+		t.Errorf("job %s = %v, want status %q from the refresh", existing, bj, v1.BenchmarkJobCompleted)
+	}
+}
+
+// TestOperator_Start_CheckAtomicsWaitsForReconcile pins that the periodic
+// atomics check runs under mu. A reconcile publishes the job, benchmark job
+// and scenario atomics one at a time while holding mu, so an unlocked check
+// can observe its half-published state and report a spurious mismatch.
+func TestOperator_Start_CheckAtomicsWaitsForReconcile(t *testing.T) {
+	t.Parallel()
+
+	const (
+		rcd     = 5 * time.Millisecond
+		observe = 20 * rcd
+		waitFor = 5 * time.Second
+	)
+	eg, egctx := errgroup.New(t.Context())
+	ctx, cancel := context.WithCancel(egctx)
+	defer cancel()
+	o := &operator{
+		eg:   eg,
+		rcd:  rcd,
+		ctrl: newClientMockCtrl(nil, nil, nil),
+	}
+
+	// a reconcile in progress: it holds mu and has published only part of its
+	// update (a job and a scenario without the matching benchmark job).
+	o.mu.Lock()
+	jobs := map[string]string{"job": "default"}
+	o.jobs.Store(&jobs)
+	scenarios := map[string]*scenario{"scenario": {
+		Crd: &v1.ValdBenchmarkScenario{Name: "scenario", Namespace: "default"},
+	}}
+	o.scenarios.Store(&scenarios)
+	ech, err := o.Start(ctx)
+	if err != nil {
+		o.mu.Unlock()
+		t.Fatalf("Start() error = %v, want nil", err)
+	}
+	select {
+	case err := <-ech:
+		if err != nil {
+			t.Errorf("atomics check reported %v for a state published while a reconcile held mu", err)
+		}
+	case <-time.After(observe):
+	}
+	// the reconcile finishes with a consistent state and releases mu.
+	emptyJobs := map[string]string{}
+	o.jobs.Store(&emptyJobs)
+	emptyScenarios := map[string]*scenario{}
+	o.scenarios.Store(&emptyScenarios)
+	o.mu.Unlock()
+	select {
+	case err := <-ech:
+		if err != nil {
+			t.Errorf("atomics check reported %v for a consistent state", err)
+		}
+	case <-time.After(observe):
+	}
+
+	cancel()
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		if err := eg.Wait(); err != nil {
+			t.Logf("eg.Wait() = %v", err)
+		}
+	}()
+	select {
+	case <-done:
+	case <-time.After(waitFor):
+		t.Fatal("Start goroutine did not exit on context cancel")
+	}
+	for err := range ech {
+		if err != nil {
+			t.Errorf("atomics check reported %v", err)
+		}
+	}
+}
+
+// TestOperator_updateStatus_FailedUpdateKeepsCache pins that a status whose
+// Status().Update failed is not committed to the cache: the cached object
+// keeps its old status so the next refresh retries the transition, while a
+// successfully updated name in the same batch is committed.
+func TestOperator_updateStatus_FailedUpdateKeepsCache(t *testing.T) {
+	t.Parallel()
+
+	const (
+		failing = "fails"
+		passing = "passes"
+	)
+	updateErr := errors.New("update failed")
+	statusUpdate := func(_ context.Context, obj k8s.Object) error {
+		if obj.GetName() == failing {
+			return updateErr
+		}
+		return nil
+	}
+	tests := []struct {
+		run  func(t *testing.T, o *operator) (got map[string]string, err error)
+		want map[string]string
+		name string
+	}{
+		{
+			name: "benchmark job",
+			want: map[string]string{
+				failing: string(v1.BenchmarkJobHealthy),
+				passing: string(v1.BenchmarkJobCompleted),
+			},
+			run: func(t *testing.T, o *operator) (map[string]string, error) {
+				t.Helper()
+				cached := map[string]*v1.ValdBenchmarkJob{}
+				for _, n := range []string{failing, passing} {
+					cached[n] = &v1.ValdBenchmarkJob{
+						Name: n, Namespace: "default",
+						Status: v1.BenchmarkJobHealthy,
+					}
+				}
+				o.benchjobs.Store(&cached)
+				_, err := o.updateBenchmarkJobStatus(t.Context(), map[string]v1.BenchmarkJobStatus{
+					failing: v1.BenchmarkJobCompleted,
+					passing: v1.BenchmarkJobCompleted,
+				})
+				got := map[string]string{}
+				for n, bj := range o.getAtomicBenchJob() {
+					got[n] = string(bj.Status)
+				}
+				return got, err
+			},
+		},
+		{
+			name: "benchmark scenario",
+			want: map[string]string{
+				failing: string(v1.BenchmarkScenarioHealthy),
+				passing: string(v1.BenchmarkScenarioCompleted),
+			},
+			run: func(t *testing.T, o *operator) (map[string]string, error) {
+				t.Helper()
+				cached := map[string]*scenario{}
+				for _, n := range []string{failing, passing} {
+					cached[n] = &scenario{Crd: &v1.ValdBenchmarkScenario{
+						Name: n, Namespace: "default",
+						Status: v1.BenchmarkScenarioHealthy,
+					}}
+				}
+				o.scenarios.Store(&cached)
+				_, err := o.updateBenchmarkScenarioStatus(t.Context(), map[string]v1.ValdBenchmarkScenarioStatus{
+					failing: v1.BenchmarkScenarioCompleted,
+					passing: v1.BenchmarkScenarioCompleted,
+				})
+				got := map[string]string{}
+				for n, sc := range o.getAtomicScenario() {
+					got[n] = string(sc.Crd.Status)
+				}
+				return got, err
+			},
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			o := &operator{ctrl: newClientMockCtrl(nil, nil, statusUpdate)}
+			got, err := tc.run(t, o)
+			if err != nil {
+				t.Fatalf("update status error = %v, want nil", err)
+			}
+			if !reflect.DeepEqual(got, tc.want) {
+				t.Errorf("cached statuses = %v, want %v", got, tc.want)
+			}
+		})
+	}
+}
+
+// TestOperator_benchJobReconcile_PrunesStaleScenarioJobStatus pins that a
+// scenario touched by the reconcile drops the job statuses of benchmark jobs
+// no longer listed (so they cannot keep it from completing), but keeps the
+// NotReady entries of jobs just created that the list may not contain yet.
+func TestOperator_benchJobReconcile_PrunesStaleScenarioJobStatus(t *testing.T) {
+	t.Parallel()
+
+	const (
+		owner   = "scenario"
+		listed  = "scenario-listed"
+		fresh   = "scenario-fresh"
+		healthy = "scenario-stale-healthy"
+		done    = "scenario-stale-completed"
+	)
+	o := &operator{
+		jobImageRepository: "vdaas/vald-benchmark-job",
+		jobImagePullPolicy: "Always",
+		configMapName:      "prune-test-configmap",
+		ctrl:               newClientMockCtrl(nil, nil, nil),
+	}
+	scenarios := map[string]*scenario{owner: {
+		Crd: &v1.ValdBenchmarkScenario{Name: owner, Namespace: "default"},
+		BenchJobStatus: map[string]v1.BenchmarkJobStatus{
+			listed:  v1.BenchmarkJobNotReady,
+			fresh:   v1.BenchmarkJobNotReady,
+			healthy: v1.BenchmarkJobHealthy,
+			done:    v1.BenchmarkJobCompleted,
+		},
+	}}
+	o.scenarios.Store(&scenarios)
+
+	o.benchJobReconcile(t.Context(), map[string]v1.ValdBenchmarkJob{
+		listed: {
+			ObjectMeta: k8s.ObjectMeta{
+				Name:            listed,
+				Namespace:       "default",
+				OwnerReferences: []k8s.OwnerReference{{Name: owner}},
+			},
+		},
+	})
+
+	want := map[string]v1.BenchmarkJobStatus{
+		listed: "",
+		fresh:  v1.BenchmarkJobNotReady,
+	}
+	if got := o.getAtomicScenario()[owner].BenchJobStatus; !reflect.DeepEqual(got, want) {
+		t.Errorf("scenario BenchJobStatus = %v, want %v", got, want)
+	}
+	// the published snapshot taken before the reconcile must stay untouched.
+	if got := len(scenarios[owner].BenchJobStatus); got != 4 {
+		t.Errorf("previous snapshot BenchJobStatus has %d entries, want 4", got)
+	}
+}
+
+// TestOperator_benchScenarioReconcile_JobCreationFailureIsResumed pins that a
+// scenario whose benchmark job creation failed is marked NotReady instead of
+// Healthy, is not completed by the status refresh, and that the next
+// reconcile — or, without any scenario event, the next status refresh —
+// creates only the jobs still missing (no duplicates, chained after
+// the ones already created) and then marks the scenario Healthy.
+func TestOperator_benchScenarioReconcile_JobCreationFailureIsResumed(t *testing.T) {
+	t.Parallel()
+
+	const name = "scenario"
+	jobTypes := []string{"insert", "search", "upsert"}
+	newScenario := func(gen int64, status v1.ValdBenchmarkScenarioStatus) v1.ValdBenchmarkScenario {
+		jobs := make([]*v1.BenchmarkJobSpec, 0, len(jobTypes))
+		for _, jt := range jobTypes {
+			jobs = append(jobs, &v1.BenchmarkJobSpec{JobType: jt})
+		}
+		return v1.ValdBenchmarkScenario{
+			Name: name, Namespace: "default", Generation: gen,
+			Spec:   v1.ValdBenchmarkScenarioSpec{Jobs: jobs},
+			Status: status,
+		}
+	}
+	tests := []struct {
+		// cached is the scenario held before the first reconcile (nil: none).
+		cached *scenario
+		name   string
+		listed v1.ValdBenchmarkScenario
+		// failOn is the Create call that fails.
+		failOn int
+	}{
+		{
+			name:   "new scenario, first job fails",
+			listed: newScenario(1, v1.BenchmarkScenarioAvailable),
+			failOn: 1,
+		},
+		{
+			name:   "new scenario, second job fails",
+			listed: newScenario(1, v1.BenchmarkScenarioAvailable),
+			failOn: 2,
+		},
+		{
+			name: "new generation, second job fails",
+			cached: func() *scenario {
+				old := newScenario(1, v1.BenchmarkScenarioHealthy)
+				return &scenario{
+					Crd:            &old,
+					BenchJobStatus: map[string]v1.BenchmarkJobStatus{"old-job": v1.BenchmarkJobCompleted},
+				}
+			}(),
+			listed: newScenario(2, v1.BenchmarkScenarioHealthy),
+			failOn: 2,
+		},
+	}
+	for _, tc := range tests {
+		for _, viaRefresh := range []bool{false, true} {
+			resumer := "reconcile"
+			if viaRefresh {
+				resumer = "status refresh"
+			}
+			t.Run(tc.name+", resumed by "+resumer, func(t *testing.T) {
+				t.Parallel()
+
+				type createdJob struct {
+					name, jobType, before string
+				}
+				var (
+					creates  int
+					created  []createdJob
+					statuses []v1.ValdBenchmarkScenarioStatus
+				)
+				o := &operator{
+					jobNamespace: "default",
+					ctrl: newClientMockCtrl(
+						func(_ context.Context, obj k8s.Object) error {
+							creates++
+							if creates == tc.failOn {
+								return errors.New("create failed")
+							}
+							bj, ok := obj.(*v1.ValdBenchmarkJob)
+							if !ok {
+								return errors.Errorf("unexpected object %T", obj)
+							}
+							created = append(created, createdJob{
+								name:    bj.GetName(),
+								jobType: bj.Spec.JobType,
+								before:  bj.GetAnnotations()[BeforeJobName],
+							})
+							return nil
+						},
+						nil,
+						func(_ context.Context, obj k8s.Object) error {
+							if sc, ok := obj.(*v1.ValdBenchmarkScenario); ok {
+								statuses = append(statuses, sc.Status)
+							}
+							return nil
+						},
+					),
+				}
+				if tc.cached != nil {
+					cached := map[string]*scenario{name: tc.cached}
+					o.scenarios.Store(&cached)
+				}
+				list := map[string]v1.ValdBenchmarkScenario{name: tc.listed}
+
+				// first reconcile: creation fails at call failOn.
+				o.benchScenarioReconcile(t.Context(), list)
+				if want := []v1.ValdBenchmarkScenarioStatus{v1.BenchmarkScenarioNotReady}; !reflect.DeepEqual(statuses, want) {
+					t.Fatalf("scenario status writes after the failed creation = %v, want %v", statuses, want)
+				}
+				if got, want := len(created), tc.failOn-1; got != want {
+					t.Fatalf("%d jobs created before the failure, want %d", got, want)
+				}
+				bjs := o.getAtomicScenario()[name].BenchJobStatus
+				if len(bjs) != len(created) {
+					t.Errorf("scenario tracks %v, want the %d jobs created before the failure", bjs, len(created))
+				}
+				// the jobs created before the failure run and complete.
+				done := map[string]v1.ValdBenchmarkJob{}
+				for _, c := range created {
+					done[c.name] = v1.ValdBenchmarkJob{
+						Name:            c.name,
+						Namespace:       "default",
+						OwnerReferences: []k8s.OwnerReference{{Name: name, Kind: ScenarioKind}},
+						Status:          v1.BenchmarkJobCompleted,
+					}
+				}
+				o.benchJobReconcile(t.Context(), done)
+				if viaRefresh {
+					// the refresh resumes the creation itself; it must not
+					// complete the scenario.
+					o.refreshStatuses(t.Context())
+					if want := []v1.ValdBenchmarkScenarioStatus{v1.BenchmarkScenarioNotReady, v1.BenchmarkScenarioHealthy}; !reflect.DeepEqual(statuses, want) {
+						t.Fatalf("scenario status writes after the status refresh = %v, want %v", statuses, want)
+					}
+				} else {
+					// second reconcile: only the missing jobs are created.
+					o.benchScenarioReconcile(t.Context(), list)
+				}
+				if len(created) != len(jobTypes) {
+					t.Fatalf("created jobs = %+v, want one per spec job %v", created, jobTypes)
+				}
+				for i, c := range created {
+					if c.jobType != jobTypes[i] {
+						t.Errorf("created job %d has type %q, want %q", i, c.jobType, jobTypes[i])
+					}
+					wantBefore := ""
+					if i > 0 {
+						wantBefore = created[i-1].name
+					}
+					if c.before != wantBefore {
+						t.Errorf("created job %d waits for %q, want %q", i, c.before, wantBefore)
+					}
+				}
+				if got := statuses[len(statuses)-1]; got != v1.BenchmarkScenarioHealthy {
+					t.Errorf("scenario status after the resumed creation = %q, want %q", got, v1.BenchmarkScenarioHealthy)
+				}
+				bjs = o.getAtomicScenario()[name].BenchJobStatus
+				if len(bjs) != len(jobTypes) {
+					t.Errorf("scenario tracks %v, want %d jobs", bjs, len(jobTypes))
+				}
+				for _, c := range created[:tc.failOn-1] {
+					if bjs[c.name] != v1.BenchmarkJobCompleted {
+						t.Errorf("job %s created before the failure has status %q, want %q kept", c.name, bjs[c.name], v1.BenchmarkJobCompleted)
+					}
+				}
+
+				// a further reconcile creates nothing.
+				o.benchScenarioReconcile(t.Context(), list)
+				if len(created) != len(jobTypes) {
+					t.Errorf("reconcile after a complete creation created %+v", created[len(jobTypes):])
+				}
+			})
+		}
+	}
+}
+
+// TestOperator_refreshStatuses_CompletesOnlyFullyTrackedScenario pins that a
+// scenario is completed only when a job of every spec job is tracked and all
+// tracked jobs are completed: a scenario with untracked or not-yet-created
+// jobs must not be reported Completed.
+func TestOperator_refreshStatuses_CompletesOnlyFullyTrackedScenario(t *testing.T) {
+	t.Parallel()
+
+	twoJobs := []*v1.BenchmarkJobSpec{{JobType: "insert"}, {JobType: "search"}}
+	tests := []struct {
+		name          string
+		sc            scenario
+		wantCompleted bool
+	}{
+		{
+			name: "no job tracked",
+			sc:   scenario{Crd: &v1.ValdBenchmarkScenario{Spec: v1.ValdBenchmarkScenarioSpec{Jobs: twoJobs}}},
+		},
+		{
+			// all spec jobs are created (jobsIncomplete unset): the other
+			// job's status was pruned because its benchmark job was deleted.
+			name: "one of two spec jobs tracked, the other deleted",
+			sc: scenario{
+				Crd:            &v1.ValdBenchmarkScenario{Spec: v1.ValdBenchmarkScenarioSpec{Jobs: twoJobs}},
+				BenchJobStatus: map[string]v1.BenchmarkJobStatus{"a": v1.BenchmarkJobCompleted},
+			},
+			wantCompleted: true,
+		},
+		{
+			name: "every job deleted",
+			sc: scenario{
+				Crd:        &v1.ValdBenchmarkScenario{Spec: v1.ValdBenchmarkScenarioSpec{Jobs: twoJobs}},
+				jobsPruned: true,
+			},
+			wantCompleted: true,
+		},
+		{
+			name: "job creation incomplete",
+			sc: scenario{
+				Crd: &v1.ValdBenchmarkScenario{Spec: v1.ValdBenchmarkScenarioSpec{Jobs: twoJobs}},
+				BenchJobStatus: map[string]v1.BenchmarkJobStatus{
+					"a": v1.BenchmarkJobCompleted,
+					"b": v1.BenchmarkJobCompleted,
+				},
+				createdJobs:    []string{"a"},
+				jobsIncomplete: true,
+			},
+		},
+		{
+			name: "tracked job not completed",
+			sc: scenario{
+				Crd: &v1.ValdBenchmarkScenario{Spec: v1.ValdBenchmarkScenarioSpec{Jobs: twoJobs}},
+				BenchJobStatus: map[string]v1.BenchmarkJobStatus{
+					"a": v1.BenchmarkJobCompleted,
+					"b": v1.BenchmarkJobHealthy,
+				},
+			},
+		},
+		{
+			name: "all spec jobs completed",
+			sc: scenario{
+				Crd: &v1.ValdBenchmarkScenario{Spec: v1.ValdBenchmarkScenarioSpec{Jobs: twoJobs}},
+				BenchJobStatus: map[string]v1.BenchmarkJobStatus{
+					"a": v1.BenchmarkJobCompleted,
+					"b": v1.BenchmarkJobCompleted,
+				},
+			},
+			wantCompleted: true,
+		},
+		{
+			name:          "spec without jobs",
+			sc:            scenario{Crd: &v1.ValdBenchmarkScenario{}},
+			wantCompleted: true,
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			var statuses []v1.ValdBenchmarkScenarioStatus
+			o := &operator{ctrl: newClientMockCtrl(nil, nil, func(_ context.Context, obj k8s.Object) error {
+				if sc, ok := obj.(*v1.ValdBenchmarkScenario); ok {
+					statuses = append(statuses, sc.Status)
+				}
+				return nil
+			})}
+			sc := tc.sc
+			crd := *sc.Crd
+			crd.Name = "scenario"
+			crd.Status = v1.BenchmarkScenarioHealthy
+			sc.Crd = &crd
+			scenarios := map[string]*scenario{crd.Name: &sc}
+			o.scenarios.Store(&scenarios)
+
+			o.refreshStatuses(t.Context())
+
+			var want []v1.ValdBenchmarkScenarioStatus
+			if tc.wantCompleted {
+				want = []v1.ValdBenchmarkScenarioStatus{v1.BenchmarkScenarioCompleted}
+			}
+			if !reflect.DeepEqual(statuses, want) {
+				t.Errorf("scenario status writes = %v, want %v", statuses, want)
+			}
+		})
+	}
+}
+
+// TestOperator_benchJobReconcile_PrunesDeletedJobsOfEveryScenario pins that
+// the job statuses of deleted benchmark jobs are dropped from every scenario,
+// including when no benchmark job is listed at all and for a scenario none of
+// whose jobs is listed, while NotReady entries of just-created jobs are kept.
+func TestOperator_benchJobReconcile_PrunesDeletedJobsOfEveryScenario(t *testing.T) {
+	t.Parallel()
+
+	const (
+		owner   = "scenario"
+		other   = "other"
+		fresh   = "scenario-fresh"
+		healthy = "scenario-deleted-healthy"
+		done    = "scenario-deleted-completed"
+	)
+	tests := []struct {
+		list map[string]v1.ValdBenchmarkJob
+		name string
+	}{
+		{
+			name: "no benchmark job listed",
+			list: map[string]v1.ValdBenchmarkJob{},
+		},
+		{
+			name: "only another scenario's job listed",
+			list: map[string]v1.ValdBenchmarkJob{
+				"other-job": {
+					ObjectMeta: k8s.ObjectMeta{
+						Name:            "other-job",
+						Namespace:       "default",
+						OwnerReferences: []k8s.OwnerReference{{Name: other}},
+					},
+					Status: v1.BenchmarkJobCompleted,
+				},
+			},
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			o := &operator{ctrl: newClientMockCtrl(nil, nil, nil)}
+			scenarios := map[string]*scenario{
+				owner: {
+					Crd: &v1.ValdBenchmarkScenario{Name: owner, Namespace: "default"},
+					BenchJobStatus: map[string]v1.BenchmarkJobStatus{
+						fresh:   v1.BenchmarkJobNotReady,
+						healthy: v1.BenchmarkJobHealthy,
+						done:    v1.BenchmarkJobCompleted,
+					},
+				},
+				other: {
+					Crd: &v1.ValdBenchmarkScenario{Name: other, Namespace: "default"},
+				},
+			}
+			o.scenarios.Store(&scenarios)
+
+			o.benchJobReconcile(t.Context(), tc.list)
+
+			want := map[string]v1.BenchmarkJobStatus{fresh: v1.BenchmarkJobNotReady}
+			if got := o.getAtomicScenario()[owner].BenchJobStatus; !reflect.DeepEqual(got, want) {
+				t.Errorf("scenario BenchJobStatus = %v, want %v", got, want)
+			}
+			// the published snapshot taken before the reconcile must stay untouched.
+			if got := len(scenarios[owner].BenchJobStatus); got != 3 {
+				t.Errorf("previous snapshot BenchJobStatus has %d entries, want 3", got)
+			}
+		})
+	}
+}

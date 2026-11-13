@@ -31,23 +31,17 @@ func (o *Observability) Bind() *Observability {
 	if o.OTLP == nil {
 		o.OTLP = new(OTLP)
 	}
-	if o.OTLP != nil {
-		o.OTLP.Bind()
-	}
+	o.OTLP.Bind()
 
 	if o.Metrics == nil {
 		o.Metrics = new(Metrics)
 	}
-	if o.Metrics != nil {
-		o.Metrics.Bind()
-	}
+	o.Metrics.Bind()
 
 	if o.Trace == nil {
 		o.Trace = new(Trace)
 	}
-	if o.Trace != nil {
-		o.Trace.Bind()
-	}
+	o.Trace.Bind()
 
 	return o
 }
@@ -82,9 +76,7 @@ func (o *OTLP) Bind() *OTLP {
 	if o.Attribute == nil {
 		o.Attribute = new(OTLPAttribute)
 	}
-	if o.Attribute != nil {
-		o.Attribute.Bind()
-	}
+	o.Attribute.Bind()
 	return o
 }
 

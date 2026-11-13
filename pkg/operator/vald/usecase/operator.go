@@ -131,13 +131,15 @@ func (*run) PreStop(_ context.Context) error {
 }
 
 func (r *run) Stop(ctx context.Context) (errs error) {
-	if r.observability != nil {
-		if err := r.observability.Stop(ctx); err != nil {
+	// Shut the server down first so spans and metrics of the requests it drains
+	// are still exported before observability is stopped.
+	if r.server != nil {
+		if err := r.server.Shutdown(ctx); err != nil {
 			errs = errors.Join(errs, err)
 		}
 	}
-	if r.server != nil {
-		if err := r.server.Shutdown(ctx); err != nil {
+	if r.observability != nil {
+		if err := r.observability.Stop(ctx); err != nil {
 			errs = errors.Join(errs, err)
 		}
 	}

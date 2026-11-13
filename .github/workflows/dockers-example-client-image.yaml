@@ -50,6 +50,7 @@ on:
       - .github/actions/prepare-docker-build/action.yaml
       - .github/workflows/_docker-image.yaml
       - .github/workflows/dockers-example-client-image.yaml
+      - .trivyignore.d/example-client
       - Makefile
       - Makefile.d/**
       - apis/proto/**
@@ -72,6 +73,7 @@ on:
       - .github/actions/prepare-docker-build/action.yaml
       - .github/workflows/_docker-image.yaml
       - .github/workflows/dockers-example-client-image.yaml
+      - .trivyignore.d/example-client
       - Makefile
       - Makefile.d/**
       - apis/proto/**

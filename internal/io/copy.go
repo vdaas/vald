@@ -17,12 +17,11 @@ package io
 import (
 	"bytes"
 	"io"
-	"math"
-	"sync/atomic"
 	"syscall"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/atomic"
 )
 
 var cio = NewCopier(0)
@@ -70,12 +69,10 @@ func (c *copier) CopyBuffer(dst io.Writer, src io.Reader, buf []byte) (written i
 	if buf == nil {
 		return c.Copy(dst, src)
 	}
-	if buf != nil && len(buf) == 0 {
-		panic("empty buffer in CopyBuffer")
+	if len(buf) == 0 {
+		return 0, errors.New("empty buffer in CopyBuffer")
 	}
-	b := bytes.NewBuffer(buf)
-	defer b.Reset()
-	return c.copyBuffer(dst, src, b)
+	return c.copyBuffer(dst, src, bytes.NewBuffer(buf))
 }
 
 func (c *copier) copyBuffer(
@@ -96,25 +93,16 @@ func (c *copier) copyBuffer(
 		return rf.ReadFrom(src)
 	}
 
-	var (
-		limit int64 = math.MaxInt64
-		size        = atomic.LoadInt64(&c.bufSize)
-		l     *io.LimitedReader
-	)
+	size := atomic.LoadInt64(&c.bufSize)
 	if buf == nil {
-		if l, ok = src.(*io.LimitedReader); ok && l.N >= 1 && size > l.N {
-			limit = l.N
-			size = limit
+		if l, isLimited := src.(*io.LimitedReader); isLimited && l.N >= 1 && size > l.N {
+			size = l.N
 		}
 		buf, ok = c.pool.Get().(*bytes.Buffer)
 		if !ok || buf == nil {
 			buf = bytes.NewBuffer(make([]byte, size))
 		}
 		defer func() {
-			if atomic.LoadInt64(&c.bufSize) < size {
-				atomic.StoreInt64(&c.bufSize, size)
-				buf.Grow(int(size))
-			}
 			buf.Reset()
 			c.pool.Put(buf)
 		}()
@@ -122,31 +110,29 @@ func (c *copier) copyBuffer(
 	if size > int64(buf.Cap()) {
 		size = int64(buf.Cap())
 	}
-	var nr, nw int
-	for !errors.Is(err, io.EOF) {
-		nr, err = src.Read(buf.Bytes()[:size])
+	for {
+		nr, er := src.Read(buf.Bytes()[:size])
 		if nr > 0 {
-			if int64(nr) > size {
-				size = min(int64(nr), limit)
-			}
-			nw, err = dst.Write(buf.Bytes()[0:nr])
+			nw, ew := dst.Write(buf.Bytes()[0:nr])
 			if nw < 0 || nr < int(nw) {
-				if err == nil {
+				if ew == nil {
 					return written, errors.New("invalid write result")
 				}
 				nw = 0
 			}
 			written += int64(nw)
-			if err != nil {
-				return written, err
+			if ew != nil {
+				return written, ew
 			}
 			if nr != int(nw) {
 				return written, io.ErrShortWrite
 			}
 		}
-		if err != nil && !errors.Is(err, io.EOF) {
-			return written, err
+		if er != nil {
+			if errors.Is(er, io.EOF) {
+				return written, nil
+			}
+			return written, er
 		}
 	}
-	return written, nil
 }

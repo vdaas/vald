@@ -21,6 +21,7 @@ import (
 	"sync/atomic"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/semaphore"
 )
@@ -49,6 +50,13 @@ type group struct {
 	limit      atomic.Int64
 	mu         sync.RWMutex
 	cancelOnce sync.Once
+	// continueOnError keeps a task error from cancelling egctx, so Go never
+	// skips the tasks still waiting for a slot.
+	continueOnError bool
+	// logErrors logs each task error when it occurs. It is set only on the
+	// process-wide instance, whose cancellation nobody watches and whose Wait
+	// runs only at shutdown, so a failed task would otherwise stay invisible.
+	logErrors bool
 }
 
 var (
@@ -58,11 +66,34 @@ var (
 
 // New creates a new Group and returns it along with its derived Context.
 func New(ctx context.Context) (Group, context.Context) {
-	g := &group{
-		emap: make(map[string]struct{}),
-	}
+	g := new(group)
 	// Create a context that can be canceled with a cause.
 	g.egctx, g.cancel = context.WithCancelCause(ctx)
+	return g, g.egctx
+}
+
+// NewBoundedFanOut returns a request-local group for a per-item fan-out (e.g. a
+// Multi* RPC), so one large batch cannot start an unbounded number of goroutines.
+// limit <= 0 means unbounded. The group is derived from context.WithoutCancel(ctx)
+// because Go silently skips a task when the group context is already done: every
+// item must still run so that a cancelled request reports each item's context
+// error instead of dropping it. For the same reason an item's error (e.g. a
+// recovered panic) does not cancel the group either; it is only returned by Wait.
+func NewBoundedFanOut(ctx context.Context, limit int) Group {
+	eg, _ := NewContinueOnError(context.WithoutCancel(ctx))
+	if limit > 0 {
+		eg.SetLimit(limit)
+	}
+	return eg
+}
+
+// NewContinueOnError is like New, but a task error does not cancel the derived
+// Context: it is only recorded and returned by Wait. Every task passed to Go
+// therefore still runs after another task failed, as long as ctx itself is not done.
+func NewContinueOnError(ctx context.Context) (Group, context.Context) {
+	g := new(group)
+	g.egctx, g.cancel = context.WithCancelCause(ctx)
+	g.continueOnError = true
 	return g, g.egctx
 }
 
@@ -74,13 +105,28 @@ func WithContext(ctx context.Context) (Group, context.Context) {
 }
 
 // Init initializes the global errgroup instance.
+// If the instance was already created (e.g. by Get during package init, which binds it to
+// context.Background()), Init returns ctx unchanged but binds the instance to ctx so that
+// cancelling ctx also cancels the global group's context.
 func Init(ctx context.Context) (egctx context.Context) {
 	egctx = ctx
+	var created bool
 	once.Do(func() {
 		if instance == nil {
 			instance, egctx = New(ctx)
+			if g, ok := instance.(*group); ok {
+				g.logErrors = true
+			}
+			created = true
 		}
 	})
+	if !created && ctx.Done() != nil {
+		if g, ok := instance.(*group); ok {
+			context.AfterFunc(ctx, func() {
+				g.doCancel(context.Cause(ctx))
+			})
+		}
+	}
 	return egctx
 }
 
@@ -128,11 +174,16 @@ func (g *group) exec(f func() error) {
 	if err != nil {
 		// If the error is not due to cancellation or deadline, yield and record it.
 		if errors.IsNot(err, context.Canceled, context.DeadlineExceeded) {
+			if g.logErrors {
+				log.Errorf("task on the global errgroup failed: %v", err)
+			}
 			runtime.Gosched()
 			g.appendErr(err)
 		}
 		// Cancel the context with the encountered error.
-		g.doCancel(err)
+		if !g.continueOnError {
+			g.doCancel(err)
+		}
 	}
 }
 
@@ -161,12 +212,9 @@ func (g *group) Go(f func() error) {
 	}
 	// In concurrent mode, acquire the semaphore before launching a new goroutine.
 	if g.sem != nil {
-		err := g.sem.Acquire(g.egctx, 1)
-		if err != nil {
-			// Handle errors from semaphore acquisition if not due to cancellation or deadline.
-			if errors.IsNot(err, context.Canceled, context.DeadlineExceeded) {
-				g.appendErr(err)
-			}
+		// Acquire only fails with g.egctx.Err() (context.Canceled or
+		// context.DeadlineExceeded), which is not recorded as a task error.
+		if err := g.sem.Acquire(g.egctx, 1); err != nil {
 			return
 		}
 	}
@@ -189,15 +237,17 @@ func (g *group) TryGo(f func() error) bool {
 }
 
 // appendErr appends the error to the group's error list if it has not been recorded before.
+// The map is allocated on the first error so error-free groups do not pay for it.
 func (g *group) appendErr(err error) {
-	g.mu.RLock()
-	_, ok := g.emap[err.Error()]
-	g.mu.RUnlock()
-	if !ok {
-		g.mu.Lock()
+	msg := err.Error()
+	g.mu.Lock()
+	defer g.mu.Unlock()
+	if g.emap == nil {
+		g.emap = make(map[string]struct{})
+	}
+	if _, ok := g.emap[msg]; !ok {
+		g.emap[msg] = struct{}{}
 		g.errs = append(g.errs, err)
-		g.emap[err.Error()] = struct{}{}
-		g.mu.Unlock()
 	}
 }
 

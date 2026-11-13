@@ -49,7 +49,6 @@ type Parser interface {
 
 type parser struct {
 	f        *flag.FlagSet
-	defaults *flag.FlagSet
 	filePath struct {
 		keys        []string
 		defaultPath string
@@ -72,7 +71,6 @@ func New(opts ...Option) Parser {
 	for _, opt := range append(defaultOptions, opts...) {
 		opt(p)
 	}
-	p.defaults = flag.CommandLine
 	p.f = flag.NewFlagSet(p.name, p.ErrorHandler)
 	if p.overrideDefault {
 		p.Override()
@@ -135,12 +133,6 @@ func (p *parser) Parse() (Data, bool, error) {
 	}
 
 	return d, false, nil
-}
-
-func (p *parser) Restore() {
-	if p.defaults != nil {
-		flag.CommandLine = p.defaults
-	}
 }
 
 func (p *parser) Override() {

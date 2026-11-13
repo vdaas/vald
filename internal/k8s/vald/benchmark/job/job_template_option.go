@@ -159,7 +159,7 @@ func WithOwnerRef(refs []k8s.OwnerReference) BenchmarkOption {
 func WithCompletions(com int32) BenchmarkOption {
 	return func(b *k8s.Job) error {
 		if com > 1 {
-			b.Spec.Completions = &com
+			b.Spec.Completions = new(com) // a fresh pointer per job, not the captured parameter
 		}
 		return nil
 	}
@@ -169,7 +169,7 @@ func WithCompletions(com int32) BenchmarkOption {
 func WithParallelism(parallelism int32) BenchmarkOption {
 	return func(b *k8s.Job) error {
 		if parallelism > 1 {
-			b.Spec.Parallelism = &parallelism
+			b.Spec.Parallelism = new(parallelism)
 		}
 		return nil
 	}
@@ -190,7 +190,7 @@ func WithLabel(label map[string]string) BenchmarkOption {
 func WithTTLSecondsAfterFinished(ttl int32) BenchmarkOption {
 	return func(b *k8s.Job) error {
 		if ttl > 0 {
-			b.Spec.TTLSecondsAfterFinished = &ttl
+			b.Spec.TTLSecondsAfterFinished = new(ttl)
 		}
 		return nil
 	}

@@ -154,7 +154,11 @@ func (b *backoff) Do(
 				return nil, err
 			}
 			if b.errLog && err != nil && err.Error() != "" {
-				log.Errord("[backoff]\tfor: "+name+",\terror: "+err.Error(), info.Get())
+				if isQuietErrorLog(ctx) {
+					log.Debugd("[backoff]\tfor: "+name+",\terror: "+err.Error(), info.Get())
+				} else {
+					log.Errord("[backoff]\tfor: "+name+",\terror: "+err.Error(), info.Get())
+				}
 			}
 			// e.g. name = vald.v1.Exists/ip ...etc
 			if name != "" {
@@ -163,6 +167,10 @@ func (b *backoff) Do(
 				mu.Unlock()
 			}
 
+			// No attempt is left (continue ends the loop), so waiting here would only delay (or, if the deadline hits, mask) the final result.
+			if cnt == b.maxRetryCount-1 {
+				continue
+			}
 			timer.Reset(time.Duration(jdur))
 			select {
 			case <-dctx.Done():
@@ -183,22 +191,6 @@ func (b *backoff) Do(
 				} else {
 					dur *= b.backoffFactor
 					jdur = b.addJitter(dur)
-				}
-				if cnt >= b.maxRetryCount-1 {
-					select {
-					case <-dctx.Done():
-						switch dctx.Err() {
-						case context.DeadlineExceeded:
-							log.Debugf("[backoff]\tfor: "+name+",\tDeadline Exceeded\terror: %v", err.Error())
-							return nil, errors.ErrBackoffTimeout(err)
-						case context.Canceled:
-							log.Debugf("[backoff]\tfor: "+name+",\tCanceled\terror: %v", err.Error())
-							return nil, err
-						default:
-							return nil, errors.Join(dctx.Err(), err)
-						}
-					default:
-					}
 				}
 			}
 		}

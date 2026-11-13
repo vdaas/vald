@@ -18,7 +18,6 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"io/fs"
 	"strconv"
 
 	"github.com/vdaas/vald/internal/conv"
@@ -100,17 +99,15 @@ func main() {
 	}
 }
 
-func genSchema(path string, nindent int) error {
-	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_SYNC, fs.ModePerm)
+func genSchema(path string, nindent int) (err error) {
+	f, err := os.Open(path)
 	if err != nil {
 		return errors.Errorf("cannot open %s", path)
 	}
 
 	defer func() {
-		err := f.Close()
-		if err != nil {
-			// skipcq: RVV-A0003
-			log.Fatal(err)
+		if cerr := f.Close(); cerr != nil {
+			err = errors.Join(err, cerr)
 		}
 	}()
 
@@ -128,9 +125,13 @@ func genSchema(path string, nindent int) error {
 			err = json.Unmarshal([]byte(strings.TrimPrefix(tx, prefix)), &l)
 			if err != nil {
 				log.Errorf("error occurred line %d, data %s, error %v", line, tx, err)
+				continue
 			}
 			ls = append(ls, l)
 		}
+	}
+	if err = sc.Err(); err != nil {
+		return errors.Errorf("cannot read %s: %w", path, err)
 	}
 
 	schemas, err := objectProperties(ls)

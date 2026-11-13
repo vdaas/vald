@@ -14,8 +14,55 @@
 # limitations under the License.
 #
 
-SHELL = /usr/bin/env bash
-.SHELLFLAGS := -eu -o pipefail -c
+# --- shell option single source of truth --------------------------------------
+# Every shell this repository starts (make recipes, explicit subshells, generated
+# Dockerfiles, helper scripts) takes its option set from here, so a failing link in
+# a pipeline aborts the caller instead of being silently swallowed.
+#   -e  errexit    abort on the first failing command
+#   -u  nounset    abort on expansion of an unset variable
+#   -o pipefail    report the rightmost non-zero status of a pipeline
+# `-E` (errtrace) is deliberately not enabled: no recipe uses an ERR trap, so it
+# would be a no-op. `shopt -s inherit_errexit` is also out of scope (it changes
+# command-substitution semantics repo-wide). Extend the policy here, not in recipes.
+SHELL := /usr/bin/env bash
+SHELL_STRICT_OPTS ?= -euo pipefail
+# `set ...` form for the body of a recipe or a generated Dockerfile RUN instruction
+SHELL_STRICT ?= set $(SHELL_STRICT_OPTS)
+# invocation form for explicit subshells, e.g. xargs ... $(SHELL_STRICT_EXEC) '...'
+SHELL_STRICT_EXEC ?= $(SHELL) $(SHELL_STRICT_OPTS) -c
+.SHELLFLAGS := $(SHELL_STRICT_OPTS) -c
+
+# --- command option single source of truth ------------------------------------
+# Options that used to be copy-pasted across recipes. Change them here only.
+# `?=` is intentional: these are meant to be overridable from the environment (CI
+# experiments, one-off builds) as well as from the command line. To keep an accidental
+# override from silently corrupting a build, `make options/vars/check` validates the
+# *shape* of every value (e.g. CURL_RETRY must contain `--retry`) and prints a `note:`
+# whenever a value comes from the environment. Recursive `=` keeps the definitions
+# independent of their order relative to CORES/ROOTDIR/XARGS_NO_RUN_IF_EMPTY.
+CURL ?= curl -fsSL
+# authenticated fetch against the GitHub API (the token stays optional)
+CURL_AUTH ?= $(CURL) $${GITHUB_TOKEN:+-H "Authorization: Bearer $$GITHUB_TOKEN"}
+CURL_RETRY ?= --retry 10 --retry-connrefused --retry-delay 2
+CURL_RETRY_ALL ?= --retry 10 --retry-all-errors --retry-connrefused --retry-delay 2
+CURL_RETRY_SHORT ?= --retry 3
+# download with the canonical retry policy
+CURL_DOWNLOAD ?= curl $(CURL_RETRY) -fsSL
+# parallel xargs with the empty-input guard applied uniformly
+XARGS ?= xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P$(CORES)
+GOLANGCI_LINT_ARGS ?= --config $(ROOTDIR)/.golangci.json
+GIT_DIFF_FILES ?= git diff --name-only --diff-filter=ACM HEAD
+# kubectl wait conditions (Kubernetes condition types are CamelCase) + shared timeouts
+KUBECTL_WAIT_READY ?= --for=condition=Ready
+KUBECTL_WAIT_AVAILABLE ?= --for=condition=Available
+KUBECTL_WAIT_CONTAINERS_READY ?= --for=condition=ContainersReady
+KUBECTL_WAIT_COMPLETE ?= --for=condition=Complete
+KUBECTL_WAIT_DELETE ?= --for=delete
+K8S_WAIT_TIMEOUT ?= 600s
+K8S_WAIT_TIMEOUT_SHORT ?= 60s
+K8S_WAIT_TIMEOUT_MID ?= 120s
+K8S_WAIT_TIMEOUT_LONG ?= 3600s
+.DEFAULT_GOAL := help
 ORG ?= vdaas
 NAME = vald
 REPO = $(ORG)/$(NAME)
@@ -72,6 +119,7 @@ TEMP_DIR := $(eval TEMP_DIR := $(shell mktemp -d))$(TEMP_DIR)
 USR_LOCAL = /usr/local
 BINDIR = $(USR_LOCAL)/bin
 LIB_PATH = $(USR_LOCAL)/lib
+INCLUDE_PATH = $(USR_LOCAL)/include
 $(LIB_PATH):
 	mkdir -p $(LIB_PATH)
 
@@ -79,13 +127,13 @@ BUN_INSTALL ?= $(USR_LOCAL)
 BUN_GLOBAL_BIN ?= $(eval BUN_GLOBAL_BIN := $(or $(shell bun pm bin -g 2>/dev/null),$(BINDIR)))$(BUN_GLOBAL_BIN)
 
 GOPRIVATE := $(GOPKG),$(GOPKG)/apis,$(GOPKG)-client-go
-GOPROXY := "https://proxy.golang.org,direct"
+GOPROXY ?= https://proxy.golang.org,direct
 GOPATH ?= $(eval GOPATH := $(shell go env GOPATH))$(GOPATH)
 GOARCH ?= $(eval GOARCH := $(shell go env GOARCH))$(GOARCH)
 GOBIN ?= $(eval GOBIN := $(or $(shell go env GOBIN),$(GOPATH)/bin))$(GOBIN)
 GOCACHE ?= $(eval GOCACHE := $(shell go env GOCACHE))$(GOCACHE)
 GOOS ?= $(eval GOOS := $(shell go env GOOS))$(GOOS)
-GOEXPERIMENT := "greenteagc,cgocheck2,newinliner,synchashtriemap,jsonv2"
+GOEXPERIMENT := greenteagc,cgocheck2,newinliner,synchashtriemap,jsonv2
 GO_CLEAN_DEPS := true
 GOTEST_TIMEOUT = 30m
 CGO_ENABLED = 1
@@ -155,15 +203,38 @@ endif
 GIT_COMMIT := $(eval GIT_COMMIT := $(shell git rev-list -1 HEAD))$(GIT_COMMIT)
 
 ROOTDIR = $(eval ROOTDIR := $(or $(shell git rev-parse --show-toplevel), $(PWD)))$(ROOTDIR)
-MAKELISTS := Makefile $(shell find $(ROOTDIR)/Makefile.d -type f -regex ".*\.mk")
-PROTODIRS := $(eval PROTODIRS := $(shell find $(ROOTDIR)/apis/proto -type d | sed -e "s%apis/proto/%%g" | grep -v "apis/proto"))$(PROTODIRS)
+
+# .gitfiles is the repository file inventory (15-line license header + the
+# output of `git ls-files --cached --others --exclude-standard`). Every make
+# invocation re-validates it against git (~10ms) and rewrites it only when it
+# is stale, so the file lists derived from it below (and the many recipes that
+# read it) always reflect the working tree, including new untracked files.
+# Skipped outside a git work tree (e.g. docker build contexts) and in
+# sub-makes, which inherit GITFILES_CHECKED from the top-level make.
+GITFILES_SYNC_SCRIPT = \
+	cd "$(ROOTDIR)" \
+	&& git rev-parse --is-inside-work-tree >/dev/null 2>&1 \
+	&& new="$$({ head -n 15 .gitfiles 2>/dev/null || printf '\n%.0s' {1..15}; git ls-files --cached --others --exclude-standard | uniq; })" \
+	&& if [ "$$new" != "$$(cat .gitfiles 2>/dev/null)" ]; then \
+	printf '%s\n' "$$new" > .gitfiles.tmp && mv .gitfiles.tmp .gitfiles && echo updated; \
+	fi || true
+ifneq ($(GITFILES_CHECKED),1)
+ifneq ($(shell $(GITFILES_SYNC_SCRIPT)),)
+# stderr, not $(info): callers capture the stdout of targets such as version/go and docker/name/*.
+$(warning .gitfiles was out of date and has been regenerated)
+endif
+export GITFILES_CHECKED := 1
+endif
+GITFILES_LIST = $(eval GITFILES_LIST := $(shell grep -vE '^[[:space:]]*(\#|$$)' "$(ROOTDIR)/.gitfiles" 2>/dev/null))$(GITFILES_LIST)
+
+MAKELISTS = $(eval MAKELISTS := Makefile $(addprefix $(ROOTDIR)/,$(filter Makefile.d/%.mk,$(GITFILES_LIST))))$(MAKELISTS)
 BENCH_DATASET_BASE_DIR = hack/benchmark/assets
 BENCH_DATASET_MD5_DIR_NAME = checksum
 BENCH_DATASET_HDF5_DIR_NAME = dataset
 BENCH_DATASET_MD5_DIR = $(BENCH_DATASET_BASE_DIR)/$(BENCH_DATASET_MD5_DIR_NAME)
 BENCH_DATASET_HDF5_DIR = $(BENCH_DATASET_BASE_DIR)/$(BENCH_DATASET_HDF5_DIR_NAME)
 
-PROTOS := $(eval PROTOS := $(shell find $(ROOTDIR)/apis/proto -type f -regex ".*\.proto"))$(PROTOS)
+PROTOS := $(eval PROTOS := $(addprefix $(ROOTDIR)/,$(filter apis/proto/%.proto,$(GITFILES_LIST))))$(PROTOS)
 PROTOS_V1 := $(eval PROTOS_V1 := $(filter apis/proto/v1/%.proto,$(PROTOS)))$(PROTOS_V1)
 PBGOS = $(PROTOS:apis/proto/%.proto=apis/grpc/%.pb.go)
 SWAGGERS = $(PROTOS:apis/proto/%.proto=apis/swagger/%.swagger.json)
@@ -173,9 +244,14 @@ PROTO_VALD_API_DOCS := $(PROTO_VALD_APIS:$(ROOTDIR)/apis/proto/v1/vald/%.proto=$
 PROTO_MIRROR_APIS := $(eval PROTO_MIRROR_APIS := $(filter $(ROOTDIR)/apis/proto/v1/mirror/%.proto,$(PROTOS)))$(PROTO_MIRROR_APIS)
 PROTO_MIRROR_API_DOCS := $(PROTO_MIRROR_APIS:$(ROOTDIR)/apis/proto/v1/mirror/%.proto=$(ROOTDIR)/apis/docs/v1/%.md)
 
-# Prefer the LLVM toolchain when present (containers install clang/lld/llvm
-# via clangLTOBuildDeps); fall back to GCC elsewhere. Mirrors the LLD/NM/RANLIB
-# detection in Makefile.d/functions.mk.
+# NOTE: `?=` never fires for CC/CXX unless they are undefined: GNU make
+# predefines CC=cc and CXX=g++ (origin "default"), so these lines only take
+# effect when CC/CXX are unset via `make -R`/`--no-builtin-variables`. In
+# practice the C/C++ toolchain is GCC (cc) + libgomp unless CC/CXX are given
+# explicitly on the command line or in the environment (e.g. the Rust agent
+# Dockerfile runs `CC=clang CXX=clang++ make ngt/install`). This is
+# intentional: forcing clang here switches the Go NGT/Faiss builds to static
+# libomp, which segfaults at process startup (see Makefile.d/tools.mk).
 CC ?= $(shell command -v clang 2>/dev/null || command -v gcc 2>/dev/null || command -v cc)
 CXX ?= $(shell command -v clang++ 2>/dev/null || command -v g++ 2>/dev/null || command -v c++)
 
@@ -194,14 +270,47 @@ LTO_FLAGS ?= $(if $(findstring clang,$(notdir $(CC))),-flto=thin,-flto=auto -ffa
 # lld understands ThinLTO archives natively; only wire it up for clang.
 LLD_FLAGS ?= $(if $(and $(findstring clang,$(notdir $(CC))),$(LLD)),-fuse-ld=lld)
 
-# NOTE: -ffast-math must NOT appear here. On the link line the compiler driver
-# pulls in crtfastmath.o, whose global constructor (set_fast_math, sets the
-# MXCSR FTZ/DAZ bits) runs before main and corrupts libgcc's static C++
-# exception-frame registration in this large statically-linked cgo binary
-# (frame_dummy -> __register_frame_info -> classify_object_over_fdes SIGSEGV,
-# reproduced locally). It buys no optimization at link time; per-TU fast-math
-# for the hot C++ code already comes from NGT/faiss's own -Ofast.
-LDFLAGS = -static -fPIC -pthread -std=gnu++23 -lstdc++ -lm -z relro -z now $(LTO_FLAGS) $(LLD_FLAGS) $(if $(MARCH),-march=$(MARCH)) $(if $(MTUNE),-mtune=$(MTUNE)) -fno-plt -O3 -fvisibility=hidden -ffp-contract=fast -fomit-frame-pointer -fmerge-all-constants -funroll-loops -falign-functions=32 -ffunction-sections -fdata-sections -Wl,--whole-archive -lpthread -Wl,--no-whole-archive
+# NOTE: -ffast-math must NOT appear in any LDFLAGS_* group below. On the link
+# line the compiler driver pulls in crtfastmath.o, whose global constructor
+# (set_fast_math, sets the MXCSR FTZ/DAZ bits) runs before main and corrupts
+# libgcc's static C++ exception-frame registration in this large
+# statically-linked cgo binary (frame_dummy -> __register_frame_info ->
+# classify_object_over_fdes SIGSEGV, reproduced locally). It buys no
+# optimization at link time; per-TU fast-math for the hot C++ code already
+# comes from NGT/faiss's own -Ofast.
+
+# Link flags are composed from named groups (one flag per line) so that the
+# static release link (LDFLAGS) and the dynamic test link (TEST_LDFLAGS_BASE)
+# share a single definition and cannot drift apart.
+LDFLAGS_BASE = \
+	-fPIC \
+	-pthread \
+	-std=gnu++23 \
+	-lstdc++ \
+	-lm
+LDFLAGS_HARDENING = \
+	-z relro \
+	-z now
+# With LTO the link step performs the final codegen, so the optimization and
+# -march/-mtune flags are repeated here (see the MARCH note above).
+LDFLAGS_OPT = \
+	$(LTO_FLAGS) \
+	$(LLD_FLAGS) \
+	$(if $(MARCH),-march=$(MARCH)) \
+	$(if $(MTUNE),-mtune=$(MTUNE)) \
+	-fno-plt \
+	-O3 \
+	-fvisibility=hidden \
+	-ffp-contract=fast \
+	-fomit-frame-pointer \
+	-fmerge-all-constants \
+	-funroll-loops \
+	-falign-functions=32 \
+	-ffunction-sections \
+	-fdata-sections \
+	-Wl,--gc-sections
+LDFLAGS_COMMON = $(LDFLAGS_BASE) $(LDFLAGS_HARDENING) $(LDFLAGS_OPT)
+LDFLAGS = -static $(LDFLAGS_COMMON) -Wl,--whole-archive -lpthread -Wl,--no-whole-archive
 
 NGT_LDFLAGS = -fopenmp -lopenblas -llapack -lgfortran
 FAISS_LDFLAGS = $(NGT_LDFLAGS)
@@ -214,7 +323,7 @@ LIBOMP ?= $(shell ldconfig -p 2>/dev/null | awk '/libomp\.so[^.].*=>/{print $$NF
 HDF5_LDFLAGS = -lhdf5 -lhdf5_hl -lsz -laec -lz -ldl -lm
 CGO_LDFLAGS = $(FAISS_LDFLAGS) $(HDF5_LDFLAGS)
 # TEST_LDFLAGS without -static to avoid conflicts with CGO and glibc dynamic linking requirements
-TEST_LDFLAGS_BASE = -fPIC -pthread -std=gnu++23 -lstdc++ -lm -z relro -z now $(LTO_FLAGS) $(LLD_FLAGS) $(if $(MARCH),-march=$(MARCH)) $(if $(MTUNE),-mtune=$(MTUNE)) -fno-plt -O3 -fvisibility=hidden -ffp-contract=fast -fomit-frame-pointer -fmerge-all-constants -funroll-loops -falign-functions=32 -ffunction-sections -fdata-sections
+TEST_LDFLAGS_BASE = $(LDFLAGS_COMMON)
 TEST_LDFLAGS = $(TEST_LDFLAGS_BASE) $(CGO_LDFLAGS)
 
 ifeq ($(GOARCH),amd64)
@@ -322,69 +431,33 @@ PROTO_PATHS = \
 # - internal/db/rdb/mysql/dbr
 # - internal/test/comparator
 # - internal/test/mock
-GO_SOURCES = $(eval GO_SOURCES := $(shell find \
-	$(ROOTDIR)/cmd \
-	$(ROOTDIR)/hack \
-	$(ROOTDIR)/internal \
-	$(ROOTDIR)/pkg \
-	-not -path '$(ROOTDIR)/cmd/cli/*' \
-	-not -path '$(ROOTDIR)/internal/core/algorithm/ngt/*' \
-	-not -path '$(ROOTDIR)/internal/core/algorithm/faiss/*' \
-	-not -path '$(ROOTDIR)/internal/compress/gob/*' \
-	-not -path '$(ROOTDIR)/internal/compress/gzip/*' \
-	-not -path '$(ROOTDIR)/internal/compress/lz4/*' \
-	-not -path '$(ROOTDIR)/internal/compress/zstd/*' \
-	-not -path '$(ROOTDIR)/internal/db/storage/blob/s3/sdk/s3/*' \
-	-not -path '$(ROOTDIR)/internal/db/rdb/mysql/dbr/*' \
-	-not -path '$(ROOTDIR)/internal/test/comparator/*' \
-	-not -path '$(ROOTDIR)/internal/test/mock/*' \
-	-not -path '$(ROOTDIR)/hack/gorules/*' \
-	-not -path '$(ROOTDIR)/hack/license/*' \
-	-not -path '$(ROOTDIR)/hack/docker/*' \
-	-not -path '$(ROOTDIR)/hack/swagger/*' \
-	-not -path '$(ROOTDIR)/hack/tools/*' \
-	-not -path '$(ROOTDIR)/tests/*' \
-	-type f \
-	-name '*.go' \
-	-not -regex '.*options?\.go' \
-	-not -name '*_test.go' \
-	-not -name '*_mock.go' \
-	-not -name 'doc.go'))$(GO_SOURCES)
-GO_OPTION_SOURCES = $(eval GO_OPTION_SOURCES := $(shell find \
-	$(ROOTDIR)/cmd \
-	$(ROOTDIR)/hack \
-	$(ROOTDIR)/internal \
-	$(ROOTDIR)/pkg \
-	-not -path '$(ROOTDIR)/cmd/cli/*' \
-	-not -path '$(ROOTDIR)/internal/core/algorithm/ngt/*' \
-	-not -path '$(ROOTDIR)/internal/core/algorithm/faiss/*' \
-	-not -path '$(ROOTDIR)/internal/compress/gob/*' \
-	-not -path '$(ROOTDIR)/internal/compress/gzip/*' \
-	-not -path '$(ROOTDIR)/internal/compress/lz4/*' \
-	-not -path '$(ROOTDIR)/internal/compress/zstd/*' \
-	-not -path '$(ROOTDIR)/internal/db/storage/blob/s3/sdk/s3/*' \
-	-not -path '$(ROOTDIR)/internal/db/rdb/mysql/dbr/*' \
-	-not -path '$(ROOTDIR)/internal/test/comparator/*' \
-	-not -path '$(ROOTDIR)/internal/test/mock/*' \
-	-not -path '$(ROOTDIR)/hack/gorules/*' \
-	-not -path '$(ROOTDIR)/hack/license/*' \
-	-not -path '$(ROOTDIR)/hack/docker/*' \
-	-not -path '$(ROOTDIR)/hack/swagger/*' \
-	-not -path '$(ROOTDIR)/hack/tools/*' \
-	-not -path '$(ROOTDIR)/tests/*' \
-	-type f \
-	-regex '.*options?\.go' \
-	-not -name '*_test.go' \
-	-not -name '*_mock.go' \
-	-not -name 'doc.go'))$(GO_OPTION_SOURCES)
+# Directories excluded from test-template generation (GO_SOURCES /
+# GO_OPTION_SOURCES); single source shared by both lists.
+GO_EXCLUDE_DIRS = \
+	cmd/cli \
+	internal/core/algorithm/ngt \
+	internal/core/algorithm/faiss \
+	internal/compress/gob \
+	internal/compress/gzip \
+	internal/compress/lz4 \
+	internal/compress/zstd \
+	internal/db/storage/blob/s3/sdk/s3 \
+	internal/db/rdb/mysql/dbr \
+	internal/test/comparator \
+	internal/test/mock \
+	hack/gorules \
+	hack/license \
+	hack/docker \
+	hack/swagger \
+	hack/tools \
+	tests
 
-GO_SOURCES_INTERNAL = $(eval GO_SOURCES_INTERNAL := $(shell find \
-	$(ROOTDIR)/internal \
-	-type f \
-	-name '*.go' \
-	-not -name '*_test.go' \
-	-not -name '*_mock.go' \
-	-not -name 'doc.go'))$(GO_SOURCES_INTERNAL)
+# Non-test Go files under cmd/hack/internal/pkg, derived from .gitfiles.
+GO_GITFILES = $(eval GO_GITFILES := $(filter-out %_test.go %_mock.go doc.go %/doc.go,$(filter $(addsuffix /%.go,cmd hack internal pkg),$(GITFILES_LIST))))$(GO_GITFILES)
+GO_EXCLUDED = $(foreach d,$(GO_EXCLUDE_DIRS),$(filter $(d)/%,$(GO_GITFILES)))
+GO_SOURCES = $(eval GO_SOURCES := $(addprefix $(ROOTDIR)/,$(filter-out %option.go %options.go $(GO_EXCLUDED),$(GO_GITFILES))))$(GO_SOURCES)
+GO_OPTION_SOURCES = $(eval GO_OPTION_SOURCES := $(addprefix $(ROOTDIR)/,$(filter %option.go %options.go,$(filter-out $(GO_EXCLUDED),$(GO_GITFILES)))))$(GO_OPTION_SOURCES)
+GO_SOURCES_INTERNAL = $(eval GO_SOURCES_INTERNAL := $(addprefix $(ROOTDIR)/,$(filter internal/%,$(GO_GITFILES))))$(GO_SOURCES_INTERNAL)
 
 GO_TEST_SOURCES = $(GO_SOURCES:%.go=%_test.go)
 GO_OPTION_TEST_SOURCES = $(GO_OPTION_SOURCES:%.go=%_test.go)
@@ -398,10 +471,10 @@ BUILDKIT_INLINE_CACHE ?= 1
 
 DISTROLESS_IMAGE ?= gcr.io/distroless/static
 DISTROLESS_IMAGE_TAG ?= nonroot
-UPX_OPTIONS ?= -9
 GOLINES_MAX_WIDTH ?= 200
 
 K8S_SLEEP_DURATION_FOR_WAIT_COMMAND ?= 5
+JAEGER_OPERATOR_WAIT_DURATION ?= 0
 
 ifeq ($(origin KUBECONFIG), undefined)
 KUBECONFIG := $(HOME)/.kube/config
@@ -420,7 +493,6 @@ TEXTLINT_EXTRA_OPTIONS ?=
 CSPELL_EXTRA_OPTIONS ?=
 
 COMMA := ,
-SHELL = bash
 
 E2E_CONFIG_DIR ?= $(ROOTDIR)/tests/v2/e2e/assets
 E2E_CONFIG_NAME ?= unary_crud.yaml
@@ -489,10 +561,10 @@ help:
 .PHONY: perm
 ## set correct permissions for dirs and files
 perm:
-	find $(ROOTDIR) -type d -not -path "$(ROOTDIR)/.git*" -exec chmod 755 {} \;
+	find $(ROOTDIR) -type d -not -path "$(ROOTDIR)/.git*" -exec chmod 755 {} +
 	@if [ -f "$(ROOTDIR)/.gitfiles" ]; then \
 		grep -vE '^\s*#' "$(ROOTDIR)/.gitfiles" | grep -v gitignore \
-		| xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P"$(CORES)" bash -c '[ -f "{}" ] || exit 0; chmod 644 "{}"'; \
+		| $(XARGS) $(SHELL_STRICT_EXEC) '[ -f "{}" ] || exit 0; chmod 644 "{}"'; \
 	fi
 	if [ -d "$(ROOTDIR)/.git" ]; then \
 		chmod 750 "$(ROOTDIR)/.git"; \
@@ -555,13 +627,7 @@ clean-generated:
 .PHONY: files
 ## add current repository file list to .gitfiles
 files:
-	@if [ ! -f $(ROOTDIR)/.gitfiles ]; then \
-		printf '\n%.0s' {1..15} > $(ROOTDIR)/.gitfiles; \
-	else \
-		head -n 15 $(ROOTDIR)/.gitfiles > $(TEMP_DIR)/.gitfiles.tmp; \
-		git ls-files --cached --others --exclude-standard | uniq >> $(TEMP_DIR)/.gitfiles.tmp; \
-		mv $(TEMP_DIR)/.gitfiles.tmp $(ROOTDIR)/.gitfiles; \
-	fi
+	@$(GITFILES_SYNC_SCRIPT)
 
 .PHONY: init
 ## initialize development environment

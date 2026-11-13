@@ -30,6 +30,9 @@ on:
       - "pkg/**"
       - "cmd/**"
   workflow_dispatch: {}
+defaults:
+  run:
+    shell: bash
 jobs:
   dump-contexts-to-log:
     timeout-minutes: 60
@@ -69,14 +72,25 @@ jobs:
         run: |
           make coverage
       - name: Upload coverage report to Codecov
-        uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2 # v6.0.0
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:
           token: ${{secrets.CODECOV_TOKEN}}
           files: ./coverage.out
       - name: Upload coverage report to deepsource
         run: |
           mv ./coverage.out ./cover.out
-          curl https://deepsource.io/cli | sh
+          # pipefail comes from the workflow-wide `defaults.run.shell: bash`, so a failed curl
+          # cannot feed sh an empty script (which would exit 0 and end the retry loop)
+          # the installer fetches the binary from GitHub without retrying; retry on transient 5xx
+          ok=0
+          for i in 1 2 3 4 5; do
+            if curl --retry 10 --retry-connrefused --retry-delay 2 -fsSL https://deepsource.io/cli | sh; then
+              ok=1
+              break
+            fi
+            if [ "$i" -lt 5 ]; then sleep $((i * 5)); fi
+          done
+          [ "$ok" = 1 ] || { echo "the deepsource CLI could not be installed" >&2; exit 1; }
           ./bin/deepsource report --analyzer test-coverage --key go --value-file ./cover.out
         env:
           DEEPSOURCE_DSN: ${{ secrets.DEEPSOURCE_DSN }}

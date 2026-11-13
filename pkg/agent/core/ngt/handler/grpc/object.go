@@ -111,7 +111,7 @@ func (s *server) StreamListObject(
 	var (
 		mu   sync.Mutex
 		emu  sync.RWMutex
-		errs = make([]error, 0, s.ngt.Len())
+		errs []error
 		emap = make(map[string]struct{})
 	)
 	s.ngt.ListObjectFunc(ctx, func(uuid string, _ uint32, _ int64) bool {

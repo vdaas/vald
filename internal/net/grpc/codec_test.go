@@ -15,12 +15,16 @@
 package grpc
 
 import (
+	"bytes"
+	"fmt"
 	"reflect"
+	"runtime"
 	"testing"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errors"
 	_ "github.com/vdaas/vald/internal/net/grpc/logger"
+	"github.com/vdaas/vald/internal/sync"
 	"google.golang.org/grpc/encoding"
 	"google.golang.org/grpc/mem"
 )
@@ -268,6 +272,361 @@ func TestCodec_Name(t *testing.T) {
 			}
 		})
 	}
+}
+
+// testSizedVTMessage implements vtprotoMessage with exact arbitrary byte sizes.
+type testSizedVTMessage struct {
+	data []byte
+}
+
+func (m *testSizedVTMessage) SizeVT() int {
+	if m == nil {
+		return 0
+	}
+	return len(m.data)
+}
+
+func (m *testSizedVTMessage) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
+	if m == nil || len(m.data) == 0 {
+		return 0, nil
+	}
+	copy(dAtA[:len(m.data)], m.data)
+	return len(m.data), nil
+}
+
+func (m *testSizedVTMessage) UnmarshalVT(dAtA []byte) error {
+	m.data = make([]byte, len(dAtA))
+	copy(m.data, dAtA)
+	return nil
+}
+
+func makeSizedVTMessage(size int) *testSizedVTMessage {
+	return &testSizedVTMessage{
+		data: bytes.Repeat([]byte{0x5a}, size),
+	}
+}
+
+// TestCodec_Marshal_boundaryPayloads verifies Codec behavior across all required
+// boundary payload sizes: 0B, 1B, 1023B, 1024B, 1025B, 2047B, 2048B, 64KB, and multi-MB.
+func TestCodec_Marshal_boundaryPayloads(t *testing.T) {
+	pool := mem.NewTieredBufferPool(
+		2<<10,   // 2KB
+		4<<10,   // 4KB
+		8<<10,   // 8KB
+		16<<10,  // 16KB
+		32<<10,  // 32KB
+		64<<10,  // 64KB
+		128<<10, // 128KB
+		256<<10, // 256KB
+		512<<10, // 512KB
+		1<<20,   // 1MB
+		2<<20,   // 2MB
+		4<<20,   // 4MB
+	)
+
+	c := Codec{
+		buffer:   pool,
+		fallback: encoding.GetCodecV2(Name),
+	}
+
+	tests := []struct {
+		name       string
+		targetSize int
+		msg        vtprotoMessage
+	}{
+		{
+			name:       "0-byte empty payload (payload.Empty)",
+			targetSize: 0,
+			msg:        &payload.Empty{},
+		},
+		{
+			name:       "0-byte empty VTMessage",
+			targetSize: 0,
+			msg:        makeSizedVTMessage(0),
+		},
+		{
+			name:       "1-byte payload",
+			targetSize: 1,
+			msg:        makeSizedVTMessage(1),
+		},
+		{
+			name:       "1023-byte payload (1B below 1KB boundary)",
+			targetSize: 1023,
+			msg:        makeSizedVTMessage(1023),
+		},
+		{
+			name:       "1024-byte payload (exact 1KB threshold)",
+			targetSize: 1024,
+			msg:        makeSizedVTMessage(1024),
+		},
+		{
+			name:       "1025-byte payload (1B above 1KB threshold)",
+			targetSize: 1025,
+			msg:        makeSizedVTMessage(1025),
+		},
+		{
+			name:       "2047-byte payload (1B below 2KB tier)",
+			targetSize: 2047,
+			msg:        makeSizedVTMessage(2047),
+		},
+		{
+			name:       "2048-byte payload (exact 2KB tier boundary)",
+			targetSize: 2048,
+			msg:        makeSizedVTMessage(2048),
+		},
+		{
+			name:       "65536-byte payload (64KB boundary)",
+			targetSize: 65536,
+			msg:        makeSizedVTMessage(65536),
+		},
+		{
+			name:       "1MB payload (1048576 bytes)",
+			targetSize: 1024 * 1024,
+			msg:        makeSizedVTMessage(1024 * 1024),
+		},
+		{
+			name:       "2MB payload (2097152 bytes)",
+			targetSize: 2 * 1024 * 1024,
+			msg:        makeSizedVTMessage(2 * 1024 * 1024),
+		},
+		{
+			name:       "4MB payload (4194304 bytes)",
+			targetSize: 4 * 1024 * 1024,
+			msg:        makeSizedVTMessage(4 * 1024 * 1024),
+		},
+		{
+			name:       "Real protobuf Object_Blob with 1536d vector (6144B payload)",
+			targetSize: 6154, // 6144B object + tag/varint header + Id
+			msg: &payload.Object_Blob{
+				Id:     "vec-1",
+				Object: bytes.Repeat([]byte{0xaa}, 6144),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// 1. Check size computation
+			gotSize := tt.msg.SizeVT()
+			if tt.targetSize > 0 && gotSize != tt.targetSize {
+				t.Fatalf("SizeVT() = %d, want %d", gotSize, tt.targetSize)
+			}
+
+			// 2. Marshal
+			bufSlice, err := c.Marshal(tt.msg)
+			if err != nil {
+				t.Fatalf("Marshal failed: %v", err)
+			}
+			defer bufSlice.Free()
+
+			if bufSlice.Len() != gotSize {
+				t.Fatalf("bufSlice.Len() = %d, want %d", bufSlice.Len(), gotSize)
+			}
+
+			// 3. Unmarshal back into target
+			switch orig := tt.msg.(type) {
+			case *payload.Empty:
+				var unmarshaled payload.Empty
+				if err := c.Unmarshal(bufSlice, &unmarshaled); err != nil {
+					t.Fatalf("Unmarshal failed: %v", err)
+				}
+			case *testSizedVTMessage:
+				var unmarshaled testSizedVTMessage
+				if err := c.Unmarshal(bufSlice, &unmarshaled); err != nil {
+					t.Fatalf("Unmarshal failed: %v", err)
+				}
+				if unmarshaled.SizeVT() != gotSize {
+					t.Fatalf("unmarshaled SizeVT() = %d, want %d", unmarshaled.SizeVT(), gotSize)
+				}
+				if !bytes.Equal(unmarshaled.data, orig.data) {
+					t.Fatal("unmarshaled bytes mismatch with original")
+				}
+			case *payload.Object_Blob:
+				var unmarshaled payload.Object_Blob
+				if err := c.Unmarshal(bufSlice, &unmarshaled); err != nil {
+					t.Fatalf("Unmarshal failed: %v", err)
+				}
+				if unmarshaled.Id != orig.Id {
+					t.Fatalf("unmarshaled Id = %q, want %q", unmarshaled.Id, orig.Id)
+				}
+				if !bytes.Equal(unmarshaled.Object, orig.Object) {
+					t.Fatal("unmarshaled Object mismatch with original")
+				}
+			}
+		})
+	}
+}
+
+// TestCodec_nilBuffer verifies that Codec functions safely without
+// panics when c.buffer is nil across all boundary payload sizes.
+func TestCodec_nilBuffer(t *testing.T) {
+	cNil := Codec{
+		buffer:   nil,
+		fallback: encoding.GetCodecV2(Name),
+	}
+
+	sizes := []int{0, 1, 1023, 1024, 1025, 2047, 2048, 65536, 1024 * 1024}
+
+	for _, sz := range sizes {
+		t.Run(fmt.Sprintf("size_%d", sz), func(t *testing.T) {
+			msg := makeSizedVTMessage(sz)
+
+			// Marshal without pool
+			bufSlice, err := cNil.Marshal(msg)
+			if err != nil {
+				t.Fatalf("Marshal with nil buffer failed for size %d: %v", sz, err)
+			}
+			defer bufSlice.Free()
+
+			if bufSlice.Len() != sz {
+				t.Fatalf("bufSlice.Len() = %d, want %d", bufSlice.Len(), sz)
+			}
+
+			// Unmarshal without pool
+			var unmarshaled testSizedVTMessage
+			if err := cNil.Unmarshal(bufSlice, &unmarshaled); err != nil {
+				t.Fatalf("Unmarshal with nil buffer failed for size %d: %v", sz, err)
+			}
+
+			if unmarshaled.SizeVT() != sz {
+				t.Fatalf("unmarshaled SizeVT() = %d, want %d", unmarshaled.SizeVT(), sz)
+			}
+		})
+	}
+}
+
+// TestCodec_bufferPoolMemoryStability stress-tests buffer recycling
+// across 500,000 iterations for edge-case sizes (1B, 1023B, 1024B, 1025B) to empirically
+// verify that mem.NewBuffer does NOT leak buffers and RSS/HeapAlloc remains stable.
+func TestCodec_bufferPoolMemoryStability(t *testing.T) {
+	pool := mem.NewTieredBufferPool(
+		2<<10,  // 2KB
+		4<<10,  // 4KB
+		8<<10,  // 8KB
+		16<<10, // 16KB
+		64<<10, // 64KB
+	)
+
+	c := Codec{
+		buffer:   pool,
+		fallback: encoding.GetCodecV2(Name),
+	}
+
+	// Boundary sizes around 1KB threshold
+	boundarySizes := []int{1, 1023, 1024, 1025, 2048}
+
+	for _, sz := range boundarySizes {
+		t.Run(fmt.Sprintf("boundary_size_%d_stress", sz), func(t *testing.T) {
+			msg := makeSizedVTMessage(sz)
+
+			// Warm up pool
+			for range 100 {
+				b, err := c.Marshal(msg)
+				if err != nil {
+					t.Fatal(err)
+				}
+				b.Free()
+			}
+
+			runtime.GC()
+			var memBefore runtime.MemStats
+			runtime.ReadMemStats(&memBefore)
+
+			iterations := 500_000
+			if testing.Short() {
+				iterations = 1_000
+			}
+			for range iterations {
+				bufSlice, err := c.Marshal(msg)
+				if err != nil {
+					t.Fatalf("Marshal failed at iteration: %v", err)
+				}
+
+				var target testSizedVTMessage
+				if err := c.Unmarshal(bufSlice, &target); err != nil {
+					bufSlice.Free()
+					t.Fatalf("Unmarshal failed: %v", err)
+				}
+
+				// Crucial: Free the buffer slice back to the pool
+				bufSlice.Free()
+			}
+
+			runtime.GC()
+			var memAfter runtime.MemStats
+			runtime.ReadMemStats(&memAfter)
+
+			// If 500,000 allocations of 2KB leaked without being returned to the pool,
+			// HeapAlloc would grow by at least 1 GB (500,000 * 2048 bytes = 1,024,000,000 bytes).
+			// With proper buffer pooling, memory in use should remain bounded under 32MB.
+			heapDelta := int64(memAfter.HeapAlloc) - int64(memBefore.HeapAlloc)
+			t.Logf("Size %d: HeapAlloc before=%d KB, after=%d KB, delta=%d KB across %d iterations",
+				sz, memBefore.HeapAlloc/1024, memAfter.HeapAlloc/1024, heapDelta/1024, iterations)
+
+			const maxAllowedHeapGrowth = 32 * 1024 * 1024 // 32MB
+			if heapDelta > maxAllowedHeapGrowth {
+				t.Fatalf("Memory leak detected! HeapAlloc grew by %d MB (limit: %d MB) for payload size %d",
+					heapDelta/(1024*1024), maxAllowedHeapGrowth/(1024*1024), sz)
+			}
+		})
+	}
+}
+
+// TestCodec_concurrent verifies thread-safety and absence of data
+// races during concurrent buffer pool usage across 16 parallel goroutines.
+func TestCodec_concurrent(t *testing.T) {
+	pool := mem.NewTieredBufferPool(
+		2<<10,  // 2KB
+		4<<10,  // 4KB
+		8<<10,  // 8KB
+		64<<10, // 64KB
+	)
+
+	c := Codec{
+		buffer:   pool,
+		fallback: encoding.GetCodecV2(Name),
+	}
+
+	const goroutines = 16
+	const iterationsPerGoroutine = 10_000
+
+	var wg sync.WaitGroup
+	wg.Add(goroutines)
+
+	for g := range goroutines {
+		go func(workerID int) {
+			defer wg.Done()
+
+			sizes := []int{0, 1, 1023, 1024, 1025, 2048, 4096}
+			for i := range iterationsPerGoroutine {
+				sz := sizes[(workerID+i)%len(sizes)]
+				msg := makeSizedVTMessage(sz)
+
+				bufSlice, err := c.Marshal(msg)
+				if err != nil {
+					t.Errorf("worker %d: Marshal failed: %v", workerID, err)
+					return
+				}
+
+				if bufSlice.Len() != sz {
+					t.Errorf("worker %d: got len %d, want %d", workerID, bufSlice.Len(), sz)
+					bufSlice.Free()
+					return
+				}
+
+				var unmarshaled testSizedVTMessage
+				if err := c.Unmarshal(bufSlice, &unmarshaled); err != nil {
+					t.Errorf("worker %d: Unmarshal failed: %v", workerID, err)
+					bufSlice.Free()
+					return
+				}
+
+				bufSlice.Free()
+			}
+		}(g)
+	}
+
+	wg.Wait()
 }
 
 // NOT IMPLEMENTED BELOW

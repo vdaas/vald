@@ -659,10 +659,8 @@ func (b *baseClient[T, L, C]) CreateJob(
 	// uniqueness has no security relevance, so a non-cryptographic PRNG is fine.
 	suffix := strconv.FormatInt(time.Now().UnixNano(), 36) + "-" + strconv.FormatUint(uint64(rand.Uint32()), 36) //nolint:gosec
 	return Job(b.GetClient(), b.GetNamespace()).Create(ctx, &batchv1.Job{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      fmt.Sprintf("%s-%s", from, suffix),
-			Namespace: b.GetNamespace(),
-		},
+		Name:      fmt.Sprintf("%s-%s", from, suffix),
+		Namespace: b.GetNamespace(),
 		Spec: batchv1.JobSpec{
 			Template: *tmpl,
 		},

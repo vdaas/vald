@@ -50,6 +50,10 @@ var defaultOptions = []Option{
 	WithBackoffMultiplier(gbackoff.DefaultConfig.Multiplier),
 	WithBackoffJitter(gbackoff.DefaultConfig.Jitter),
 	WithMinConnectTimeout("20s"),
+	WithInitialWindowSize(DefaultInitialWindowSize),
+	WithInitialConnectionWindowSize(DefaultInitialConnWindowSize),
+	WithReadBufferSize(DefaultReadBufferSize),
+	WithWriteBufferSize(DefaultWriteBufferSize),
 }
 
 func WithAddrs(addrs ...string) Option {
@@ -247,32 +251,33 @@ API References https://pkg.go.dev/google.golang.org/grpc#CallOption
 */
 const defaultCallOptionLength = 5
 
+// appendCallOpts appends opts to g.copts, preallocating defaultCallOptionLength
+// capacity on first use. It never retains the caller's slice.
+func (g *gRPCClient) appendCallOpts(opts ...grpc.CallOption) {
+	if g.copts == nil {
+		g.copts = make([]grpc.CallOption, 0, defaultCallOptionLength)
+	}
+	g.copts = append(g.copts, opts...)
+}
+
 func WithCallOptions(opts ...grpc.CallOption) Option {
 	return func(g *gRPCClient) {
-		if g.copts != nil && len(g.copts) > 0 {
-			g.copts = append(g.copts, opts...)
-		} else {
-			g.copts = opts
+		if len(opts) != 0 {
+			g.appendCallOpts(opts...)
 		}
 	}
 }
 
 func WithCallContentSubtype(contentSubtype string) Option {
 	return func(g *gRPCClient) {
-		if g.copts == nil && cap(g.copts) == 0 {
-			g.copts = make([]grpc.CallOption, 0, defaultCallOptionLength)
-		}
-		g.copts = append(g.copts, grpc.CallContentSubtype(contentSubtype))
+		g.appendCallOpts(grpc.CallContentSubtype(contentSubtype))
 	}
 }
 
 func WithMaxRecvMsgSize(size int) Option {
 	return func(g *gRPCClient) {
 		if size > 1 {
-			if g.copts == nil && cap(g.copts) == 0 {
-				g.copts = make([]grpc.CallOption, 0, defaultCallOptionLength)
-			}
-			g.copts = append(g.copts, grpc.MaxCallRecvMsgSize(size))
+			g.appendCallOpts(grpc.MaxCallRecvMsgSize(size))
 		}
 	}
 }
@@ -280,10 +285,7 @@ func WithMaxRecvMsgSize(size int) Option {
 func WithMaxSendMsgSize(size int) Option {
 	return func(g *gRPCClient) {
 		if size > 1 {
-			if g.copts == nil && cap(g.copts) == 0 {
-				g.copts = make([]grpc.CallOption, 0, defaultCallOptionLength)
-			}
-			g.copts = append(g.copts, grpc.MaxCallSendMsgSize(size))
+			g.appendCallOpts(grpc.MaxCallSendMsgSize(size))
 		}
 	}
 }
@@ -291,20 +293,14 @@ func WithMaxSendMsgSize(size int) Option {
 func WithMaxRetryRPCBufferSize(size int) Option {
 	return func(g *gRPCClient) {
 		if size > 1 {
-			if g.copts == nil && cap(g.copts) == 0 {
-				g.copts = make([]grpc.CallOption, 0, defaultCallOptionLength)
-			}
-			g.copts = append(g.copts, grpc.MaxRetryRPCBufferSize(size))
+			g.appendCallOpts(grpc.MaxRetryRPCBufferSize(size))
 		}
 	}
 }
 
 func WithWaitForReady(flg bool) Option {
 	return func(g *gRPCClient) {
-		if g.copts == nil && cap(g.copts) == 0 {
-			g.copts = make([]grpc.CallOption, 0, defaultCallOptionLength)
-		}
-		g.copts = append(g.copts, grpc.WaitForReady(flg))
+		g.appendCallOpts(grpc.WaitForReady(flg))
 	}
 }
 
@@ -363,12 +359,19 @@ API References https://pkg.go.dev/google.golang.org/grpc#DialOption
 
 const defaultDialOptionLength = 14
 
+// appendDialOpts appends opts to g.dopts, preallocating defaultDialOptionLength
+// capacity on first use. It never retains the caller's slice.
+func (g *gRPCClient) appendDialOpts(opts ...grpc.DialOption) {
+	if g.dopts == nil {
+		g.dopts = make([]grpc.DialOption, 0, defaultDialOptionLength)
+	}
+	g.dopts = append(g.dopts, opts...)
+}
+
 func WithDialOptions(opts ...grpc.DialOption) Option {
 	return func(g *gRPCClient) {
-		if g.dopts != nil && len(g.dopts) > 0 {
-			g.dopts = append(g.dopts, opts...)
-		} else {
-			g.dopts = opts
+		if len(opts) != 0 {
+			g.appendDialOpts(opts...)
 		}
 	}
 }
@@ -376,10 +379,7 @@ func WithDialOptions(opts ...grpc.DialOption) Option {
 func WithWriteBufferSize(size int) Option {
 	return func(g *gRPCClient) {
 		if size > 1 {
-			if g.dopts == nil && cap(g.dopts) == 0 {
-				g.dopts = make([]grpc.DialOption, 0, defaultDialOptionLength)
-			}
-			g.dopts = append(g.dopts,
+			g.appendDialOpts(
 				grpc.WithWriteBufferSize(size),
 			)
 		}
@@ -389,10 +389,7 @@ func WithWriteBufferSize(size int) Option {
 func WithReadBufferSize(size int) Option {
 	return func(g *gRPCClient) {
 		if size > 1 {
-			if g.dopts == nil && cap(g.dopts) == 0 {
-				g.dopts = make([]grpc.DialOption, 0, defaultDialOptionLength)
-			}
-			g.dopts = append(g.dopts,
+			g.appendDialOpts(
 				grpc.WithReadBufferSize(size),
 			)
 		}
@@ -402,10 +399,7 @@ func WithReadBufferSize(size int) Option {
 func WithInitialWindowSize(size int32) Option {
 	return func(g *gRPCClient) {
 		if size > 1 {
-			if g.dopts == nil && cap(g.dopts) == 0 {
-				g.dopts = make([]grpc.DialOption, 0, defaultDialOptionLength)
-			}
-			g.dopts = append(g.dopts,
+			g.appendDialOpts(
 				grpc.WithInitialWindowSize(size),
 			)
 		}
@@ -415,10 +409,7 @@ func WithInitialWindowSize(size int32) Option {
 func WithInitialConnectionWindowSize(size int32) Option {
 	return func(g *gRPCClient) {
 		if size > 1 {
-			if g.dopts == nil && cap(g.dopts) == 0 {
-				g.dopts = make([]grpc.DialOption, 0, defaultDialOptionLength)
-			}
-			g.dopts = append(g.dopts,
+			g.appendDialOpts(
 				grpc.WithInitialConnWindowSize(size),
 			)
 		}
@@ -428,10 +419,7 @@ func WithInitialConnectionWindowSize(size int32) Option {
 func WithMaxMsgSize(size int) Option {
 	return func(g *gRPCClient) {
 		if size > 1 {
-			if g.dopts == nil && cap(g.dopts) == 0 {
-				g.dopts = make([]grpc.DialOption, 0, defaultDialOptionLength)
-			}
-			g.dopts = append(g.dopts,
+			g.appendDialOpts(
 				grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(size)),
 			)
 		}
@@ -441,10 +429,7 @@ func WithMaxMsgSize(size int) Option {
 func WithInsecure(flg bool) Option {
 	return func(g *gRPCClient) {
 		if flg {
-			if g.dopts == nil && cap(g.dopts) == 0 {
-				g.dopts = make([]grpc.DialOption, 0, defaultDialOptionLength)
-			}
-			g.dopts = append(g.dopts,
+			g.appendDialOpts(
 				grpc.WithTransportCredentials(insecure.NewCredentials()),
 			)
 		}
@@ -474,10 +459,7 @@ func WithKeepaliveParams(t, to string, permitWithoutStream bool) Option {
 			log.Errorf("invalid grpc keepalive timeout: %d", tod)
 			return
 		}
-		if g.dopts == nil && cap(g.dopts) == 0 {
-			g.dopts = make([]grpc.DialOption, 0, defaultDialOptionLength)
-		}
-		g.dopts = append(g.dopts,
+		g.appendDialOpts(
 			grpc.WithKeepaliveParams(
 				keepalive.ClientParameters{
 					Time:                td,
@@ -493,9 +475,6 @@ func WithDialer(network string, der net.Dialer) Option {
 	return func(g *gRPCClient) {
 		if der != nil {
 			g.dialer = der
-			if g.dopts == nil && cap(g.dopts) == 0 {
-				g.dopts = make([]grpc.DialOption, 0, defaultDialOptionLength)
-			}
 			nt := net.NetworkTypeFromString(network)
 			switch nt {
 			case net.UDP, net.UDP4, net.UDP6:
@@ -505,7 +484,7 @@ func WithDialer(network string, der net.Dialer) Option {
 			default:
 				nt = net.TCP
 			}
-			g.dopts = append(g.dopts,
+			g.appendDialOpts(
 				grpc.WithContextDialer(func(ctx context.Context, addr string) (net.Conn, error) {
 					log.Debugf("gRPC context Dialer for network %s, addr is %s", nt.String(), addr)
 					return g.dialer.GetDialer()(ctx, nt.String(), addr)
@@ -518,10 +497,7 @@ func WithDialer(network string, der net.Dialer) Option {
 func WithTLSConfig(cfg *tls.Config) Option {
 	return func(g *gRPCClient) {
 		if cfg != nil {
-			if g.dopts == nil && cap(g.dopts) == 0 {
-				g.dopts = make([]grpc.DialOption, 0, defaultDialOptionLength)
-			}
-			g.dopts = append(g.dopts,
+			g.appendDialOpts(
 				grpc.WithTransportCredentials(credentials.NewTLS(cfg)),
 			)
 		}
@@ -531,10 +507,7 @@ func WithTLSConfig(cfg *tls.Config) Option {
 func WithAuthority(a string) Option {
 	return func(g *gRPCClient) {
 		if a != "" {
-			if g.dopts == nil && cap(g.dopts) == 0 {
-				g.dopts = make([]grpc.DialOption, 0, defaultDialOptionLength)
-			}
-			g.dopts = append(g.dopts,
+			g.appendDialOpts(
 				grpc.WithAuthority(a),
 			)
 		}
@@ -544,10 +517,7 @@ func WithAuthority(a string) Option {
 func WithDisableRetry(disable bool) Option {
 	return func(g *gRPCClient) {
 		if disable {
-			if g.dopts == nil && cap(g.dopts) == 0 {
-				g.dopts = make([]grpc.DialOption, 0, defaultDialOptionLength)
-			}
-			g.dopts = append(g.dopts,
+			g.appendDialOpts(
 				grpc.WithDisableRetry(),
 			)
 		}
@@ -568,10 +538,7 @@ func WithIdleTimeout(dur string) Option {
 			log.Errorf("invalid idle timeout duration: %d", d)
 			return
 		}
-		if g.dopts == nil && cap(g.dopts) == 0 {
-			g.dopts = make([]grpc.DialOption, 0, defaultDialOptionLength)
-		}
-		g.dopts = append(g.dopts,
+		g.appendDialOpts(
 			grpc.WithIdleTimeout(d),
 		)
 	}
@@ -580,10 +547,7 @@ func WithIdleTimeout(dur string) Option {
 func WithMaxCallAttempts(n int) Option {
 	return func(g *gRPCClient) {
 		if n > 2 {
-			if g.dopts == nil && cap(g.dopts) == 0 {
-				g.dopts = make([]grpc.DialOption, 0, defaultDialOptionLength)
-			}
-			g.dopts = append(g.dopts,
+			g.appendDialOpts(
 				grpc.WithMaxCallAttempts(n),
 			)
 		}
@@ -593,10 +557,7 @@ func WithMaxCallAttempts(n int) Option {
 func WithMaxHeaderListSize(size uint32) Option {
 	return func(g *gRPCClient) {
 		if size > 0 {
-			if g.dopts == nil && cap(g.dopts) == 0 {
-				g.dopts = make([]grpc.DialOption, 0, defaultDialOptionLength)
-			}
-			g.dopts = append(g.dopts,
+			g.appendDialOpts(
 				grpc.WithMaxHeaderListSize(size),
 			)
 		}
@@ -606,10 +567,7 @@ func WithMaxHeaderListSize(size uint32) Option {
 func WithSharedWriteBuffer(enable bool) Option {
 	return func(g *gRPCClient) {
 		if enable {
-			if g.dopts == nil && cap(g.dopts) == 0 {
-				g.dopts = make([]grpc.DialOption, 0, defaultDialOptionLength)
-			}
-			g.dopts = append(g.dopts,
+			g.appendDialOpts(
 				grpc.WithSharedWriteBuffer(enable),
 			)
 		}
@@ -619,10 +577,7 @@ func WithSharedWriteBuffer(enable bool) Option {
 func WithUserAgent(ua string) Option {
 	return func(g *gRPCClient) {
 		if ua != "" {
-			if g.dopts == nil && cap(g.dopts) == 0 {
-				g.dopts = make([]grpc.DialOption, 0, defaultDialOptionLength)
-			}
-			g.dopts = append(g.dopts,
+			g.appendDialOpts(
 				grpc.WithUserAgent(ua),
 			)
 		}
@@ -631,13 +586,10 @@ func WithUserAgent(ua string) Option {
 
 func WithClientInterceptors(names ...string) Option {
 	return func(g *gRPCClient) {
-		if g.dopts == nil && cap(g.dopts) == 0 {
-			g.dopts = make([]grpc.DialOption, 0, defaultDialOptionLength)
-		}
 		for _, name := range names {
 			switch strings.ToLower(name) {
 			case "traceinterceptor", "trace":
-				g.dopts = append(g.dopts,
+				g.appendDialOpts(
 					WithStatsHandler(trace.NewStatsHandler()),
 				)
 			case "metricinterceptor", "metric":
@@ -645,8 +597,9 @@ func WithClientInterceptors(names ...string) Option {
 				if err != nil {
 					lerr := errors.NewErrCriticalOption("gRPCInterceptors", "metric", errors.Wrap(err, "failed to create interceptor"))
 					log.Warn(lerr.Error())
+					continue
 				}
-				g.dopts = append(g.dopts,
+				g.appendDialOpts(
 					grpc.WithUnaryInterceptor(uci),
 					grpc.WithStreamInterceptor(sci),
 				)

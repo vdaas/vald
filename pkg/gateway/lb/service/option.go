@@ -15,30 +15,14 @@
 // Package service represents gateway's service logic
 package service
 
-import (
-	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
-	"github.com/vdaas/vald/internal/sync/errgroup"
-)
+import "github.com/vdaas/vald/internal/client/v1/client/discoverer"
 
 type Option func(g *gateway) error
-
-var defaultGWOpts = []Option{
-	WithErrGroup(errgroup.Get()),
-}
 
 func WithDiscoverer(c discoverer.Client) Option {
 	return func(g *gateway) error {
 		if c != nil {
 			g.client = c
-		}
-		return nil
-	}
-}
-
-func WithErrGroup(eg errgroup.Group) Option {
-	return func(g *gateway) error {
-		if eg != nil {
-			g.eg = eg
 		}
 		return nil
 	}

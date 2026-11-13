@@ -14,6 +14,11 @@
 # limitations under the License.
 #
 
+# tag/network option sets shared by the remote and local build branches of
+# docker/build/image (they used to be copy-pasted into both branches)
+DOCKER_TAG_ARGS ?= -t $(CRORG)/$(IMAGE):$(TAG) -t $(GHCRORG)/$(IMAGE):$(TAG)
+DOCKER_NETWORK_ARGS ?= --network host
+
 .PHONY: docker/build
 ## build all docker images
 docker/build: \
@@ -106,7 +111,6 @@ docker/build/image:
 ifeq ($(REMOTE),true)
 	@echo "starting remote build for $(IMAGE):$(TAG)"
 	DOCKER_BUILDKIT=$(DOCKER_BUILDKIT) $(DOCKER) buildx build \
-	$(DOCKER_OPTS) \
 	--cache-to type=gha,scope=$(TAG)-buildcache,mode=max \
 	--cache-to type=registry,ref=$(GHCRORG)/$(IMAGE):$(TAG)-buildcache,mode=max \
 	--cache-from type=gha,scope=$(TAG)-buildcache \
@@ -114,11 +118,10 @@ ifeq ($(REMOTE),true)
 	$(DOCKER_OPTS) \
 	$(DOCKER_BUILD_ARGS) \
 	--allow "network.host" \
-	--network=host \
+	$(DOCKER_NETWORK_ARGS) \
 	--attest type=sbom,generator=$(DEFAULT_BUILDKIT_SYFT_SCANNER_IMAGE),format=spdx-json \
 	--provenance=mode=max \
-	-t $(CRORG)/$(IMAGE):$(TAG) \
-	-t $(GHCRORG)/$(IMAGE):$(TAG) \
+	$(DOCKER_TAG_ARGS) \
 	$(EXTRA_ARGS) \
 	--output type=registry,oci-mediatypes=true,compression=zstd,compression-level=5,force-compression=true,push=true \
 	-f $(DOCKERFILE) $(ROOTDIR)
@@ -126,11 +129,10 @@ else
 	@echo "starting local build for $(IMAGE):$(TAG)"
 	DOCKER_BUILDKIT=$(DOCKER_BUILDKIT) $(DOCKER) build \
 	$(DOCKER_OPTS) \
-	--network host \
+	$(DOCKER_NETWORK_ARGS) \
 	$(DOCKER_BUILD_ARGS) \
 	$(EXTRA_ARGS) \
-	-t $(CRORG)/$(IMAGE):$(TAG) \
-	-t $(GHCRORG)/$(IMAGE):$(TAG) \
+	$(DOCKER_TAG_ARGS) \
 	-f $(DOCKERFILE) $(ROOTDIR)
 endif
 
@@ -361,7 +363,7 @@ docker/name/operator/helm docker/name/helm-operator:
 docker/build/operator/helm docker/build/helm-operator:
 	@$(MAKE) DOCKERFILE="$(ROOTDIR)/dockers/operator/helm/Dockerfile" \
 	IMAGE=$(HELM_OPERATOR_IMAGE) \
-	EXTRA_ARGS="--build-arg OPERATOR_SDK_VERSION=$(OPERATOR_SDK_VERSION) --build-arg UPX_OPTIONS=$(UPX_OPTIONS) $(EXTRA_ARGS)" \
+	EXTRA_ARGS="--build-arg OPERATOR_SDK_VERSION=$(OPERATOR_SDK_VERSION) $(EXTRA_ARGS)" \
 	docker/build/image
 
 .PHONY: docker/build/operator
@@ -482,7 +484,6 @@ docker/build/benchmark-job:
 	@$(MAKE) \
 		DOCKERFILE="$(ROOTDIR)/dockers/tools/benchmark/job/Dockerfile" \
 		IMAGE=$(BENCHMARK_JOB_IMAGE) \
-		DOCKER_OPTS="$${DOCKER_OPTS:+$${DOCKER_OPTS}} --build-arg ZLIB_VERSION=$(ZLIB_VERSION) --build-arg HDF5_VERSION=$(HDF5_VERSION)" \
 		docker/build/image
 
 .PHONY: docker/name/operator/benchmark docker/name/benchmark-operator
@@ -508,7 +509,6 @@ docker/build/example-client:
 	@$(MAKE) \
 		DOCKERFILE="$(ROOTDIR)/dockers/example/client/Dockerfile" \
 		IMAGE=$(EXAMPLE_CLIENT_IMAGE) \
-		DOCKER_OPTS="$${DOCKER_OPTS:+$${DOCKER_OPTS}} --build-arg ZLIB_VERSION=$(ZLIB_VERSION) --build-arg HDF5_VERSION=$(HDF5_VERSION)" \
 		docker/build/image
 
 .PHONY: docker/name/e2e

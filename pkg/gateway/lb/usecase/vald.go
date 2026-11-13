@@ -19,10 +19,12 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/observability"
 	backoffmetrics "github.com/vdaas/vald/internal/observability/metrics/backoff"
 	cbmetrics "github.com/vdaas/vald/internal/observability/metrics/circuitbreaker"
+	lbmetrics "github.com/vdaas/vald/internal/observability/metrics/gateway/lb"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
@@ -105,19 +107,21 @@ func New(cfg *config.Data) (r runner.Interface, err error) {
 	}
 
 	gateway, err = service.NewGateway(
-		service.WithErrGroup(eg),
 		service.WithDiscoverer(client),
 	)
 	if err != nil {
 		return nil, err
 	}
 
+	sm := lbmetrics.New()
 	v := handler.New(
 		handler.WithGateway(gateway),
+		handler.WithSearchMetrics(sm),
 		handler.WithErrGroup(eg),
 		handler.WithReplicationCount(cfg.Gateway.IndexReplica),
 		handler.WithStreamConcurrency(cfg.Server.GetGRPCStreamConcurrency()),
 		handler.WithMultiConcurrency(cfg.Gateway.MultiOperationConcurrency),
+		handler.WithSearchQuorumGrace(cfg.Gateway.SearchQuorumGrace),
 	)
 
 	grpcServerOptions := []server.Option{
@@ -136,6 +140,7 @@ func New(cfg *config.Data) (r runner.Interface, err error) {
 			cfg.Observability,
 			backoffmetrics.New(),
 			cbmetrics.New(),
+			sm,
 		)
 		if err != nil {
 			return nil, err
@@ -222,11 +227,14 @@ func (*run) PreStop(context.Context) error {
 	return nil
 }
 
-func (r *run) Stop(ctx context.Context) error {
+func (r *run) Stop(ctx context.Context) (err error) {
+	// Shut the server down first so spans and metrics of the requests it drains
+	// are still exported before observability is stopped.
+	err = r.server.Shutdown(ctx)
 	if r.observability != nil {
-		r.observability.Stop(ctx)
+		err = errors.Join(err, r.observability.Stop(ctx))
 	}
-	return r.server.Shutdown(ctx)
+	return err
 }
 
 func (*run) PostStop(context.Context) error {
