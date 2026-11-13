@@ -29,15 +29,15 @@ func (ph *PairingHeap) Insert(dp *DistPayload) *PairingHeap {
 }
 
 func (ph *PairingHeap) Merge(h2 *PairingHeap) *PairingHeap {
-	if ph == nil || ph.DistPayload == nil || ph.DistPayload.distance == nil {
+	if ph == nil || ph.DistPayload == nil {
 		return h2
 	}
-	if h2 == nil || h2.DistPayload == nil || h2.DistPayload.distance == nil {
+	if h2 == nil || h2.DistPayload == nil {
 		return ph
 	}
 
 	var smaller, larger *PairingHeap
-	if ph.DistPayload.distance.Cmp(h2.DistPayload.distance) < 0 {
+	if ph.DistPayload.distance < h2.DistPayload.distance {
 		smaller = ph
 		larger = h2
 	} else {

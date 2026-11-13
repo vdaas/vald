@@ -16,17 +16,21 @@ package json
 
 import (
 	"bytes"
-	"context"
 	"net/http"
 
 	"github.com/vdaas/vald/internal/encoding/json"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net/grpc/codes"
+	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/net/http/dump"
 	"github.com/vdaas/vald/internal/net/http/rest"
 	"github.com/vdaas/vald/internal/os"
 )
+
+// statusClientClosedRequest is the non-standard 499 status that grpc-gateway uses for codes.Canceled.
+const statusClientClosedRequest = 499
 
 // RFC7807Error represents RFC 7807 error.
 type RFC7807Error struct {
@@ -39,54 +43,23 @@ type RFC7807Error struct {
 }
 
 // EncodeResponse encodes http response body.
+// data is encoded before the header is written, so an encode failure leaves the response untouched.
 func EncodeResponse(w http.ResponseWriter, data any, status int, contentTypes ...string) error {
+	var buf bytes.Buffer
+	err := json.Encode(&buf, data)
+	if err != nil {
+		return err
+	}
+	return writeResponse(w, buf.Bytes(), status, contentTypes...)
+}
+
+func writeResponse(w http.ResponseWriter, body []byte, status int, contentTypes ...string) error {
 	for _, ct := range contentTypes {
 		w.Header().Add(rest.ContentType, ct)
 	}
 	w.WriteHeader(status)
-	return json.Encode(w, data)
-}
-
-// DecodeResponse decodes http response body.
-func DecodeResponse(res *http.Response, data any) (err error) {
-	if res == nil || res.Body == nil {
-		return nil
-	}
-	// Always drain and close the body so the underlying connection can be
-	// reused instead of leaked, even when there is nothing to decode: a nil
-	// data target or an empty / zero-ContentLength body previously left
-	// res.Body open because the close lived inside that same guard.
-	defer func() {
-		if _, cerr := io.Copy(io.Discard, res.Body); cerr != nil && err == nil {
-			err = errors.ErrRequestBodyFlush(cerr)
-		}
-		if cerr := res.Body.Close(); cerr != nil && err == nil {
-			err = errors.ErrRequestBodyClose(cerr)
-		}
-	}()
-	if data != nil && res.ContentLength != 0 {
-		if derr := json.Decode(res.Body, data); derr != nil {
-			return derr
-		}
-	}
-	return nil
-}
-
-// EncodeRequest encodes http request.
-func EncodeRequest(req *http.Request, data any, contentTypes ...string) error {
-	for _, ct := range contentTypes {
-		req.Header.Add(rest.ContentType, ct)
-	}
-
-	buf := new(bytes.Buffer)
-	if err := json.Encode(buf, data); err != nil {
-		return err
-	}
-
-	req.ContentLength = int64(buf.Len())
-	req.Body = io.NopCloser(buf)
-
-	return nil
+	_, err := w.Write(body)
+	return err
 }
 
 // DecodeRequest decodes http request body.
@@ -120,9 +93,25 @@ func Handler(
 	}
 	res, err := logic()
 	if err != nil {
-		return http.StatusInternalServerError, err
+		code = httpStatusFromError(err)
+		if code == http.StatusServiceUnavailable {
+			// The router sends no error body for 503 because 503 means the response
+			// has already been written, so write the RFC 7807 error here.
+			if eerr := ErrorHandler(w, r, err.Error(), code, err); eerr != nil {
+				log.Error(eerr)
+			}
+		}
+		return code, err
 	}
-	err = EncodeResponse(w, res, http.StatusOK,
+	var buf bytes.Buffer
+	err = json.Encode(&buf, res)
+	if err != nil {
+		// Nothing has been written yet and the router sends no error body for 503,
+		// so send the status here instead of leaving the client an implicit 200.
+		w.WriteHeader(http.StatusServiceUnavailable)
+		return http.StatusServiceUnavailable, err
+	}
+	err = writeResponse(w, buf.Bytes(), http.StatusOK,
 		rest.ApplicationJSON, rest.CharsetUTF8)
 	if err != nil {
 		return http.StatusServiceUnavailable, err
@@ -144,7 +133,7 @@ func ErrorHandler(w http.ResponseWriter, r *http.Request, msg string, code int, 
 	}
 	body := make(map[string]any)
 	err = json.Decode(r.Body, &body)
-	if err != nil {
+	if err != nil && !isConsumedBody(err) {
 		log.Error(err)
 	}
 	data.Detail, err = dump.Request(nil, body, r)
@@ -163,24 +152,42 @@ func ErrorHandler(w http.ResponseWriter, r *http.Request, msg string, code int, 
 	return err
 }
 
-// Request sends http json request.
-func Request(ctx context.Context, method, url string, payload, data any) error {
-	req, err := http.NewRequestWithContext(ctx, method, url, nil)
-	if err != nil {
-		return err
+// httpStatusFromError returns the HTTP status for the gRPC code carried by err,
+// using the grpc-gateway mapping. Errors without a known gRPC code map to 500.
+func httpStatusFromError(err error) int {
+	st, _ := status.FromError(err)
+	if st == nil {
+		return http.StatusInternalServerError
 	}
-
-	if payload != nil && method != http.MethodGet {
-		if err := EncodeRequest(req, payload, rest.ApplicationJSON, rest.CharsetUTF8); err != nil {
-			return err
-		}
+	//nolint:exhaustive // only codes with a dedicated grpc-gateway HTTP mapping are listed; every other code intentionally falls through to 500
+	switch st.Code() {
+	case codes.InvalidArgument, codes.FailedPrecondition, codes.OutOfRange:
+		return http.StatusBadRequest
+	case codes.Unauthenticated:
+		return http.StatusUnauthorized
+	case codes.PermissionDenied:
+		return http.StatusForbidden
+	case codes.NotFound:
+		return http.StatusNotFound
+	case codes.AlreadyExists, codes.Aborted:
+		return http.StatusConflict
+	case codes.ResourceExhausted:
+		return http.StatusTooManyRequests
+	case codes.Canceled:
+		return statusClientClosedRequest
+	case codes.Unimplemented:
+		return http.StatusNotImplemented
+	case codes.Unavailable:
+		return http.StatusServiceUnavailable
+	case codes.DeadlineExceeded:
+		return http.StatusGatewayTimeout
+	default:
+		return http.StatusInternalServerError
 	}
+}
 
-	// TODO replace vald original client.
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return err
-	}
-
-	return DecodeResponse(resp, data)
+// isConsumedBody reports whether err comes from decoding a request body that has already been
+// read to the end or closed (e.g. by DecodeRequest in Handler), which is not a decode failure.
+func isConsumedBody(err error) bool {
+	return errors.Is(err, io.EOF) || errors.Is(err, http.ErrBodyReadAfterClose)
 }

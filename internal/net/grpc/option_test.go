@@ -14,7 +14,112 @@
 
 package grpc
 
-import _ "github.com/vdaas/vald/internal/net/grpc/logger"
+import (
+	"testing"
+
+	_ "github.com/vdaas/vald/internal/net/grpc/logger"
+	"google.golang.org/grpc"
+)
+
+func TestWithCallOptions_doesNotRetainCallerSlice(t *testing.T) {
+	t.Parallel()
+	first := grpc.MaxCallSendMsgSize(1)
+	sentinel := grpc.MaxCallSendMsgSize(42)
+	replaced := grpc.MaxCallSendMsgSize(7)
+	tests := []struct {
+		name string
+		// capacity of the caller's slice, which always has len 1
+		capacity int
+		// existing is applied before WithCallOptions to exercise the append path.
+		existing bool
+	}{
+		{name: "caller slice has spare capacity", capacity: 4},
+		{name: "caller slice has no spare capacity", capacity: 1},
+		{name: "g.copts is already populated", capacity: 4, existing: true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			backing := make([]grpc.CallOption, 4)
+			backing[0], backing[1] = first, sentinel
+			opts := backing[:1:test.capacity]
+
+			g := new(gRPCClient)
+			var want []grpc.CallOption
+			if test.existing {
+				WithMaxRecvMsgSize(10)(g)
+				want = append(want, g.copts...)
+			}
+			WithCallOptions(opts...)(g)
+			WithWaitForReady(true)(g)
+			want = append(want, first, grpc.WaitForReady(true))
+
+			if backing[1] != sentinel {
+				t.Errorf("caller backing array was overwritten: got %#v, want %#v", backing[1], sentinel)
+			}
+			opts[0] = replaced
+			if len(g.copts) != len(want) {
+				t.Fatalf("len(g.copts) = %d, want %d", len(g.copts), len(want))
+			}
+			for i := range want {
+				if g.copts[i] != want[i] {
+					t.Errorf("g.copts[%d] = %#v, want %#v", i, g.copts[i], want[i])
+				}
+			}
+		})
+	}
+}
+
+func TestWithDialOptions_doesNotRetainCallerSlice(t *testing.T) {
+	t.Parallel()
+	first := grpc.WithUserAgent("first")
+	sentinel := grpc.WithUserAgent("sentinel")
+	replaced := grpc.WithUserAgent("replaced")
+	tests := []struct {
+		name string
+		// capacity of the caller's slice, which always has len 1
+		capacity int
+		// existing is applied before WithDialOptions to exercise the append path.
+		existing bool
+	}{
+		{name: "caller slice has spare capacity", capacity: 4},
+		{name: "caller slice has no spare capacity", capacity: 1},
+		{name: "g.dopts is already populated", capacity: 4, existing: true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			backing := make([]grpc.DialOption, 4)
+			backing[0], backing[1] = first, sentinel
+			opts := backing[:1:test.capacity]
+
+			g := new(gRPCClient)
+			var want []grpc.DialOption
+			if test.existing {
+				WithAuthority("existing")(g)
+				want = append(want, g.dopts...)
+			}
+			WithDialOptions(opts...)(g)
+			WithDisableRetry(true)(g)
+			want = append(want, first)
+
+			if backing[1] != sentinel {
+				t.Errorf("caller backing array was overwritten: got %#v, want %#v", backing[1], sentinel)
+			}
+			opts[0] = replaced
+			// the trailing element is the option appended by WithDisableRetry,
+			// whose value is a fresh pointer and so cannot be compared.
+			if len(g.dopts) != len(want)+1 {
+				t.Fatalf("len(g.dopts) = %d, want %d", len(g.dopts), len(want)+1)
+			}
+			for i := range want {
+				if g.dopts[i] != want[i] {
+					t.Errorf("g.dopts[%d] = %#v, want %#v", i, g.dopts[i], want[i])
+				}
+			}
+		})
+	}
+}
 
 // NOT IMPLEMENTED BELOW
 //

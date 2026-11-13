@@ -212,6 +212,30 @@ func TestScale_Merge(t *testing.T) {
 	}
 }
 
+func TestScale_Merge_RingCollision(t *testing.T) {
+	t.Parallel()
+	// capacity 2: window 0 and window 2 share ring slot 0.
+	dst, err := newScale("test", uint64(time.Second), 2, 0, TimeScale, nil, nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	src, err := newScale("test", uint64(time.Second), 2, 0, TimeScale, nil, nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	dst.Record(t.Context(), 0, &RequestResult{EndedAt: time.Unix(0, 0)})
+	src.Record(t.Context(), 0, &RequestResult{EndedAt: time.Unix(2, 0)})
+	src.Record(t.Context(), 0, &RequestResult{EndedAt: time.Unix(2, 0)})
+
+	if err := dst.Merge(src); err != nil {
+		t.Fatal(err)
+	}
+	// The newer window 2 replaces window 0 instead of being summed with it.
+	if got := dst.Snapshot().Slots[0].Total; got != 2 {
+		t.Errorf("slot 0 total = %d, want 2", got)
+	}
+}
+
 func TestScale_Clone(t *testing.T) {
 	if err := test.Run(t.Context(), t, func(tt *testing.T, rr []*RequestResult) (*ScaleSnapshot, error) {
 		s1, err := newScale("test", uint64(time.Second), 2, 0, TimeScale, nil, nil, nil)

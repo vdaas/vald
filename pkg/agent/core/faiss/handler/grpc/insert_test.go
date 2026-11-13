@@ -13,6 +13,32 @@
 // limitations under the License.
 package grpc
 
+import (
+	"context"
+	"testing"
+
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
+)
+
+// Test_server_Insert_rejectsNaNOrInf checks that Insert rejects NaN / +-Inf vectors
+// up front with InvalidArgument and never enqueues them.
+func Test_server_Insert_rejectsNaNOrInf(t *testing.T) {
+	t.Parallel()
+	for name, b := range nanOrInfValues() {
+		vec := &payload.Object_Vector{Id: "uuid", Vector: []float32{0, b}}
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			f := &stubFaissWrite{dim: 2}
+			s := &server{faiss: f}
+			_, err := s.Insert(context.Background(), &payload.Insert_Request{Vector: vec})
+			wantInvalidArgument(t, err)
+			if f.called {
+				t.Error("vector must not reach the service")
+			}
+		})
+	}
+}
+
 // NOT IMPLEMENTED BELOW
 //
 // func Test_server_Insert(t *testing.T) {

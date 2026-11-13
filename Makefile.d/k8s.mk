@@ -85,7 +85,7 @@ k8s/manifest/operator/helm/update: \
 	k8s/manifest/operator/helm/clean
 	tmpdir=$$(mktemp -d); \
 	trap 'rm -rf "$$tmpdir"' EXIT; \
-	set -e; \
+	$(SHELL_STRICT); \
 	helm template \
 	--output-dir "$$tmpdir" \
 	charts/operator/helm; \
@@ -105,7 +105,7 @@ k8s/manifest/operator/vald/update: \
 	k8s/manifest/operator/vald/clean
 	tmpdir=$$(mktemp -d); \
 	trap 'rm -rf "$$tmpdir"' EXIT; \
-	set -e; \
+	$(SHELL_STRICT); \
 	helm template \
 	--output-dir "$$tmpdir" \
 	charts/operator/vald; \
@@ -130,7 +130,7 @@ k8s/manifest/operator/benchmark/update: \
 	k8s/manifest/operator/benchmark/clean
 	tmpdir=$$(mktemp -d); \
 	trap 'rm -rf "$$tmpdir"' EXIT; \
-	set -e; \
+	$(SHELL_STRICT); \
 	helm template \
 	--output-dir "$$tmpdir" \
 	charts/operator/benchmark; \
@@ -203,7 +203,7 @@ k8s/vald/deploy: k8s/vald/manifests
 ## delete vald sample cluster from k8s
 k8s/vald/delete: k8s/vald/manifests
 	@echo "gateway/mirror index/operator index/job/readreplica/rotate index/job/save index/job/creation index/job/correction gateway gateway/lb manager/index discoverer agent/readreplica agent/faiss agent/ngt agent" | tr ' ' '\n' | \
-	xargs -I {} -P $(CORES) bash -c 'kubectl delete -f $(TEMP_DIR)/vald/templates/{} || true'
+	$(XARGS) $(SHELL_STRICT_EXEC) 'kubectl delete -f $(TEMP_DIR)/vald/templates/{} || true'
 	kubectl delete -f $(TEMP_DIR)/vald/crds || true
 
 .PHONY: k8s/multi/vald/deploy
@@ -224,9 +224,9 @@ k8s/multi/vald/deploy:
 	-f $(ROOTDIR)/charts/vald/values/multi-vald/dev-vald-with-mirror.yaml \
 	-f $(ROOTDIR)/charts/vald/values/multi-vald/dev-vald-03.yaml \
 	-n $(MIRROR03_NAMESPACE)
-	kubectl wait --for=condition=ready pod -l app=$(MIRROR_APP_NAME) --timeout=120s -n $(MIRROR01_NAMESPACE)
-	kubectl wait --for=condition=ready pod -l app=$(MIRROR_APP_NAME) --timeout=120s -n $(MIRROR02_NAMESPACE)
-	kubectl wait --for=condition=ready pod -l app=$(MIRROR_APP_NAME) --timeout=120s -n $(MIRROR03_NAMESPACE)
+	kubectl wait $(KUBECTL_WAIT_READY) pod -l app=$(MIRROR_APP_NAME) --timeout=$(K8S_WAIT_TIMEOUT_MID) -n $(MIRROR01_NAMESPACE)
+	kubectl wait $(KUBECTL_WAIT_READY) pod -l app=$(MIRROR_APP_NAME) --timeout=$(K8S_WAIT_TIMEOUT_MID) -n $(MIRROR02_NAMESPACE)
+	kubectl wait $(KUBECTL_WAIT_READY) pod -l app=$(MIRROR_APP_NAME) --timeout=$(K8S_WAIT_TIMEOUT_MID) -n $(MIRROR03_NAMESPACE)
 	kubectl apply -f $(ROOTDIR)/charts/vald/values/multi-vald/mirror-target.yaml -n $(MIRROR03_NAMESPACE)
 
 .PHONY: k8s/multi/vald/delete
@@ -242,7 +242,7 @@ k8s/multi/vald/delete:
 k8s/operator/helm/deploy:
 	tmpdir=$$(mktemp -d); \
 	trap 'rm -rf "$$tmpdir"' EXIT; \
-	set -e; \
+	$(SHELL_STRICT); \
 	helm template \
 	--output-dir "$$tmpdir" \
 	--set image.tag=$(VERSION) \
@@ -253,21 +253,21 @@ k8s/operator/helm/deploy:
 	kubectl create -f "$$tmpdir"/*/crds/valdhelmoperatorrelease.yaml; \
 	kubectl apply -f "$$tmpdir"/*/templates; \
 	sleep 2; \
-	kubectl wait --for=condition=ready pod -l name=vald-helm-operator --timeout=600s
+	kubectl wait $(KUBECTL_WAIT_READY) pod -l name=vald-helm-operator --timeout=$(K8S_WAIT_TIMEOUT)
 
 .PHONY: k8s/operator/helm/delete
 ## delete vald-helm-operator from k8s
 k8s/operator/helm/delete:
 	tmpdir=$$(mktemp -d); \
 	trap 'rm -rf "$$tmpdir"' EXIT; \
-	set -e; \
+	$(SHELL_STRICT); \
 	helm template \
 	--output-dir "$$tmpdir" \
 	--set image.tag=$(VERSION) \
 	--include-crds \
 	charts/operator/helm; \
 	kubectl delete -f "$$tmpdir"/*/templates; \
-	kubectl wait --for=delete pod -l name=vald-helm-operator --timeout=600s; \
+	kubectl wait $(KUBECTL_WAIT_DELETE) pod -l name=vald-helm-operator --timeout=$(K8S_WAIT_TIMEOUT); \
 	kubectl delete -f "$$tmpdir"/*/crds
 
 .PHONY: k8s/operator/vald/deploy
@@ -277,7 +277,7 @@ k8s/operator/vald/deploy:
 	kubectl apply --server-side -f $(ROOTDIR)/charts/operator/helm/crds/valdrelease.yaml
 	kubectl apply -f $(ROOTDIR)/k8s/operator/vald
 	sleep 2
-	kubectl wait --for=condition=Available deployment/vald-operator --timeout=600s
+	kubectl wait $(KUBECTL_WAIT_AVAILABLE) deployment/vald-operator --timeout=$(K8S_WAIT_TIMEOUT)
 
 .PHONY: k8s/operator/vald/delete
 ## delete vald-operator from k8s
@@ -306,12 +306,12 @@ k8s/vald-readreplica/deploy: k8s/vald/deploy
 	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway || true
 	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/lb || true
 	kubectl get pods
-	kubectl wait --for=delete pod -l app=vald-lb-gateway --timeout=600s
+	kubectl wait $(KUBECTL_WAIT_DELETE) pod -l app=vald-lb-gateway --timeout=$(K8S_WAIT_TIMEOUT)
 	kubectl apply -f $(TEMP_DIR)/vald-readreplica/templates
 	sleep 5
 	kubectl get pods
-	kubectl wait --for=condition=ready pod -l app=vald-agent --timeout=3600s
-	kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=vald-readreplica --timeout=3600s
+	kubectl wait $(KUBECTL_WAIT_READY) pod -l app=vald-agent --timeout=$(K8S_WAIT_TIMEOUT_LONG)
+	kubectl wait $(KUBECTL_WAIT_READY) pod -l app.kubernetes.io/name=vald-readreplica --timeout=$(K8S_WAIT_TIMEOUT_LONG)
 	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/lb || true
 	kubectl get pods
@@ -331,7 +331,7 @@ k8s/vald-readreplica/delete: k8s/vald/delete
 	--output-dir $(TEMP_DIR) \
 	charts/vald-readreplica
 	kubectl delete -f $(TEMP_DIR)/vald-readreplica/templates
-	kubectl wait --for=delete pod -l app.kubernetes.io/name=vald-readreplica --timeout=600s
+	kubectl wait $(KUBECTL_WAIT_DELETE) pod -l app.kubernetes.io/name=vald-readreplica --timeout=$(K8S_WAIT_TIMEOUT)
 	rm -rf $(TEMP_DIR)
 
 .PHONY: k8s/vr/deploy
@@ -355,7 +355,7 @@ k8s/vr/delete: \
 k8s/operator/benchmark/deploy:
 	tmpdir=$$(mktemp -d); \
 	trap 'rm -rf "$$tmpdir"' EXIT; \
-	set -e; \
+	$(SHELL_STRICT); \
 	helm template \
 	--output-dir "$$tmpdir" \
 	--set image.tag=${VERSION} \
@@ -366,21 +366,21 @@ k8s/operator/benchmark/deploy:
 	kubectl create -f "$$tmpdir"/*/crds/valdbenchmarkoperatorrelease.yaml; \
 	kubectl apply -f "$$tmpdir"/*/templates; \
 	sleep 2; \
-	kubectl wait --for=condition=ready pod -l name=vald-benchmark-operator --timeout=600s
+	kubectl wait $(KUBECTL_WAIT_READY) pod -l name=vald-benchmark-operator --timeout=$(K8S_WAIT_TIMEOUT)
 
 .PHONY: k8s/operator/benchmark/delete
 ## delete vald-benchmark-operator from k8s
 k8s/operator/benchmark/delete:
 	tmpdir=$$(mktemp -d); \
 	trap 'rm -rf "$$tmpdir"' EXIT; \
-	set -e; \
+	$(SHELL_STRICT); \
 	helm template \
 	--output-dir "$$tmpdir" \
 	--set image.tag=${VERSION} \
 	--include-crds \
 	charts/operator/benchmark; \
 	kubectl delete -f "$$tmpdir"/*/templates; \
-	kubectl wait --for=delete pod -l name=vald-benchmark-operator --timeout=600s; \
+	kubectl wait $(KUBECTL_WAIT_DELETE) pod -l name=vald-benchmark-operator --timeout=$(K8S_WAIT_TIMEOUT); \
 	kubectl delete -f "$$tmpdir"/*/crds
 
 .PHONY: k8s/external/cert-manager/deploy
@@ -388,10 +388,10 @@ k8s/operator/benchmark/delete:
 k8s/external/cert-manager/deploy:
 	kubectl apply -f https://github.com/jetstack/cert-manager/releases/latest/download/cert-manager.yaml
 	sleep $(K8S_SLEEP_DURATION_FOR_WAIT_COMMAND)
-	kubectl wait -n cert-manager --for=condition=ready pod -l app=cert-manager --timeout=60s
-	kubectl wait -n cert-manager --for=condition=ready pod -l app=cainjector --timeout=60s
-	kubectl wait -n cert-manager --for=condition=ready pod -l app=webhook --timeout=60s
-	kubectl wait -n cert-manager --for=condition=Available deployment --timeout=60s --all
+	kubectl wait -n cert-manager $(KUBECTL_WAIT_READY) pod -l app=cert-manager --timeout=$(K8S_WAIT_TIMEOUT_SHORT)
+	kubectl wait -n cert-manager $(KUBECTL_WAIT_READY) pod -l app=cainjector --timeout=$(K8S_WAIT_TIMEOUT_SHORT)
+	kubectl wait -n cert-manager $(KUBECTL_WAIT_READY) pod -l app=webhook --timeout=$(K8S_WAIT_TIMEOUT_SHORT)
+	kubectl wait -n cert-manager $(KUBECTL_WAIT_AVAILABLE) deployment --timeout=$(K8S_WAIT_TIMEOUT_SHORT) --all
 	sleep 20
 
 .PHONY: k8s/external/cert-manager/delete
@@ -405,10 +405,10 @@ k8s/external/minio/deploy:
 	kubectl apply -f $(ROOTDIR)/k8s/external/minio/deployment.yaml
 	kubectl apply -f $(ROOTDIR)/k8s/external/minio/svc.yaml
 	sleep $(K8S_SLEEP_DURATION_FOR_WAIT_COMMAND)
-	kubectl wait --for=condition=ready pod -l app=minio --timeout=600s
+	kubectl wait $(KUBECTL_WAIT_READY) pod -l app=minio --timeout=$(K8S_WAIT_TIMEOUT)
 	kubectl apply -f $(ROOTDIR)/k8s/external/minio/mb-job.yaml
 	sleep $(K8S_SLEEP_DURATION_FOR_WAIT_COMMAND)
-	kubectl wait --for=condition=complete job/minio-make-bucket --timeout=600s
+	kubectl wait $(KUBECTL_WAIT_COMPLETE) job/minio-make-bucket --timeout=$(K8S_WAIT_TIMEOUT)
 
 .PHONY: k8s/external/minio/delete
 ## delete minio
@@ -470,8 +470,8 @@ k8s/metrics/grafana/delete:
 k8s/metrics/jaeger/deploy:
 	helm repo add jaegertracing https://jaegertracing.github.io/helm-charts
 	helm install jaeger jaegertracing/jaeger-operator --version $(JAEGER_OPERATOR_VERSION)
-	kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=jaeger-operator --timeout=60s
-	kubectl wait --for=condition=available deployment/jaeger-jaeger-operator --timeout=60s
+	kubectl wait $(KUBECTL_WAIT_READY) pod -l app.kubernetes.io/name=jaeger-operator --timeout=$(K8S_WAIT_TIMEOUT_SHORT)
+	kubectl wait $(KUBECTL_WAIT_AVAILABLE) deployment/jaeger-jaeger-operator --timeout=$(K8S_WAIT_TIMEOUT_SHORT)
 	sleep $(JAEGER_OPERATOR_WAIT_DURATION)
 	kubectl apply -f $(ROOTDIR)/k8s/metrics/jaeger/jaeger.yaml
 
@@ -551,7 +551,7 @@ k8s/linkerd/delete:
 k8s/otel/operator/deploy:
 	helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
 	helm install ${OTEL_OPERATOR_RELEASE_NAME} open-telemetry/opentelemetry-operator --set installCRDs=true --version ${OTEL_OPERATOR_VERSION}
-	kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=opentelemetry-operator --timeout=60s
+	kubectl wait $(KUBECTL_WAIT_READY) pod -l app.kubernetes.io/name=opentelemetry-operator --timeout=$(K8S_WAIT_TIMEOUT_SHORT)
 	sleep 10
 
 .PHONY: k8s/otel/operator/delete
@@ -611,7 +611,7 @@ $(BINDIR)/telepresence:
 	mkdir -p $(BINDIR)
 	$(eval DARCH := $(subst aarch64,arm64,$(ARCH)))
 	cd $(TEMP_DIR) \
-	&& curl -fsSL "https://app.getambassador.io/download/tel2oss/releases/download/v$(TELEPRESENCE_VERSION)/telepresence-$(OS)-$(subst x86_64,amd64,$(shell echo $(DARCH) | tr '[:upper:]' '[:lower:]'))" -o $(BINDIR)/telepresence \
+	&& $(CURL) "https://app.getambassador.io/download/tel2oss/releases/download/v$(TELEPRESENCE_VERSION)/telepresence-$(OS)-$(subst x86_64,amd64,$(shell echo $(DARCH) | tr '[:upper:]' '[:lower:]'))" -o $(BINDIR)/telepresence \
 	&& chmod a+x $(BINDIR)/telepresence
 
 .PHONY: telepresence/swap/agent-ngt
@@ -646,5 +646,5 @@ kubelinter/install: $(BINDIR)/kube-linter
 $(BINDIR)/kube-linter:
 	mkdir -p $(BINDIR)
 	cd $(TEMP_DIR) \
-	&& curl -fsSL https://github.com/stackrox/kube-linter/releases/download/$(KUBELINTER_VERSION)/kube-linter-$(OS) -o $(BINDIR)/kube-linter \
+	&& $(CURL) https://github.com/stackrox/kube-linter/releases/download/$(KUBELINTER_VERSION)/kube-linter-$(OS) -o $(BINDIR)/kube-linter \
 	&& chmod a+x $(BINDIR)/kube-linter

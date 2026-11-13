@@ -201,6 +201,11 @@ func fieldCopy(
 				}
 			}
 			return fmt.Sprintf("out.%s = resource.CopyPtr(in.%s)", fn, fn)
+		case *ast.SelectorExpr: // *pkg.T (e.g. *corev1.PodSecurityContext)
+			if exprPkg(e) == "config" { // external, no DeepCopyInto -> shallow value copy
+				return fmt.Sprintf("out.%s = resource.CopyPtr(in.%s)", fn, fn)
+			}
+			return fmt.Sprintf("out.%s = resource.CopyPtrInto(in.%s)", fn, fn)
 		case *ast.MapType:
 			// free-form map (Issue 1): shallow copy of the map header for now.
 			return fmt.Sprintf("out.%s = resource.CopyPtr(in.%s) // TODO(free-form map): deep copy", fn, fn)

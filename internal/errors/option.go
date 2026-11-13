@@ -13,6 +13,26 @@
 // limitations under the License.
 package errors
 
+// combineOptionErrors merges the non-nil errors in errs into one error.
+// The message is identical to chaining Wrap(err, prev.Error()) over errs, but
+// every merged error stays reachable through Is/As via the multi-Unwrap chain
+// instead of only the last one. It returns nil when errs has no non-nil error.
+func combineOptionErrors(errs []error) (e error) {
+	for _, err := range errs {
+		switch {
+		case err == nil:
+		case e == nil:
+			e = err
+		case e.Error() != "" && e.Error() != err.Error() && !Is(err, New(e.Error())):
+			e = Errorf("%w: %w", e, err)
+		default:
+			// e is already represented in err (same behavior as Wrap).
+			e = err
+		}
+	}
+	return e
+}
+
 // ErrInvalidOption represents the invalid option error.
 type ErrInvalidOption struct {
 	err    error
@@ -26,18 +46,7 @@ func NewErrInvalidOption(name string, val any, errs ...error) error {
 			err: Errorf("invalid option, name: %s, val: %v", name, val),
 		}
 	}
-	var e error
-	for _, err := range errs {
-		if err == nil {
-			continue
-		}
-
-		if e != nil {
-			e = Wrap(err, e.Error())
-		} else {
-			e = err
-		}
-	}
+	e := combineOptionErrors(errs)
 
 	return &ErrInvalidOption{
 		err:    Wrapf(e, "invalid option, name: %s, val: %v", name, val),
@@ -72,18 +81,7 @@ func NewErrCriticalOption(name string, val any, errs ...error) error {
 		}
 	}
 
-	var e error
-	for _, err := range errs {
-		if err == nil {
-			continue
-		}
-
-		if e != nil {
-			e = Wrap(err, e.Error())
-		} else {
-			e = err
-		}
-	}
+	e := combineOptionErrors(errs)
 
 	return &ErrCriticalOption{
 		err:    Wrapf(e, "invalid critical option, name: %s, val: %v", name, val),
@@ -117,18 +115,7 @@ func NewErrIgnoredOption(name string, errs ...error) error {
 			err: Errorf("ignored option, name: %s", name),
 		}
 	}
-	var e error
-	for _, err := range errs {
-		if err == nil {
-			continue
-		}
-
-		if e != nil {
-			e = Wrap(err, e.Error())
-		} else {
-			e = err
-		}
-	}
+	e := combineOptionErrors(errs)
 
 	return &ErrIgnoredOption{
 		err:    Wrapf(e, "ignored option, name: %s", name),

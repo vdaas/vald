@@ -325,7 +325,10 @@ func (se *shardedExemplar) DetailedSnapshot() (*ExemplarDetails, error) {
 	rate := se.shards[0].samplingRate
 	merged := new(exemplar)
 	// Single shard, preserve config
-	merged.Init(WithExemplarCapacity(k), WithExemplarSamplingRate(int(rate)))
+	//nolint:gosec // rate was set by Init from a positive int, so it round-trips to int without overflow
+	if err := merged.Init(WithExemplarCapacity(k), WithExemplarSamplingRate(int(rate))); err != nil {
+		return nil, err
+	}
 
 	for _, shard := range se.shards {
 		shard.mu.Lock()
@@ -347,7 +350,7 @@ func (se *shardedExemplar) DetailedSnapshot() (*ExemplarDetails, error) {
 		}
 
 		merged.avgSamples = mergeReservoir(merged.avgSamples, avg, merged.avgCount, avgCount, k)
-		merged.avgCount += merged.avgCount
+		merged.avgCount += avgCount
 
 		merged.failureSamples = mergeReservoir(merged.failureSamples, failures, merged.failureCount, failCount, k)
 		merged.failureCount += failCount

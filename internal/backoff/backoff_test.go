@@ -16,6 +16,7 @@ package backoff
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"testing"
 	"time"
@@ -24,15 +25,64 @@ import (
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/log/logger"
+	"github.com/vdaas/vald/internal/log/nop"
 	"github.com/vdaas/vald/internal/os"
+	"github.com/vdaas/vald/internal/strings"
+	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 const str = "success"
 
+// recordingLogger discards everything except Errord/Debugd messages, which it
+// records so a test can count them by a unique backoff name.
+type recordingLogger struct {
+	logger.Interface
+	errors []string
+	debugs []string
+	mu     sync.Mutex
+}
+
+//nolint:gochecknoglobals // TestMain installs this as the process-wide log.Init logger, so tests must share the one instance to read what Do logged
+var recLog = &recordingLogger{Interface: nop.New()}
+
+func (r *recordingLogger) Errord(msg string, _ ...any) {
+	r.mu.Lock()
+	r.errors = append(r.errors, msg)
+	r.mu.Unlock()
+}
+
+func (r *recordingLogger) Debugd(msg string, _ ...any) {
+	r.mu.Lock()
+	r.debugs = append(r.debugs, msg)
+	r.mu.Unlock()
+}
+
+// count returns how many Errord and Debugd messages mention name.
+func (r *recordingLogger) count(name string) (errs, debugs int) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	for _, m := range r.errors {
+		if strings.Contains(m, "for: "+name+",") {
+			errs++
+		}
+	}
+	for _, m := range r.debugs {
+		if strings.Contains(m, "for: "+name+",") {
+			debugs++
+		}
+	}
+	return errs, debugs
+}
+
 func TestMain(m *testing.M) {
-	log.Init(log.WithLoggerType(logger.NOP.String()))
-	info.Init("backoff test")
+	// recLog discards like the NOP logger but records Error/Debug details
+	// messages so tests can assert the level Do logs at.
+	log.Init(log.WithLogger(recLog))
+	if err := info.Init("backoff test"); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
 	os.Exit(m.Run())
 }
 
@@ -560,6 +610,33 @@ func Test_backoff_Do(t *testing.T) {
 				},
 			}
 		}(),
+		func() test {
+			ctx := t.Context()
+			err := errors.New("errors is occurred")
+			return test{
+				name: "return response and error without waiting after the final retry",
+				args: args{
+					ctx: ctx,
+					f: func(context.Context) (any, bool, error) {
+						return str, true, err
+					},
+				},
+				fields: fields{
+					backoffFactor:         1.1,
+					initialDuration:       float64(time.Hour),
+					jittedInitialDuration: float64(time.Hour),
+					durationLimit:         float64(time.Hour),
+					maxDuration:           float64(time.Hour),
+					maxRetryCount:         1,
+					// a trailing wait would run into this limit and return (nil, ErrBackoffTimeout) instead of (str, err)
+					backoffTimeLimit: 2 * time.Second,
+				},
+				want: want{
+					wantRes: str,
+					err:     err,
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
@@ -592,6 +669,64 @@ func Test_backoff_Do(t *testing.T) {
 			gotRes, err := b.Do(test.args.ctx, test.args.f)
 			if err := checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+// A quiet context demotes Do's per-attempt retryable error log from Error to
+// Debug; an unmarked context keeps logging each attempt at Error.
+func Test_backoff_Do_quietErrorLog(t *testing.T) {
+	t.Parallel()
+	const attempts = 3
+	tests := []struct {
+		name       string
+		wantErrs   int
+		wantDebugs int
+		quiet      bool
+	}{
+		{
+			name:     "unmarked context logs each retryable error at Error",
+			quiet:    false,
+			wantErrs: attempts,
+		},
+		{
+			name:       "quiet context logs each retryable error at Debug",
+			quiet:      true,
+			wantDebugs: attempts,
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			name := "Test_backoff_Do_quietErrorLog/" + tc.name
+			ctx := WithBackoffName(t.Context(), name)
+			if tc.quiet {
+				ctx = WithQuietErrorLog(ctx)
+			}
+			b := New(
+				WithInitialDuration("1ms"),
+				WithMaximumDuration("2ms"),
+				WithJitterLimit("1ms"),
+				WithBackOffTimeLimit("1m"),
+				WithRetryCount(attempts),
+				WithEnableErrorLog(),
+			)
+			t.Cleanup(b.Close)
+			retryErr := errors.New("transient failure")
+			// recLog is process-wide and keeps its records, so a repeated run (-count, -shuffle)
+			// starts from the totals of the earlier ones; count what this run adds.
+			beforeErrs, beforeDebugs := recLog.count(name)
+			_, err := b.Do(ctx, func(context.Context) (any, bool, error) {
+				return nil, true, retryErr
+			})
+			if !errors.Is(err, retryErr) {
+				t.Fatalf("Do() error = %v, want %v", err, retryErr)
+			}
+			gotErrs, gotDebugs := recLog.count(name)
+			gotErrs, gotDebugs = gotErrs-beforeErrs, gotDebugs-beforeDebugs
+			if gotErrs != tc.wantErrs || gotDebugs != tc.wantDebugs {
+				t.Errorf("Errord/Debugd count = %d/%d, want %d/%d", gotErrs, gotDebugs, tc.wantErrs, tc.wantDebugs)
 			}
 		})
 	}

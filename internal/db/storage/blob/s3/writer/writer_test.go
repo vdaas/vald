@@ -18,6 +18,7 @@ import (
 	"context"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -584,3 +585,190 @@ func Test_writer_upload(t *testing.T) {
 }
 
 // NOT IMPLEMENTED BELOW
+
+// testTimeout bounds every blocking operation in the regression tests below.
+const testTimeout = 5 * time.Second
+
+// newUploadWriter returns a writer whose uploader is replaced by fn.
+func newUploadWriter(
+	fn func(ctx aws.Context, in *s3manager.UploadInput) (*s3manager.UploadOutput, error),
+) *writer {
+	return &writer{
+		eg: errgroup.Get(),
+		s3manager: &MockS3Manager{
+			NewUploaderWithClientFunc: func(s3iface.S3API, ...func(*s3manager.Uploader)) s3manager.UploadClient {
+				return &MockUploadClient{
+					UploadWithContextFunc: func(ctx aws.Context, in *s3manager.UploadInput, _ ...func(*s3manager.Uploader)) (*s3manager.UploadOutput, error) {
+						return fn(ctx, in)
+					},
+				}
+			},
+		},
+	}
+}
+
+// resultWithin runs fn in its own goroutine and fails the test if it does not return within testTimeout.
+func resultWithin(t *testing.T, fn func() error) error {
+	t.Helper()
+	ch := make(chan error, 1)
+	go func() { ch <- fn() }()
+	select {
+	case err := <-ch:
+		return err
+	case <-time.After(testTimeout):
+		t.Fatal("timed out")
+		return nil
+	}
+}
+
+func Test_writer_Close_returnsUploadError(t *testing.T) {
+	t.Parallel()
+	errUpload := errors.New("upload failed")
+	w := newUploadWriter(func(_ aws.Context, in *s3manager.UploadInput) (*s3manager.UploadOutput, error) {
+		if _, err := io.Copy(io.Discard, in.Body); err != nil {
+			return nil, err
+		}
+		return nil, errUpload
+	})
+	if err := w.Open(t.Context(), "key"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := w.Write([]byte("data")); err != nil {
+		t.Fatal(err)
+	}
+	if err := resultWithin(t, w.Close); !errors.Is(err, errUpload) {
+		t.Errorf("Close() = %v, want %v", err, errUpload)
+	}
+}
+
+func Test_writer_Close_waitsForUpload(t *testing.T) {
+	t.Parallel()
+	release := make(chan struct{})
+	var once sync.Once
+	releaseUpload := func() { once.Do(func() { close(release) }) }
+	defer releaseUpload()
+	w := newUploadWriter(func(ctx aws.Context, in *s3manager.UploadInput) (*s3manager.UploadOutput, error) {
+		if _, err := io.Copy(io.Discard, in.Body); err != nil {
+			return nil, err
+		}
+		select {
+		case <-release:
+			return &s3manager.UploadOutput{}, nil
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		}
+	})
+	ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
+	defer cancel()
+	if err := w.Open(ctx, "key"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := w.Write([]byte("data")); err != nil {
+		t.Fatal(err)
+	}
+	done := make(chan error, 1)
+	go func() { done <- w.Close() }()
+
+	// The upload is still running, so Close must not have returned yet.
+	select {
+	case err := <-done:
+		t.Fatalf("Close returned before the upload finished: %v", err)
+	case <-time.After(50 * time.Millisecond):
+	}
+
+	releaseUpload()
+	select {
+	case err := <-done:
+		if err != nil {
+			t.Errorf("Close() = %v, want nil", err)
+		}
+	case <-time.After(testTimeout):
+		t.Fatal("Close did not return after the upload finished")
+	}
+}
+
+func Test_writer_Write_returnsUploadError(t *testing.T) {
+	t.Parallel()
+	errUpload := errors.New("upload failed")
+	w := newUploadWriter(func(aws.Context, *s3manager.UploadInput) (*s3manager.UploadOutput, error) {
+		return nil, errUpload
+	})
+	if err := w.Open(t.Context(), "key"); err != nil {
+		t.Fatal(err)
+	}
+	// io.Pipe is unbuffered: Write only returns once the reader is closed, which must carry the upload error.
+	err := resultWithin(t, func() error {
+		_, err := w.Write([]byte("data"))
+		return err
+	})
+	if !errors.Is(err, errUpload) {
+		t.Errorf("Write() = %v, want %v", err, errUpload)
+	}
+	if err := resultWithin(t, w.Close); !errors.Is(err, errUpload) {
+		t.Errorf("Close() = %v, want %v", err, errUpload)
+	}
+}
+
+func Test_writer_Open_abortsUnclosedStream(t *testing.T) {
+	t.Parallel()
+	firstDone := make(chan struct{})
+	w := newUploadWriter(func(_ aws.Context, in *s3manager.UploadInput) (*s3manager.UploadOutput, error) {
+		if *in.Key == "first" {
+			defer close(firstDone)
+		}
+		if _, err := io.Copy(io.Discard, in.Body); err != nil {
+			return nil, err
+		}
+		return &s3manager.UploadOutput{}, nil
+	})
+	if err := w.Open(t.Context(), "first"); err != nil {
+		t.Fatal(err)
+	}
+	if err := resultWithin(t, func() error { return w.Open(t.Context(), "second") }); err != nil {
+		t.Fatal(err)
+	}
+	// Open waits for the aborted stream, so its goroutine must already be gone.
+	select {
+	case <-firstDone:
+	default:
+		t.Error("the first upload goroutine was leaked by the second Open")
+	}
+	if _, err := w.Write([]byte("data")); err != nil {
+		t.Fatal(err)
+	}
+	if err := resultWithin(t, w.Close); err != nil {
+		t.Errorf("Close() = %v, want nil", err)
+	}
+}
+
+// Test_writer_Open_uploadErrorOnlyFromClose pins that a failed upload is
+// reported by Close only and not also returned to the errgroup. In the sidecar
+// that is the process-wide group: every failed (and later retried) backup was
+// recorded there until shutdown, cancelled the daemon context and failed the
+// shutdown even after a successful final backup.
+func Test_writer_Open_uploadErrorOnlyFromClose(t *testing.T) {
+	t.Parallel()
+	errUpload := errors.New("upload failed")
+	w := newUploadWriter(func(_ aws.Context, in *s3manager.UploadInput) (*s3manager.UploadOutput, error) {
+		if _, err := io.Copy(io.Discard, in.Body); err != nil {
+			return nil, err
+		}
+		return nil, errUpload
+	})
+	ctx, cancel := context.WithTimeout(t.Context(), testTimeout)
+	defer cancel()
+	eg, _ := errgroup.New(ctx)
+	w.eg = eg
+	if err := w.Open(ctx, "key"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := w.Write([]byte("data")); err != nil {
+		t.Fatal(err)
+	}
+	if err := resultWithin(t, w.Close); !errors.Is(err, errUpload) {
+		t.Errorf("Close() = %v, want %v", err, errUpload)
+	}
+	if err := resultWithin(t, eg.Wait); err != nil {
+		t.Errorf("eg.Wait() = %v, want nil: the upload error belongs to Close", err)
+	}
+}

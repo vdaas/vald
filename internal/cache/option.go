@@ -66,14 +66,15 @@ func WithExpireDuration[V any](dur string) Option[V] {
 	}
 }
 
-// WithExpireCheckDuration returns Option after set expireCheckDur when dur is correct param.
+// WithExpireCheckDuration returns Option after set expireCheckDur when dur is a valid positive duration; empty, invalid or non-positive values keep the
+// default.
 func WithExpireCheckDuration[V any](dur string) Option[V] {
 	return func(c *cache[V]) {
 		if len(dur) == 0 {
 			return
 		}
 		d, err := timeutil.Parse(dur)
-		if err != nil {
+		if err != nil || d <= 0 {
 			return
 		}
 		c.expireCheckDur = d

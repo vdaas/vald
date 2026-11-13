@@ -64,7 +64,9 @@ type SocketOption struct {
 	ReuseAddr bool `json:"reuse_addr,omitempty" yaml:"reuse_addr"`
 	// TCPFastOpen enables TCP_FASTOPEN.
 	TCPFastOpen bool `json:"tcp_fast_open,omitempty" yaml:"tcp_fast_open"`
-	// TCPNoDelay enables TCP_NODELAY.
+	// TCPNoDelay is kept so existing configuration still loads, but it has no effect: where the
+	// platform defines TCP_NODELAY it is set on every TCP socket unless TCPCork is set (see
+	// control.setsockopts).
 	TCPNoDelay bool `json:"tcp_no_delay,omitempty" yaml:"tcp_no_delay"`
 	// TCPCork enables TCP_CORK.
 	TCPCork bool `json:"tcp_cork,omitempty" yaml:"tcp_cork"`

@@ -60,18 +60,22 @@ version/k8s:
 	@echo $(KUBECTL_VERSION)
 
 .PHONY: version/kind
+## print kind version
 version/kind:
 	@echo $(KIND_VERSION)
 
 .PHONY: version/helm
+## print helm version
 version/helm:
 	@echo $(HELM_VERSION)
 
 .PHONY: version/yq
+## print yq version
 version/yq:
 	@echo $(YQ_VERSION)
 
 .PHONY: version/telepresence
+## print telepresence version
 version/telepresence:
 	@echo $(TELEPRESENCE_VERSION)
 

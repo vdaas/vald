@@ -13,6 +13,105 @@
 // limitations under the License.
 package grpc
 
+import (
+	"context"
+	"testing"
+	"time"
+
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/net/grpc/codes"
+	"github.com/vdaas/vald/internal/net/grpc/status"
+)
+
+// Test_server_Search_NaNOrInf checks that the core rejection is mapped to InvalidArgument.
+func Test_server_Search_NaNOrInf(t *testing.T) {
+	t.Parallel()
+	vec := []float32{0, 1}
+	s := &server{faiss: &stubFaiss{err: errors.ErrNaNOrInfVector, dim: len(vec)}}
+	_, err := s.Search(context.Background(), &payload.Search_Request{Vector: vec})
+	wantInvalidArgument(t, err)
+}
+
+// Test_server_Search_rejectsNaNOrInfUpFront checks that a NaN / +-Inf query is rejected with
+// InvalidArgument before it reaches the core, which would answer Aborted while indexing.
+func Test_server_Search_rejectsNaNOrInfUpFront(t *testing.T) {
+	t.Parallel()
+	for name, b := range nanOrInfValues() {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			// the stub core would answer Aborted, as the real one does while creating indices.
+			s := &server{faiss: &stubFaiss{err: errors.ErrCreateIndexingIsInProgress, dim: 2}}
+			_, err := s.Search(context.Background(), &payload.Search_Request{Vector: []float32{0, b}})
+			wantInvalidArgument(t, err)
+		})
+	}
+}
+
+// Test_server_Search_concurrentCoreError calls Search concurrently with a faiss core error.
+// The errors.As target used to be a package-level variable, which is a data race under -race.
+func Test_server_Search_concurrentCoreError(t *testing.T) {
+	t.Parallel()
+
+	const callers = 32
+	tests := []struct {
+		err     error
+		name    string
+		wantMsg string
+	}{
+		// the core returns FaissError by value (errors.NewFaissError), which the As target must match.
+		{
+			name:    "faiss core error takes the core error branch",
+			err:     errors.NewFaissError("boom"),
+			wantMsg: "Search API failed to process search request due to faiss core process returned error",
+		},
+		{
+			name:    "other error takes the default branch",
+			err:     errors.New("boom"),
+			wantMsg: "Search API failed to process search request",
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			vec := []float32{0, 1}
+			s := &server{faiss: &stubFaiss{err: test.err, dim: len(vec)}}
+			req := &payload.Search_Request{Vector: vec}
+
+			start := make(chan struct{})
+			errs := make(chan error, callers)
+			for range callers {
+				go func() {
+					<-start
+					_, err := s.Search(context.Background(), req)
+					errs <- err
+				}()
+			}
+			close(start)
+
+			timeout := time.After(10 * time.Second)
+			for range callers {
+				select {
+				case err := <-errs:
+					st, ok := status.FromError(err)
+					if !ok {
+						t.Errorf("got non-status error: %v", err)
+						continue
+					}
+					if st.Code() != codes.Internal {
+						t.Errorf("code = %v, want %v", st.Code(), codes.Internal)
+					}
+					if st.Message() != test.wantMsg {
+						t.Errorf("message = %q, want %q", st.Message(), test.wantMsg)
+					}
+				case <-timeout:
+					t.Fatal("timed out waiting for Search callers")
+				}
+			}
+		})
+	}
+}
+
 // NOT IMPLEMENTED BELOW
 //
 // func Test_server_Search(t *testing.T) {

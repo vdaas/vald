@@ -289,6 +289,50 @@ func TestNew(t *testing.T) {
 	}
 }
 
+func TestNew_readerMaxChunkSize(t *testing.T) {
+	t.Parallel()
+	const readerDefault = 512 * 1024 * 1024
+	tests := []struct {
+		name string
+		size string
+		want int64
+	}{
+		{name: "empty keeps reader default", size: "", want: readerDefault},
+		{name: "zero keeps reader default", size: "0", want: readerDefault},
+		{name: "below minimum part size keeps reader default", size: "1kb", want: readerDefault},
+		{name: "valid size is applied", size: "64mb", want: 64 * 1024 * 1024},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			sess, err := session.NewSession()
+			if err != nil {
+				t.Fatalf("session.NewSession() error = %v", err)
+			}
+			b, err := New(
+				WithSession(sess),
+				WithBucket("bucket"),
+				WithMaxChunkSize(tc.size),
+				WithWriter(new(writer.MockWriter)),
+			)
+			if err != nil {
+				t.Fatalf("New() error = %v", err)
+			}
+			c, ok := b.(*client)
+			if !ok {
+				t.Fatalf("New() returned %T, want *client", b)
+			}
+			rv := reflect.ValueOf(c.reader)
+			if rv.Kind() != reflect.Pointer || rv.IsNil() {
+				t.Fatalf("reader = %T, want non-nil pointer", c.reader)
+			}
+			if got := rv.Elem().FieldByName("maxChunkSize").Int(); got != tc.want {
+				t.Errorf("reader maxChunkSize = %d, want %d", got, tc.want)
+			}
+		})
+	}
+}
+
 func Test_client_Open(t *testing.T) {
 	type args struct {
 		ctx context.Context
@@ -464,10 +508,11 @@ func Test_client_Reader(t *testing.T) {
 		func() test {
 			opened := false
 
+			rc := new(reader.MockReadCloser)
 			r := &reader.MockReader{
-				OpenFunc: func(ctx context.Context, key string) error {
+				OpenFunc: func(ctx context.Context, key string) (io.ReadCloser, error) {
 					opened = true
-					return nil
+					return rc, nil
 				},
 			}
 
@@ -481,7 +526,7 @@ func Test_client_Reader(t *testing.T) {
 					reader: r,
 				},
 				want: want{
-					want: r,
+					want: rc,
 					err:  nil,
 				},
 				checkFunc: func(w want, g io.ReadCloser, gerr error) error {
@@ -502,9 +547,9 @@ func Test_client_Reader(t *testing.T) {
 			err := errors.New("err")
 			opened := false
 			r := &reader.MockReader{
-				OpenFunc: func(ctx context.Context, key string) error {
+				OpenFunc: func(ctx context.Context, key string) (io.ReadCloser, error) {
 					opened = true
-					return err
+					return nil, err
 				},
 			}
 			return test{

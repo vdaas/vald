@@ -51,6 +51,8 @@ data:
       agent_namespace: {{ $gateway.gateway_config.agent_namespace | quote }}
       node_name: {{ $gateway.gateway_config.node_name | quote }}
       index_replica: {{ $gateway.gateway_config.index_replica }}
+      multi_operation_concurrency: {{ $gateway.gateway_config.multi_operation_concurrency }}
+      search_quorum_grace: {{ default "" $gateway.gateway_config.search_quorum_grace | quote }}
       read_replica_replicas: {{ $readreplica.minReplicas }}
       discoverer:
         duration: {{ $gateway.gateway_config.discoverer.duration }}

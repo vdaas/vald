@@ -21,6 +21,8 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
+	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/log/level"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/servers/server"
 	"github.com/vdaas/vald/internal/sync/errgroup"
@@ -28,6 +30,10 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/test/bufconn"
 )
+
+func init() {
+	log.Init(log.WithLevel(level.ERROR.String()))
+}
 
 type echoServer struct {
 	vald.UnimplementedValdServer

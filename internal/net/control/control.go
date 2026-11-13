@@ -16,8 +16,10 @@ package control
 
 import (
 	"syscall"
+	"time"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 )
 
 // SocketController represents the socket listener controller.
@@ -53,6 +55,8 @@ const (
 	IPRecoverDestinationAddr
 )
 
+const tcpFastOpenQueueLen = 256
+
 // New returns the socket controller.
 func New(flag SocketFlag, keepAlive int) SocketController {
 	return &control{
@@ -67,6 +71,20 @@ func New(flag SocketFlag, keepAlive int) SocketController {
 		ipRecoverDestinationAddr: flag&IPRecoverDestinationAddr == IPRecoverDestinationAddr,
 		keepAlive:                keepAlive,
 	}
+}
+
+// KeepAliveSeconds converts a keepalive duration to the whole seconds that New expects
+// (TCP_KEEPIDLE and TCP_KEEPINTVL are set in seconds). A positive duration shorter than
+// one second becomes 1, so that it does not turn keepalive off; zero and negative
+// durations stay disabled.
+func KeepAliveSeconds(d time.Duration) int {
+	if d <= 0 {
+		return 0
+	}
+	if d < time.Second {
+		return 1
+	}
+	return int(d / time.Second)
 }
 
 func boolint(b bool) int {
@@ -93,60 +111,88 @@ func (ctrl *control) GetControl() func(network, addr string, c syscall.RawConn) 
 	return ctrl.controlFunc
 }
 
+// controlFunc applies the socket options. Setting an option can fail on kernels or
+// sockets that do not support it, so those failures are only logged: they must not
+// make the dial or listen fail. Only an error from c.Control itself is returned.
 func (ctrl *control) controlFunc(network, address string, c syscall.RawConn) (err error) {
-	return c.Control(func(fd uintptr) {
-		f := int(fd)
-		var ierr error
-		if SO_REUSEPORT != 0 {
-			ierr = SetsockoptInt(f, SOL_SOCKET, SO_REUSEPORT, boolint(ctrl.reusePort))
-			if ierr != nil {
-				err = errors.Join(err, ierr)
-			}
+	var serr error
+	err = c.Control(func(fd uintptr) {
+		serr = ctrl.setsockopts(network, int(fd))
+	})
+	if err != nil {
+		return err
+	}
+	if serr != nil {
+		// Debug, not Warn: an unsupported option fails the same way on every socket,
+		// so a Warn here would be logged for every connection and every listener.
+		log.Debugf("failed to set socket options for %s %s: %v", network, address, serr)
+	}
+	return nil
+}
+
+// setsockopts sets the configured socket options on f and returns every failure joined.
+// Options are only applied when explicitly enabled to eliminate redundant syscalls
+// and spurious errors on unprivileged sockets, with one exception: TCP_NODELAY is set on
+// every TCP socket unless TCPCork is set (the TCPNoDelay flag is not consulted), to avoid
+// 40ms delayed-ACK stalls in gRPC and streaming RPCs. It is a no-op on the platforms that
+// do not define TCP_NODELAY (the Windows and "other" builds).
+func (ctrl *control) setsockopts(network string, f int) (err error) {
+	var ierr error
+	if ctrl.reusePort && SO_REUSEPORT != 0 {
+		ierr = SetsockoptInt(f, SOL_SOCKET, SO_REUSEPORT, 1)
+		if ierr != nil {
+			err = errors.Join(err, ierr)
 		}
-		if SO_REUSEADDR != 0 {
-			ierr = SetsockoptInt(f, SOL_SOCKET, SO_REUSEADDR, boolint(ctrl.reuseAddr))
-			if ierr != nil {
-				err = errors.Join(err, ierr)
-			}
+	}
+	if ctrl.reuseAddr && SO_REUSEADDR != 0 {
+		ierr = SetsockoptInt(f, SOL_SOCKET, SO_REUSEADDR, 1)
+		if ierr != nil {
+			err = errors.Join(err, ierr)
 		}
-		if isTCP(network) {
+	}
+	if isTCP(network) {
+		if ctrl.tcpFastOpen {
 			if TCP_FASTOPEN != 0 {
-				ierr = SetsockoptInt(f, IPPROTO_TCP, TCP_FASTOPEN, boolint(ctrl.tcpFastOpen))
+				ierr = SetsockoptInt(f, IPPROTO_TCP, TCP_FASTOPEN, tcpFastOpenQueueLen)
 				if ierr != nil {
 					err = errors.Join(err, ierr)
 				}
 			}
 			if TCP_FASTOPEN_CONNECT != 0 {
-				ierr = SetsockoptInt(f, IPPROTO_TCP, TCP_FASTOPEN_CONNECT, boolint(ctrl.tcpFastOpen))
-				if ierr != nil {
-					err = errors.Join(err, ierr)
-				}
-			}
-			if TCP_NODELAY != 0 {
-				ierr = SetsockoptInt(f, IPPROTO_TCP, TCP_NODELAY, boolint(ctrl.tcpNoDelay))
-				if ierr != nil {
-					err = errors.Join(err, ierr)
-				}
-			}
-			if TCP_CORK != 0 {
-				ierr = SetsockoptInt(f, IPPROTO_TCP, TCP_CORK, boolint(ctrl.tcpCork))
-				if ierr != nil {
-					err = errors.Join(err, ierr)
-				}
-			}
-			if TCP_QUICKACK != 0 {
-				ierr = SetsockoptInt(f, IPPROTO_TCP, TCP_QUICKACK, boolint(ctrl.tcpQuickAck))
-				if ierr != nil {
-					err = errors.Join(err, ierr)
-				}
-			}
-			if TCP_DEFER_ACCEPT != 0 {
-				ierr = SetsockoptInt(f, IPPROTO_TCP, TCP_DEFER_ACCEPT, boolint(ctrl.tcpDeferAccept))
+				ierr = SetsockoptInt(f, IPPROTO_TCP, TCP_FASTOPEN_CONNECT, 1)
 				if ierr != nil {
 					err = errors.Join(err, ierr)
 				}
 			}
 		}
+		// TCP_NODELAY is enabled by default on all TCP sockets unless TCPCork is explicitly set.
+		// This prevents 40ms delayed-ACK stalls on gRPC connections and ping-pong RPCs.
+		if TCP_NODELAY != 0 && !ctrl.tcpCork {
+			ierr = SetsockoptInt(f, IPPROTO_TCP, TCP_NODELAY, 1)
+			if ierr != nil {
+				err = errors.Join(err, ierr)
+			}
+		}
+		if ctrl.tcpCork && TCP_CORK != 0 {
+			ierr = SetsockoptInt(f, IPPROTO_TCP, TCP_CORK, 1)
+			if ierr != nil {
+				err = errors.Join(err, ierr)
+			}
+		}
+		if ctrl.tcpQuickAck && TCP_QUICKACK != 0 {
+			ierr = SetsockoptInt(f, IPPROTO_TCP, TCP_QUICKACK, 1)
+			if ierr != nil {
+				err = errors.Join(err, ierr)
+			}
+		}
+		if ctrl.tcpDeferAccept && TCP_DEFER_ACCEPT != 0 {
+			ierr = SetsockoptInt(f, IPPROTO_TCP, TCP_DEFER_ACCEPT, 1)
+			if ierr != nil {
+				err = errors.Join(err, ierr)
+			}
+		}
+	}
+	if ctrl.ipTransparent || ctrl.ipRecoverDestinationAddr {
 		var sol, trans, rda int
 		switch network {
 		case "tcp", "tcp4", "udp", "udp4":
@@ -154,26 +200,28 @@ func (ctrl *control) controlFunc(network, address string, c syscall.RawConn) (er
 		case "tcp6", "udp6":
 			sol, trans, rda = SOL_IPV6, IPV6_TRANSPARENT, IPV6_RECVORIGDSTADDR
 		}
-		if sol != 0 && trans != 0 {
-			ierr = SetsockoptInt(f, sol, trans, boolint(ctrl.ipTransparent))
+		if ctrl.ipTransparent && sol != 0 && trans != 0 {
+			ierr = SetsockoptInt(f, sol, trans, 1)
 			if ierr != nil {
 				err = errors.Join(err, ierr)
 			}
 		}
-		if sol != 0 && rda != 0 {
-			ierr = SetsockoptInt(f, sol, rda, boolint(ctrl.ipRecoverDestinationAddr))
+		if ctrl.ipRecoverDestinationAddr && sol != 0 && rda != 0 {
+			ierr = SetsockoptInt(f, sol, rda, 1)
 			if ierr != nil {
 				err = errors.Join(err, ierr)
 			}
 		}
+	}
 
+	if ctrl.keepAlive > 0 {
 		if SO_KEEPALIVE != 0 {
-			ierr = SetsockoptInt(f, SOL_SOCKET, SO_KEEPALIVE, boolint(ctrl.keepAlive > 0))
+			ierr = SetsockoptInt(f, SOL_SOCKET, SO_KEEPALIVE, 1)
 			if ierr != nil {
 				err = errors.Join(err, ierr)
 			}
 		}
-		if ctrl.keepAlive > 0 && isTCP(network) {
+		if isTCP(network) {
 			if TCP_KEEPINTVL != 0 {
 				ierr = SetsockoptInt(f, IPPROTO_TCP, TCP_KEEPINTVL, ctrl.keepAlive)
 				if ierr != nil {
@@ -187,5 +235,6 @@ func (ctrl *control) controlFunc(network, address string, c syscall.RawConn) (er
 				}
 			}
 		}
-	})
+	}
+	return err
 }

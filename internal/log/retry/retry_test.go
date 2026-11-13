@@ -150,14 +150,17 @@ func Test_retry_Out(t *testing.T) {
 
 		func() test {
 			err := errors.New("error")
-			fn := func(vals ...any) error {
-				return err
-			}
-
 			var (
 				gotWarnFnErr  error
 				gotErrorFnErr error
+				fnCnt         int
+				errorFnCnt    int
 			)
+
+			fn := func(vals ...any) error {
+				fnCnt++
+				return err
+			}
 
 			warnFn := func(vals ...any) {
 				if len(vals) == 1 {
@@ -166,13 +169,14 @@ func Test_retry_Out(t *testing.T) {
 			}
 
 			errorFn := func(vals ...any) {
+				errorFnCnt++
 				if len(vals) == 1 {
 					gotErrorFnErr = vals[0].(error)
 				}
 			}
 
 			return test{
-				name: "panic occurs when fn returns error",
+				name: "does not panic and reports the final error when fn keeps returning error",
 				args: args{
 					fn: fn,
 				},
@@ -189,12 +193,21 @@ func Test_retry_Out(t *testing.T) {
 						return errors.Errorf("warnFn argument: got: %v, want: %v", gotWarnFnErr, err)
 					}
 
+					// fn is tried 3 times; errorFn is notified after the 2nd and the 3rd failure.
+					if fnCnt != 3 {
+						return errors.Errorf("fn count: got: %d, want: %d", fnCnt, 3)
+					}
+
+					if errorFnCnt != 2 {
+						return errors.Errorf("errorFn count: got: %d, want: %d", errorFnCnt, 2)
+					}
+
 					return nil
 				},
 				afterFunc: func(t *testing.T, args args) {
 					t.Helper()
-					if e := recover(); e == nil {
-						t.Error("panic dose not occur")
+					if e := recover(); e != nil {
+						t.Errorf("unexpected panic: %v", e)
 					}
 				},
 			}
@@ -299,14 +312,17 @@ func Test_retry_Outf(t *testing.T) {
 
 		func() test {
 			err := errors.New("error")
-			fn := func(format string, vals ...any) error {
-				return err
-			}
-
 			var (
 				gotWarnFnErr  error
 				gotErrorFnErr error
+				fnCnt         int
+				errorFnCnt    int
 			)
+
+			fn := func(format string, vals ...any) error {
+				fnCnt++
+				return err
+			}
 
 			warnFn := func(vals ...any) {
 				if len(vals) == 1 {
@@ -315,13 +331,14 @@ func Test_retry_Outf(t *testing.T) {
 			}
 
 			errorFn := func(vals ...any) {
+				errorFnCnt++
 				if len(vals) == 1 {
 					gotErrorFnErr = vals[0].(error)
 				}
 			}
 
 			return test{
-				name: "panic occurs when fn returns error",
+				name: "does not panic and reports the final error when fn keeps returning error",
 				args: args{
 					fn: fn,
 				},
@@ -338,12 +355,21 @@ func Test_retry_Outf(t *testing.T) {
 						return errors.Errorf("warnFn argument: got: %v, want: %v", gotWarnFnErr, err)
 					}
 
+					// fn is tried 3 times; errorFn is notified after the 2nd and the 3rd failure.
+					if fnCnt != 3 {
+						return errors.Errorf("fn count: got: %d, want: %d", fnCnt, 3)
+					}
+
+					if errorFnCnt != 2 {
+						return errors.Errorf("errorFn count: got: %d, want: %d", errorFnCnt, 2)
+					}
+
 					return nil
 				},
 				afterFunc: func(t *testing.T, args args) {
 					t.Helper()
-					if e := recover(); e == nil {
-						t.Error("panic dose not occur")
+					if e := recover(); e != nil {
+						t.Errorf("unexpected panic: %v", e)
 					}
 				},
 			}
@@ -378,3 +404,64 @@ func Test_retry_Outf(t *testing.T) {
 }
 
 // NOT IMPLEMENTED BELOW
+
+// Test_retry_reentrantReport covers the production wiring where warnFn/errorFn
+// log through the same failing logger and so call back into Out with the report.
+func Test_retry_reentrantReport(t *testing.T) {
+	const maxDepth = 10
+	tests := []struct {
+		call func(r *retry, fn func(...any) error)
+		name string
+	}{
+		{
+			name: "Out terminates when warnFn/errorFn re-enter Out with a failing fn",
+			call: func(r *retry, fn func(...any) error) {
+				r.Out(fn, "msg")
+			},
+		},
+		{
+			name: "Outf terminates when warnFn/errorFn re-enter Out with a failing fn",
+			call: func(r *retry, fn func(...any) error) {
+				r.Outf(func(string, ...any) error { return fn() }, "%s", "msg")
+			},
+		},
+	}
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt)
+			fail := errors.New("write failed")
+			var writes int
+			fn := func(...any) error {
+				writes++
+				return fail
+			}
+			r := new(retry)
+			var depth, maxSeen, reports int
+			reenter := func(vals ...any) {
+				reports++
+				depth++
+				defer func() { depth-- }()
+				if depth > maxSeen {
+					maxSeen = depth
+				}
+				if depth > maxDepth {
+					return // bound the old unguarded recursion so the test fails instead of overflowing the stack
+				}
+				r.Out(fn, vals...) // what log.Warn/log.Error do through the glg logger
+			}
+			r.warnFn = reenter
+			r.errorFn = reenter
+
+			test.call(r, fn)
+
+			if maxSeen != 1 {
+				tt.Errorf("report nesting depth: got: %d, want: 1", maxSeen)
+			}
+			// 3 attempts for the message, each failure reported once and each report written once
+			if reports != 3 || writes != 6 {
+				tt.Errorf("reports/writes: got: %d/%d, want: 3/6", reports, writes)
+			}
+		})
+	}
+}

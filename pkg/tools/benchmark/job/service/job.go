@@ -19,6 +19,7 @@ import (
 	"context"
 	"math/rand/v2"
 	"reflect"
+	"slices"
 	"strconv"
 	"syscall"
 	"time"
@@ -35,6 +36,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/internal/sync/atomic"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/test/data/hdf5" //nolint:depguard // hdf5 dataset loading is the benchmark job's core input path, not test-only usage
 	"github.com/vdaas/vald/internal/timeutil/rate"
@@ -126,7 +128,7 @@ func New(opts ...Option) (Job, error) {
 			}
 			ts, err := strconv.Atoi(j.insertConfig.Timestamp)
 			if err != nil {
-				log.Warn("[benchmark job]: ", errors.NewErrInvalidOption("insert config timestamp", j.insert, err).Error())
+				log.Warn("[benchmark job]: ", errors.NewErrInvalidOption("insert config timestamp", j.insertConfig.Timestamp, err).Error())
 			} else {
 				j.timestamp = int64(ts)
 			}
@@ -155,7 +157,7 @@ func New(opts ...Option) (Job, error) {
 		case UPSERT:
 			j.jobFunc = j.upsert
 			if j.upsertConfig == nil {
-				return nil, errors.NewErrInvalidOption("upsert config", j.insertConfig)
+				return nil, errors.NewErrInvalidOption("upsert config", j.upsertConfig)
 			}
 			ts, err := strconv.Atoi(j.upsertConfig.Timestamp)
 			if err != nil {
@@ -166,7 +168,7 @@ func New(opts ...Option) (Job, error) {
 		case REMOVE:
 			j.jobFunc = j.remove
 			if j.removeConfig == nil {
-				return nil, errors.NewErrInvalidOption("insert config", j.insertConfig)
+				return nil, errors.NewErrInvalidOption("remove config", j.removeConfig)
 			}
 			ts, err := strconv.Atoi(j.removeConfig.Timestamp)
 			if err != nil {
@@ -190,7 +192,7 @@ func New(opts ...Option) (Job, error) {
 	}
 	// If (Range.End - Range.Start) is smaller than Indexes, Indexes are prioritized based on Range.Start.
 	if (j.dataset.Range.End - j.dataset.Range.Start + 1) < j.dataset.Indexes {
-		j.dataset.Range.End = j.dataset.Range.Start + j.dataset.Indexes
+		j.dataset.Range.End = j.dataset.Range.Start + j.dataset.Indexes - 1
 	}
 
 	return j, nil
@@ -198,12 +200,8 @@ func New(opts ...Option) (Job, error) {
 
 func (j *job) PreStart(ctx context.Context) error {
 	if j.jobType != GETOBJECT && j.jobType != EXISTS && j.jobType != REMOVE {
-		log.Infof("[benchmark job] start download dataset of %s", j.hdf5.GetName().String())
-		if err := j.hdf5.Download(j.dataset.URL); err != nil {
-			return err
-		}
-		log.Infof("[benchmark job] success download dataset of %s", j.hdf5.GetName().String())
-		log.Infof("[benchmark job] start load dataset of %s", j.hdf5.GetName().String())
+		// Resolve the group before downloading so a misconfigured group fails
+		// fast instead of after fetching the whole dataset.
 		var key hdf5.Key
 		switch j.dataset.Group {
 		case "train":
@@ -213,7 +211,14 @@ func (j *job) PreStart(ctx context.Context) error {
 		case "neighbors":
 			key = hdf5.Neighors
 		default:
+			return errors.NewErrInvalidOption("dataset group", j.dataset.Group)
 		}
+		log.Infof("[benchmark job] start download dataset of %s", j.hdf5.GetName().String())
+		if err := j.hdf5.Download(j.dataset.URL); err != nil {
+			return err
+		}
+		log.Infof("[benchmark job] success download dataset of %s", j.hdf5.GetName().String())
+		log.Infof("[benchmark job] start load dataset of %s", j.hdf5.GetName().String())
 		if err := j.hdf5.Read(key); err != nil {
 			return err
 		}
@@ -227,7 +232,11 @@ func (j *job) PreStart(ctx context.Context) error {
 		// the loop polls Get directly instead of delegating to Wait.
 		benchJobs := resource.NewClientOf(j.k8sClient, new(v1.ValdBenchmarkJob), new(v1.ValdBenchmarkJobList))
 		log.Info("[benchmark job] check before benchjob is completed or not...")
-		j.eg.Go(safety.RecoverFunc(func() error {
+		// The poll runs inline: PreStart blocks until it finishes anyway, and
+		// Go+Wait on the process-wide group would also wait for (and cancel)
+		// unrelated tasks. Cancellation errors are dropped exactly as the
+		// group's Wait used to drop them.
+		err := safety.RecoverFunc(func() error {
 			dt := time.NewTicker(j.beforeJobDur)
 			defer dt.Stop()
 			for {
@@ -246,8 +255,8 @@ func (j *job) PreStart(ctx context.Context) error {
 					log.Infof("[benchmark job] before job (%s/%s) is not completed...", j.beforeJobName, jobResource.Status)
 				}
 			}
-		}))
-		if err := j.eg.Wait(); err != nil {
+		})()
+		if errors.IsNot(err, context.Canceled, context.DeadlineExceeded) {
 			return err
 		}
 	}
@@ -256,8 +265,9 @@ func (j *job) PreStart(ctx context.Context) error {
 
 func (j *job) Start(ctx context.Context) (<-chan error, error) {
 	// one slot for the connection-monitor error, one for the job's own error,
-	// and one for that error joined with ctx.Err() on shutdown, so no sender
-	// blocks.
+	// and one for that error joined with ctx.Err() on shutdown. Every send is
+	// either ctx-aware or non-blocking, so a stopped consumer can never keep a
+	// sender (and with it the closing of ech) from finishing.
 	const errChanBufferSize = 3
 	ech := make(chan error, errChanBufferSize)
 	cech, err := j.client.Start(ctx)
@@ -266,18 +276,40 @@ func (j *job) Start(ctx context.Context) (<-chan error, error) {
 		close(ech)
 		return nil, err
 	}
+	// Both goroutines below send on ech, so ech is closed by whichever finishes
+	// last; closing it from one of them would let the other send on a closed channel.
+	const senders = 2 // connection monitor and job runner
+	var pending atomic.Int32
+	pending.Store(senders)
+	release := func() {
+		if pending.Add(-1) == 0 {
+			close(ech)
+		}
+	}
 	j.eg.Go(func() error {
-		defer close(ech)
+		defer release()
 		for {
 			select {
 			case <-ctx.Done():
 				return nil
-			case ech <- <-cech:
+			case merr, ok := <-cech:
+				if !ok {
+					return nil
+				}
+				if merr == nil {
+					continue
+				}
+				select {
+				case <-ctx.Done():
+					return nil
+				case ech <- merr:
+				}
 			}
 		}
 	})
 
 	j.eg.Go(func() (err error) {
+		defer release()
 		defer func() {
 			p, perr := os.FindProcess(os.Getpid())
 			if perr != nil {
@@ -286,9 +318,13 @@ func (j *job) Start(ctx context.Context) (<-chan error, error) {
 			}
 			if err != nil {
 				select {
-				case <-ctx.Done():
-					ech <- errors.Join(err, ctx.Err())
 				case ech <- err:
+				case <-ctx.Done():
+					select {
+					case ech <- errors.Join(err, ctx.Err()):
+					default:
+						log.Warnf("[benchmark job] error channel is full, dropping job error: %v", err)
+					}
 				}
 			}
 			if serr := p.Signal(syscall.SIGTERM); serr != nil {
@@ -312,6 +348,27 @@ func (j *job) Start(ctx context.Context) (<-chan error, error) {
 func (j *job) Stop(ctx context.Context) (err error) {
 	err = j.client.Stop(ctx)
 	return err
+}
+
+// meanRecall averages the per-query recall over the queries for which both the
+// search and the linear search returned a result. A query whose RPC failed has a
+// nil slot; it is counted in failed instead of being averaged in as recall 0.
+func meanRecall(lres, sres []*payload.Search_Response) (mean float64, measured, failed int) {
+	sum := float64(0)
+	for i := range sres {
+		if i >= len(lres) || lres[i] == nil || sres[i] == nil {
+			failed++
+			continue
+		}
+		r := calcRecall(lres[i], sres[i])
+		log.Info("[branch job] search recall: ", r)
+		sum += r
+		measured++
+	}
+	if measured > 0 {
+		mean = sum / float64(measured)
+	}
+	return mean, measured, failed
 }
 
 // calcRecall extracts the result IDs and delegates to the repository's
@@ -342,7 +399,8 @@ func calcRecall(linearRes, searchRes *payload.Search_Response) float64 {
 // TODO: apply many object type.
 func addNoiseToVec(oVec []float32) []float32 {
 	noise := rand.Float32() //nolint:gosec // benchmark input jitter, no cryptographic strength needed
-	vec := oVec
+	// Copy so the shared dataset slice is never mutated by concurrent callers.
+	vec := slices.Clone(oVec)
 	if len(oVec) > 1 {
 		idx := rand.N(uint32(len(oVec) - 1)) //nolint:gosec // benchmark input jitter, no cryptographic strength needed
 		vec[idx] += noise

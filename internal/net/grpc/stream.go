@@ -18,7 +18,6 @@ import (
 	"context"
 	"fmt"
 	"runtime"
-	"sync/atomic"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/io"
@@ -30,6 +29,7 @@ import (
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/atomic"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"google.golang.org/grpc"
 )
@@ -90,14 +90,16 @@ func BidirectionalStream[Q, R proto.Message, S TypedServerStream[Q, R]](
 		emu.Unlock()
 		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse BidirectionalStream final gRPC error response")
 		if span != nil {
-			span.RecordError(err)
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
-			span.SetStatus(trace.StatusError, msg)
+			if err != nil {
+				span.RecordError(err)
+				span.SetStatus(trace.StatusError, msg)
+			}
 		}
 		return err
 	}
 
-	var cnt uint64
+	var cnt atomic.Uint64
 	// Run Recv in a helper goroutine so a ctx cancellation actually interrupts the
 	// receive loop. ctx here is a child of stream.Context() (errgroup.New above);
 	// grpc's stream.Recv observes only the parent stream.Context(), so the previous
@@ -105,26 +107,36 @@ func BidirectionalStream[Q, R proto.Message, S TypedServerStream[Q, R]](
 	// worker's stream.Send fails non-transport-fatally (MaxSendMsgSize/marshal) and
 	// self-cancels this errgroup ctx — deadlocking finalize()'s eg.Wait against the
 	// stuck receiver (the server-side counterpart of the BidirectionalStreamClient fix).
-	recv := func() (<-chan Q, <-chan error) {
-		dc := make(chan Q, 1)
-		ec := make(chan error, 1)
-		go func() {
+	// One receiver goroutine serves the whole stream. dc is buffered with max(concurrency*2, 16)
+	// so network read prefetching can overlap with worker dispatch.
+	dc := make(chan Q, max(concurrency*2, 16))
+	ec := make(chan error, 1)
+	done := make(chan struct{})
+	defer close(done)
+	go func() {
+		for {
 			data, err := stream.Recv()
 			if err != nil {
 				ec <- err
 				return
 			}
-			dc <- data
-		}()
-		return dc, ec
-	}
+			select {
+			case dc <- data:
+			case <-done:
+				return
+			}
+		}
+	}()
 	// dispatch hands a received message to a worker in the errgroup. It is a named
 	// closure (not inlined into the receive case) so the ctx.Done() branch can also
 	// drain and dispatch an already-received message instead of dropping it.
 	dispatch := func(data Q) {
 		eg.Go(safety.RecoverWithoutPanicFunc(func() (err error) {
-			id := atomic.AddUint64(&cnt, 1)
-			sctx, sspan := trace.StartSpan(ctx, fmt.Sprintf("%s/BidirectionalStream/stream-%020d", apiName, id))
+			id := cnt.Add(1)
+			sctx, sspan := ctx, trace.Span(nil)
+			if trace.Enabled() {
+				sctx, sspan = trace.StartSpan(ctx, fmt.Sprintf("%s/BidirectionalStream/stream-%020d", apiName, id))
+			}
 			defer func() {
 				if sspan != nil {
 					sspan.End()
@@ -174,24 +186,32 @@ func BidirectionalStream[Q, R proto.Message, S TypedServerStream[Q, R]](
 			return nil
 		}))
 	}
-	dc, ec := recv()
 	for {
 		select {
 		case <-ctx.Done():
 			// A message may have landed in dc concurrently with the cancellation
 			// (e.g. a sibling worker's Send failure self-cancelled this errgroup ctx
-			// at the same instant a message was received). dc is buffered (cap 1) so
-			// the receiver never blocks handing it off; drain it non-blockingly and
-			// dispatch before finalizing, so a fully-received message is not silently
-			// dropped by select choosing ctx.Done() over dc. This preserves the old
-			// default-branch behavior that always handed a received message to eg.Go.
-			select {
-			case data := <-dc:
-				dispatch(data)
-			default:
+			// at the same instant a message was received). Drain dc non-blockingly and
+			// dispatch before finalizing, so fully-received messages are not silently
+			// dropped.
+			for {
+				select {
+				case data := <-dc:
+					dispatch(data)
+				default:
+					return finalize()
+				}
 			}
-			return finalize()
 		case err := <-ec:
+			for {
+				select {
+				case data := <-dc:
+					dispatch(data)
+				default:
+					goto ecdrained
+				}
+			}
+		ecdrained:
 			if !errors.Is(err, io.EOF) {
 				err = errors.Wrap(err, "BidirectionalStream Recv returned error")
 				emu.Lock()
@@ -201,7 +221,6 @@ func BidirectionalStream[Q, R proto.Message, S TypedServerStream[Q, R]](
 			}
 			return finalize()
 		case data := <-dc:
-			dc, ec = recv()
 			dispatch(data)
 		}
 	}
@@ -217,121 +236,126 @@ func BidirectionalStreamClient[Q, R proto.Message, S TypedClientStream[Q, R]](
 	ctx, cancel := context.WithCancel(stream.Context())
 	defer cancel()
 
-	// The receiver runs on its own lifecycle, NOT inside the send errgroup, so the
-	// send side can CloseSend first and only then wait for the receiver to drain to
-	// EOF. Previously the receiver shared the errgroup that finalize waited on
-	// *before* CloseSend, which deadlocked: CloseSend was never reached, so the
-	// server kept blocking in its own Recv waiting for the client's half-close,
-	// while this receiver blocked in stream.Recv waiting for a response that the
-	// (idle) server would never send. cancel() also could not break it because it
-	// cancels a context derived from stream.Context(), which grpc's stream.Recv
-	// does not observe.
+	pipelined := concurrency > 1
+	bufSize := 1
+	if pipelined {
+		bufSize = max(concurrency*2, 16)
+	}
+
 	recvDone := make(chan error, 1)
 	go func() {
 		recvDone <- safety.RecoverFunc(func() (err error) {
-			for {
-				// Run Recv in a helper goroutine so a cancelled ctx aborts the loop
-				// even though grpc's stream.Recv only observes the stream's own
-				// context, not the derived ctx that cancel() controls. This makes
-				// cancellation effective (fix 2) instead of a no-op.
-				resCh := make(chan R, 1)
-				errCh := make(chan error, 1)
-				go func() {
+			resCh := make(chan R, bufSize)
+			errCh := make(chan error, 1)
+			var next chan struct{}
+			if !pipelined {
+				next = make(chan struct{})
+			}
+			go func() {
+				for {
 					res, rerr := stream.Recv()
 					if rerr != nil {
-						errCh <- rerr
+						select {
+						case errCh <- rerr:
+						case <-ctx.Done():
+						}
 						return
 					}
-					resCh <- res
-				}()
+					select {
+					case resCh <- res:
+					case <-ctx.Done():
+						return
+					}
+					if !pipelined {
+						select {
+						case <-next:
+						case <-ctx.Done():
+							return
+						}
+					}
+				}
+			}()
+			for {
 				select {
 				case <-ctx.Done():
 					return nil
-				case rerr := <-errCh:
-					if errors.IsAny(rerr, io.EOF, context.Canceled, context.DeadlineExceeded) {
-						cancel()
-						return nil
-					}
-					var zero R
-					if !callBack(zero, rerr) {
-						cancel()
-						return nil
-					}
 				case res := <-resCh:
 					if !callBack(res, nil) {
 						cancel()
 						return nil
 					}
+					if !pipelined {
+						select {
+						case next <- struct{}{}:
+						case <-ctx.Done():
+							return nil
+						}
+					}
+				case rerr := <-errCh:
+					for {
+						select {
+						case res := <-resCh:
+							if !callBack(res, nil) {
+								cancel()
+								if errors.IsAny(rerr, io.EOF, context.Canceled, context.DeadlineExceeded) {
+									return nil
+								}
+								return rerr
+							}
+						default:
+							goto drained
+						}
+					}
+				drained:
+					cancel()
+					if errors.IsAny(rerr, io.EOF, context.Canceled, context.DeadlineExceeded) {
+						return nil
+					}
+					var zero R
+					callBack(zero, rerr)
+					return rerr
 				}
 			}
 		})()
 	}()
 
-	eg, egctx := errgroup.New(ctx)
-	if concurrency > 0 {
-		eg.SetLimit(concurrency)
-	}
-
 	return func() (err error) {
-		var mu sync.Mutex
-		ech := make(chan error, concurrency)
-		finalize := func(err error) error {
-			if errors.IsAny(err, io.EOF, context.Canceled, context.DeadlineExceeded) {
-				err = nil
+		finalize := func(sendErr error) error {
+			if errors.IsAny(sendErr, io.EOF, context.Canceled, context.DeadlineExceeded) {
+				sendErr = nil
 			}
-			// 1. Wait for all in-flight sends to finish before half-closing.
-			err = errors.Join(err, eg.Wait())
-			close(ech)
-			for e := range ech {
-				if errors.IsNot(e, io.EOF, context.Canceled, context.DeadlineExceeded) {
-					err = errors.Join(err, e)
-				}
-			}
-			// 2. Half-close the send direction (fix 1). The server observes EOF on
-			//    its Recv, finishes, and closes the response stream, which makes the
-			//    receiver's stream.Recv return io.EOF so it can drain cleanly.
-			mu.Lock()
 			serr := stream.CloseSend()
-			mu.Unlock()
 			if errors.IsNot(serr, io.EOF, context.Canceled, context.DeadlineExceeded) {
-				err = errors.Join(err, serr)
+				sendErr = errors.Join(sendErr, serr)
 			}
-			// 3. Wait for the receiver to drain to EOF. A cancelled ctx (caller
-			//    deadline or cancel()) is the backstop so this cannot block forever.
 			select {
 			case rerr := <-recvDone:
 				if errors.IsNot(rerr, io.EOF, context.Canceled, context.DeadlineExceeded) {
-					err = errors.Join(err, rerr)
+					sendErr = errors.Join(sendErr, rerr)
 				}
 			case <-ctx.Done():
 				cancel()
-				<-recvDone
+				rerr := <-recvDone
+				if errors.IsNot(rerr, io.EOF, context.Canceled, context.DeadlineExceeded) {
+					sendErr = errors.Join(sendErr, rerr)
+				}
 			}
-			return err
+			return sendErr
 		}
+
 		for {
 			select {
-			case <-egctx.Done():
-				return finalize(egctx.Err())
-			case err = <-ech:
-				return finalize(err)
+			case <-ctx.Done():
+				return finalize(ctx.Err())
 			default:
 				data, ok := sendDataProvider()
 				if !ok {
 					return finalize(nil)
 				}
-				eg.Go(safety.RecoverFunc(func() (err error) {
-					mu.Lock()
-					err = stream.Send(data)
-					mu.Unlock()
-					if err != nil {
-						select {
-						case <-egctx.Done():
-						case ech <- err:
-						}
-					}
-					return nil
-				}))
+				err := stream.Send(data)
+				if err != nil {
+					return finalize(err)
+				}
 			}
 		}
 	}()

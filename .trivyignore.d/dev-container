@@ -119,3 +119,17 @@ CVE-2026-100352 exp:2026-12-06
 CVE-2026-100353 exp:2026-12-06
 CVE-2026-100354 exp:2026-12-06
 CVE-2026-97394 exp:2026-12-06
+
+# Reason: bundled upstream tool binaries (helm, helm-docs, k3d, k9s, kind,
+# kube-linter, minikube, reviewdog, yq) still embed Go < 1.26.10/1.27.3 and
+# minikube embeds go-jose v4.1.4 (rechecked 2026-11-06). Accept these findings
+# only in the development image; remove after the upstream tools are rebuilt.
+CVE-2026-27137 exp:2026-12-06
+CVE-2026-111943 exp:2026-12-06
+CVE-2026-116587 exp:2026-12-06
+
+# Reason: CVE-2026-78661 (golang.org/x/net/html DoS, fixed in v0.62.0) was
+# first reported by the 2026-11-06 CI scan; bundled upstream tools (buf, helm, k3d, k9s, kubectl,
+# kube-linter, minikube, stern, telepresence) still embed x/net < v0.62.0.
+# Accept only in the development image; remove after upstream rebuilds.
+CVE-2026-78661 exp:2026-12-07

@@ -20,9 +20,12 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s"
 	"github.com/vdaas/vald/internal/k8s/resource"
 	"github.com/vdaas/vald/internal/k8s/vald"
+	"github.com/vdaas/vald/internal/sync/atomic"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 	mock "github.com/vdaas/vald/internal/test/mock/k8s"
 )
 
@@ -392,10 +395,36 @@ func Test_operator_ensureJobConcurrency(t *testing.T) {
 		{
 			name: "returns createRequired when a failed job is dropped from accounting",
 			jobs: []k8s.Job{
-				newJob("failed", k8s.JobStatus{Failed: 1}, podIdx),
+				newJob("failed", k8s.JobStatus{
+					Failed:     1,
+					Conditions: []k8s.JobCondition{{Type: k8s.JobFailed, Status: k8s.CoreConditionTrue}},
+				}, podIdx),
 			},
 			rotationJobConcurrency: 1,
 			want:                   createRequired,
+		},
+		{
+			// Regression: a retrying job (restartPolicy OnFailure) sits at
+			// Active==0 with Failed>0 during the pod-recreation backoff. It
+			// has no terminal condition yet, so it must stay in the accounting.
+			name: "returns createSkipped when a job in retry backoff (Active==0, Failed>0, no terminal condition) has the same podIdx",
+			jobs: []k8s.Job{
+				newJob("backoff", k8s.JobStatus{Failed: 1}, podIdx),
+			},
+			rotationJobConcurrency: 2,
+			want:                   createSkipped,
+		},
+		{
+			// A condition that is not True is not terminal.
+			name: "returns requeueRequired when a job has a non-True Failed condition and fills the concurrency limit",
+			jobs: []k8s.Job{
+				newJob("not-terminal", k8s.JobStatus{
+					Failed:     1,
+					Conditions: []k8s.JobCondition{{Type: k8s.JobFailed, Status: k8s.CoreConditionFalse}},
+				}, otherPodIdx),
+			},
+			rotationJobConcurrency: 1,
+			want:                   requeueRequired,
 		},
 		{
 			name: "returns requeueRequired when a running job with a different podIdx fills the concurrency limit",
@@ -1100,3 +1129,109 @@ func Test_operator_ensureJobConcurrency(t *testing.T) {
 // 		})
 // 	}
 // }
+
+// doneCountCtx counts Done() calls. A select loop evaluates ctx.Done() on every
+// iteration, so the count is a deterministic measure of how often it spins.
+type doneCountCtx struct {
+	context.Context //nolint:containedctx // test wrapper that counts Done() calls
+	n               atomic.Int64
+}
+
+func (c *doneCountCtx) Done() <-chan struct{} {
+	c.n.Add(1)
+	return c.Context.Done()
+}
+
+// TestOperator_Start_ClosedControllerChannelDoesNotSpin pins that the relay
+// loop stops selecting the controller error channel once it is closed (the
+// controller's manager returned while ctx is still live). A closed channel is
+// always ready, so without nil-ing it the loop busy-spins; the spin shows up
+// as an unbounded number of ctx.Done() evaluations.
+func TestOperator_Start_ClosedControllerChannelDoesNotSpin(t *testing.T) {
+	t.Parallel()
+
+	dech := make(chan error)
+	close(dech)
+
+	eg, egctx := errgroup.New(context.Background())
+	cctx, cancel := context.WithCancel(egctx)
+	defer cancel()
+	ctx := &doneCountCtx{Context: cctx}
+
+	o := &operator{
+		eg: eg,
+		ctrl: &mock.ControllerMock{
+			StartFunc: func(context.Context) (<-chan error, error) { return dech, nil },
+		},
+	}
+	if _, err := o.Start(ctx); err != nil {
+		t.Fatalf("Start() error = %v, want nil", err)
+	}
+
+	time.Sleep(100 * time.Millisecond)
+	if n := ctx.n.Load(); n > 100 {
+		t.Errorf("ctx.Done() evaluated %d times with a closed controller channel; the relay loop is busy-spinning", n)
+	}
+
+	cancel()
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		if err := eg.Wait(); err != nil {
+			t.Logf("eg.Wait() = %v", err)
+		}
+	}()
+	select {
+	case <-done:
+	case <-time.After(5 * time.Second):
+		t.Fatal("relay goroutine did not exit on context cancel")
+	}
+}
+
+// TestOperator_Start_ErrorRelayStopsOnCancelWhenConsumerGone pins that the relay
+// goroutine does not block forever on its error channel once the consumer has
+// stopped reading: after the buffer is full, cancelling ctx must end it.
+func TestOperator_Start_ErrorRelayStopsOnCancelWhenConsumerGone(t *testing.T) {
+	t.Parallel()
+
+	const sendTimeout = 5 * time.Second
+
+	dech := make(chan error)
+	eg, egctx := errgroup.New(t.Context())
+	ctx, cancel := context.WithCancel(egctx)
+	defer cancel()
+
+	o := &operator{
+		eg: eg,
+		ctrl: &mock.ControllerMock{
+			StartFunc: func(context.Context) (<-chan error, error) { return dech, nil },
+		},
+	}
+	// the returned channel is intentionally never read.
+	if _, err := o.Start(ctx); err != nil {
+		t.Fatalf("Start() error = %v, want nil", err)
+	}
+
+	// one more error than the channel buffer: the last one cannot be buffered.
+	for range errChanBufferSize + 1 {
+		select {
+		case dech <- errors.New("controller error"):
+		case <-time.After(sendTimeout):
+			t.Fatal("relay goroutine did not receive the controller error")
+		}
+	}
+
+	cancel()
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		if err := eg.Wait(); err != nil {
+			t.Logf("eg.Wait() = %v", err)
+		}
+	}()
+	select {
+	case <-done:
+	case <-time.After(sendTimeout):
+		t.Fatal("relay goroutine stayed blocked on the error channel after ctx cancel")
+	}
+}

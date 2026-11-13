@@ -25,6 +25,7 @@ import (
 	"github.com/vdaas/vald/internal/core/algorithm"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
+	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
@@ -43,17 +44,9 @@ func (s *server) Insert(
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.InsertRPCServiceName+"/"+vald.InsertRPCName), apiName+"/"+vald.InsertRPCName)
 	defer trace.End(span)
 	uuid := req.GetVector().GetId()
-	reqInfo := &errdetails.RequestInfo{
-		RequestId:   uuid,
-		ServingData: errdetails.Serialize(req),
-	}
-	resInfo := &errdetails.ResourceInfo{
-		ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertRPCName,
-		ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-	}
 	if len(uuid) == 0 {
 		err = errors.ErrInvalidMetaDataConfig
-		err = status.WrapWithInvalidArgument(vald.InsertRPCName+" API invalid uuid", err, reqInfo, resInfo,
+		err = status.WrapWithInvalidArgument(vald.InsertRPCName+" API invalid uuid", err, append(s.errDetails(ctx, vald.InsertRPCName, uuid, req),
 			&errdetails.BadRequest{
 				FieldViolations: []*errdetails.BadRequestFieldViolation{
 					{
@@ -61,14 +54,14 @@ func (s *server) Insert(
 						Description: err.Error(),
 					},
 				},
-			})
+			})...)
 		return errhandler.HandleError[payload.Object_Location](span, codes.InvalidArgument, err)
 	}
 	vec := req.GetVector().GetVector()
 	vl := len(vec)
 	if vl < algorithm.MinimumVectorDimensionSize {
 		err = errors.ErrInvalidDimensionSize(vl, 0)
-		err = status.WrapWithInvalidArgument(vald.InsertRPCName+" API invalid vector argument", err, reqInfo, resInfo,
+		err = status.WrapWithInvalidArgument(vald.InsertRPCName+" API invalid vector argument", err, append(s.errDetails(ctx, vald.InsertRPCName, uuid, req),
 			&errdetails.BadRequest{
 				FieldViolations: []*errdetails.BadRequestFieldViolation{
 					{
@@ -76,7 +69,7 @@ func (s *server) Insert(
 						Description: err.Error(),
 					},
 				},
-			}, info.Get())
+			}, info.Get())...)
 		return errhandler.HandleError[payload.Object_Location](span, codes.InvalidArgument, err)
 	}
 	if !req.GetConfig().GetSkipStrictExistCheck() {
@@ -85,29 +78,25 @@ func (s *server) Insert(
 		if err != nil {
 			switch {
 			case errors.Is(err, errors.ErrGRPCClientConnNotFound("*")):
-				err = status.WrapWithInternal(vald.ExistsRPCName+" API for "+vald.InsertRPCName+" API connection not found", err, reqInfo, resInfo)
+				err = status.WrapWithInternal(vald.ExistsRPCName+" API for "+vald.InsertRPCName+" API connection not found", err, s.errDetails(ctx, vald.InsertRPCName, uuid, req)...)
 				attrs = trace.StatusCodeInternal(err.Error())
 			case errors.Is(err, context.Canceled):
-				err = status.WrapWithCanceled(vald.ExistsRPCName+" API for "+vald.InsertRPCName+" API canceled", err, reqInfo, resInfo)
+				err = status.WrapWithCanceled(vald.ExistsRPCName+" API for "+vald.InsertRPCName+" API canceled", err, s.errDetails(ctx, vald.InsertRPCName, uuid, req)...)
 				attrs = trace.StatusCodeCancelled(err.Error())
 			case errors.Is(err, context.DeadlineExceeded):
-				err = status.WrapWithDeadlineExceeded(vald.ExistsRPCName+" API for "+vald.InsertRPCName+" API deadline exceeded", err, reqInfo, resInfo)
+				err = status.WrapWithDeadlineExceeded(vald.ExistsRPCName+" API for "+vald.InsertRPCName+" API deadline exceeded", err, s.errDetails(ctx, vald.InsertRPCName, uuid, req)...)
 				attrs = trace.StatusCodeDeadlineExceeded(err.Error())
 			default:
 				err = nil
 			}
 		} else if id != nil && len(id.GetId()) != 0 {
-			err = status.WrapWithAlreadyExists(vald.InsertRPCName+" API uuid "+uuid+"'s data already exists", errors.ErrMetaDataAlreadyExists(uuid), reqInfo, resInfo, info.Get())
+			err = status.WrapWithAlreadyExists(vald.InsertRPCName+" API uuid "+uuid+"'s data already exists", errors.ErrMetaDataAlreadyExists(uuid),
+				append(s.errDetails(ctx, vald.InsertRPCName, uuid, req), info.Get())...)
 			attrs = trace.StatusCodeAlreadyExists(err.Error())
 		}
 		if err != nil {
 			errhandler.RecordSpanAttrs(span, attrs, err)
 			return nil, err
-		}
-		if req.GetConfig() != nil {
-			req.GetConfig().SkipStrictExistCheck = true
-		} else {
-			req.Config = &payload.Insert_Config{SkipStrictExistCheck: true}
 		}
 	}
 
@@ -117,23 +106,35 @@ func (s *server) Insert(
 		Ips:  make([]string, 0, s.replica),
 	}
 	locs := make([]string, 0, s.replica)
-	if req.GetConfig().GetTimestamp() == 0 {
-		now := time.Now().UnixNano()
-		if req.GetConfig() == nil {
-			req.Config = &payload.Insert_Config{
-				Timestamp: now,
-			}
-		} else {
-			req.GetConfig().Timestamp = now
+	// The caller's request is read by others while this runs (MultiInsert serializes the
+	// whole MultiRequest while sibling Inserts are in flight), so never write to it:
+	// forward a new request that skips the agents' exist check (done above) and is timestamped.
+	freq := req
+	if cfg := req.GetConfig(); cfg == nil || !cfg.GetSkipStrictExistCheck() || cfg.GetTimestamp() == 0 {
+		ts := cfg.GetTimestamp()
+		if ts == 0 {
+			ts = time.Now().UnixNano()
+		}
+		freq = &payload.Insert_Request{
+			Vector: req.GetVector(),
+			Config: &payload.Insert_Config{
+				SkipStrictExistCheck: true,
+				Filters:              cfg.GetFilters(),
+				Timestamp:            ts,
+			},
 		}
 	}
 	emu := new(sync.Mutex)
-	var errs error
+	// The client's backoff and DoMulti's second pass call f again for the same target,
+	// so keep only each target's latest failure: a later success clears it.
+	errByTarget := make(map[string]error, s.replica)
 	err = s.gateway.DoMulti(ctx, s.replica, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) (err error) {
 		ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "DoMulti/"+target), apiName+"/"+vald.InsertRPCName+"/"+target)
 		defer trace.End(span)
-		loc, err := vc.Insert(ctx, req, copts...)
+		loc, err := vc.Insert(ctx, freq, copts...)
 		if err != nil {
+			// A canceled or timed-out agent stored nothing: return its error so that
+			// DoMulti does not count it as a replica. It does not abort the request.
 			switch {
 			case errors.Is(err, context.Canceled),
 				errors.Is(err, errors.ErrRPCCallFailed(target, context.Canceled)):
@@ -145,7 +146,11 @@ func (s *server) Insert(
 							target + " canceled: " + err.Error())...)
 					span.SetStatus(trace.StatusError, err.Error())
 				}
-				return nil
+				err = status.WrapWithCanceled(vald.InsertRPCName+" API canceled for "+target, err)
+				emu.Lock()
+				errByTarget[target] = err
+				emu.Unlock()
+				return err
 			case errors.Is(err, context.DeadlineExceeded),
 				errors.Is(err, errors.ErrRPCCallFailed(target, context.DeadlineExceeded)):
 				if span != nil {
@@ -156,13 +161,17 @@ func (s *server) Insert(
 							target + " deadline_exceeded: " + err.Error())...)
 					span.SetStatus(trace.StatusError, err.Error())
 				}
-				return nil
+				err = status.WrapWithDeadlineExceeded(vald.InsertRPCName+" API deadline exceeded for "+target, err)
+				emu.Lock()
+				errByTarget[target] = err
+				emu.Unlock()
+				return err
 			}
 			st, msg, err := status.ParseError(err, codes.Internal,
 				"failed to parse "+vald.InsertRPCName+" gRPC error response",
 				&errdetails.RequestInfo{
 					RequestId:   uuid,
-					ServingData: errdetails.Serialize(req),
+					ServingData: errdetails.Serialize(freq),
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertRPCName,
@@ -175,28 +184,40 @@ func (s *server) Insert(
 			}
 			if err != nil && st.Code() != codes.AlreadyExists {
 				emu.Lock()
-				if errs != nil {
-					errs = errors.Join(errs, err)
-				} else {
-					errs = err
-				}
+				errByTarget[target] = err
 				emu.Unlock()
 				return err
 			}
+			// The agent already holds uuid: report it in the location as Update does.
+			host, _, herr := net.SplitHostPort(target)
+			if herr != nil {
+				host = target
+			}
+			emu.Lock()
+			delete(errByTarget, target)
+			emu.Unlock()
+			mu.Lock()
+			ce.Ips = append(ce.GetIps(), host)
+			locs = append(locs, host)
+			mu.Unlock()
 			return nil
 		}
+		emu.Lock()
+		delete(errByTarget, target)
+		emu.Unlock()
 		mu.Lock()
 		ce.Ips = append(ce.GetIps(), loc.GetIps()...)
 		locs = append(locs, loc.GetName())
 		mu.Unlock()
 		return nil
 	})
+	errs := joinTargetErrors(errByTarget)
 	if err != nil {
 		if errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) {
 			err = status.WrapWithInternal(vald.InsertRPCName+" API connection not found", err,
 				&errdetails.RequestInfo{
 					RequestId:   uuid,
-					ServingData: errdetails.Serialize(req),
+					ServingData: errdetails.Serialize(freq),
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertRPCName + ".DoMulti",
@@ -209,11 +230,26 @@ func (s *server) Insert(
 		} else {
 			errs = errors.Join(errs, err)
 		}
-	}
-	if errs != nil {
 		st, _ := status.FromError(errs)
 		errhandler.RecordSpanStatus(span, st, errs)
 		return nil, errs
+	}
+	// The request succeeds once any agent stored the vector; the failed agents only
+	// leave it under-replicated. With no stored location it fails even when no agent
+	// reported an error: DoMulti skips agents whose circuit breaker is open without
+	// calling f, and does not report that.
+	if len(locs) == 0 {
+		if errs != nil {
+			st, _ := status.FromError(errs)
+			errhandler.RecordSpanStatus(span, st, errs)
+			return nil, errs
+		}
+		err = status.WrapWithUnavailable(vald.InsertRPCName+" API stored the vector on no agent",
+			errors.ErrNoAvailableAgentToInsert, s.errDetails(ctx, vald.InsertRPCName, uuid, req)...)
+		return errhandler.HandleError[payload.Object_Location](span, codes.Unavailable, err)
+	}
+	if errs != nil || (len(locs) < s.replica && len(locs) < s.gateway.GetAgentCount(ctx)) {
+		s.warnPartialWrite(vald.InsertRPCName, uuid, len(locs), errByTarget, errs)
 	}
 	slices.Sort(locs)
 	ce.Name = strings.Join(locs, ",")
@@ -257,14 +293,22 @@ func (s *server) MultiInsert(
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.InsertRPCServiceName+"/"+vald.MultiInsertRPCName), apiName+"/"+vald.MultiInsertRPCName)
 	defer trace.End(span)
 	var (
-		emu sync.Mutex
-		lmu sync.Mutex
+		errList []error
+		emu     sync.Mutex
+		lmu     sync.Mutex
 	)
 	eg, ectx := errgroup.New(ctx)
-	eg.SetLimit(s.multiConcurrency)
+	eg.SetLimit(s.multiLimit(ctx, false))
 	locs = &payload.Object_Locations{
 		Locations: make([]*payload.Object_Location, len(reqs.GetRequests())),
 	}
+	// The invalid-argument details are identical for every invalid request of
+	// the batch, so serialize the whole batch and resolve Addrs once, lazily.
+	var (
+		detailsBuilt bool
+		servingData  string
+		resourceName string
+	)
 	for i, r := range reqs.GetRequests() {
 		if r != nil && r.GetVector() != nil && len(r.GetVector().GetVector()) >= algorithm.MinimumVectorDimensionSize && r.GetVector().GetId() != "" {
 			idx := i
@@ -277,11 +321,7 @@ func (s *server) MultiInsert(
 					st, _ := status.FromError(err)
 					errhandler.RecordSpanStatus(sspan, st, err)
 					emu.Lock()
-					if errs == nil {
-						errs = err
-					} else {
-						errs = errors.Join(errs, err)
-					}
+					errList = append(errList, err)
 					emu.Unlock()
 				} else if res != nil && res.GetUuid() == req.GetVector().GetId() && res.GetIps() != nil {
 					lmu.Lock()
@@ -298,19 +338,24 @@ func (s *server) MultiInsert(
 			switch {
 			case r.GetVector() == nil, len(r.GetVector().GetVector()) < algorithm.MinimumVectorDimensionSize:
 				err = errors.ErrInvalidDimensionSize(len(r.GetVector().GetVector()), 0)
-				field = "vector"
+				field = vectorField
 			case r.GetVector().GetId() == "":
 				err = errors.ErrInvalidUUID(r.GetVector().GetId())
 				field = "uuid"
 			}
+			if !detailsBuilt {
+				servingData = errdetails.Serialize(reqs)
+				resourceName = fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx))
+				detailsBuilt = true
+			}
 			err = status.WrapWithInvalidArgument(vald.MultiInsertRPCName+" API invalid vector argument", err,
 				&errdetails.RequestInfo{
 					RequestId:   r.GetVector().GetId(),
-					ServingData: errdetails.Serialize(reqs),
+					ServingData: servingData,
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.MultiInsertRPCName,
-					ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
+					ResourceName: resourceName,
 				},
 				&errdetails.BadRequest{
 					FieldViolations: []*errdetails.BadRequestFieldViolation{
@@ -321,25 +366,15 @@ func (s *server) MultiInsert(
 					},
 				}, info.Get())
 			emu.Lock()
-			if errs == nil {
-				errs = err
-			} else {
-				errs = errors.Join(errs, err)
-			}
+			errList = append(errList, err)
 			emu.Unlock()
 
 		}
 	}
-	err := eg.Wait()
-	if err != nil {
-		emu.Lock()
-		if errs == nil {
-			errs = err
-		} else {
-			errs = errors.Join(errs, err)
-		}
-		emu.Unlock()
+	if err := eg.Wait(); err != nil {
+		errList = append(errList, err)
 	}
+	errs = errors.Join(errList...)
 
 	if errs != nil {
 		st, _ := status.FromError(errs)

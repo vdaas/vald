@@ -23,6 +23,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/attribute"
 	"github.com/vdaas/vald/internal/observability/metrics"
+	"github.com/vdaas/vald/internal/sync"
 )
 
 const (
@@ -55,9 +56,16 @@ func MetricInterceptors() (grpc.UnaryServerInterceptor, grpc.StreamServerInterce
 	}
 
 	record := func(ctx context.Context, method string, err error, latency float64) {
-		attrs := attributesFromError(method, err)
-		latencyHistogram.Record(ctx, latency, metrics.WithAttributes(attrs...))
-		completedRPCCnt.Add(ctx, 1, metrics.WithAttributes(attrs...))
+		code := codes.OK
+		if err != nil {
+			st, _ := status.FromError(err)
+			if st != nil {
+				code = st.Code()
+			}
+		}
+		opt := getMeasurementOption(method, code)
+		latencyHistogram.Record(ctx, latency, opt)
+		completedRPCCnt.Add(ctx, 1, opt)
 	}
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp any, err error) {
 			now := time.Now()
@@ -72,6 +80,29 @@ func MetricInterceptors() (grpc.UnaryServerInterceptor, grpc.StreamServerInterce
 			record(ss.Context(), info.FullMethod, err, float64(elapsedTime)/float64(time.Millisecond))
 			return err
 		}, nil
+}
+
+type metricOptKey struct {
+	method string
+	code   codes.Code
+}
+
+var optCache sync.Map[metricOptKey, metrics.MeasurementOption]
+
+func getMeasurementOption(method string, code codes.Code) metrics.MeasurementOption {
+	k := metricOptKey{
+		method: method,
+		code:   code,
+	}
+	if opt, ok := optCache.Load(k); ok {
+		return opt
+	}
+	opt := metrics.WithAttributes(
+		attribute.String(GRPCMethodKeyName, method),
+		attribute.String(GRPCStatus, code.String()),
+	)
+	actual, _ := optCache.LoadOrStore(k, opt)
+	return actual
 }
 
 func attributesFromError(method string, err error) []attribute.KeyValue {

@@ -13,6 +13,82 @@
 // limitations under the License.
 package grpc
 
+import (
+	"context"
+	"math"
+	"strings"
+	"testing"
+
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/net/grpc/codes"
+	"github.com/vdaas/vald/internal/net/grpc/status"
+)
+
+// updateErrFaiss fails every timed update with err; other methods panic
+// through the nil embedded interface.
+type updateErrFaiss struct {
+	stubFaiss
+}
+
+func (f *updateErrFaiss) UpdateWithTime(string, []float32, int64) error { return f.err }
+
+// Test_server_Update_rejectsNaNOrInf checks that Update rejects NaN / +-Inf vectors
+// up front with InvalidArgument and never enqueues them.
+func Test_server_Update_rejectsNaNOrInf(t *testing.T) {
+	t.Parallel()
+	for name, b := range nanOrInfValues() {
+		vec := &payload.Object_Vector{Id: "uuid", Vector: []float32{0, b}}
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			f := &stubFaissWrite{dim: 2}
+			s := &server{faiss: f}
+			_, err := s.Update(context.Background(), &payload.Update_Request{Vector: vec})
+			wantInvalidArgument(t, err)
+			if f.called {
+				t.Error("vector must not reach the service")
+			}
+		})
+	}
+}
+
+// Test_server_Update_emptyUUIDBeforeNaNOrInf checks that an empty uuid is reported before a
+// NaN / Inf vector value.
+func Test_server_Update_emptyUUIDBeforeNaNOrInf(t *testing.T) {
+	t.Parallel()
+	f := &stubFaissWrite{dim: 2}
+	s := &server{faiss: f}
+	_, err := s.Update(context.Background(), &payload.Update_Request{
+		Vector: &payload.Object_Vector{Vector: []float32{0, float32(math.NaN())}},
+	})
+	wantInvalidArgument(t, err)
+	st, _ := status.FromError(err)
+	if !strings.Contains(st.Message(), "uuid") {
+		t.Errorf("message = %q, want the empty uuid to be reported first", st.Message())
+	}
+	if f.called {
+		t.Error("vector must not reach the service")
+	}
+}
+
+// Test_server_Update_invalidTimestamp pins that the service's rejection of a
+// MaxInt64 timestamp reaches the client as InvalidArgument, as the LB gateway
+// reports it, instead of Internal.
+func Test_server_Update_invalidTimestamp(t *testing.T) {
+	t.Parallel()
+	const ts = math.MaxInt64
+	vec := []float32{1, 2, 3}
+	s := &server{faiss: &updateErrFaiss{err: errors.ErrInvalidTimestamp(ts), dim: len(vec)}}
+	_, err := s.Update(t.Context(), &payload.Update_Request{
+		Vector: &payload.Object_Vector{Id: "a", Vector: vec},
+		Config: &payload.Update_Config{Timestamp: ts},
+	})
+	st, ok := status.FromError(err)
+	if err == nil || !ok || st.Code() != codes.InvalidArgument {
+		t.Errorf("got error %v, want code %v", err, codes.InvalidArgument)
+	}
+}
+
 // NOT IMPLEMENTED BELOW
 //
 // func Test_server_Update(t *testing.T) {

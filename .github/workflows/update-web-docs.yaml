@@ -28,6 +28,9 @@ on:
     paths:
       - "**.md"
       - "assets/docs/**"
+defaults:
+  run:
+    shell: bash
 jobs:
   dispatch:
     timeout-minutes: 30

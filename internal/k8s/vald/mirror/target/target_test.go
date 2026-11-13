@@ -23,7 +23,6 @@ import (
 	"github.com/vdaas/vald/internal/k8s"
 	mirrv1 "github.com/vdaas/vald/internal/k8s/vald/mirror/api/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
@@ -87,11 +86,9 @@ func newMirrorTarget(
 	name, namespace, host string, port int, colocation string, phase MirrorTargetPhase,
 ) *mirrv1.ValdMirrorTarget {
 	return &mirrv1.ValdMirrorTarget{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-			Labels:    map[string]string{testRoleLabelKey: "mirror"},
-		},
+		Name:      name,
+		Namespace: namespace,
+		Labels:    map[string]string{testRoleLabelKey: "mirror"},
 		Spec: mirrv1.MirrorTargetSpec{
 			Colocation: colocation,
 			Target:     mirrv1.MirrorTarget{Host: host, Port: port},

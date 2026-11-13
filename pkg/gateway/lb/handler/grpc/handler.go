@@ -15,9 +15,20 @@
 package grpc
 
 import (
+	"context"
+	"fmt"
+	"maps"
+	"runtime"
+	"slices"
 	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net/grpc/codes"
+	"github.com/vdaas/vald/internal/net/grpc/errdetails"
+	"github.com/vdaas/vald/internal/net/grpc/status"
+	lbmetrics "github.com/vdaas/vald/internal/observability/metrics/gateway/lb"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/pkg/gateway/lb/service"
 )
@@ -26,15 +37,55 @@ type server struct {
 	vald.UnimplementedValdServer
 	eg                errgroup.Group
 	gateway           service.Gateway
+	searchMetrics     *lbmetrics.SearchMetrics
 	name              string
 	ip                string
 	timeout           time.Duration
+	searchQuorumGrace time.Duration
 	replica           int
 	streamConcurrency int
 	multiConcurrency  int
 }
 
-const apiName = "vald/gateway/lb"
+const (
+	apiName = "vald/gateway/lb"
+
+	// uuidField is the errdetails.BadRequest field name of a request's uuid.
+	uuidField = "uuid"
+
+	// vectorField is the errdetails.BadRequest field name of a request's vector.
+	vectorField = "vector"
+)
+
+// autoMultiPerAgent is the number of in-flight requests per agent the automatic
+// Multi* concurrency targets. BenchmarkAgentConcurrencySweep (agent handler
+// package) shows Insert throughput levelling off around 64 in flight whatever
+// the agent's cores, and Search levelling off near 2x the agent's cores (64 for
+// a 32-core agent) and staying flat beyond.
+const autoMultiPerAgent = 64
+
+// autoMultiPerCPU scales the automatic Multi* concurrency ceiling by GOMAXPROCS,
+// the limit the handler used as its fixed default before the automatic mode.
+const autoMultiPerCPU = 10
+
+// multiLimit returns how many items of a Multi* request run at once. An explicit
+// multiConcurrency wins; 0 selects the automatic limit: GOMAXPROCS*10, capped so
+// each agent sees about autoMultiPerAgent in-flight requests. Write items reach
+// index_replica agents each, so the cap is ceil(agents*autoMultiPerAgent/replica);
+// a MultiSearch item reaches every agent, so the cap is autoMultiPerAgent.
+func (s *server) multiLimit(ctx context.Context, fanOutAll bool) int {
+	if s.multiConcurrency > 0 {
+		return s.multiConcurrency
+	}
+	limit := runtime.GOMAXPROCS(0) * autoMultiPerCPU
+	perAgent := autoMultiPerAgent
+	if !fanOutAll && s.replica > 0 {
+		if agents := s.gateway.GetAgentCount(ctx); agents > 0 {
+			perAgent = (agents*autoMultiPerAgent + s.replica - 1) / s.replica
+		}
+	}
+	return max(min(limit, perAgent), 1)
+}
 
 func New(opts ...Option) vald.Server {
 	s := new(server)
@@ -43,4 +94,81 @@ func New(opts ...Option) vald.Server {
 		opt(s)
 	}
 	return s
+}
+
+// errDetails builds the RequestInfo/ResourceInfo details attached to an error status.
+// It JSON-encodes the whole request and queries the gateway addresses, so call it only
+// on error paths; rpc names the resource, e.g. vald.InsertRPCName.
+func (s *server) errDetails(ctx context.Context, rpc, uuid string, req any) []any {
+	return []any{
+		&errdetails.RequestInfo{
+			RequestId:   uuid,
+			ServingData: errdetails.Serialize(req),
+		},
+		&errdetails.ResourceInfo{
+			ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + rpc,
+			ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
+		},
+	}
+}
+
+// joinTargetErrors joins the per-agent failures sorted by target, so the leading
+// error (whose code a joined error reports) does not depend on map order.
+func joinTargetErrors(errs map[string]error) error {
+	if len(errs) == 0 {
+		return nil
+	}
+	list := make([]error, 0, len(errs))
+	for _, target := range slices.Sorted(maps.Keys(errs)) {
+		list = append(list, errs[target])
+	}
+	return errors.Join(list...)
+}
+
+// warnPartialWrite reports a write RPC that succeeded although it was applied to
+// fewer agents than intended (failed agents, or fewer agents than replicas). It is
+// the single place such partial writes are reported and counted. failed holds each
+// failed agent's latest error by target, so every failed agent is counted once.
+// Callers report only writes applied to at least one agent (succeeded > 0): a
+// write applied to no agent is a failure, not a partial write.
+func (s *server) warnPartialWrite(
+	rpc, uuid string, succeeded int, failed map[string]error, err error,
+) {
+	s.searchMetrics.RecordWritePartialSuccess(rpc)
+	for _, ferr := range failed {
+		code := codes.Unknown
+		if st, ok := status.FromError(ferr); ok && st != nil {
+			code = st.Code()
+		}
+		s.searchMetrics.RecordWriteAgentFailure(rpc, code)
+	}
+	log.Warnf("%s API for uuid %s succeeded partially: applied to %d agent(s), failed on %d agent(s), errors: %v",
+		rpc, uuid, succeeded, len(failed), err)
+}
+
+// partialBroadCastResult decides the result of a write BroadCast whose callback
+// recorded each agent's latest failure in ferr and that succeeded on succeeded
+// agents. A missing connection and a done request context stay fatal; otherwise
+// the agent failures fail the request only when no agent applied the change, and
+// are reported as a partial write when some did.
+func (s *server) partialBroadCastResult(
+	ctx context.Context, rpc, uuid string, err error, succeeded int, ferr map[string]error,
+) error {
+	if errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) || ctx.Err() != nil {
+		return err
+	}
+	ferrs := joinTargetErrors(ferr)
+	if succeeded == 0 {
+		if err != nil {
+			return err
+		}
+		return ferrs
+	}
+	if ferrs == nil {
+		ferrs = err
+	}
+	if ferrs != nil {
+		s.warnPartialWrite(rpc, uuid, succeeded, ferr, ferrs)
+	}
+	return nil
 }

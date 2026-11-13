@@ -21,13 +21,13 @@ import (
 	"encoding/hex"
 	"encoding/pem"
 	"reflect"
-	"sync/atomic"
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/atomic"
 )
 
 type (
@@ -201,14 +201,26 @@ func (c *credentials) ensureCRL() {
 		return
 	}
 
+	// Fast path under the read lock: this runs on every handshake, and the CRL
+	// is reloaded only after NextUpdate.
+	c.crlMu.RLock()
+	fresh := time.Now().Before(c.crlNextUpdate)
+	c.crlMu.RUnlock()
+	if fresh {
+		return
+	}
+
 	c.crlMu.Lock()
 	defer c.crlMu.Unlock()
-	if time.Now().Before(c.crlNextUpdate) && c.revoked != nil {
+	if time.Now().Before(c.crlNextUpdate) {
 		return
 	}
 
 	m, next, err := loadCRL(c.crl)
 	if err != nil {
+		// Keep the previous revoked set but back off until next, so that a missing or
+		// unreadable CRL does not make every handshake take the write lock and retry.
+		c.crlNextUpdate = next
 		log.Warnf("failed to (re)load CRL: %v", err)
 		return
 	}
@@ -239,6 +251,23 @@ func (c *credentials) attachCRLChainChecker(cfg *tls.Config) {
 		c.crlMu.RUnlock()
 		if set == nil {
 			// Empty CRL cache means "no revocations known".
+			return nil
+		}
+		// crypto/tls calls this hook with no verified chains when client certs are
+		// requested but not verified (RequestClientCert, RequireAnyClientCert, or
+		// VerifyClientCertIfGiven without a cert). Check the leaf directly then,
+		// instead of rejecting every such handshake as revoked.
+		if len(verifiedChains) == 0 {
+			if len(rawCerts) == 0 {
+				return nil
+			}
+			leaf, err := x509.ParseCertificate(rawCerts[0])
+			if err != nil {
+				return err
+			}
+			if _, hit := set[leaf.SerialNumber.String()]; hit {
+				return errors.ErrCertRevoked
+			}
 			return nil
 		}
 		for _, chain := range verifiedChains {

@@ -17,6 +17,7 @@ package grpc
 import (
 	"fmt"
 
+	"github.com/vdaas/vald/internal/core/algorithm"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
@@ -25,6 +26,9 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 )
+
+// vectorField is the BadRequest field name reported for NaN / Inf vector values.
+const vectorField = "vector"
 
 // validateVectorDimension folds the up-front "incompatible dimension size"
 // guard that every unary handler repeats at the top of its method into a single
@@ -57,6 +61,39 @@ func (s *server) validateVectorDimension(
 			FieldViolations: []*errdetails.BadRequestFieldViolation{
 				{
 					Field:       "vector dimension size",
+					Description: err.Error(),
+				},
+			},
+		},
+		s.resourceInfo(resourceType))
+	log.Warn(err)
+	errhandler.RecordSpanError(span, codes.InvalidArgument, err)
+	return err
+}
+
+// validateVectorValue folds the up-front "vector contains NaN or Inf" guard into
+// a single call. It returns nil when vec is finite, otherwise it builds an
+// InvalidArgument status (the "<rpcName> API vector with NaN or Inf value
+// detected" message, the RequestInfo carrying id and the serialized request, the
+// "vector" BadRequest field violation, and this server's resourceInfo(resourceType)),
+// logs it at Warn, records it on span, and returns it. Inserts only enqueue the
+// vector, so the core algorithm rejection would otherwise surface asynchronously.
+func (s *server) validateVectorValue(
+	span trace.Span, rpcName, resourceType, id string, servingData any, vec []float32,
+) error {
+	if !algorithm.HasNaNOrInf(vec) {
+		return nil
+	}
+	err := errors.ErrNaNOrInfVector
+	err = status.WrapWithInvalidArgument(rpcName+" API vector with NaN or Inf value detected", err,
+		&errdetails.RequestInfo{
+			RequestId:   id,
+			ServingData: errdetails.Serialize(servingData),
+		},
+		&errdetails.BadRequest{
+			FieldViolations: []*errdetails.BadRequestFieldViolation{
+				{
+					Field:       vectorField,
 					Description: err.Error(),
 				},
 			},

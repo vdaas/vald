@@ -16,6 +16,7 @@ package usecase
 import (
 	"context"
 	"path/filepath"
+	"slices"
 	"testing"
 	"time"
 
@@ -340,6 +341,43 @@ func Test_run_Start(t *testing.T) {
 			tt.Fatal("timed out waiting for the channel to close after ctx cancellation")
 		}
 	})
+}
+
+type stopOrderObs struct{ calls *[]string }
+
+func (*stopOrderObs) PreStart(context.Context) error { return nil }
+
+func (*stopOrderObs) Start(context.Context) <-chan error { return nil }
+
+func (o *stopOrderObs) Stop(context.Context) error {
+	*o.calls = append(*o.calls, "observability")
+	return nil
+}
+
+type stopOrderSrv struct{ calls *[]string }
+
+func (*stopOrderSrv) ListenAndServe(context.Context) <-chan error { return nil }
+
+func (s *stopOrderSrv) Shutdown(context.Context) error {
+	*s.calls = append(*s.calls, "server")
+	return nil
+}
+
+// Stop used to stop observability before shutting the server down, so the
+// telemetry of the requests drained during Shutdown was dropped.
+func TestRun_Stop_shutsDownServerBeforeObservability(t *testing.T) {
+	t.Parallel()
+	var calls []string
+	r := &run{
+		server:        &stopOrderSrv{calls: &calls},
+		observability: &stopOrderObs{calls: &calls},
+	}
+	if err := r.Stop(t.Context()); err != nil {
+		t.Fatalf("Stop() = %v, want nil", err)
+	}
+	if want := []string{"server", "observability"}; !slices.Equal(calls, want) {
+		t.Errorf("Stop() call order = %v, want %v", calls, want)
+	}
 }
 
 // NOT IMPLEMENTED BELOW

@@ -16,6 +16,7 @@ package bbolt_test
 import (
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 	"github.com/vdaas/vald/internal/db/kvs/bbolt"
@@ -539,3 +540,25 @@ func Test_bbolt_AsyncSet(t *testing.T) {
 // 		})
 // 	}
 // }
+
+// TestNew_bucketCreationFailureReleasesDB verifies that a failed bucket creation closes the
+// underlying db, so the file lock is released and the file can be opened for writing again.
+func TestNew_bucketCreationFailureReleasesDB(t *testing.T) {
+	t.Parallel()
+
+	tmpfile := filepath.Join(t.TempDir(), "test.db")
+
+	b, err := bbolt.New(tmpfile, "existing", mode)
+	require.NoError(t, err)
+	require.NoError(t, b.Close(false))
+
+	// A read-only db cannot create the missing bucket, so New must fail.
+	b, err = bbolt.New(tmpfile, "missing", mode, bbolt.WithReadOnly(true))
+	require.Error(t, err)
+	require.Nil(t, b)
+
+	// If the failed New leaked the read-only handle, its shared flock would make this exclusive open time out.
+	b, err = bbolt.New(tmpfile, "existing", mode, bbolt.WithTimeout(500*time.Millisecond))
+	require.NoError(t, err)
+	require.NoError(t, b.Close(false))
+}

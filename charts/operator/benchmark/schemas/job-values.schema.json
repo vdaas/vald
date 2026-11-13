@@ -238,7 +238,7 @@
                     },
                     "tcp_no_delay": {
                       "type": "boolean",
-                      "description": "server listen socket option for tcp_no_delay functionality"
+                      "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                     },
                     "tcp_quick_ack": {
                       "type": "boolean",
@@ -440,6 +440,10 @@
             "host": {
               "type": "string",
               "description": "filter target host"
+            },
+            "port": {
+              "type": "integer",
+              "description": "filter target port"
             }
           }
         }
@@ -676,7 +680,7 @@
                         },
                         "tcp_no_delay": {
                           "type": "boolean",
-                          "description": "server listen socket option for tcp_no_delay functionality"
+                          "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                         },
                         "tcp_quick_ack": {
                           "type": "boolean",
@@ -845,7 +849,7 @@
                         },
                         "tcp_no_delay": {
                           "type": "boolean",
-                          "description": "server listen socket option for tcp_no_delay functionality"
+                          "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                         },
                         "tcp_quick_ack": {
                           "type": "boolean",
@@ -1104,7 +1108,7 @@
                         },
                         "tcp_no_delay": {
                           "type": "boolean",
-                          "description": "server listen socket option for tcp_no_delay functionality"
+                          "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                         },
                         "tcp_quick_ack": {
                           "type": "boolean",
@@ -1231,7 +1235,7 @@
                         },
                         "tcp_no_delay": {
                           "type": "boolean",
-                          "description": "server listen socket option for tcp_no_delay functionality"
+                          "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                         },
                         "tcp_quick_ack": {
                           "type": "boolean",

@@ -208,7 +208,7 @@ func (b *vrsBuilder) buildAgent() *valdrelease.Agent {
 	input := b.cr.Spec.VectorEngine.Vald.Agent
 	return &valdrelease.Agent{
 		Logging: b.buildLogging(input.LogLevel),
-		Kind:    ptr(valdrelease.AgentKindStatefulSet),
+		Kind:    new(valdrelease.AgentKindStatefulSet),
 		RollingUpdate: &valdrelease.AgentRollingUpdate{
 			MaxUnavailable: new(b.cfg.AgentMaxUnavailable),
 			MaxSurge:       new(b.cfg.AgentMaxSurge),
@@ -293,11 +293,11 @@ func (b *vrsBuilder) getGatewayServiceType(st string) *valdrelease.GatewayLbServ
 	}
 	switch st {
 	case string(k8s.ServiceTypeClusterIP):
-		return ptr(valdrelease.GatewayLbServiceTypeClusterIP)
+		return new(valdrelease.GatewayLbServiceTypeClusterIP)
 	case string(k8s.ServiceTypeLoadBalancer):
-		return ptr(valdrelease.GatewayLbServiceTypeLoadBalancer)
+		return new(valdrelease.GatewayLbServiceTypeLoadBalancer)
 	default:
-		return ptr(valdrelease.GatewayLbServiceTypeNodePort)
+		return new(valdrelease.GatewayLbServiceTypeNodePort)
 	}
 }
 
@@ -391,10 +391,6 @@ func (b *vrsBuilder) buildLogging(ll string) *valdrelease.Logging {
 		Logger: b.cfg.VrsLogger,
 	}
 }
-
-// ptr returns a pointer to v. The generated ValdRelease types use pointers for
-// nearly every field, so the builder wraps its scalar inputs with this.
-func ptr[T any](v T) *T { return new(v) }
 
 // toAnyMap converts a string map into the free-form map[string]interface{}
 // shape the generated schema uses for annotation-like fields.

@@ -20,9 +20,11 @@ import (
 	agent "github.com/vdaas/vald/apis/grpc/v1/agent/core"
 	vald "github.com/vdaas/vald/apis/grpc/v1/vald"
 	iconf "github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s/client"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/observability"
+	"github.com/vdaas/vald/internal/observability/metrics"
 	ngtmetrics "github.com/vdaas/vald/internal/observability/metrics/agent/core/ngt"
 	infometrics "github.com/vdaas/vald/internal/observability/metrics/info"
 	memmetrics "github.com/vdaas/vald/internal/observability/metrics/mem"
@@ -50,6 +52,15 @@ const (
 	agentNGTInfo = config.AgentNGTInfo
 	fieldManager = "vald-agent-index-controller"
 )
+
+// withMemMetrics appends memory metrics unless observability.NewWithConfig
+// already adds them (metrics.enable_memory), so they are registered once.
+func withMemMetrics(cfg *iconf.Observability, ms ...metrics.Metric) []metrics.Metric {
+	if cfg != nil && cfg.Metrics != nil && cfg.Metrics.EnableMemory {
+		return ms
+	}
+	return append(ms, memmetrics.New())
+}
 
 func New(cfg *config.Data) (r runner.Interface, err error) {
 	serviceOpts := []service.Option{
@@ -116,9 +127,11 @@ func New(cfg *config.Data) (r runner.Interface, err error) {
 	if cfg.Observability != nil && cfg.Observability.Enabled {
 		obs, err = observability.NewWithConfig(
 			cfg.Observability,
-			ngtmetrics.New(ngt),
-			infometrics.New(agentNGTInfo, "Agent NGT info", *cfg.NGT),
-			memmetrics.New(),
+			withMemMetrics(
+				cfg.Observability,
+				ngtmetrics.New(ngt),
+				infometrics.New(agentNGTInfo, "Agent NGT info", *cfg.NGT),
+			)...,
 		)
 		if err != nil {
 			return nil, err
@@ -201,14 +214,16 @@ func (*run) PreStop(ctx context.Context) error {
 	return nil
 }
 
-func (r *run) Stop(ctx context.Context) error {
+func (r *run) Stop(ctx context.Context) (err error) {
+	// Shut the server down first so spans and metrics of the requests it drains
+	// are still exported before observability is stopped.
+	err = r.server.Shutdown(ctx)
 	if r.observability != nil {
-		r.observability.Stop(ctx)
+		err = errors.Join(err, r.observability.Stop(ctx))
 	}
-	return r.server.Shutdown(ctx)
+	return err
 }
 
 func (r *run) PostStop(ctx context.Context) error {
-	r.ngt.Close(ctx)
-	return nil
+	return r.ngt.Close(ctx)
 }

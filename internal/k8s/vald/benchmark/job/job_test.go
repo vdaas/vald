@@ -23,7 +23,6 @@ import (
 	"github.com/vdaas/vald/internal/k8s"
 	v1 "github.com/vdaas/vald/internal/k8s/vald/benchmark/api/v1"
 	"github.com/vdaas/vald/internal/test/goleak"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/rest"
 	kclient "sigs.k8s.io/controller-runtime/pkg/client"
@@ -79,10 +78,8 @@ func (c *errClient) List(_ context.Context, _ k8s.ObjectList, _ ...k8s.ListOptio
 
 func newBenchJob(name, namespace string) *v1.ValdBenchmarkJob {
 	return &v1.ValdBenchmarkJob{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-		},
+		Name:      name,
+		Namespace: namespace,
 	}
 }
 

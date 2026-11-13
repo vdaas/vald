@@ -392,7 +392,7 @@ job:
           # job.client_config.dial_option.net.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
           tcp_fast_open: true
           # @schema {"name": "job.client_config.dial_option.net.socket_option.tcp_no_delay", "type": "boolean"}
-          # job.client_config.dial_option.net.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
+          # job.client_config.dial_option.net.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)
           tcp_no_delay: true
           # @schema {"name": "job.client_config.dial_option.net.socket_option.tcp_cork", "type": "boolean"}
           # job.client_config.dial_option.net.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality

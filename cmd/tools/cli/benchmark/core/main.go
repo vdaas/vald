@@ -24,7 +24,7 @@ import (
 
 	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/core/algorithm/ngt"
-	"github.com/vdaas/vald/internal/file"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/http/metrics"
 	"github.com/vdaas/vald/internal/os"
@@ -240,7 +240,10 @@ func main() {
 		return nil
 	})
 
-	vectors, _, _ := load(os.Getenv("DATA_PATH"))
+	vectors, _, err := load(os.Getenv("DATA_PATH"))
+	if err != nil || len(vectors) == 0 {
+		log.Fatalf("failed to load vectors from DATA_PATH=%q: %v", os.Getenv("DATA_PATH"), err)
+	}
 	log.Infof("# of vectors: %v", len(vectors))
 	log.Info(strings.Join([]string{
 		"Operation",
@@ -288,7 +291,6 @@ func main() {
 		"Close",
 	}, "\t"))
 	output("start")
-	path, _ := file.MkdirTemp("")
 	const (
 		logInterval  = time.Second * 5
 		waitForStart = time.Minute * 1
@@ -304,7 +306,9 @@ func main() {
 
 	ids := make([]uint, len(vectors))
 	const timeToRun = time.Hour * 2
-	run(ctx, false, path, len(vectors[0]), vectors, ids, timeToRun, output)
+	if err := run(ctx, false, len(vectors[0]), vectors, ids, timeToRun, output); err != nil {
+		log.Fatal(err)
+	}
 	const waitForNext = time.Minute * 2
 	sleep(ctx, logInterval, waitForNext, func() {
 		output("waiting for next")
@@ -314,7 +318,9 @@ func main() {
 		time.Sleep(time.Minute)
 		output("starting")
 	})
-	run(ctx, true, path, len(vectors[0]), nil, nil, 0, output)
+	if err := run(ctx, true, len(vectors[0]), nil, nil, 0, output); err != nil {
+		log.Fatal(err)
+	}
 	sleep(ctx, logInterval, waitForNext, func() {
 		output("waiting for next")
 	}, func() {
@@ -323,7 +329,9 @@ func main() {
 		time.Sleep(time.Minute)
 		output("starting")
 	})
-	run(ctx, true, path, len(vectors[0]), vectors, ids, timeToRun, output)
+	if err := run(ctx, true, len(vectors[0]), vectors, ids, timeToRun, output); err != nil {
+		log.Fatal(err)
+	}
 
 	ids = ids[:0:0]
 	ids = nil
@@ -356,29 +364,34 @@ func main() {
 func run(
 	ctx context.Context,
 	load bool,
-	path string,
 	dim int,
 	vectors [][]float32,
 	ids []uint,
 	dur time.Duration,
 	output func(header string),
-) {
+) error {
 	const poolSize = 8
-	var n ngt.NGT
+	var (
+		n   ngt.NGT
+		err error
+	)
 	if load {
-		n, _ = ngt.Load(
+		n, err = ngt.Load(
 			ngt.WithDimension(dim),
 			ngt.WithDefaultPoolSize(poolSize),
 			ngt.WithObjectType(ngt.Float),
 			ngt.WithDistanceType(ngt.L2),
 		)
 	} else {
-		n, _ = ngt.New(
+		n, err = ngt.New(
 			ngt.WithDimension(dim),
 			ngt.WithDefaultPoolSize(poolSize),
 			ngt.WithObjectType(ngt.Float),
 			ngt.WithDistanceType(ngt.L2),
 		)
+	}
+	if err != nil {
+		return errors.Wrapf(err, "failed to initialize NGT (load=%t)", load)
 	}
 
 	if vectors != nil {
@@ -392,46 +405,74 @@ func run(
 			ids = make([]uint, len(vectors))
 		} else if load {
 			for _, id = range ids {
-				_ = n.Remove(id)
+				if err = n.Remove(id); err != nil {
+					log.Debugf("failed to remove id %d before re-insert: %v", id, err)
+				}
 			}
 			output("remove")
 		}
-		sleep(ctx, 0, dur, func() {
+		// rctx is cancelled on the first failure so that sleep stops calling fn;
+		// the failure is returned to main instead of calling log.Fatal here.
+		rctx, rcancel := context.WithCancel(ctx)
+		var ferr error
+		fail := func(err error) {
+			ferr = err
+			rcancel()
+		}
+		sleep(rctx, 0, dur, func() {
+			if ferr != nil {
+				return
+			}
 			for i, vector = range vectors {
 				id, err = n.Insert(vector)
 				if err != nil {
-					log.Fatal(err)
+					fail(err)
+					return
 				}
 				ids[i] = id
 			}
 			output("insert")
 			if err = n.CreateIndex(poolSize); err != nil {
-				log.Fatal(err)
+				fail(err)
+				return
 			}
 			output("create index")
 			for _, id = range ids {
 				if err = n.Remove(id); err != nil {
-					log.Fatal(err)
+					fail(err)
+					return
 				}
 			}
 			output("remove")
 		}, func() {
+			if ferr != nil {
+				return
+			}
 			for _, vector = range vectors {
 				_, err = n.Insert(vector)
 				if err != nil {
-					log.Fatal(err)
+					fail(err)
+					return
 				}
 			}
 			output("insert")
 			if err = n.CreateIndex(poolSize); err != nil {
-				log.Fatal(err)
+				fail(err)
+				return
 			}
 			output("create index")
 			if err = n.SaveIndex(); err != nil {
-				log.Fatal(err)
+				fail(err)
+				return
 			}
 			output("save index")
 		})
+		rcancel()
+		if ferr != nil {
+			n.Close()
+			output("close")
+			return ferr
+		}
 	}
 	sleep(ctx, time.Second*5, time.Minute*10, func() {
 		output("finalizing")
@@ -440,6 +481,7 @@ func run(
 		n = nil
 		output("close")
 	})
+	return nil
 }
 
 func sleep(ctx context.Context, duration, limit time.Duration, fn, efn func()) {
@@ -451,7 +493,7 @@ func sleep(ctx context.Context, duration, limit time.Duration, fn, efn func()) {
 	defer efn()
 	end := time.NewTimer(limit)
 	defer end.Stop()
-	if duration == 0 {
+	if duration <= 0 {
 		for {
 			select {
 			case <-ctx.Done():
@@ -502,7 +544,14 @@ func load(path string) (train, test [][]float32, err error) {
 		defer sp.Close()
 
 		// SimpleExtentDims returns dataspace dimension size and maximum size.
-		dims, _, _ := sp.SimpleExtentDims()
+		dims, _, err := sp.SimpleExtentDims()
+		if err != nil {
+			return nil, err
+		}
+		const rank = 2 // rows x dimension
+		if len(dims) != rank {
+			return nil, errors.Errorf("unexpected dataset rank %d for %s", len(dims), name)
+		}
 		row, dim := int(dims[0]), int(dims[1])
 
 		// Gets the stored vector. All are represented as one-dimensional arrays.

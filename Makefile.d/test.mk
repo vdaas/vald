@@ -150,7 +150,7 @@ test/all/gotestfmt: \
 ## create empty test file if not exists
 test/create-empty:
 	@$(call green, "create empty test file if not exists...")
-	@echo "$(GO_ALL_TEST_SOURCES)" | tr ' ' '\n' | xargs -P $(CORES) -I {} bash -c ' \
+	@echo "$(GO_ALL_TEST_SOURCES)" | tr ' ' '\n' | $(XARGS) $(SHELL_STRICT_EXEC) ' \
 		if [ ! -f "{}" ]; then \
 			echo "Creating empty test file {}"; \
 			package="$$(basename $$(dirname {}))"; \
@@ -165,7 +165,7 @@ test/create-empty:
 ## remove empty test files
 test/remove-empty:
 	@$(call green, "remove empty test files...")
-	@echo "$(GO_ALL_TEST_SOURCES)" | tr ' ' '\n' | xargs -P $(CORES) -I {} bash -c ' \
+	@echo "$(GO_ALL_TEST_SOURCES)" | tr ' ' '\n' | $(XARGS) $(SHELL_STRICT_EXEC) ' \
 		if ! grep -q "func Test" "{}"; then \
 			echo "Removing empty test file {}"; \
 			rm "{}"; \
@@ -180,6 +180,14 @@ test/pkg: \
 	certs/gen
 	$(call go-test,$(ROOTDIR)/pkg/...)
 	$(MAKE) certs/clean
+
+.PHONY: test/package
+## run tests for the packages in TEST_PKG (same flags as `test`), e.g.
+## make test/package TEST_PKG=./pkg/agent/core/ngt/service/... TEST_RUN=TestNew
+test/package: \
+	ngt/install \
+	hdf5/install
+	$(call go-test,$(if $(TEST_RUN),-run '$(TEST_RUN)') $(TEST_PKG))
 
 .PHONY: test/internal
 ## run tests for internal
@@ -207,7 +215,8 @@ test/rust: \
 
 .PHONY: test/rust/qbg
 ## run tests for qbg
-test/rust/qbg:
+test/rust/qbg: \
+	rust/toolchain/sync
 	$(CC_ENV_VARS) \
 	cargo test --manifest-path rust/Cargo.toml --package qbg --lib -- tests::test_ffi_qbg --exact --show-output
 	$(CC_ENV_VARS) \
@@ -221,7 +230,8 @@ test/rust/qbg:
 
 .PHONY: test/rust/agent
 ## run tests for agent
-test/rust/agent:
+test/rust/agent: \
+	rust/toolchain/sync
 	$(CC_ENV_VARS) \
 	cargo test --manifest-path rust/Cargo.toml --package agent -- handler::common::tests --show-output
 
@@ -282,7 +292,7 @@ gotests/gen-test:
 gotests/patch: \
 	files
 	@$(call green, "apply patches to go test files...")
-	@cat $(ROOTDIR)/.gitfiles | grep -E '^(\./)?internal/k8s/.*\_test.go$$' | xargs -I {} -P$(CORES) bash -c ' \
+	@cat $(ROOTDIR)/.gitfiles | grep -E '^(\./)?internal/k8s/.*\_test.go$$' | $(XARGS) $(SHELL_STRICT_EXEC) ' \
 	echo "Replacing internal/k8s Test File {}" && \
 	sed -i -E "s%k8s.io/apimachinery/pkg/api/errors%$(GOPKG)/internal/errors%g" {} && \
 	sed -i -E "s%cockroachdb/errors%$(REPO)/internal/errors%g" {} && \
@@ -290,11 +300,11 @@ gotests/patch: \
 	sed -i -E "s%pkg/errors%$(REPO)/internal/errors%g" {} && \
 	sed -i -E "s%go-errors/errors%$(REPO)/internal/errors%g" {} && \
 	sed -i -E "s%go.uber.org/goleak%$(GOPKG)/internal/test/goleak%g" {}'
-	@cat $(ROOTDIR)/.gitfiles | grep -E '^(\./)?internal/errors/.*\_test.go$$' | xargs -I {} -P$(CORES) bash -c ' \
+	@cat $(ROOTDIR)/.gitfiles | grep -E '^(\./)?internal/errors/.*\_test.go$$' | $(XARGS) $(SHELL_STRICT_EXEC) ' \
 	echo "Replacing internal/errors Test {}" && \
 	sed -i -E "s%\"$(GOPKG)/internal/errors\"%%g" {} && \
 	sed -i -E "s/errors\.//g" {}'
-	@cat $(ROOTDIR)/.gitfiles | grep -E '^(\./)?internal/test/goleak/.*\_test.go$$' | xargs -I {} -P$(CORES) bash -c ' \
+	@cat $(ROOTDIR)/.gitfiles | grep -E '^(\./)?internal/test/goleak/.*\_test.go$$' | $(XARGS) $(SHELL_STRICT_EXEC) ' \
 	echo "Replacing goleak Test file {}" && \
 	sed -i -E "s%\"$(GOPKG)/internal/test/goleak\"%%g" {} && \
 	sed -i -E "s/goleak\.//g" {}'
@@ -305,7 +315,7 @@ gotests/patch: \
 ## delete from placeholder to EOF, then re-append placeholder
 test/patch-placeholder:
 	@$(call green, "apply placeholder patches (delete to EOF and append)...")
-	@echo "$(GO_ALL_TEST_SOURCES)" | tr ' ' '\n' | xargs -I {} -P$(CORES) bash -c ' \
+	@echo "$(GO_ALL_TEST_SOURCES)" | tr ' ' '\n' | $(XARGS) $(SHELL_STRICT_EXEC) ' \
 		[ -f "{}" ] || exit 0 ; \
 		sed -i -E "/\/\/ $(TEST_NOT_IMPL_PLACEHOLDER)/,\$$d" "{}"; \
 		echo "// $(TEST_NOT_IMPL_PLACEHOLDER)" >> {};'
@@ -314,7 +324,7 @@ test/patch-placeholder:
 ## comment out unimplemented tests (from placeholder to EOF)
 test/comment-unimplemented:
 	@$(call green, "comment out unimplemented test (from placeholder to EOF)...")
-	@echo "$(GO_ALL_TEST_SOURCES)" | tr ' ' '\n' | xargs -I {} -P$(CORES) bash -c ' \
+	@echo "$(GO_ALL_TEST_SOURCES)" | tr ' ' '\n' | $(XARGS) $(SHELL_STRICT_EXEC) ' \
 		[ -f "{}" ] || exit 0 ; \
 		sed -i -E -e " \
 		/\/\/ $(TEST_NOT_IMPL_PLACEHOLDER)/,\$$ { \

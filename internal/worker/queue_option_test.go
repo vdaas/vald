@@ -255,4 +255,40 @@ func TestWithQueueCheckDuration(t *testing.T) {
 	}
 }
 
+// time.NewTicker panics for a non-positive interval, so the option must reject it
+// and leave the previously configured (default) value untouched.
+func TestWithQueueCheckDuration_NonPositive(t *testing.T) {
+	t.Parallel()
+	const initial = 7 * time.Second
+	tests := []struct {
+		name    string
+		dur     string
+		want    time.Duration
+		wantErr bool
+	}{
+		{name: "zero is rejected", dur: "0s", want: initial, wantErr: true},
+		{name: "negative is rejected", dur: "-1s", want: initial, wantErr: true},
+		{name: "positive is applied", dur: "2s", want: 2 * time.Second},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			o := new(queue)
+			o.qcdur = initial
+			err := WithQueueCheckDuration(tt.dur)(o)
+			if tt.wantErr {
+				var e *errors.ErrInvalidOption
+				if !errors.As(err, &e) {
+					t.Errorf("error = %v, want ErrInvalidOption", err)
+				}
+			} else if err != nil {
+				t.Errorf("unexpected error: %v", err)
+			}
+			if o.qcdur != tt.want {
+				t.Errorf("qcdur = %v, want %v", o.qcdur, tt.want)
+			}
+		})
+	}
+}
+
 // NOT IMPLEMENTED BELOW

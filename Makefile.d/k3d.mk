@@ -30,7 +30,7 @@ k3d/install: $(BINDIR)/k3d
 
 $(BINDIR)/k3d: $(ROOTDIR)/versions/K3D_VERSION
 	mkdir -p $(BINDIR)
-	curl -fsSL https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | TAG=v$(K3D_VERSION) K3D_INSTALL_DIR=$(BINDIR) bash
+	$(CURL) https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | TAG=v$(K3D_VERSION) K3D_INSTALL_DIR=$(BINDIR) bash
 	-chmod a+x $(BINDIR)/$(K3D_COMMAND)
 
 .PHONY: k3d/start
@@ -56,7 +56,7 @@ k3d/vs/start:
 	kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/$(SNAPSHOTTER_VERSION)/deploy/kubernetes/snapshot-controller/rbac-snapshot-controller.yaml
 	kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/$(SNAPSHOTTER_VERSION)/deploy/kubernetes/snapshot-controller/setup-snapshot-controller.yaml
 	mkdir -p $(TEMP_DIR)/csi-driver-hostpath \
-	&& curl -fsSL https://github.com/kubernetes-csi/csi-driver-host-path/archive/refs/tags/$(CSI_DRIVER_HOST_PATH_VERSION).tar.gz | tar zxf - -C $(TEMP_DIR)/csi-driver-hostpath --strip-components 1 \
+	&& $(CURL) https://github.com/kubernetes-csi/csi-driver-host-path/archive/refs/tags/$(CSI_DRIVER_HOST_PATH_VERSION).tar.gz | tar zxf - -C $(TEMP_DIR)/csi-driver-hostpath --strip-components 1 \
 	&& cd $(TEMP_DIR)/csi-driver-hostpath \
 	&& deploy/kubernetes-latest/deploy.sh \
 	&& kubectl apply -f examples/csi-storageclass.yaml \

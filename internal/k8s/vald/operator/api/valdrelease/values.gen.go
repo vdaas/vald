@@ -944,6 +944,24 @@ type DefaultsGrpc struct {
 	Client *GrpcClient `json:"client,omitempty"`
 }
 
+// DefaultsGrpcClientCallOption defines model for defaults_grpc_client_call_option.
+type DefaultsGrpcClientCallOption struct {
+	// ContentSubtype gRPC client call option content subtype
+	ContentSubtype *string `json:"content_subtype,omitempty"`
+
+	// MaxRecvMsgSize gRPC client call option max receive message size
+	MaxRecvMsgSize *int `json:"max_recv_msg_size,omitempty"`
+
+	// MaxRetryRpcBufferSize gRPC client call option max retry rpc buffer size
+	MaxRetryRpcBufferSize *int `json:"max_retry_rpc_buffer_size,omitempty"`
+
+	// MaxSendMsgSize gRPC client call option max send message size
+	MaxSendMsgSize *int `json:"max_send_msg_size,omitempty"`
+
+	// WaitForReady gRPC client call option wait for ready
+	WaitForReady *bool `json:"wait_for_ready,omitempty"`
+}
+
 // DefaultsGrpcClientCircuitBreaker defines model for defaults_grpc_client_circuit_breaker.
 type DefaultsGrpcClientCircuitBreaker struct {
 	// ClosedErrorRate gRPC client circuitbreaker closed error rate
@@ -1922,19 +1940,24 @@ type GatewayLbGatewayConfig struct {
 	// IndexReplica number of index replica
 	IndexReplica *int `json:"index_replica,omitempty"`
 
-	// MultiOperationConcurrency number of concurrency of multiXXX api's operation
+	// MultiOperationConcurrency number of concurrency of multiXXX api's operation; 0 computes it automatically: min(GOMAXPROCS*10, ceil(agents*64/index_replica)) for writes and min(GOMAXPROCS*10, 64) for MultiSearch
 	MultiOperationConcurrency *int `json:"multi_operation_concurrency,omitempty"`
 
 	// NodeName node name
 	NodeName *string `json:"node_name,omitempty"`
+
+	// SearchQuorumGrace once agents - index_replica + 1 agents answered a search with results (at least one replica of every index replica set), wait at most this long for the rest before returning; empty disables the early termination
+	SearchQuorumGrace *string `json:"search_quorum_grace,omitempty"`
 }
 
 // GatewayLbGatewayConfigDiscoverer defines model for gateway_lb_gateway_config_discoverer.
 type GatewayLbGatewayConfigDiscoverer struct {
 	AgentClientOptions *GrpcClient `json:"agent_client_options,omitempty"`
 	Client             *GrpcClient `json:"client,omitempty"`
-	Duration           *string     `json:"duration,omitempty"`
-	ReadClient         *GrpcClient `json:"read_client,omitempty"`
+
+	// Duration discoverer duration (polling faster than discoverer.discoverer.discovery_duration only re-fetches the same snapshot)
+	Duration   *string     `json:"duration,omitempty"`
+	ReadClient *GrpcClient `json:"read_client,omitempty"`
 }
 
 // GatewayLbIngress defines model for gateway_lb_ingress.
@@ -2177,8 +2200,10 @@ type GatewayMirrorIngress struct {
 	PathType *string `json:"pathType,omitempty"`
 
 	// ServicePort service port to be exposed by ingress
-	ServicePort *string           `json:"servicePort,omitempty"`
-	Tls         *[]map[string]any `json:"tls,omitempty"`
+	ServicePort *string `json:"servicePort,omitempty"`
+
+	// Tls ingress tls config
+	Tls *[]map[string]any `json:"tls,omitempty"`
 }
 
 // GatewayMirrorIngressDefaultBackend defaultBackend config
@@ -2192,19 +2217,14 @@ type GrpcClient struct {
 	// Addrs gRPC client addresses
 	Addrs          *[]string                         `json:"addrs,omitempty"`
 	Backoff        *Backoff                          `json:"backoff,omitempty"`
-	CallOption     *map[string]any                   `json:"call_option,omitempty"`
+	CallOption     *DefaultsGrpcClientCallOption     `json:"call_option,omitempty"`
 	CircuitBreaker *DefaultsGrpcClientCircuitBreaker `json:"circuit_breaker,omitempty"`
 	ConnectionPool *DefaultsGrpcClientConnectionPool `json:"connection_pool,omitempty"`
-	ContentSubtype *string                           `json:"content_subtype,omitempty"`
 	DialOption     *DefaultsGrpcClientDialOption     `json:"dial_option,omitempty"`
 
 	// HealthCheckDuration gRPC client health check duration
-	HealthCheckDuration   *string `json:"health_check_duration,omitempty"`
-	MaxRecvMsgSize        *int    `json:"max_recv_msg_size,omitempty"`
-	MaxRetryRpcBufferSize *int    `json:"max_retry_rpc_buffer_size,omitempty"`
-	MaxSendMsgSize        *int    `json:"max_send_msg_size,omitempty"`
-	Tls                   *Tls    `json:"tls,omitempty"`
-	WaitForReady          *bool   `json:"wait_for_ready,omitempty"`
+	HealthCheckDuration *string `json:"health_check_duration,omitempty"`
+	Tls                 *Tls    `json:"tls,omitempty"`
 }
 
 // GrpcServer defines model for grpc_server.
@@ -2232,6 +2252,9 @@ type HttpServerConfig = config.HTTP
 type Image struct {
 	// PullPolicy image pull policy
 	PullPolicy *ImagePullPolicy `json:"pullPolicy,omitempty"`
+
+	// Registry image registry (overrides defaults.image.registry)
+	Registry *string `json:"registry,omitempty"`
 
 	// Repository image repository
 	Repository *string `json:"repository,omitempty"`

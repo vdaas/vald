@@ -15,6 +15,7 @@
 package worker
 
 import (
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/timeutil"
 )
@@ -58,6 +59,10 @@ func WithQueueCheckDuration(dur string) QueueOption {
 		d, err := timeutil.Parse(dur)
 		if err != nil {
 			return err
+		}
+		if d <= 0 {
+			// time.NewTicker panics for non-positive intervals
+			return errors.NewErrInvalidOption("queueCheckDuration", dur)
 		}
 		q.qcdur = d
 		return nil

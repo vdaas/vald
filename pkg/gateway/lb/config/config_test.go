@@ -14,6 +14,53 @@
 
 package config
 
+import (
+	"testing"
+
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/file"
+	"github.com/vdaas/vald/internal/os"
+)
+
+// The usecase dereferences LB.Discoverer unconditionally, so a missing discoverer must be rejected here.
+func TestNew_discoverer(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		err  error
+		name string
+		data string
+	}{
+		{
+			name: "return ErrInvalidConfig when discoverer is missing",
+			data: `{"server_config": {}, "gateway": {}}`,
+			err:  errors.ErrInvalidConfig,
+		},
+		{
+			name: "return Data when discoverer is set",
+			data: `{"server_config": {}, "gateway": {"discoverer": {}}}`,
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(tt *testing.T) {
+			tt.Parallel()
+			path := file.Join(tt.TempDir(), "config.json")
+			if err := os.WriteFile(path, []byte(tc.data), 0o600); err != nil {
+				tt.Fatal(err)
+			}
+			cfg, err := New(path)
+			if !errors.Is(err, tc.err) {
+				tt.Fatalf("New() error = %v, want %v", err, tc.err)
+			}
+			if tc.err != nil {
+				return
+			}
+			if cfg == nil || cfg.Gateway == nil || cfg.Gateway.Discoverer == nil || cfg.Gateway.Discoverer.Client == nil {
+				tt.Errorf("New() = %+v, want a bound discoverer client", cfg)
+			}
+		})
+	}
+}
+
 // NOT IMPLEMENTED BELOW
 //
 // func TestNew(t *testing.T) {

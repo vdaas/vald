@@ -370,6 +370,24 @@ metadata:
 			t.Error("Load() error = nil, want error")
 		}
 	})
+
+	for _, tc := range []struct {
+		name string
+		body string
+	}{
+		{name: "returns error when the template is empty", body: ""},
+		{name: "returns error when the template is null", body: "null\n"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			o := &Operator{Vrs: &Vrs{DefaultVrsPath: writeTempFile(t, "vrs.yaml", tc.body)}}
+			cfg, err := o.Load()
+			if err == nil {
+				t.Errorf("Load() error = nil, want error (DefaultVrs.Us = %v)", cfg.DefaultVrs.Us)
+			}
+		})
+	}
 }
 
 // NOT IMPLEMENTED BELOW

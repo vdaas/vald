@@ -132,7 +132,7 @@ example/client/client:
 	$(eval CGO_ENABLED = 1)
 	$(call go-example-build,example/client,-linkmode 'external',$(HDF5_LDFLAGS), cgo,$(HDF5_VERSION),$@)
 
-rust/target/release/agent:
+rust/target/release/agent: | rust/toolchain/sync
 	pushd rust && \
 	$(CC_ENV_VARS) \
 	OPENSSL_STATIC=1 \
@@ -140,7 +140,7 @@ rust/target/release/agent:
 	cargo build -p agent --release && \
 	popd
 
-rust/target/debug/agent:
+rust/target/debug/agent: | rust/toolchain/sync
 	pushd rust && \
 	$(CC_ENV_VARS) \
 	OPENSSL_STATIC=1 \
@@ -174,78 +174,27 @@ binary/build/zip: \
 	artifacts/vald-mirror-gateway-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-readreplica-rotate-$(GOOS)-$(GOARCH).zip
 
+# Each artifact zip only declares its binary; the single pattern recipe below
+# packs it ($^ carries the prerequisite declared here).
+artifacts/vald-agent-ngt-$(GOOS)-$(GOARCH).zip: cmd/agent/core/ngt/ngt
+artifacts/vald-agent-faiss-$(GOOS)-$(GOARCH).zip: cmd/agent/core/faiss/faiss
+artifacts/vald-agent-sidecar-$(GOOS)-$(GOARCH).zip: cmd/agent/sidecar/sidecar
+artifacts/vald-discoverer-k8s-$(GOOS)-$(GOARCH).zip: cmd/discoverer/k8s/discoverer
+artifacts/vald-lb-gateway-$(GOOS)-$(GOARCH).zip: cmd/gateway/lb/lb
+artifacts/vald-filter-gateway-$(GOOS)-$(GOARCH).zip: cmd/gateway/filter/filter
+artifacts/vald-manager-index-$(GOOS)-$(GOARCH).zip: cmd/manager/index/index
+artifacts/vald-benchmark-job-$(GOOS)-$(GOARCH).zip: cmd/tools/benchmark/job/job
+artifacts/vald-benchmark-operator-$(GOOS)-$(GOARCH).zip: cmd/operator/benchmark/operator
+artifacts/vald-mirror-gateway-$(GOOS)-$(GOARCH).zip: cmd/gateway/mirror/mirror
+artifacts/vald-index-correction-$(GOOS)-$(GOARCH).zip: cmd/index/job/correction/index-correction
+artifacts/vald-index-creation-$(GOOS)-$(GOARCH).zip: cmd/index/job/creation/index-creation
+artifacts/vald-index-deletion-$(GOOS)-$(GOARCH).zip: cmd/index/job/deletion/index-deletion
+artifacts/vald-index-exportation-$(GOOS)-$(GOARCH).zip: cmd/index/job/exportation/index-exportation
+artifacts/vald-index-save-$(GOOS)-$(GOARCH).zip: cmd/index/job/save/index-save
+artifacts/vald-readreplica-rotate-$(GOOS)-$(GOARCH).zip: cmd/index/job/readreplica/rotate/readreplica-rotate
+artifacts/vald-index-operator-$(GOOS)-$(GOARCH).zip: cmd/index/operator/index-operator
+artifacts/vald-example-client-$(GOOS)-$(GOARCH).zip: example/client/client
+
 artifacts/%.zip:
 	$(call mkdir, $(dir $@))
-	zip --junk-paths $@ $<
-
-artifacts/vald-agent-ngt-$(GOOS)-$(GOARCH).zip: cmd/agent/core/ngt/ngt
-	$(call mkdir, $(dir $@))
-	zip --junk-paths $@ $<
-
-artifacts/vald-agent-faiss-$(GOOS)-$(GOARCH).zip: cmd/agent/core/faiss/faiss
-	$(call mkdir, $(dir $@))
-	zip --junk-paths $@ $<
-
-artifacts/vald-agent-sidecar-$(GOOS)-$(GOARCH).zip: cmd/agent/sidecar/sidecar
-	$(call mkdir, $(dir $@))
-	zip --junk-paths $@ $<
-
-artifacts/vald-discoverer-k8s-$(GOOS)-$(GOARCH).zip: cmd/discoverer/k8s/discoverer
-	$(call mkdir, $(dir $@))
-	zip --junk-paths $@ $<
-
-artifacts/vald-lb-gateway-$(GOOS)-$(GOARCH).zip: cmd/gateway/lb/lb
-	$(call mkdir, $(dir $@))
-	zip --junk-paths $@ $<
-
-artifacts/vald-filter-gateway-$(GOOS)-$(GOARCH).zip: cmd/gateway/filter/filter
-	$(call mkdir, $(dir $@))
-	zip --junk-paths $@ $<
-
-artifacts/vald-manager-index-$(GOOS)-$(GOARCH).zip: cmd/manager/index/index
-	$(call mkdir, $(dir $@))
-	zip --junk-paths $@ $<
-
-artifacts/vald-benchmark-job-$(GOOS)-$(GOARCH).zip: cmd/tools/benchmark/job/job
-	$(call mkdir, $(dir $@))
-	zip --junk-paths $@ $<
-
-artifacts/vald-benchmark-operator-$(GOOS)-$(GOARCH).zip: cmd/operator/benchmark/operator
-	$(call mkdir, $(dir $@))
-	zip --junk-paths $@ $<
-
-artifacts/vald-mirror-gateway-$(GOOS)-$(GOARCH).zip: cmd/gateway/mirror/mirror
-	$(call mkdir, $(dir $@))
-	zip --junk-paths $@ $<
-
-artifacts/vald-index-correction-$(GOOS)-$(GOARCH).zip: cmd/index/job/correction/index-correction
-	$(call mkdir, $(dir $@))
-	zip --junk-paths $@ $<
-
-artifacts/vald-index-creation-$(GOOS)-$(GOARCH).zip: cmd/index/job/creation/index-creation
-	$(call mkdir, $(dir $@))
-	zip --junk-paths $@ $<
-
-artifacts/vald-index-deletion-$(GOOS)-$(GOARCH).zip: cmd/index/job/deletion/index-deletion
-	$(call mkdir, $(dir $@))
-	zip --junk-paths $@ $<
-
-artifacts/vald-index-exportation-$(GOOS)-$(GOARCH).zip: cmd/index/job/exportation/index-exportation
-	$(call mkdir, $(dir $@))
-	zip --junk-paths $@ $<
-
-artifacts/vald-index-save-$(GOOS)-$(GOARCH).zip: cmd/index/job/save/index-save
-	$(call mkdir, $(dir $@))
-	zip --junk-paths $@ $<
-
-artifacts/vald-readreplica-rotate-$(GOOS)-$(GOARCH).zip: cmd/index/job/readreplica/rotate/readreplica-rotate
-	$(call mkdir, $(dir $@))
-	zip --junk-paths $@ $<
-
-artifacts/vald-index-operator-$(GOOS)-$(GOARCH).zip: cmd/index/operator/index-operator
-	$(call mkdir, $(dir $@))
-	zip --junk-paths $@ $<
-
-artifacts/vald-example-client-$(GOOS)-$(GOARCH).zip: example/client/client
-	$(call mkdir, $(dir $@))
-	zip --junk-paths $@ $<
+	zip --junk-paths $@ $^

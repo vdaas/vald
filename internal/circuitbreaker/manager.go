@@ -15,26 +15,32 @@ package circuitbreaker
 
 import (
 	"context"
-	"maps"
 	"reflect"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/atomic"
 )
 
 // NOTE: This variable is for observability package.
 //
 //	This will be fixed when refactoring the observability package.
 var (
-	mu      sync.RWMutex
-	metrics = make(map[string]map[State]int64) // map[breaker_name]map[state]count
+	// metrics counts Do calls per breaker name and resulting state. Do runs on
+	// every gRPC call that has a breaker, so the counters are lock-free per key
+	// instead of sharing one package-wide mutex.
+	metrics sync.Map[string, *stateCounts] //nolint:gochecknoglobals // process-wide counters shared by every breakerManager and read by the observability package; see the NOTE above
 )
 
 // CircuitBreaker is a state machine to prevent doing processes that are likely to fail.
 type CircuitBreaker interface {
 	Do(ctx context.Context, key string, fn func(ctx context.Context) (any, error)) (val any, err error)
 }
+
+// stateCounts holds one counter per State (StateUnknown..StateHalfOpen).
+type stateCounts [StateHalfOpen + 1]atomic.Int64
 
 type breakerManager struct {
 	m    sync.Map[string, *breaker]
@@ -62,27 +68,36 @@ func New(opts ...Option) (CircuitBreaker, error) {
 func (bm *breakerManager) Do(
 	ctx context.Context, key string, fn func(ctx context.Context) (any, error),
 ) (val any, err error) {
-	var st State
+	var (
+		st State
+		br *breaker
+	)
 	defer func() {
-		mu.Lock()
-		if _, ok := metrics[key]; !ok {
-			metrics[key] = map[State]int64{
-				st: 1,
+		// EvictAddr ran while this call was in flight: do not re-create the
+		// counters of the evicted key.
+		if br != nil {
+			if cur, ok := bm.m.Load(key); !ok || cur != br {
+				return
 			}
-		} else {
-			metrics[key][st]++
 		}
-		mu.Unlock()
+		c, ok := metrics.Load(key)
+		if !ok {
+			c, _ = metrics.LoadOrStore(key, new(stateCounts))
+		}
+		if int(st) < len(c) {
+			c[st].Add(1)
+		}
 	}()
 
 	// Pre-loading to prevent a lot of object generation.
 	br, ok := bm.m.Load(key)
 	if !ok {
-		br, err = newBreaker(key, bm.opts...)
+		var nb *breaker
+		nb, err = newBreaker(key, bm.opts...)
 		if err != nil {
 			return nil, err
 		}
-		br, _ = bm.m.LoadOrStore(key, br)
+		br, _ = bm.m.LoadOrStore(key, nb)
 	}
 
 	val, st, err = br.do(ctx, fn)
@@ -104,18 +119,52 @@ func (bm *breakerManager) Do(
 	return val, nil
 }
 
-func Metrics(context.Context) (ms map[string]map[State]int64) {
-	mu.RLock()
-	defer mu.RUnlock()
+// EvictAddr removes the breakers and metrics counters of every key that targets
+// addr, so the state of removed addresses does not pile up. The gRPC client
+// calls it when it disconnects addr. Its keys are "<addr>" or "<method>/<addr>"
+// (grpc.WrapGRPCMethod). A later Do for an evicted key starts a new, closed
+// breaker and new counters.
+func (bm *breakerManager) EvictAddr(addr string) {
+	if addr == "" {
+		return
+	}
+	suffix := "/" + addr
+	targets := func(key string) bool {
+		return key == addr || strings.HasSuffix(key, suffix)
+	}
+	bm.m.Range(func(key string, _ *breaker) bool {
+		if targets(key) {
+			bm.m.Delete(key)
+		}
+		return true
+	})
+	metrics.Range(func(key string, _ *stateCounts) bool {
+		if targets(key) {
+			metrics.Delete(key)
+		}
+		return true
+	})
+}
 
-	if len(metrics) == 0 {
-		return nil
-	}
-	ms = make(map[string]map[State]int64, len(metrics))
-	for name, state := range metrics {
-		sts := make(map[State]int64, len(state))
-		maps.Copy(sts, state)
-		ms[name] = sts
-	}
+func Metrics(context.Context) (ms map[string]map[State]int64) {
+	metrics.Range(func(name string, c *stateCounts) bool {
+		// Report only the states that occurred, like the previous map did.
+		var sts map[State]int64
+		for st := range c {
+			if n := c[st].Load(); n > 0 {
+				if sts == nil {
+					sts = make(map[State]int64, len(c))
+				}
+				sts[State(st)] = n
+			}
+		}
+		if sts != nil {
+			if ms == nil {
+				ms = make(map[string]map[State]int64)
+			}
+			ms[name] = sts
+		}
+		return true
+	})
 	return ms
 }

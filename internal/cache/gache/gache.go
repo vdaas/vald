@@ -45,7 +45,11 @@ func New[V any](opts ...Option[V]) cacher.Cache[V] {
 }
 
 // Start calls StartExpired func of c.gache.
+// It does nothing when expireCheckDur is not positive, because the underlying ticker panics for such an interval.
 func (c *cache[V]) Start(ctx context.Context) {
+	if c.expireCheckDur <= 0 {
+		return
+	}
 	c.gache.StartExpired(ctx, c.expireCheckDur)
 }
 
@@ -66,11 +70,11 @@ func (c *cache[V]) Delete(key string) {
 
 // GetAndDelete returns (any, bool) and delete value according to key when value of key is set.
 // When value of key is not set, returns (nil, false).
+// Pop loads and deletes in one step, so two callers cannot both take the value.
 func (c *cache[V]) GetAndDelete(key string) (V, bool) {
-	v, ok := c.gache.Get(key)
+	v, ok := c.gache.Pop(key)
 	if !ok {
-		return *new(V), false
+		return *new(V), false // Pop can return an expired value with false
 	}
-	c.gache.Delete(key)
 	return v, true
 }

@@ -25,9 +25,18 @@ cyan = printf "\x1b[36m\#\# %s\x1b[0m\n" $1
 
 # --- Environment Variables & Constants ---
 
+# find-tool prints the first tool found: each name is tried on PATH, then as
+# the newest versioned /usr/bin/<name>-N (Debian/Ubuntu llvm-*/gcc-* packages).
+# This is the single source of toolchain discovery; recipes use the resolved
+# AR_BIN/NM/RANLIB below instead of re-probing.
+find-tool = $(shell for t in $(1); do command -v $$t 2>/dev/null && exit 0; ls /usr/bin/$$t-* 2>/dev/null | sort -V | tail -1 | grep . && exit 0; done; true)
+
 LLD ?= $(shell command -v ld.lld 2>/dev/null || command -v lld 2>/dev/null)
-NM ?= $(shell command -v llvm-nm 2>/dev/null || ls /usr/bin/llvm-nm-* 2>/dev/null | sort -V | tail -1 | grep . || command -v gcc-nm 2>/dev/null || ls /usr/bin/gcc-nm-* 2>/dev/null | sort -V | tail -1 | grep . || command -v nm)
-RANLIB ?= $(shell command -v llvm-ranlib 2>/dev/null || ls /usr/bin/llvm-ranlib-* 2>/dev/null | sort -V | tail -1 | grep . || command -v gcc-ranlib 2>/dev/null || ls /usr/bin/gcc-ranlib-* 2>/dev/null | sort -V | tail -1 | grep . || command -v ranlib)
+NM ?= $(call find-tool,llvm-nm gcc-nm nm)
+RANLIB ?= $(call find-tool,llvm-ranlib gcc-ranlib ranlib)
+# GNU make predefines AR=ar (origin "default"), so `AR ?=` never fires; an
+# explicit AR from the command line or environment still takes precedence.
+AR_BIN = $(eval AR_BIN := $(if $(filter default,$(origin AR)),$(call find-tool,llvm-ar gcc-ar ar),$(shell command -v $(AR) 2>/dev/null || echo $(AR))))$(AR_BIN)
 
 CC_ENV_VARS = \
 	CC="$(CC)" \
@@ -53,22 +62,15 @@ CGO_ENV_VARS = \
 	CGO_FFLAGS="$(CFLAGS) $1" \
 	CGO_LDFLAGS="$2"
 
-DOCKER_BUILD_ARGS = \
-	--build-arg BUILDKIT_INLINE_CACHE=$(BUILDKIT_INLINE_CACHE) \
-	--build-arg GO_VERSION=$(GO_VERSION) \
-	--build-arg RUST_VERSION=$(RUST_VERSION) \
-	--build-arg MAINTAINER=$(MAINTAINER) \
-	--build-arg EMAIL="$(EMAIL)" \
-	--build-arg CC="$(CC)" \
-	--build-arg CXX="$(CXX)" \
-	--build-arg LLD="$(LLD)" \
-	--build-arg AR="$(AR)" \
-	--build-arg NM="$(NM)" \
-	--build-arg RANLIB="$(RANLIB)" \
-	--build-arg CFLAGS="$(CFLAGS)" \
-	--build-arg CXXFLAGS="$(CXXFLAGS)" \
-	--build-arg LDFLAGS="$(LDFLAGS)" \
-	--build-arg SUDO=""
+# Pass a build-arg only when the target Dockerfile declares it (ARG ...), so no
+# image receives a value its RUN body cannot see: buildkit reports such values as
+# "one or more build-args were not consumed". The Dockerfile is the single source
+# of truth, so this needs no per-image list in the Makefile.
+# Do NOT pass CFLAGS/CXXFLAGS here: main.go's ngtClangLTOPreprocess deliberately
+# keeps them out of the image environment (an env-set CFLAGS defeats the Makefile's
+# `?=` AVX-512 guard, see a9f79519f). MAINTAINER/EMAIL are baked into
+# `LABEL maintainer=` by the generator.
+DOCKER_BUILD_ARGS = $(foreach v,GO_VERSION RUST_VERSION,$(if $(shell grep -qE '^ARG[[:space:]]+$(v)$$' $(DOCKERFILE) 2>/dev/null && echo ok),--build-arg $(v)=$($(v))))
 
 # Linker flags shared by every go build/test link step. -w strips the DWARF
 # debug tables from release binaries (pre-refactor this was a literal -w inside
@@ -108,7 +110,7 @@ define profile-web
 endef
 
 define go-lint
-	golangci-lint run --config $(ROOTDIR)/.golangci.json --fix
+	golangci-lint run $(GOLANGCI_LINT_ARGS) --fix
 endef
 
 # go-tool-install installs every tool listed in hack/go.tools in parallel.
@@ -117,7 +119,7 @@ endef
 define go-tool-install
 	cat $(ROOTDIR)/hack/go.tools | \
 	xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P $(CORES) \
-	sh -c 'if ! out=$$( $(GO_ENV_VARS) go install -ldflags="-w" {} 2>&1 >/dev/null); then echo "--- Failed to install {} ---" >&2; echo "$$out" >&2; exit 255; fi';
+	$(SHELL_STRICT_EXEC) 'if ! out=$$( $(GO_ENV_VARS) go install -ldflags="-w" {} 2>&1 >/dev/null); then echo "--- Failed to install {} ---" >&2; echo "$$out" >&2; exit 255; fi';
 endef
 
 define go-vet
@@ -150,7 +152,7 @@ export UPDATE_GITHUB_ACTION_SCRIPT = \
 			* ) \
 			REPO_NAME=$$(echo $$ACTION | cut -d'/' -f1-2); \
 			echo "$$ACTION to $$REPO_NAME"; \
-			VERSION=$$(curl -fsSL https://api.github.com/repos/$$REPO_NAME/tags?per_page=1 | \
+			VERSION=$$($(CURL_AUTH) https://api.github.com/repos/$$REPO_NAME/tags?per_page=1 | \
 			grep -Po '"name": "\K.*?(?=")' | \
 			head -n1 | sed 's/v//g' | sed -E 's/[^0-9.]+//g'); \
 			;; \
@@ -163,24 +165,30 @@ export UPDATE_GITHUB_ACTION_SCRIPT = \
 		VERSION=$$(cat $(ROOTDIR)/versions/actions/$$FILE_NAME); \
 		echo "No version found for $$ACTION version file $$FILE_NAME=$$VERSION"; \
 	fi; \
-	if [ "$$ACTION" = "cirrus-actions/rebase" ]; then \
-		VERSION_PREFIX=$$VERSION; \
-		cat $(ROOTDIR)/.gitfiles | grep '^\.github/' | sed -e 's%^%$(ROOTDIR)/%' | \
-		xargs -I __FILE__ -P $(CORES) sed -i "s%$$ACTION@.*%$$ACTION@$$VERSION_PREFIX%g" "__FILE__"; \
-	elif echo $$VERSION | grep -qE '^[0-9]'; then \
-		VERSION_PREFIX=$$(echo $$VERSION | cut -c 1); \
-		cat $(ROOTDIR)/.gitfiles | grep '^\.github/' | sed -e 's%^%$(ROOTDIR)/%' | \
-		xargs -I __FILE__ -P $(CORES) sed -i "s%$$ACTION@.*%$$ACTION@v$$VERSION_PREFIX%g" "__FILE__"; \
-	else \
-		VERSION_PREFIX=$$VERSION; \
-		cat $(ROOTDIR)/.gitfiles | grep '^\.github/' | sed -e 's%^%$(ROOTDIR)/%' | \
-		xargs -I __FILE__ -P $(CORES) sed -i "s%$$ACTION@.*%$$ACTION@$$VERSION_PREFIX%g" "__FILE__"; \
-	fi; \
 	fi
 
+export GITHUB_ACTION_PIN_SCRIPT = \
+	ACTION="$$1"; \
+	FILE_NAME=$$(echo $$ACTION | tr '/' '_' | tr '-' '_' | tr '[:lower:]' '[:upper:]'); \
+	VERSION=$$(cat $(ROOTDIR)/versions/actions/$$FILE_NAME); \
+	if [ "$$ACTION" = "cirrus-actions/rebase" ]; then \
+		REF=$$VERSION; \
+	elif echo $$VERSION | grep -qE '^[0-9]'; then \
+		REF=v$${VERSION%%.*}; \
+	else \
+		REF=$$VERSION; \
+	fi; \
+	echo "s%$$ACTION@.*%$$ACTION@$$REF%g"
+
+# Versions are fetched in parallel, but every workflow file is rewritten by a
+# single sed run: concurrent `sed -i` on the same file loses updates.
 define update-github-actions
 	@echo "$1" | tr ' ' '\n' | grep -v '^$$' | grep -v '^security-and-quality$$' | \
-	xargs -I {} -P $(CORES) bash -c 'eval "$$UPDATE_GITHUB_ACTION_SCRIPT"' _ {}
+	$(XARGS) $(SHELL_STRICT_EXEC) 'eval "$$UPDATE_GITHUB_ACTION_SCRIPT"' _ {}
+	@SED_SCRIPT=$$(echo "$1" | tr ' ' '\n' | grep -v '^$$' | grep -v '^security-and-quality$$' | \
+	xargs -I {} $(SHELL_STRICT_EXEC) 'eval "$$GITHUB_ACTION_PIN_SCRIPT"' _ {}); \
+	grep '^\.github/' $(ROOTDIR)/.gitfiles | sed -e 's%^%$(ROOTDIR)/%' | \
+	xargs $(XARGS_NO_RUN_IF_EMPTY) -n 32 -P $(CORES) sed -i -e "$$SED_SCRIPT"
 endef
 
 # --- Go Build & Example ---
@@ -254,7 +262,7 @@ define go-test
 endef
 
 define go-test-tparse
-	set -euo pipefail; \
+	$(SHELL_STRICT); \
 	rm -rf "$(TEST_RESULT_DIR)/$$(echo $2 | sed -e 's%/%-%g')-result.json"; \
 	$(call go-base,test, \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)", \
@@ -268,7 +276,7 @@ define go-test-tparse
 endef
 
 define go-test-gotestfmt
-	set -euo pipefail; \
+	$(SHELL_STRICT); \
 	rm -rf "$(TEST_RESULT_DIR)/$$(echo $2 | sed -e 's%/%-%g')-result.json"; \
 	$(call go-base,test, \
 	CGO_LDFLAGS="$(TEST_LDFLAGS)" GODEBUG=$(GODEBUG), \
@@ -325,14 +333,14 @@ GOTESTS_OPTION_GEN_SCRIPT = \
 define gen-go-test-sources
 	@$(call green, "Generating go test files in parallel (cores: $(CORES))...")
 	@echo "$(GO_SOURCES)" | tr ' ' '\n' | \
-		xargs -I {} -P$(CORES) bash -c '$(GOTESTS_GEN_SCRIPT)'
+		$(XARGS) $(SHELL_STRICT_EXEC) '$(GOTESTS_GEN_SCRIPT)'
 endef
 
 # This function generate only option tests
 define gen-go-option-test-sources
 	@$(call green, "Generating go option test files in parallel (cores: $(CORES))...")
 	@echo "$(GO_OPTION_SOURCES)" | tr ' ' '\n' | \
-		xargs -I {} -P$(CORES) bash -c '$(GOTESTS_OPTION_GEN_SCRIPT)'
+		$(XARGS) $(SHELL_STRICT_EXEC) '$(GOTESTS_OPTION_GEN_SCRIPT)'
 endef
 
 # --- E2E Test ---
@@ -397,14 +405,14 @@ endef
 
 define run-github-actions-e2e
 	$(MAKE) $1
-	kubectl wait -n kube-system --for=condition=Available deployment/metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
+	kubectl wait -n kube-system $(KUBECTL_WAIT_AVAILABLE) deployment/metrics-server --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
 	sleep 2
-	kubectl wait -n kube-system --for=condition=Ready pod -l $2 --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
-	kubectl wait -n kube-system --for=condition=ContainersReady pod -l $2 --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
+	kubectl wait -n kube-system $(KUBECTL_WAIT_READY) pod -l $2 --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
+	kubectl wait -n kube-system $(KUBECTL_WAIT_CONTAINERS_READY) pod -l $2 --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
 	$(MAKE) $3 HELM_VALUES=$4 $5
 	sleep 3
-	kubectl wait --for=condition=Ready pod -l "$6" --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
-	kubectl wait --for=condition=ContainersReady pod -l "$6" --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
+	kubectl wait $(KUBECTL_WAIT_READY) pod -l "$6" --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
+	kubectl wait $(KUBECTL_WAIT_CONTAINERS_READY) pod -l "$6" --timeout=$(E2E_WAIT_FOR_START_TIMEOUT)
 	kubectl get pods
 	pod_name=$$(kubectl get pods --selector="$6" | tail -1 | awk '{print $$1}'); \
 	echo $$pod_name; \
@@ -440,7 +448,7 @@ define gen-dockerfile
 	osusergo netgo static_build, \
 	$$BIN_PATH, \
 	$(ROOTDIR)/hack/docker/gen/main.go) \
-	&& $$BIN_PATH $1; \
+	&& SHELL_STRICT_OPTS="$(SHELL_STRICT_OPTS)" $$BIN_PATH $1; \
 	rm -rf $$BIN_PATH
 endef
 
@@ -522,10 +530,10 @@ endef
 
 define gen-api-document
 	buf generate --template=apis/docs/buf.gen.tmpl.yaml --path $2
-	cat apis/docs/v1/payload.md.tmpl apis/docs/v1/_doc.md.tmpl > apis/docs/v1/doc.md.tmpl; \
-	buf generate --template=apis/docs/buf.gen.doc.yaml --path $2; \
-	mv $(ROOTDIR)/apis/docs/v1/doc.md $1; \
-	rm apis/docs/v1/*doc.md.tmpl
+	trap 'rm -f apis/docs/v1/*doc.md.tmpl' EXIT; \
+	cat apis/docs/v1/payload.md.tmpl apis/docs/v1/_doc.md.tmpl > apis/docs/v1/doc.md.tmpl \
+	&& buf generate --template=apis/docs/buf.gen.doc.yaml --path $2 \
+	&& mv $(ROOTDIR)/apis/docs/v1/doc.md $1
 endef
 
 # --- C/C++ & CMake Build/Install ---
@@ -547,7 +555,7 @@ define cmake-install
 	if echo "$1" | grep -qE "\.git$$" || [ -n "$(strip $5)" ]; then \
 		git clone --depth 1 --recurse-submodules --shallow-submodules $$(if [ -n "$(strip $5)" ]; then echo "--branch $(strip $5)"; fi) $1 $(TEMP_DIR)/$2; \
 	else \
-		curl -fsSL $1 -o $(TEMP_DIR)/$2-archive; \
+		$(CURL) $1 -o $(TEMP_DIR)/$2-archive; \
 		mkdir -p $(TEMP_DIR)/$2; \
 		if echo "$1" | grep -qE "\.zip$$"; then \
 			unzip -q $(TEMP_DIR)/$2-archive -d $(TEMP_DIR)/$2; \
@@ -560,9 +568,6 @@ define cmake-install
 			tar -xf $(TEMP_DIR)/$2-archive -C $(TEMP_DIR)/$2 --strip-components 1; \
 		fi; \
 	fi
-	_RANLIB=$$(if [ -x '$(RANLIB)' ]; then echo '$(RANLIB)'; else command -v llvm-ranlib 2>/dev/null || ls /usr/bin/llvm-ranlib-* 2>/dev/null | sort -V | tail -1 | grep . || command -v gcc-ranlib 2>/dev/null || ls /usr/bin/gcc-ranlib-* 2>/dev/null | sort -V | tail -1 | grep . || command -v ranlib; fi) && \
-	_AR=$$(if [ -x '$(AR)' ]; then echo '$(AR)'; else command -v llvm-ar 2>/dev/null || command -v ar; fi) && \
-	_NM=$$(if [ -x '$(NM)' ]; then echo '$(NM)'; else command -v llvm-nm 2>/dev/null || command -v nm; fi) && \
 	cd $(TEMP_DIR)/$2 && \
 	cmake \
 	-G Ninja \
@@ -572,18 +577,18 @@ define cmake-install
 	-DBUILD_STATIC_EXECS=ON \
 	-DBUILD_TESTING=OFF \
 	-DCMAKE_C_COMPILER="$(CC)" \
-	-DCMAKE_C_COMPILER_AR="$${_AR}" \
-	-DCMAKE_C_COMPILER_RANLIB="$${_RANLIB}" \
-	-DCMAKE_CXX_COMPILER_AR="$${_AR}" \
-	-DCMAKE_CXX_COMPILER_RANLIB="$${_RANLIB}" \
+	-DCMAKE_C_COMPILER_AR="$(AR_BIN)" \
+	-DCMAKE_C_COMPILER_RANLIB="$(RANLIB)" \
+	-DCMAKE_CXX_COMPILER_AR="$(AR_BIN)" \
+	-DCMAKE_CXX_COMPILER_RANLIB="$(RANLIB)" \
 	-DCMAKE_CXX_COMPILER="$(CXX)" \
 	-DCMAKE_ASM_COMPILER="$(CC)" \
-	-DCMAKE_ASM_COMPILER_AR="$${_AR}" \
-	-DCMAKE_ASM_COMPILER_RANLIB="$${_RANLIB}" \
-	-DCMAKE_AR="$${_AR}" \
-	-DCMAKE_NM="$${_NM}" \
-	-DCMAKE_RANLIB="$${_RANLIB}" \
-	-DCMAKE_MAKE_PROGRAM="$(USR_LOCAL)/bin/ninja" \
+	-DCMAKE_ASM_COMPILER_AR="$(AR_BIN)" \
+	-DCMAKE_ASM_COMPILER_RANLIB="$(RANLIB)" \
+	-DCMAKE_AR="$(AR_BIN)" \
+	-DCMAKE_NM="$(NM)" \
+	-DCMAKE_RANLIB="$(RANLIB)" \
+	-DCMAKE_MAKE_PROGRAM="$$(command -v ninja)" \
 	-DCMAKE_INSTALL_PREFIX="$(USR_LOCAL)" \
 	-DCMAKE_INSTALL_BINDIR="bin" \
 	-DCMAKE_INSTALL_LIBDIR="lib" \

@@ -15,15 +15,17 @@
 package middleware
 
 import (
+	"bytes"
 	"context"
+	"maps"
 	"net/http"
-	"runtime"
 	"time"
 
 	"github.com/kpango/fastime"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/http/rest"
 	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
@@ -40,50 +42,119 @@ func NewTimeout(opts ...TimeoutOption) Wrapper {
 	return t
 }
 
+// timeoutWriter buffers the handler's response so that the handler goroutine
+// never touches the real http.ResponseWriter, which net/http recycles once
+// ServeHTTP returns on timeout (same pattern as net/http.TimeoutHandler).
+type timeoutWriter struct {
+	h           http.Header
+	buf         bytes.Buffer
+	mu          sync.Mutex
+	code        int
+	wroteHeader bool
+	timedOut    bool
+}
+
+func (tw *timeoutWriter) Header() http.Header { return tw.h }
+
+func (tw *timeoutWriter) Write(p []byte) (int, error) {
+	tw.mu.Lock()
+	defer tw.mu.Unlock()
+	if tw.timedOut {
+		return 0, http.ErrHandlerTimeout
+	}
+	if !tw.wroteHeader {
+		tw.wroteHeader = true
+		tw.code = http.StatusOK
+	}
+	return tw.buf.Write(p)
+}
+
+func (tw *timeoutWriter) WriteHeader(code int) {
+	tw.mu.Lock()
+	defer tw.mu.Unlock()
+	if tw.timedOut || tw.wroteHeader {
+		return
+	}
+	tw.wroteHeader = true
+	tw.code = code
+}
+
+// timeout discards the buffered response and makes later writes fail.
+func (tw *timeoutWriter) timeout() {
+	tw.mu.Lock()
+	tw.timedOut = true
+	tw.mu.Unlock()
+}
+
+// flush copies the buffered response to w. It must be called only after the handler returned.
+func (tw *timeoutWriter) flush(w http.ResponseWriter) error {
+	tw.mu.Lock()
+	defer tw.mu.Unlock()
+	dst := w.Header()
+	maps.Copy(dst, tw.h)
+	if tw.wroteHeader {
+		w.WriteHeader(tw.code)
+	}
+	if tw.buf.Len() == 0 {
+		return nil
+	}
+	_, err := w.Write(tw.buf.Bytes())
+	return err
+}
+
+type timeoutResult struct {
+	err  error
+	code int
+}
+
 func (t *timeout) Wrap(h rest.Func) rest.Func {
 	return func(w http.ResponseWriter, r *http.Request) (code int, err error) {
 		ctx, cancel := context.WithTimeout(r.Context(), t.dur)
 		defer cancel()
 		start := fastime.UnixNanoNow()
-		// run the custom handler logic in go routine,
-		// report error to error channel
-		ech := make(chan error, 1)
-		sch := make(chan int, 1)
-		t.eg.Go(safety.RecoverFunc(func() (err error) {
-			defer close(ech)
-			defer close(sch)
+		tw := &timeoutWriter{h: make(http.Header)}
+		// run the custom handler logic in go routine and report exactly one result
+		// (a recovered panic included) to the buffered result channel.
+		rch := make(chan timeoutResult, 1)
+		hr := r.WithContext(ctx)
+		t.eg.Go(func() error {
+			var res timeoutResult
 			// it is the responsibility for handler to close the request
-			var code int
-			code, err = h(w, r.WithContext(ctx))
-			if err != nil {
-				select {
-				case <-ctx.Done():
-				case sch <- code:
-				}
-				runtime.Gosched()
+			// RecoverFunc would panic again for a runtime.Error (a nil dereference, an index out of
+			// range), and nothing recovers in an errgroup goroutine: the process would die instead of
+			// answering 500.
+			perr := safety.RecoverWithoutPanicFunc(func() (err error) {
+				res.code, res.err = h(tw, hr)
+				return nil
+			})()
+			if perr != nil {
+				res = timeoutResult{code: http.StatusInternalServerError, err: perr}
 			}
-			select {
-			case <-ctx.Done():
-			case ech <- err:
-			}
+			rch <- res
+			// The result, a recovered panic included, reaches the caller through rch and safety already
+			// logged it. The group is usually the process-wide one: an error returned here would be kept
+			// until shutdown (making the daemon report a failed stop) and one distinct panic message
+			// per request would pile up in it.
 			return nil
-		}))
+		})
 
 		select {
 		case <-ctx.Done():
 			// timeout passed or parent context canceled first,
-			// it is the responsibility for handler to response to the user
+			// the late output of the handler is discarded.
+			tw.timeout()
 			return http.StatusRequestTimeout, errors.ErrHandlerTimeout(ctx.Err(), time.Duration(fastime.UnixNanoNow()-start))
-		case err = <-ech:
+		case res := <-rch:
+			if cerr := ctx.Err(); cerr != nil {
+				tw.timeout()
+				return http.StatusRequestTimeout, errors.ErrHandlerTimeout(errors.Join(cerr, res.err), time.Duration(fastime.UnixNanoNow()-start))
+			}
 			// handler finished first, may have error returned
-			if err != nil {
-				select {
-				case <-ctx.Done():
-					return http.StatusRequestTimeout, errors.ErrHandlerTimeout(errors.Join(ctx.Err(), err), time.Duration(fastime.UnixNanoNow()-start))
-				case code = <-sch:
-				}
-				err = errors.ErrHandler(err)
-				return code, err
+			if ferr := tw.flush(w); ferr != nil && res.err == nil {
+				return http.StatusServiceUnavailable, errors.ErrHandler(ferr)
+			}
+			if res.err != nil {
+				return res.code, errors.ErrHandler(res.err)
 			}
 			return http.StatusOK, nil
 		}

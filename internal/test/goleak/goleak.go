@@ -23,8 +23,10 @@ type (
 
 var (
 	defaultGoleakOptions = []goleak.Option{
-		// ignore conflict with testing.T.Parallel()
+		// ignore conflict with testing.T.Parallel(); Go renamed the receiver from
+		// testContext to testState, so both names are listed.
 		goleak.IgnoreTopFunction("testing.(*testContext).waitParallel"),
+		goleak.IgnoreTopFunction("testing.(*testState).waitParallel"),
 		goleak.IgnoreTopFunction("github.com/kpango/fastime.(*fastime).StartTimerD.func1"),
 		goleak.IgnoreTopFunction("internal/poll.runtime_pollWait"),
 		goleak.IgnoreTopFunction("net._C2func_getaddrinfo"),

@@ -33,7 +33,6 @@ import (
 	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/strings"
-	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"golang.org/x/tools/go/packages"
 	"gopkg.in/yaml.v2"
@@ -89,11 +88,25 @@ const (
 	defaultBuildStageName = "builder"
 	maintainerKey         = "MAINTAINER"
 	minimumArgumentLength = 2
-	buildkitVersion       = "v0.32.2"
-	syftScannerVersion    = "1.12.0"
-	ubuntuVersion         = "24.04"
+	defaultUbuntuVersion  = "24.04"
 
 	yearKey = "YEAR"
+
+	// goToolchainMakeArgs is the make variable triple shared by the go/install and
+	// go/download invocations (single source: was duplicated on both lines).
+	goToolchainMakeArgs = `GOPATH="${GOPATH}" GOROOT="${GOROOT}" GO_VERSION="${GO_VERSION}"`
+	// aptInstallFlags is the single apt-get flag set for every generated image.
+	aptInstallFlags = "-y --no-install-recommends --fix-missing"
+
+	// ubuntuVersionPathName is the versions/ file that pins the ubuntu builder tag.
+	ubuntuVersionPathName = "UBUNTU_VERSION"
+
+	// shellStrictOptsKey carries the canonical shell option set from the Makefile
+	// (`SHELL_STRICT_OPTS`, the single source of truth for every shell this repo
+	// starts). The gen-dockerfile recipe passes it through so generated Dockerfiles
+	// can never drift from the make recipes.
+	shellStrictOptsKey     = "SHELL_STRICT_OPTS"
+	defaultShellStrictOpts = "-euo pipefail"
 
 	goWorkdir   = "${GOPATH}/src/github.com"
 	rustWorkdir = "${HOME}/rust/src/github.com"
@@ -206,6 +219,38 @@ var docker = template.Must(template.New("Dockerfile").Funcs(template.FuncMap{
 		}
 		return b.String()
 	},
+	"AptInstall": func() string {
+		return "apt-get install " + aptInstallFlags
+	},
+	"UsesArg": func(data Data, name string) bool {
+		token := "${" + name + "}"
+		for _, group := range [][]string{
+			data.Preprocess,
+			data.RunMounts,
+			data.RunCommands,
+			data.AliasRunCommands,
+			data.EnvironmentsSlice,
+		} {
+			for _, cmd := range group {
+				if strings.Contains(cmd, token) {
+					return true
+				}
+			}
+		}
+		return false
+	},
+	"ShellInstruction": func() string {
+		words := append(strings.Fields(shellStrictOpts()), "-c")
+		quoted := make([]string, 0, len(words)+1)
+		quoted = append(quoted, `"/bin/bash"`)
+		for _, word := range words {
+			quoted = append(quoted, `"`+word+`"`)
+		}
+		return "SHELL [" + strings.Join(quoted, ", ") + "]"
+	},
+	"StrictSet": func() string {
+		return "set " + shellStrictOpts()
+	},
 
 	"Entrypoint": func(entries []string) string {
 		if len(entries) == 0 {
@@ -225,9 +270,12 @@ var docker = template.Must(template.New("Dockerfile").Funcs(template.FuncMap{
 {{- if .AliasImage }}
 # skipcq: DOK-DL3007
 FROM {{.BuilderImage}}:{{.BuilderTag}} AS {{.BuildStageName}}
+{{- if .AliasRunCommands }}
+# hadolint ignore=DL3017,DL3018
+# skipcq: DOK-DL3017,DOK-DL3018
+RUN {{RunCommands .AliasRunCommands}}
+{{- end}}
 {{- else}}
-ARG UPX_OPTIONS=-9
-
 {{- range $key, $value := .Arguments }}
 ARG {{$key}}={{$value}}
 {{- end}}
@@ -240,10 +288,20 @@ FROM {{.BuilderImage}}:{{.BuilderTag}}{{if not (eq (ContainerName .ContainerType
 LABEL maintainer="{{.Maintainer}}"
 # skipcq: DOK-DL3002
 USER {{.BuildUser}}
+{{- /* Only declare the build args this image's own instructions expand;
+       a declared-but-unused ARG is dead configuration. */}}
+{{- if UsesArg . "TARGETARCH"}}
 ARG TARGETARCH
+{{- end}}
+{{- if UsesArg . "TARGETOS"}}
 ARG TARGETOS
+{{- end}}
+{{- if UsesArg . "GO_VERSION"}}
 ARG GO_VERSION
+{{- end}}
+{{- if UsesArg . "RUST_VERSION"}}
 ARG RUST_VERSION
+{{- end}}
 ARG BUILDKIT_SBOM_SCAN_STAGE=true
 ARG BUILDKIT_SBOM_SCAN_CONTEXT=true
 {{- range $keyValue := .EnvironmentsSlice }}
@@ -253,16 +311,16 @@ WORKDIR {{.RootDir}}/${ORG}/${REPO}
 {{- range $files := .ExtraCopies }}
 COPY {{$files}}
 {{- end}}
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+{{ShellInstruction}}
 #skipcq: DOK-W1001, DOK-SC2046, DOK-SC2086, DOK-DL3008
 RUN {{RunMounts .RunMounts}} \
-    set -ex \
+    {{StrictSet}} -x \
     && echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache \
     && echo 'APT::Install-Recommends "false";' > /etc/apt/apt.conf.d/no-install-recommends \
     && apt-get clean \
     && apt-get update -y \
     && apt-get upgrade -y \
-    && apt-get install -y --no-install-recommends --fix-missing \
+    && {{AptInstall}} \
     build-essential \
     ca-certificates \
     curl \
@@ -381,12 +439,15 @@ type (
 		EnvironmentsSlice []string
 		ExtraCopies       []string
 		RunCommands       []string
-		ExtraPackages     []string
-		PullRequestPaths  []string
-		ContainerType     ContainerType
-		Year              int
-		AliasImage        bool
-		ConfigExists      bool
+		// AliasRunCommands are RUN steps of an AliasImage (the build
+		// RunCommands are never emitted for it).
+		AliasRunCommands []string
+		ExtraPackages    []string
+		PullRequestPaths []string
+		ContainerType    ContainerType
+		Year             int
+		AliasImage       bool
+		ConfigExists     bool
 	}
 	ContainerType int
 )
@@ -445,8 +506,8 @@ var (
 		"RUSTFLAGS": `"-Clinker=clang -Clink-arg=-fuse-ld=lld"`,
 	}
 	goInstallCommands = []string{
-		"make GOPATH=\"${GOPATH}\" GOROOT=\"${GOROOT}\" GO_VERSION=\"${GO_VERSION}\" go/install",
-		"make GOPATH=\"${GOPATH}\" GOROOT=\"${GOROOT}\" GO_VERSION=\"${GO_VERSION}\" go/download",
+		"make " + goToolchainMakeArgs + " go/install",
+		"make " + goToolchainMakeArgs + " go/download",
 	}
 	rustInstallCommands = []string{
 		"make RUST_VERSION=\"${RUST_VERSION}\" rust/install",
@@ -532,6 +593,8 @@ var (
 		"make kind/install",
 		"make kubectl/install",
 		"make kubelinter/install",
+		"make kubeval/install",
+		"make conflint/install",
 		"make minikube/install",
 		"make reviewdog/install",
 		"make telepresence/install",
@@ -668,14 +731,14 @@ func topologicalSort(envMap map[string]string) []string {
 	return result
 }
 
-func appendGoPullRequestPaths(rootDir string, data *Data) {
+func appendGoPullRequestPaths(rootDir string, data *Data) error {
 	mainFile := file.Join(rootDir, "cmd", data.PackageDir, "main.go")
 	if !file.Exists(mainFile) {
-		return
+		return nil
 	}
 	ns, err := buildDependencyTree(rootDir, mainFile)
 	if err != nil {
-		log.Error(err)
+		return errors.Wrapf(err, "failed to build dependency tree for %s", mainFile)
 	}
 	pkgs := make([]string, 0, len(ns)+1)
 	pkgs = append(pkgs, file.Join("cmd", data.PackageDir))
@@ -691,9 +754,14 @@ func appendGoPullRequestPaths(rootDir string, data *Data) {
 	if root != "" && !strings.HasSuffix(root, string(os.PathSeparator)) {
 		root += string(os.PathSeparator)
 	}
+	// Trim the actual repository root first: a checkout nested under another
+	// vald checkout (e.g. .../vdaas/vald/.claude/worktrees/x) would otherwise be
+	// split at the outer "/vdaas/vald/" and leak the worktree path.
+	rootPrefix := strings.TrimSuffix(rootDir, string(os.PathSeparator)) + string(os.PathSeparator)
 	for i, pkg := range pkgs {
 		const splitWord = "/" + repository + "/"
 		pkg = file.Join(pkg, "*.go")
+		pkg = strings.TrimPrefix(pkg, rootPrefix)
 		index := strings.LastIndex(pkg, splitWord)
 		if index != -1 {
 			pkg = pkg[index+len(splitWord):]
@@ -704,9 +772,10 @@ func appendGoPullRequestPaths(rootDir string, data *Data) {
 		pkgs[i] = pkg
 	}
 	data.PullRequestPaths = append(data.PullRequestPaths, pkgs...)
+	return nil
 }
 
-func setPullRequestPaths(rootDir string, data *Data) {
+func setPullRequestPaths(rootDir string, data *Data) error {
 	switch data.ContainerType {
 	case HelmOperator:
 		data.PullRequestPaths = append(data.PullRequestPaths,
@@ -720,7 +789,9 @@ func setPullRequestPaths(rootDir string, data *Data) {
 		data.PullRequestPaths = append(data.PullRequestPaths,
 			apisProtoPath, goModPath, goSumPath, goVersionPath,
 			excludeTestFilesPath, excludeMockFilesPath)
-		appendGoPullRequestPaths(rootDir, data)
+		if err := appendGoPullRequestPaths(rootDir, data); err != nil {
+			return err
+		}
 	case Rust:
 		data.PullRequestPaths = append(data.PullRequestPaths,
 			apisProtoPath, cargoLockPath, cargoTomlPath, rustBinAgentDirPath,
@@ -740,13 +811,16 @@ func setPullRequestPaths(rootDir string, data *Data) {
 	if !data.AliasImage {
 		data.PullRequestPaths = append(data.PullRequestPaths, makefilePath, makefileDirPath)
 	}
+	return nil
 }
 
 func generateWorkflow(
 	ctx context.Context, rootDir, name, maintainer string, year int, data Data,
 ) error {
 	data.Name = strings.TrimPrefix(name, vald+"-")
-	setPullRequestPaths(rootDir, &data)
+	if err := setPullRequestPaths(rootDir, &data); err != nil {
+		return errors.Wrapf(err, "failed to resolve pull request paths for %s", data.Name)
+	}
 	if data.AliasImage {
 		data.BuildPlatforms = multiPlatforms
 	}
@@ -833,6 +907,17 @@ jobs:
 		return errors.Wrapf(err, "failed to writing workflow file for %s", fileName)
 	}
 	return nil
+}
+
+// shellStrictOpts returns the canonical shell option set shared with the Makefile
+// (`SHELL_STRICT_OPTS`, the single source of truth for every shell this repository
+// starts). The gen-dockerfile recipe exports it; the default keeps a standalone
+// `go run hack/docker/gen/main.go` in sync with the Makefile value.
+func shellStrictOpts() string {
+	if opts := os.Getenv(shellStrictOptsKey); opts != "" {
+		return opts
+	}
+	return defaultShellStrictOpts
 }
 
 func setContainerDefaults(data *Data, maintainer string, year int) {
@@ -962,9 +1047,42 @@ func main() {
 	}
 }
 
+// ubuntuVersion is the builder base image tag; it comes from versions/UBUNTU_VERSION
+// (loadVersions) and falls back to defaultUbuntuVersion for standalone runs.
+var ubuntuVersion = defaultUbuntuVersion
+
+// buildkitVersion and syftScannerVersion are pinned (never master/edge) and
+// bumped by `make update/buildkit update/buildkit-syft-scanner` via versions/.
+var buildkitVersion, syftScannerVersion string
+
+func loadVersions(rootDir string) error {
+	for name, v := range map[string]*string{
+		"BUILDKIT_VERSION":              &buildkitVersion,
+		"BUILDKIT_SYFT_SCANNER_VERSION": &syftScannerVersion,
+		"UBUNTU_VERSION":                &ubuntuVersion,
+	} {
+		b, err := file.ReadFile(file.Join(rootDir, "versions", name))
+		if err != nil {
+			if name == ubuntuVersionPathName {
+				// keep defaultUbuntuVersion: the file is not required for the
+				// images that do not use the ubuntu builder stage.
+				continue
+			}
+			return errors.Wrapf(err, "failed to read versions/%s", name)
+		}
+		if *v = strings.TrimSpace(conv.Btoa(b)); *v == "" {
+			return errors.Errorf("versions/%s is empty", name)
+		}
+	}
+	return nil
+}
+
 func run() error {
 	if len(os.Args) < minimumArgumentLength {
 		return errors.New("invalid argument")
+	}
+	if err := loadVersions(os.Args[1]); err != nil {
+		return err
 	}
 
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT,
@@ -1168,29 +1286,36 @@ func run() error {
 			},
 		},
 		vald + "-" + buildbase: {
-			AppName:      buildbase,
-			AliasImage:   true,
-			PackageDir:   buildbase,
-			BuilderImage: "ubuntu",
-			BuilderTag:   "latest",
+			AppName:       buildbase,
+			AliasImage:    true,
+			ContainerType: Other,
+			PackageDir:    buildbase,
+			BuilderImage:  "ubuntu",
+			BuilderTag:    "latest",
 		},
 		vald + "-" + buildkit: {
-			AppName:      buildkit,
-			AliasImage:   true,
-			PackageDir:   buildkit,
-			BuilderImage: "moby/" + buildkit,
-			BuilderTag:   buildkitVersion,
+			AppName:       buildkit,
+			AliasImage:    true,
+			ContainerType: Other,
+			PackageDir:    buildkit,
+			BuilderImage:  "moby/" + buildkit,
+			BuilderTag:    "v" + buildkitVersion,
+			// Apply the Alpine security updates the upstream image may lag
+			// (e.g. openssh CVE-2026-123158 in v0.34.2 on Alpine 3.23.7).
+			AliasRunCommands: []string{"apk upgrade --no-cache"},
 		},
 		vald + "-" + binfmt: {
-			AppName:      binfmt,
-			AliasImage:   true,
-			PackageDir:   binfmt,
-			BuilderImage: "tonistiigi/" + binfmt,
-			BuilderTag:   "master",
+			AppName:       binfmt,
+			AliasImage:    true,
+			ContainerType: Other,
+			PackageDir:    binfmt,
+			BuilderImage:  "tonistiigi/" + binfmt,
+			BuilderTag:    "master",
 		},
 		vald + "-" + buildkitSyftScanner: {
 			AppName:        "scanner",
 			AliasImage:     true,
+			ContainerType:  Other,
 			PackageDir:     buildkit + "/syft/scanner",
 			BuilderImage:   "docker/" + buildkitSyftScanner,
 			BuilderTag:     syftScannerVersion,
@@ -1218,13 +1343,21 @@ type PackageNode struct {
 }
 
 // ToSlice traverses the dependency tree and returns all dependencies as a slice.
+// Nodes are shared between parents (the tree is a DAG), so each node is visited only once.
 func (n PackageNode) ToSlice() (pkgs []string) {
-	pkgs = make([]string, 0, len(n.Imports)+1)
+	return n.appendTo(nil, make(map[string]struct{}))
+}
+
+func (n PackageNode) appendTo(pkgs []string, seen map[string]struct{}) []string {
+	if _, ok := seen[n.Name]; ok {
+		return pkgs
+	}
+	seen[n.Name] = struct{}{}
 	if n.Name != "command-line-arguments" {
 		pkgs = append(pkgs, n.Name)
 	}
 	for _, node := range n.Imports {
-		pkgs = append(pkgs, node.ToSlice()...)
+		pkgs = node.appendTo(pkgs, seen)
 	}
 	return pkgs
 }
@@ -1243,13 +1376,7 @@ func (n PackageNode) render(depth int) (tree string) {
 }
 
 // processDependencies processes package dependencies while avoiding duplicate processing.
-func processDependencies(
-	pkg *packages.Package,
-	nodes map[string]*PackageNode,
-	mu *sync.Mutex,
-	checkList map[string]*PackageNode,
-	wg *sync.WaitGroup,
-) *PackageNode {
+func processDependencies(pkg *packages.Package, checkList map[string]*PackageNode) *PackageNode {
 	if !strings.Contains(pkg.PkgPath, repository) && pkg.Name != "main" {
 		return nil
 	}
@@ -1258,7 +1385,6 @@ func processDependencies(
 	}
 
 	node := &PackageNode{Name: pkg.PkgPath}
-	nodes[pkg.PkgPath] = node
 	checkList[pkg.PkgPath] = node
 	for _, imp := range pkg.Imports {
 		if !strings.Contains(imp.PkgPath, repository) {
@@ -1268,13 +1394,33 @@ func processDependencies(
 			node.Imports = append(node.Imports, child)
 			continue
 		}
-		child := processDependencies(imp, nodes, mu, checkList, wg)
+		child := processDependencies(imp, checkList)
 		if child != nil {
 			node.Imports = append(node.Imports, child)
 		}
 	}
 
 	return node
+}
+
+// checkLoadedPackages reports what packages.Load does not return as an error.
+// For a .go file pattern a failing `go list` is not an error: Load returns no package at all.
+// Load and import errors are recorded in Package.Errors instead. Only the entry packages and the
+// packages of this repository are checked, because the dependency tree is built from them alone.
+func checkLoadedPackages(entryFile string, pkgs []*packages.Package) error {
+	if len(pkgs) == 0 {
+		return errors.Errorf("no package loaded for %s", entryFile)
+	}
+	var errs []error
+	packages.Visit(pkgs, nil, func(pkg *packages.Package) {
+		if !slices.Contains(pkgs, pkg) && !strings.Contains(pkg.PkgPath, repository) {
+			return
+		}
+		for _, perr := range pkg.Errors {
+			errs = append(errs, errors.Errorf("%s: %s", pkg.PkgPath, perr.Error()))
+		}
+	})
+	return errors.Join(errs...)
 }
 
 // buildDependencyTree constructs a dependency tree for multiple entry packages.
@@ -1289,21 +1435,19 @@ func buildDependencyTree(rootDir, entryFile string) ([]*PackageNode, error) {
 	if err != nil {
 		return nil, err
 	}
+	if err := checkLoadedPackages(entryFile, pkgs); err != nil {
+		return nil, err
+	}
 
-	nodes := make(map[string]*PackageNode)
 	checkList := make(map[string]*PackageNode, len(pkgs)) // Tracks processed packages
-	var mu sync.Mutex
-	var wg sync.WaitGroup
-
 	// Process all entry packages
 	var roots []*PackageNode
 	for _, pkg := range pkgs {
-		root := processDependencies(pkg, nodes, &mu, checkList, &wg)
+		root := processDependencies(pkg, checkList)
 		if root != nil {
 			roots = append(roots, root)
 		}
 	}
-	wg.Wait()
 
 	return roots, nil
 }

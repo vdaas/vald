@@ -94,6 +94,10 @@ func WithDiscoveryDuration(s string) DiscoveryOption {
 		if err != nil {
 			return errors.NewErrInvalidOption("discoveryDuration", s, err)
 		}
+		if dur <= 0 {
+			// time.NewTicker panics for non-positive intervals
+			return errors.NewErrInvalidOption("discoveryDuration", s)
+		}
 		d.dur = dur
 		return nil
 	}

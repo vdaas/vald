@@ -20,12 +20,15 @@ import (
 
 	"cloud.google.com/go/storage"
 	"github.com/vdaas/vald/internal/conv"
+	"github.com/vdaas/vald/internal/encoding/json"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
 	"gocloud.dev/blob/gcsblob"
 	"gocloud.dev/gcp"
 	"golang.org/x/oauth2/google"
 )
+
+const serviceAccountType = "service_account"
 
 // URLOpener returns gcsblob.URLOpener and error.
 type URLOpener interface {
@@ -81,7 +84,7 @@ func (uo *urlOpener) URLOpener(ctx context.Context) (guo *gcsblob.URLOpener, err
 		}
 	}
 
-	cfg, err := google.JWTConfigFromJSON(creds.JSON, scope)
+	opts, err := signingOptions(creds.JSON, scope)
 	if err != nil {
 		return nil, err
 	}
@@ -95,10 +98,32 @@ func (uo *urlOpener) URLOpener(ctx context.Context) (guo *gcsblob.URLOpener, err
 	}
 
 	return &gcsblob.URLOpener{
-		Client: client,
-		Options: gcsblob.Options{
-			GoogleAccessID: cfg.Email,
-			PrivateKey:     cfg.PrivateKey,
-		},
+		Client:  client,
+		Options: opts,
 	}, nil
+}
+
+// signingOptions fills the SignedURL signing fields from a service account key.
+// Other credentials (metadata server / Workload Identity, which have no JSON,
+// or authorized_user etc.) carry no signing key, so the fields are left empty.
+func signingOptions(credsJSON []byte, scope string) (opts gcsblob.Options, err error) {
+	if len(credsJSON) == 0 {
+		return opts, nil
+	}
+	var f struct {
+		Type string `json:"type"`
+	}
+	if err = json.Unmarshal(credsJSON, &f); err != nil {
+		return opts, err
+	}
+	if f.Type != serviceAccountType {
+		return opts, nil
+	}
+	cfg, err := google.JWTConfigFromJSON(credsJSON, scope)
+	if err != nil {
+		return opts, err
+	}
+	opts.GoogleAccessID = cfg.Email
+	opts.PrivateKey = cfg.PrivateKey
+	return opts, nil
 }

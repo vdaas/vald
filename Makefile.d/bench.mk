@@ -14,12 +14,34 @@
 # limitations under the License.
 #
 
+# ann-benchmarks.com resets connections now and then ("curl: (56) Recv failure: Connection reset by
+# peer" failed an E2E job in CI), and a truncated file must not stay behind as an up-to-date target.
+# curl retries every transient error itself (CURL_RETRY_ALL); the loop around it also covers a
+# download that finished but fails its checksum, removes the file between attempts and waits a
+# little longer each time. The Run E2E CRUD steps of the workflows call this target.
+BENCH_DATASET_DOWNLOAD_ATTEMPTS ?= 5
+BENCH_DATASET_DOWNLOAD_DELAY ?= 15
+
 $(BENCH_DATASETS): $(BENCH_DATASET_MD5S) $(BENCH_DATASET_HDF5_DIR)
 	@$(call green, "downloading datasets for benchmark...")
-	curl -fsSL -o $@ https://ann-benchmarks.com/$(patsubst $(BENCH_DATASET_HDF5_DIR)/%.hdf5,%.hdf5,$@)
-	(cd $(BENCH_DATASET_BASE_DIR); \
-	md5sum -c $(patsubst $(BENCH_DATASET_HDF5_DIR)/%.hdf5,$(BENCH_DATASET_MD5_DIR_NAME)/%.md5,$@) || \
-	(rm -f $(patsubst $(BENCH_DATASET_HDF5_DIR)/%.hdf5,$(BENCH_DATASET_HDF5_DIR_NAME)/%.hdf5,$@) && exit 1))
+	@name=$(patsubst $(BENCH_DATASET_HDF5_DIR)/%.hdf5,%.hdf5,$@); \
+	md5=$(patsubst $(BENCH_DATASET_HDF5_DIR)/%.hdf5,$(BENCH_DATASET_MD5_DIR_NAME)/%.md5,$@); \
+	attempt=1; \
+	while :; do \
+		if $(CURL) $(CURL_RETRY_ALL) -o $@ https://ann-benchmarks.com/$$name \
+			&& (cd $(BENCH_DATASET_BASE_DIR) && md5sum -c $$md5); then \
+			break; \
+		fi; \
+		rm -f $@; \
+		if [ $$attempt -ge $(BENCH_DATASET_DOWNLOAD_ATTEMPTS) ]; then \
+			echo "ERROR: could not download $$name in $$attempt attempts" >&2; \
+			exit 1; \
+		fi; \
+		delay=$$(( attempt * $(BENCH_DATASET_DOWNLOAD_DELAY) )); \
+		echo "WARN: downloading $$name failed (attempt $$attempt of $(BENCH_DATASET_DOWNLOAD_ATTEMPTS)); retrying in $${delay}s" >&2; \
+		sleep $$delay; \
+		attempt=$$(( attempt + 1 )); \
+	done
 
 $(BENCH_DATASET_HDF5_DIR):
 	$(call mkdir, $@)
@@ -30,17 +52,17 @@ $(BENCH_DATASET_HDF5_DIR):
 
 $(SIFT1B_BASE_FILE) $(SIFT1B_LEARN_FILE) $(SIFT1B_QUERY_FILE): | $(SIFT1B_ROOT_DIR).large_dataset_dir
 	test -f $@ || \
-	curl -fsSL $(SIFT1B_BASE_URL)$(subst $(SIFT1B_ROOT_DIR)/,,$@).gz | \
+	$(CURL) $(SIFT1B_BASE_URL)$(subst $(SIFT1B_ROOT_DIR)/,,$@).gz | \
 	gunzip -d > $@
 
 $(SIFT1B_GROUNDTRUTH_DIR): | $(SIFT1B_ROOT_DIR).large_dataset_dir
 	test -f $@ || \
-	curl -fsSL $(SIFT1B_BASE_URL)bigann_gnd.tar.gz | \
+	$(CURL) $(SIFT1B_BASE_URL)bigann_gnd.tar.gz | \
 	tar -C $(SIFT1B_ROOT_DIR) -zx
 
 $(DEEP1B_GROUNDTRUTH_FILE) $(DEEP1B_QUERY_FILE) $(DEEP1B_BASE_CHUNK_FILES) $(DEEP1B_LEARN_CHUNK_FILES): | $(DEEP1B_ROOT_DIR).large_dataset_dir
 	test -f $@ || \
-	curl -fsSL "$(shell curl -fsSL "$(DEEP1B_API_URL)$(subst $(DEEP1B_ROOT_DIR),,$@)" | \
+	$(CURL) "$(shell $(CURL) "$(DEEP1B_API_URL)$(subst $(DEEP1B_ROOT_DIR),,$@)" | \
 	sed -e 's/^{\(.*\)}$$/\1/' | \
 	tr ',' '\n' | \
 	grep href | \
@@ -108,6 +130,28 @@ bench/datasets/large/deep1b: \
 ## Makefile.d/e2e.mk). This target is intentionally left as a no-op
 ## placeholder for future benchmark categories.
 bench:
+
+BENCH_PKG ?= ./...
+BENCH_RUN ?= .
+BENCH_COUNT ?= 10
+BENCH_TIME ?= 1s
+BENCH_OUT ?= $(TEMP_DIR)/bench.txt
+
+.PHONY: bench/go
+## run Go micro-benchmarks without -race/-cover (unlike `test`), e.g.
+## make bench/go BENCH_PKG=./internal/core/algorithm/ngt/... BENCH_RUN=Search BENCH_OUT=/tmp/new.txt
+## then compare two runs with `make bench/compare BENCH_OLD=/tmp/old.txt BENCH_NEW=/tmp/new.txt`
+bench/go: \
+	ngt/install
+	$(GO_ENV_VARS) CGO_LDFLAGS="$(TEST_LDFLAGS)" go test -mod=readonly -run '^$$' \
+		-bench '$(BENCH_RUN)' -benchmem -count $(BENCH_COUNT) -benchtime $(BENCH_TIME) \
+		-timeout=$(GOTEST_TIMEOUT) -ldflags "$(GO_TEST_LDFLAGS)" $(BENCH_PKG) | tee $(BENCH_OUT)
+
+.PHONY: bench/compare
+## compare two bench/go outputs with benchstat
+bench/compare: \
+	benchstat/install
+	$(GOBIN)/benchstat $(BENCH_OLD) $(BENCH_NEW)
 
 .PHONY: bench/kill
 ## kill all benchmark processes

@@ -44,29 +44,47 @@ func NewExpBackoff(opts ...Option) http.RoundTripper {
 // It round trip the request and returns the response, and return any error occurred.
 // It returns errors.ErrTransportRetryable to indicate if the request is consider as retryable.
 func (e *ert) RoundTrip(req *http.Request) (res *http.Response, err error) {
-	if req != nil {
-		defer closeBody(req.Body)
+	// handed reports whether the original req.Body was passed to the transport.
+	// The transport closes every body it is given, possibly from its own
+	// goroutine after RoundTrip returns, so the original body is closed here
+	// only when it was never handed over, and it is never drained (a drain
+	// would be a concurrent Read racing the transport).
+	var handed bool
+	if req != nil && req.Body != nil {
+		body := req.Body
+		defer func() {
+			if !handed {
+				if cerr := body.Close(); cerr != nil {
+					log.Error(cerr)
+				}
+			}
+		}()
 	}
 
 	if e.bo == nil {
+		handed = true
 		return e.doRoundTrip(req)
 	}
+	// A request whose body cannot be rewound must not be retried: the first
+	// attempt already consumed it.
+	rewindable := req.Body == nil || req.Body == http.NoBody || req.GetBody != nil
 	_, err = e.bo.Do(req.Context(), func(ctx context.Context) (any, bool, error) {
 		// Each attempt's transport consumes and closes req.Body (per the
 		// http.RoundTripper contract), so reset it from GetBody before every
 		// attempt; otherwise a retried request with a body would send an
-		// empty/closed body. Requests without a rewindable body (GetBody nil)
-		// cannot be retried safely and are left as-is.
+		// empty/closed body.
 		if req.GetBody != nil {
 			body, berr := req.GetBody()
 			if berr != nil {
 				return nil, false, berr
 			}
 			req.Body = body
+		} else {
+			handed = true
 		}
 		r, err := e.doRoundTrip(req)
 		if err != nil {
-			return nil, errors.Is(err, errors.ErrTransportRetryable), err
+			return nil, rewindable && errors.Is(err, errors.ErrTransportRetryable), err
 		}
 		res = r
 		return r, false, nil

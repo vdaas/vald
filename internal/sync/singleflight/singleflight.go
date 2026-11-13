@@ -68,7 +68,7 @@ type call[V any] struct {
 	err   error
 	chans []chan<- Result[V]
 	wg    sync.WaitGroup
-	dups  uint64
+	dups  atomic.Uint64
 }
 
 // Group represents interface for zero time cache.
@@ -113,10 +113,10 @@ func (g *group[V]) Do(
 ) (v V, shared bool, err error) {
 	g.mu.Lock()
 	if c, ok := g.m[key]; ok {
+		c.dups.Add(1)
 		g.mu.Unlock()
-		atomic.AddUint64(&c.dups, 1)
 		c.wg.Wait()
-		e := &panicError{}
+		var e *panicError
 		if errors.As(c.err, &e) {
 			panic(e)
 		} else if errors.Is(c.err, errGoexit) {
@@ -130,7 +130,7 @@ func (g *group[V]) Do(
 	g.mu.Unlock()
 
 	g.doCall(ctx, c, key, fn)
-	return c.val, atomic.LoadUint64(&c.dups) > 0, c.err
+	return c.val, c.dups.Load() > 0, c.err
 }
 
 // DoChan is like Do but returns a channel that will receive the
@@ -143,7 +143,7 @@ func (g *group[V]) DoChan(
 	ch := make(chan Result[V])
 	g.mu.Lock()
 	if c, ok := g.m[key]; ok {
-		c.dups++
+		c.dups.Add(1)
 		c.chans = append(c.chans, ch)
 		g.mu.Unlock()
 		return ch
@@ -177,13 +177,16 @@ func (g *group[V]) doCall(
 		}
 
 		g.mu.Lock()
-		defer g.mu.Unlock()
 		c.wg.Done()
 		if g.m[key] == c {
 			delete(g.m, key)
 		}
+		// c is no longer reachable from g.m, so no more chans can be appended.
+		// Release the lock before sending on the (unbuffered) chans so that a
+		// slow receiver cannot block every other Do/DoChan/Forget on this group.
+		g.mu.Unlock()
 
-		e := &panicError{}
+		var e *panicError
 		if errors.As(c.err, &e) {
 			// In order to prevent the waiting channels from being blocked forever,
 			// needs to ensure that this panic cannot be recovered.
@@ -206,7 +209,7 @@ func (g *group[V]) doCall(
 				case ch <- Result[V]{
 					Val:    c.val,
 					Err:    c.err,
-					Shared: atomic.LoadUint64(&c.dups) > 0,
+					Shared: c.dups.Load() > 0,
 				}:
 				}
 			}
@@ -259,7 +262,7 @@ func (g *group[V]) ForgetUnshared(key string) bool {
 	if !ok {
 		return true
 	}
-	if c.dups == 0 {
+	if c.dups.Load() == 0 {
 		delete(g.m, key)
 		return true
 	}

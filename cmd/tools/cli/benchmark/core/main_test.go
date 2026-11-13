@@ -13,6 +13,137 @@
 // limitations under the License.
 package main
 
+import (
+	"path/filepath"
+	"testing"
+
+	"gonum.org/v1/hdf5"
+)
+
+// writeHDF5 writes float32 datasets with the given shapes into a new hdf5 file.
+func writeHDF5(t *testing.T, path string, shapes map[string][]uint) {
+	t.Helper()
+	f, err := hdf5.CreateFile(path, hdf5.F_ACC_TRUNC)
+	if err != nil {
+		t.Fatalf("failed to create hdf5 file: %v", err)
+	}
+	defer func() {
+		if err := f.Close(); err != nil {
+			t.Errorf("failed to close hdf5 file: %v", err)
+		}
+	}()
+	for name, shape := range shapes {
+		sp, err := hdf5.CreateSimpleDataspace(shape, nil)
+		if err != nil {
+			t.Fatalf("failed to create dataspace for %s: %v", name, err)
+		}
+		d, err := f.CreateDataset(name, hdf5.T_NATIVE_FLOAT, sp)
+		if err != nil {
+			t.Fatalf("failed to create dataset %s: %v", name, err)
+		}
+		n := uint(1)
+		for _, s := range shape {
+			n *= s
+		}
+		data := make([]float32, n)
+		for i := range data {
+			data[i] = float32(i)
+		}
+		if err := d.Write(&data); err != nil {
+			t.Fatalf("failed to write dataset %s: %v", name, err)
+		}
+		if err := d.Close(); err != nil {
+			t.Fatalf("failed to close dataset %s: %v", name, err)
+		}
+		if err := sp.Close(); err != nil {
+			t.Fatalf("failed to close dataspace for %s: %v", name, err)
+		}
+	}
+}
+
+func Test_load_datasetRank(t *testing.T) {
+	// not parallel: the hdf5 C library is not guaranteed to be built thread-safe.
+	// dataset names load reads from the hdf5 file.
+	const (
+		trainDataset = "train"
+		testDataset  = "test"
+	)
+	tests := []struct {
+		shapes    map[string][]uint
+		name      string
+		wantTrain [2]int
+		wantTest  [2]int
+		wantErr   bool
+	}{
+		{
+			name: "returns error instead of panicking on a 1-D train dataset",
+			shapes: map[string][]uint{
+				trainDataset: {6},
+				testDataset:  {2, 3},
+			},
+			wantErr: true,
+		},
+		{
+			name: "returns error instead of panicking on a 3-D test dataset",
+			shapes: map[string][]uint{
+				trainDataset: {2, 3},
+				testDataset:  {1, 2, 3},
+			},
+			wantErr: true,
+		},
+		{
+			name: "loads 2-D datasets",
+			shapes: map[string][]uint{
+				trainDataset: {4, 3},
+				testDataset:  {2, 3},
+			},
+			wantTrain: [2]int{4, 3},
+			wantTest:  [2]int{2, 3},
+		},
+	}
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			path := filepath.Join(tt.TempDir(), "data.hdf5")
+			writeHDF5(tt, path, test.shapes)
+
+			var (
+				train, tst [][]float32
+				err        error
+			)
+			func() {
+				defer func() {
+					if r := recover(); r != nil {
+						tt.Fatalf("load panicked: %v", r)
+					}
+				}()
+				train, tst, err = load(path)
+			}()
+			if test.wantErr {
+				if err == nil {
+					tt.Fatal("want error, got nil")
+				}
+				return
+			}
+			if err != nil {
+				tt.Fatalf("unexpected error: %v", err)
+			}
+			if len(train) != test.wantTrain[0] {
+				tt.Fatalf("train rows: got %d, want %d", len(train), test.wantTrain[0])
+			}
+			if len(train[0]) != test.wantTrain[1] {
+				tt.Errorf("train dim: got %d, want %d", len(train[0]), test.wantTrain[1])
+			}
+			if len(tst) != test.wantTest[0] {
+				tt.Fatalf("test rows: got %d, want %d", len(tst), test.wantTest[0])
+			}
+			if len(tst[0]) != test.wantTest[1] {
+				tt.Errorf("test dim: got %d, want %d", len(tst[0]), test.wantTest[1])
+			}
+		})
+	}
+}
+
 // NOT IMPLEMENTED BELOW
 //
 // func Test_main(t *testing.T) {
@@ -370,3 +501,24 @@ package main
 // 		})
 // 	}
 // }
+
+// run used to log an NGT initialization failure and return nil, so main treated a failed phase as success.
+func Test_run_ngtInitError(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name string
+		load bool
+	}{
+		{name: "new", load: false},
+		{name: "load", load: true},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			// Dimension 1 is below algorithm.MinimumVectorDimensionSize, so ngt.New/Load fail before touching any index file.
+			if err := run(t.Context(), tc.load, 1, nil, nil, 0, func(string) {}); err == nil {
+				t.Fatal("run returned nil for a failed NGT initialization")
+			}
+		})
+	}
+}

@@ -18,9 +18,11 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"path/filepath"
 	"reflect"
 	"syscall"
 	"testing"
+	"time"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/vdaas/vald/internal/errors"
@@ -306,7 +308,6 @@ func Test_watch_Start(t *testing.T) {
 		onDelete func(ctx context.Context, name string) error
 		onWrite  func(ctx context.Context, name string) error
 		onChmod  func(ctx context.Context, name string) error
-		onError  func(ctx context.Context, err error) error
 	}
 	type want struct {
 		want <-chan error
@@ -426,7 +427,8 @@ func Test_watch_Start(t *testing.T) {
 					},
 				},
 				checkFunc: func(w want, c <-chan error, e error) error {
-					_, err := file.OverWriteFile(t.Context(), tmpDir+"/watch.go", bytes.NewBuffer(nil), 0o777)
+					// write non-empty content: creating an empty file only emits a Create event, not a Write event.
+					_, err := file.OverWriteFile(t.Context(), tmpDir+"/watch.go", bytes.NewBufferString("vald"), 0o777)
 					if err != nil {
 						return err
 					}
@@ -653,7 +655,6 @@ func Test_watch_Start(t *testing.T) {
 				onDelete: test.fields.onDelete,
 				onWrite:  test.fields.onWrite,
 				onChmod:  test.fields.onChmod,
-				onError:  test.fields.onError,
 			}
 			defer test.afterFunc(tt, test.args, w)
 
@@ -1138,6 +1139,113 @@ func Test_watch_Stop(t *testing.T) {
 			err := w.Stop(test.args.ctx)
 			if err := checkFunc(test.want, w, err); err != nil {
 				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+// Test_watch_Start_reinitError checks that an error of re-initialization is reported
+// to the returned channel when the fsnotify channels have been closed.
+func Test_watch_Start_reinitError(t *testing.T) {
+	cw, err := fsnotify.NewWatcher()
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Events and Errors channels of a closed watcher are closed, which triggers the re-initialization.
+	if err = cw.Close(); err != nil {
+		t.Fatal(err)
+	}
+	w := &watch{
+		eg: errgroup.Get(),
+		w:  cw,
+		// watcher.Add fails for the non-existent directory, so does w.init.
+		dirs: map[string]struct{}{filepath.Join(t.TempDir(), "not-exist"): {}},
+	}
+
+	ctx, cancel := context.WithTimeout(t.Context(), 10*time.Second)
+	defer cancel()
+	ech, err := w.Start(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	select {
+	case got, ok := <-ech:
+		if !ok || got == nil {
+			t.Fatalf("expected the re-initialization error, got: %v, ok: %v", got, ok)
+		}
+	case <-ctx.Done():
+		t.Fatal("the re-initialization error was not reported")
+	}
+
+	// the goroutine must terminate by the cancellation, even while waiting for the retry.
+	cancel()
+	timer := time.NewTimer(5 * time.Second)
+	defer timer.Stop()
+	for {
+		select {
+		case _, ok := <-ech:
+			if !ok {
+				return
+			}
+		case <-timer.C:
+			t.Fatal("the goroutine did not terminate after the context was canceled")
+		}
+	}
+}
+
+// Test_watch_Stop_terminatesStart checks that Stop terminates the goroutine started by Start
+// instead of re-initializing the closed watcher.
+func Test_watch_Stop_terminatesStart(t *testing.T) {
+	tests := []struct {
+		name string
+		// unwatched is registered in dirs without being added to the watcher, so Stop's Remove fails for it.
+		unwatched bool
+	}{
+		{name: "stop terminates the start goroutine"},
+		{name: "stop terminates the start goroutine even when removing a dir fails", unwatched: true},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			dir := t.TempDir()
+			cw, err := fsnotify.NewWatcher()
+			if err != nil {
+				t.Fatal(err)
+			}
+			if err = cw.Add(dir); err != nil {
+				t.Fatal(err)
+			}
+			dirs := map[string]struct{}{dir: {}}
+			if tc.unwatched {
+				dirs[t.TempDir()] = struct{}{}
+			}
+			w := &watch{
+				eg:   errgroup.Get(),
+				w:    cw,
+				dirs: dirs,
+			}
+
+			ctx, cancel := context.WithTimeout(t.Context(), 10*time.Second)
+			defer cancel()
+			ech, err := w.Start(ctx)
+			if err != nil {
+				t.Fatal(err)
+			}
+			err = w.Stop(ctx)
+			if got, want := err != nil, tc.unwatched; got != want {
+				t.Fatalf("Stop error = %v, want error: %v", err, want)
+			}
+
+			timer := time.NewTimer(5 * time.Second)
+			defer timer.Stop()
+			for {
+				select {
+				case _, ok := <-ech:
+					if !ok {
+						return
+					}
+				case <-timer.C:
+					t.Fatal("the goroutine did not terminate after Stop")
+				}
 			}
 		})
 	}

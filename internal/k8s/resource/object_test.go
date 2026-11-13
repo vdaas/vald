@@ -22,7 +22,6 @@ import (
 	"github.com/vdaas/vald/internal/k8s"
 	corev1 "k8s.io/api/core/v1"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
@@ -262,8 +261,8 @@ func TestRestoreListGVK(t *testing.T) {
 
 func TestToUnstructured(t *testing.T) {
 	cm := &corev1.ConfigMap{
-		ObjectMeta: metav1.ObjectMeta{Name: "cfg", Namespace: "ns"},
-		Data:       map[string]string{testDataKey: "value"},
+		Name: "cfg", Namespace: "ns",
+		Data: map[string]string{testDataKey: "value"},
 	}
 	cm.SetGroupVersionKind(corev1.SchemeGroupVersion.WithKind(testKindConfigMap))
 
@@ -280,8 +279,8 @@ func TestToUnstructured(t *testing.T) {
 
 func TestObjectsOf(t *testing.T) {
 	items := []corev1.ConfigMap{
-		{ObjectMeta: metav1.ObjectMeta{Name: "a", Namespace: "ns"}},
-		{ObjectMeta: metav1.ObjectMeta{Name: "b", Namespace: "ns"}},
+		{Name: "a", Namespace: "ns"},
+		{Name: "b", Namespace: "ns"},
 	}
 
 	out := ObjectsOf(items)

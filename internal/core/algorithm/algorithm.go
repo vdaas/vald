@@ -23,6 +23,18 @@ const (
 	MinimumVectorDimensionSize = 2
 )
 
+// HasNaNOrInf reports whether vec contains NaN, +Inf or -Inf.
+// v-v is 0 for every finite v and NaN for NaN and +-Inf, so a single
+// comparison covers all of them without a function call per element.
+func HasNaNOrInf(vec []float32) bool {
+	for _, v := range vec {
+		if v-v != 0 {
+			return true
+		}
+	}
+	return false
+}
+
 // SearchResult is struct for comfortable use in Go.
 type SearchResult struct {
 	Error    error

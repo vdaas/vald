@@ -651,6 +651,10 @@ func TestDialOption_Bind(t *testing.T) {
 }
 
 func TestGRPCClient_Opts(t *testing.T) {
+	const (
+		backoffInitialDuration = "10ms"
+		minConnectionTimeout   = "20s"
+	)
 	type fields struct {
 		ConnectionPool      *ConnectionPool
 		Backoff             *Backoff
@@ -683,7 +687,7 @@ func TestGRPCClient_Opts(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return 33 grpc.Option and nil error when all parameters are set",
+			name: "return 37 grpc.Option and nil error when all parameters are set",
 			fields: fields{
 				Addrs: []string{
 					"10.40.3.342",
@@ -756,7 +760,7 @@ func TestGRPCClient_Opts(t *testing.T) {
 				},
 			},
 			want: want{
-				want: make([]grpc.Option, 33),
+				want: make([]grpc.Option, 37),
 			},
 		},
 		{
@@ -1007,6 +1011,110 @@ func TestGRPCClient_Opts(t *testing.T) {
 			want: want{
 				want: make([]grpc.Option, 0),
 				err:  errors.ErrTLSCertOrKeyNotFound,
+			},
+		},
+		{
+			name: "return 1 grpc.Option (backoff) when retry_count is 1",
+			fields: fields{
+				Backoff: &Backoff{
+					InitialDuration: backoffInitialDuration,
+					RetryCount:      1,
+				},
+			},
+			want: want{
+				want: make([]grpc.Option, 1),
+			},
+		},
+		{
+			name: "return 0 grpc.Option when retry_count is 0",
+			fields: fields{
+				Backoff: &Backoff{
+					InitialDuration: backoffInitialDuration,
+					RetryCount:      0,
+				},
+			},
+			want: want{
+				want: make([]grpc.Option, 0),
+			},
+		},
+		{
+			name: "return 17 grpc.Option when dial option backoff multiplier and jitter are unset",
+			fields: fields{
+				DialOption: &DialOption{
+					BackoffBaseDelay:         "1s",
+					MinimumConnectionTimeout: minConnectionTimeout,
+				},
+			},
+			want: want{
+				want: make([]grpc.Option, 17),
+			},
+		},
+		{
+			name: "return 19 grpc.Option when dial option backoff multiplier and jitter are set",
+			fields: fields{
+				DialOption: &DialOption{
+					BackoffBaseDelay:         "1s",
+					BackoffMultiplier:        1.6,
+					BackoffJitter:            0.2,
+					MinimumConnectionTimeout: minConnectionTimeout,
+				},
+			},
+			want: want{
+				want: make([]grpc.Option, 19),
+			},
+		},
+		{
+			name: "return 18 grpc.Option (17 and dialer) when dial option net is set without a dialer timeout",
+			fields: fields{
+				DialOption: &DialOption{
+					BackoffBaseDelay:         "1s",
+					MinimumConnectionTimeout: minConnectionTimeout,
+					Net: &Net{
+						DNS: &DNS{
+							CacheEnabled:    true,
+							RefreshDuration: "1m",
+							CacheExpiration: "3m",
+						},
+						Dialer: &Dialer{
+							Timeout: "",
+						},
+					},
+				},
+			},
+			want: want{
+				want: make([]grpc.Option, 18),
+			},
+		},
+		{
+			name: "return nil grpc.Option and an error when dial option net without a dialer timeout has an invalid dns config",
+			fields: fields{
+				DialOption: &DialOption{
+					Net: &Net{
+						DNS: &DNS{
+							CacheEnabled:    true,
+							RefreshDuration: "3m",
+							CacheExpiration: "1m",
+						},
+					},
+				},
+			},
+			want: want{
+				want: make([]grpc.Option, 0),
+				err:  errors.ErrInvalidDNSConfig(3*time.Minute, time.Minute),
+			},
+		},
+		{
+			name: "return 2 grpc.Option (addrs and insecure) when TLS is disabled and dial option is unset",
+			fields: fields{
+				Addrs: []string{
+					"10.40.3.342",
+				},
+				TLS: &TLS{
+					Enabled: false,
+				},
+			},
+			want: want{
+				want: make([]grpc.Option, 2),
 			},
 		},
 		{

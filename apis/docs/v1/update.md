@@ -70,27 +70,25 @@ Update RPC is the method to update a single vector.
 
   - Update.Config
 
-    |          field          | type          | label | description                                                          |
-    | :---------------------: | :------------ | :---- | :------------------------------------------------------------------- |
-    | skip_strict_exist_check | bool          |       | A flag to skip exist check during update operation.                  |
-    |         filters         | Filter.Config |       | Filter configuration.                                                |
-    |        timestamp        | int64         |       | Update timestamp.                                                    |
-    | disable_balanced_update | bool          |       | A flag to disable balanced update (split remove -> insert operation) |
+    |          field          | type          | label | description                                                                                   |
+    | :---------------------: | :------------ | :---- | :-------------------------------------------------------------------------------------------- |
+    | skip_strict_exist_check | bool          |       | A flag to skip exist check during update operation.                                           |
+    |         filters         | Filter.Config |       | Filter configuration.                                                                         |
+    |        timestamp        | int64         |       | Update timestamp.                                                                             |
+    | disable_balanced_update | bool          |       | A flag to disable balanced update (split remove -> insert operation) during update operation. |
 
-during update operation. |
+  - Filter.Config
 
-- Filter.Config
+    |  field  | type          | label    | description                                |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | targets | Filter.Target | repeated | Represent the filter target configuration. |
 
-  |  field  | type          | label    | description                                |
-  | :-----: | :------------ | :------- | :----------------------------------------- |
-  | targets | Filter.Target | repeated | Represent the filter target configuration. |
+  - Filter.Target
 
-- Filter.Target
-
-  | field | type   | label | description          |
-  | :---: | :----- | :---- | :------------------- |
-  | host  | string |       | The target hostname. |
-  | port  | uint32 |       | The target port.     |
+    | field | type   | label | description          |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
@@ -201,27 +199,25 @@ It's the recommended method to update the large amount of vectors.
 
   - Update.Config
 
-    |          field          | type          | label | description                                                          |
-    | :---------------------: | :------------ | :---- | :------------------------------------------------------------------- |
-    | skip_strict_exist_check | bool          |       | A flag to skip exist check during update operation.                  |
-    |         filters         | Filter.Config |       | Filter configuration.                                                |
-    |        timestamp        | int64         |       | Update timestamp.                                                    |
-    | disable_balanced_update | bool          |       | A flag to disable balanced update (split remove -> insert operation) |
+    |          field          | type          | label | description                                                                                   |
+    | :---------------------: | :------------ | :---- | :-------------------------------------------------------------------------------------------- |
+    | skip_strict_exist_check | bool          |       | A flag to skip exist check during update operation.                                           |
+    |         filters         | Filter.Config |       | Filter configuration.                                                                         |
+    |        timestamp        | int64         |       | Update timestamp.                                                                             |
+    | disable_balanced_update | bool          |       | A flag to disable balanced update (split remove -> insert operation) during update operation. |
 
-during update operation. |
+  - Filter.Config
 
-- Filter.Config
+    |  field  | type          | label    | description                                |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | targets | Filter.Target | repeated | Represent the filter target configuration. |
 
-  |  field  | type          | label    | description                                |
-  | :-----: | :------------ | :------- | :----------------------------------------- |
-  | targets | Filter.Target | repeated | Represent the filter target configuration. |
+  - Filter.Target
 
-- Filter.Target
-
-  | field | type   | label | description          |
-  | :---: | :----- | :---- | :------------------- |
-  | host  | string |       | The target hostname. |
-  | port  | uint32 |       | The target port.     |
+    | field | type   | label | description          |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 
@@ -356,27 +352,25 @@ Please be careful that the size of the request exceeds the limit.
 
   - Update.Config
 
-    |          field          | type          | label | description                                                          |
-    | :---------------------: | :------------ | :---- | :------------------------------------------------------------------- |
-    | skip_strict_exist_check | bool          |       | A flag to skip exist check during update operation.                  |
-    |         filters         | Filter.Config |       | Filter configuration.                                                |
-    |        timestamp        | int64         |       | Update timestamp.                                                    |
-    | disable_balanced_update | bool          |       | A flag to disable balanced update (split remove -> insert operation) |
+    |          field          | type          | label | description                                                                                   |
+    | :---------------------: | :------------ | :---- | :-------------------------------------------------------------------------------------------- |
+    | skip_strict_exist_check | bool          |       | A flag to skip exist check during update operation.                                           |
+    |         filters         | Filter.Config |       | Filter configuration.                                                                         |
+    |        timestamp        | int64         |       | Update timestamp.                                                                             |
+    | disable_balanced_update | bool          |       | A flag to disable balanced update (split remove -> insert operation) during update operation. |
 
-during update operation. |
+  - Filter.Config
 
-- Filter.Config
+    |  field  | type          | label    | description                                |
+    | :-----: | :------------ | :------- | :----------------------------------------- |
+    | targets | Filter.Target | repeated | Represent the filter target configuration. |
 
-  |  field  | type          | label    | description                                |
-  | :-----: | :------------ | :------- | :----------------------------------------- |
-  | targets | Filter.Target | repeated | Represent the filter target configuration. |
+  - Filter.Target
 
-- Filter.Target
-
-  | field | type   | label | description          |
-  | :---: | :----- | :---- | :------------------- |
-  | host  | string |       | The target hostname. |
-  | port  | uint32 |       | The target port.     |
+    | field | type   | label | description          |
+    | :---: | :----- | :---- | :------------------- |
+    | host  | string |       | The target hostname. |
+    | port  | uint32 |       | The target port.     |
 
 ### Output
 

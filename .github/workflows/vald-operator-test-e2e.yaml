@@ -27,6 +27,9 @@ on:
       - "Makefile"
       - "Makefile.d/**"
       - ".github/workflows/vald-operator-test-e2e.yaml"
+defaults:
+  run:
+    shell: bash
 jobs:
   dump-contexts-to-log:
     timeout-minutes: 30

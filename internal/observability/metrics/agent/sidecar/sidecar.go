@@ -41,8 +41,15 @@ type MetricsHook interface {
 	observer.Hook
 }
 
+type uploadKey struct {
+	storageType, bucketName, filename string
+}
+
 type sidecarMetrics struct {
-	info           *observer.BackupInfo
+	info *observer.BackupInfo
+	// uploads is the cumulative number of completed uploads per attribute set:
+	// an observable counter must report the running total, not 1 per upload.
+	uploads        map[uploadKey]int64
 	storageTypeKey string
 	bucketNameKey  string
 	filenameKey    string
@@ -122,6 +129,14 @@ func (sm *sidecarMetrics) Register(m metrics.Meter) error {
 			sm.mu.Lock()
 			defer sm.mu.Unlock()
 
+			for k, n := range sm.uploads {
+				o.ObserveInt64(uploadTotal, n, api.WithAttributes(
+					attribute.String(sm.storageTypeKey, k.storageType),
+					attribute.String(sm.bucketNameKey, k.bucketName),
+					attribute.String(sm.filenameKey, k.filename),
+				))
+			}
+
 			if sm.info == nil {
 				return nil
 			}
@@ -132,7 +147,6 @@ func (sm *sidecarMetrics) Register(m metrics.Meter) error {
 				attribute.String(sm.filenameKey, sm.info.Filename),
 			)
 
-			o.ObserveInt64(uploadTotal, 1, attrs)
 			o.ObserveInt64(uploadBytes, sm.info.Bytes, attrs)
 			latencyMillis := float64(sm.info.EndTime.Sub(sm.info.StartTime)) / float64(time.Millisecond)
 			o.ObserveFloat64(uploadLatency, latencyMillis, attrs)
@@ -157,5 +171,11 @@ func (sm *sidecarMetrics) AfterProcess(_ context.Context, info *observer.BackupI
 	sm.mu.Lock()
 	defer sm.mu.Unlock()
 	sm.info = info
+	if info != nil {
+		if sm.uploads == nil {
+			sm.uploads = make(map[uploadKey]int64)
+		}
+		sm.uploads[uploadKey{info.Type, info.BucketName, info.Filename}]++
+	}
 	return nil
 }

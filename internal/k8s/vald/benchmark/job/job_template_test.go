@@ -17,9 +17,11 @@ package job
 import (
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s"
+	"github.com/vdaas/vald/internal/sync"
 	corev1 "k8s.io/api/core/v1"
 )
 
@@ -259,6 +261,176 @@ func TestCreateJobTpl_FieldRefEnvVars(t *testing.T) {
 	got := job.Spec.Template.Spec.Containers[0].Env
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("Env = %+v, want %+v", got, want)
+	}
+}
+
+// TestCreateJobTpl_NoStateLeakAcrossCalls verifies that options applied by one
+// CreateJobTpl call do not persist in the shared builder template: the
+// conditional options (Completions/Parallelism only apply when > 1) cannot
+// reset a value, so a leak would surface in the later call.
+func TestCreateJobTpl_NoStateLeakAcrossCalls(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		check func(t *testing.T, job k8s.Job)
+		name  string
+		first []BenchmarkOption
+	}{
+		{
+			name:  "completions",
+			first: []BenchmarkOption{WithCompletions(5)},
+			check: func(t *testing.T, job k8s.Job) {
+				t.Helper()
+				if got := job.Spec.Completions; got != nil && *got != defaultCompletions {
+					t.Errorf("Completions = %d, want default %d", *got, defaultCompletions)
+				}
+			},
+		},
+		{
+			name:  "parallelism",
+			first: []BenchmarkOption{WithParallelism(7)},
+			check: func(t *testing.T, job k8s.Job) {
+				t.Helper()
+				if got := job.Spec.Parallelism; got != nil && *got != defaultParallelism {
+					t.Errorf("Parallelism = %d, want default %d", *got, defaultParallelism)
+				}
+			},
+		},
+		{
+			name: "name, namespace, labels and owner refs",
+			first: []BenchmarkOption{
+				WithName("first"),
+				WithNamespace("first-ns"),
+				WithLabel(map[string]string{"app": "first"}),
+				WithOwnerRef([]k8s.OwnerReference{{Name: "first-owner"}}),
+			},
+			check: func(t *testing.T, job k8s.Job) {
+				t.Helper()
+				if job.Name != "" || job.Namespace != "" {
+					t.Errorf("Name/Namespace = %q/%q, want empty", job.Name, job.Namespace)
+				}
+				if len(job.Labels) != 0 {
+					t.Errorf("Labels = %v, want empty", job.Labels)
+				}
+				if len(job.OwnerReferences) != 0 {
+					t.Errorf("OwnerReferences = %v, want empty", job.OwnerReferences)
+				}
+			},
+		},
+		{
+			name:  "restart policy and service account",
+			first: []BenchmarkOption{WithRestartPolicy("OnFailure"), WithSvcAccountName("other")},
+			check: func(t *testing.T, job k8s.Job) {
+				t.Helper()
+				if got := job.Spec.Template.Spec.RestartPolicy; got != corev1.RestartPolicyNever {
+					t.Errorf("RestartPolicy = %q, want %q", got, corev1.RestartPolicyNever)
+				}
+				if got := job.Spec.Template.Spec.ServiceAccountName; got != svcAccount {
+					t.Errorf("ServiceAccountName = %q, want %q", got, svcAccount)
+				}
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			bj, err := NewBenchmarkJob()
+			if err != nil {
+				t.Fatalf("NewBenchmarkJob() error = %v, want nil", err)
+			}
+			if _, err = bj.CreateJobTpl(tc.first...); err != nil {
+				t.Fatalf("first CreateJobTpl() error = %v, want nil", err)
+			}
+			second, err := bj.CreateJobTpl()
+			if err != nil {
+				t.Fatalf("second CreateJobTpl() error = %v, want nil", err)
+			}
+			tc.check(t, second)
+		})
+	}
+}
+
+// TestCreateJobTpl_ReturnedJobsAreIndependent verifies that mutating a returned
+// job (including nested slices, maps and pointers) does not affect jobs
+// created afterwards from the same template.
+func TestCreateJobTpl_ReturnedJobsAreIndependent(t *testing.T) {
+	t.Parallel()
+
+	bj, err := NewBenchmarkJob(WithContainerName("c"), WithContainerImage("img"))
+	if err != nil {
+		t.Fatalf("NewBenchmarkJob() error = %v, want nil", err)
+	}
+	first, err := bj.CreateJobTpl()
+	if err != nil {
+		t.Fatalf("first CreateJobTpl() error = %v, want nil", err)
+	}
+	want, err := bj.CreateJobTpl()
+	if err != nil {
+		t.Fatalf("reference CreateJobTpl() error = %v, want nil", err)
+	}
+
+	first.Spec.Template.Annotations["mutated"] = "true"
+	first.Spec.Template.Spec.Containers[0].Env[0].Name = "MUTATED"
+	first.Spec.Template.Spec.Containers[0].Env = append(first.Spec.Template.Spec.Containers[0].Env, corev1.EnvVar{Name: "EXTRA"})
+	first.Spec.Template.Spec.Containers[0].Ports[0].ContainerPort = 1
+	first.Spec.Template.Spec.Volumes[0].ConfigMap.Name = "mutated"
+	first.Spec.Template.Spec.Volumes[0].ConfigMap.DefaultMode = nil
+
+	got, err := bj.CreateJobTpl()
+	if err != nil {
+		t.Fatalf("second CreateJobTpl() error = %v, want nil", err)
+	}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("job created after mutating a previous one = %+v, want %+v", got, want)
+	}
+}
+
+// TestCreateJobTpl_Concurrent runs CreateJobTpl concurrently on one template
+// with distinct options; run with -race to detect shared template mutation.
+func TestCreateJobTpl_Concurrent(t *testing.T) {
+	t.Parallel()
+
+	const workers int32 = 16
+
+	bj, err := NewBenchmarkJob()
+	if err != nil {
+		t.Fatalf("NewBenchmarkJob() error = %v, want nil", err)
+	}
+	errs := make([]error, workers)
+	jobs := make([]k8s.Job, workers)
+	var wg sync.WaitGroup
+	for i := range workers {
+		wg.Go(func() {
+			jobs[i], errs[i] = bj.CreateJobTpl(
+				WithName("job"),
+				WithCompletions(i+2),
+				WithLabel(map[string]string{"idx": string('a' + i)}),
+			)
+		})
+	}
+	done := make(chan struct{})
+	go func() {
+		wg.Wait()
+		close(done)
+	}()
+	select {
+	case <-done:
+	case <-time.After(10 * time.Second):
+		t.Fatal("concurrent CreateJobTpl() did not finish within 10s")
+	}
+
+	for i := range workers {
+		if errs[i] != nil {
+			t.Fatalf("CreateJobTpl() #%d error = %v, want nil", i, errs[i])
+		}
+		if got := jobs[i].Spec.Completions; got == nil || *got != i+2 {
+			t.Errorf("job #%d Completions = %v, want %d", i, got, i+2)
+		}
+		if got, want := jobs[i].Labels["idx"], string('a'+i); got != want {
+			t.Errorf("job #%d label idx = %q, want %q", i, got, want)
+		}
 	}
 }
 

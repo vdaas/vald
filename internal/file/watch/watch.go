@@ -17,6 +17,7 @@ package watch
 import (
 	"context"
 	"reflect"
+	"time"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/vdaas/vald/internal/errors"
@@ -25,6 +26,9 @@ import (
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 )
+
+// reinitBackoff is the wait time before retrying to re-initialize the watcher after a failure.
+const reinitBackoff = time.Second
 
 // Watcher is an interface that represents a file monitor.
 type Watcher interface {
@@ -44,8 +48,9 @@ type watch struct {
 	onDelete func(ctx context.Context, name string) error
 	onWrite  func(ctx context.Context, name string) error
 	onChmod  func(ctx context.Context, name string) error
-	onError  func(ctx context.Context, err error) error
 	mu       sync.RWMutex
+	// stopped is set by Stop so that the Start goroutine neither re-initializes nor keeps watching afterwards.
+	stopped bool
 }
 
 // New returns Watcher implementation.
@@ -79,16 +84,20 @@ func (w *watch) init() (*watch, error) {
 
 		err = watcher.Add(dir)
 		if err != nil {
-			return nil, err
+			return nil, errors.Join(err, watcher.Close())
 		}
 	}
 
 	w.mu.Lock()
 	defer w.mu.Unlock()
+	if w.stopped {
+		// Stop ran while the new watcher was being prepared: do not install it.
+		return w, watcher.Close()
+	}
 	if w.w != nil {
 		err = w.w.Close()
 		if err != nil {
-			return nil, err
+			return nil, errors.Join(err, watcher.Close())
 		}
 	}
 	w.w = watcher
@@ -116,10 +125,17 @@ func (w *watch) Start(ctx context.Context) (<-chan error, error) {
 		for {
 			ok = true
 			err = nil
+			w.mu.RLock()
+			cur, stopped := w.w, w.stopped
+			w.mu.RUnlock()
+			if cur == nil || stopped {
+				// Stop has been called.
+				return nil
+			}
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
-			case event, ok = <-w.w.Events:
+			case event, ok = <-cur.Events:
 				if ok {
 					if w.onChange != nil {
 						err = w.onChange(ctx, event.Name)
@@ -146,12 +162,18 @@ func (w *watch) Start(ctx context.Context) (<-chan error, error) {
 						err = w.onChmod(ctx, event.Name)
 					}
 				}
-			case err, ok = <-w.w.Errors:
+			case err, ok = <-cur.Errors:
 			}
 			if !ok {
-				iw, err := w.init()
-				if err == nil {
-					w = iw
+				if _, err = w.init(); err != nil {
+					handleErr(ctx, err)
+					// the closed watcher is still installed, so wait before retrying to avoid busy-spinning.
+					select {
+					case <-ctx.Done():
+						return ctx.Err()
+					case <-time.After(reinitBackoff):
+					}
+					continue
 				}
 			}
 			if err != nil {
@@ -198,17 +220,20 @@ func (w *watch) Remove(dirs ...string) (err error) {
 func (w *watch) Stop(context.Context) (err error) {
 	w.mu.Lock()
 	defer w.mu.Unlock()
+	w.stopped = true
 	for dir := range w.dirs {
 		delete(w.dirs, dir)
 		if w.w != nil {
-			err = w.w.Remove(dir)
-			if err != nil {
-				return err
+			// keep going on failure (e.g. the directory was deleted) so that the watcher is always closed below.
+			if rerr := w.w.Remove(dir); rerr != nil {
+				err = errors.Join(err, rerr)
 			}
 		}
 	}
 	if w.w != nil {
-		return w.w.Close()
+		// closing wakes the goroutine started by Start; w.w is cleared so that it terminates instead of re-initializing.
+		err = errors.Join(err, w.w.Close())
+		w.w = nil
 	}
-	return nil
+	return err
 }

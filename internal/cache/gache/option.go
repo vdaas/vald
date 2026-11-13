@@ -56,10 +56,10 @@ func WithExpireDuration[V any](dur time.Duration) Option[V] {
 	}
 }
 
-// WithExpireCheckDuration returns Option after set expireCheckDur when dur is not 0.
+// WithExpireCheckDuration returns Option after set expireCheckDur when dur is positive.
 func WithExpireCheckDuration[V any](dur time.Duration) Option[V] {
 	return func(c *cache[V]) {
-		if dur != 0 {
+		if dur > 0 {
 			c.expireCheckDur = dur
 		}
 	}

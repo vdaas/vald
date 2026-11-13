@@ -123,7 +123,7 @@ extern "C" {
       const FaissStruct* st,
       const int size,
       const long int* ids);
-  void faiss_free(FaissStruct* st);
+  void faiss_free(FaissStruct* st, const int method_type);
 #ifdef __cplusplus
 }
 #endif

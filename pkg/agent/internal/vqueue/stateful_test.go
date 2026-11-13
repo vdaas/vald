@@ -886,7 +886,7 @@ var (
 			q.RangePopDelete(
 				sy.ctx,
 				now,
-				func(uuid string) bool { return true },
+				func(uuid string, _ int64) bool { return true },
 			)
 
 			q.RangePopInsert(
