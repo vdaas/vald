@@ -279,9 +279,9 @@ func (p *fanOutPool) drain() {
 	}
 }
 
-func (p *fanOutPool) spawnWorker(ctx context.Context, initial *fanOutTask) {
+func (p *fanOutPool) spawnWorker(ctx context.Context, eg errgroup.Group, initial *fanOutTask) {
 	p.workers.Add(1)
-	go func() {
+	eg.Go(func() error {
 		exited := false
 		defer func() {
 			if !exited {
@@ -297,7 +297,7 @@ func (p *fanOutPool) spawnWorker(ctx context.Context, initial *fanOutTask) {
 			select {
 			case <-p.stopCh:
 				p.drain()
-				return
+				return nil
 			case t := <-p.ch:
 				p.runTask(t.ctx, t) //nolint:contextcheck // task context is carried across the worker pool channel
 				if !timer.Stop() {
@@ -317,30 +317,37 @@ func (p *fanOutPool) spawnWorker(ctx context.Context, initial *fanOutTask) {
 					timer.Reset(fanOutIdleWindow)
 				default:
 					exited = true
-					return
+					return nil
 				}
 			}
 		}
-	}()
+	})
 }
 
 func (p *fanOutPool) submit(ctx context.Context, t *fanOutTask) {
 	p.init()
+	eg := t.g.eg
 	if p.closed.Load() {
-		go p.runTask(ctx, t)
+		eg.Go(func() error {
+			p.runTask(ctx, t)
+			return nil
+		})
 		return
 	}
 	maxW := p.maxWorkers()
 	select {
 	case p.ch <- t:
 		if w := int(p.workers.Load()); w == 0 || (len(p.ch) > w && w < maxW) {
-			p.spawnWorker(ctx, nil)
+			p.spawnWorker(ctx, eg, nil)
 		}
 	default:
 		if int(p.workers.Load()) < maxW {
-			p.spawnWorker(ctx, t)
+			p.spawnWorker(ctx, eg, t)
 		} else {
-			go p.runTask(ctx, t)
+			eg.Go(func() error {
+				p.runTask(ctx, t)
+				return nil
+			})
 		}
 	}
 }
@@ -1218,17 +1225,14 @@ func (g *gRPCClient) handleExecuteErr(
 	} else {
 		status.Log(st.Code(), err)
 	}
-	switch st.Code() {
-	case codes.ResourceExhausted:
-		if isNoResourceExhaustedRetry(ctx) {
-			return nil, false, err
-		}
-		return nil, p.IsHealthy(ctx), err
-	case codes.Internal, codes.Unavailable:
-		return nil, p.IsHealthy(ctx), err
-	default:
+	code := st.Code()
+	if code == codes.ResourceExhausted && isNoResourceExhaustedRetry(ctx) {
 		return nil, false, err
 	}
+	if code == codes.ResourceExhausted || code == codes.Internal || code == codes.Unavailable {
+		return nil, p.IsHealthy(ctx), err
+	}
+	return nil, false, err
 }
 
 func (g *gRPCClient) doVoid(
