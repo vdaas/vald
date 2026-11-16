@@ -761,7 +761,11 @@ func (p *pool) getHealthyConn(ctx context.Context) (pc *poolConn, ok bool) {
 			idx -= sz
 		}
 
-		_, pc = p.loadFrom(slots, idx)
+		if int(idx) < len(slots) {
+			pc = slots[idx].Load()
+		} else {
+			_, pc = p.load(idx)
+		}
 
 		if pc != nil && pc.conn != nil {
 			state := pc.getState()
@@ -793,7 +797,11 @@ func (p *pool) getHealthyConn(ctx context.Context) (pc *poolConn, ok bool) {
 			idx -= sz
 		}
 
-		_, pc = p.loadFrom(slots, idx)
+		if int(idx) < len(slots) {
+			pc = slots[idx].Load()
+		} else {
+			_, pc = p.load(idx)
+		}
 
 		if pc == nil || pc.conn == nil {
 			rc = append(rc, idx)
@@ -843,7 +851,11 @@ func (p *pool) getHealthyConn(ctx context.Context) (pc *poolConn, ok bool) {
 
 	// Third pass return connected pool conn
 	for _, idx := range rc {
-		_, pc = p.loadFrom(slots, idx)
+		if int(idx) < len(slots) {
+			pc = slots[idx].Load()
+		} else {
+			_, pc = p.load(idx)
+		}
 		if pc != nil && pc.conn != nil && pc.getState() != connectivity.Shutdown {
 			return pc, true
 		}

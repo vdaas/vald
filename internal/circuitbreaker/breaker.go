@@ -27,7 +27,9 @@ type breaker struct {
 	closedErrShouldTrip   Tripper
 	halfOpenErrShouldTrip Tripper
 	count                 *count
+	counts                *stateCounts
 	key                   string
+	evicted               atomic.Bool
 	minSamples            int64
 	openTimeout           time.Duration
 	openExp               int64

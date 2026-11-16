@@ -830,15 +830,13 @@ func (n *ngt) toSearchResults(
 		}
 		return nil, errors.ErrEmptySearchResult
 	}
+	if err := ctx.Err(); err != nil {
+		n.PutErrorBuffer(ne)
+		return nil, err
+	}
 	result = make([]algorithm.SearchResult, rsize)
 
 	for i := range result {
-		select {
-		case <-ctx.Done():
-			n.PutErrorBuffer(ne)
-			return result[:i], nil
-		default:
-		}
 		d := C.ngt_get_result(results, C.uint32_t(i), ne.err)
 		if d.id == 0 && d.distance == 0 {
 			result[i] = algorithm.SearchResult{
