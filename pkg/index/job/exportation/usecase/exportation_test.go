@@ -14,13 +14,19 @@
 package usecase
 
 import (
+	"context"
+	"reflect"
 	"testing"
+	"time"
 
 	"github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/os"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/test/goleak"
 	jconfig "github.com/vdaas/vald/pkg/index/job/exportation/config"
+	"github.com/vdaas/vald/pkg/index/job/exportation/service"
 )
 
 // TestNew covers the two reachable branches of New without requiring a full
@@ -69,6 +75,58 @@ func TestNew(t *testing.T) {
 		}
 	})
 
+	t.Run("applies the configured KVS background sync and compaction intervals", func(tt *testing.T) {
+		tt.Parallel()
+		defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+
+		const (
+			syncInterval       = 7 * time.Second
+			compactionInterval = 11 * time.Second
+		)
+		cfg := &jconfig.Data{
+			Server:        &config.Servers{},
+			Observability: &config.Observability{Enabled: false},
+			Exporter: &config.IndexExporter{
+				IndexPath:                       tt.TempDir(),
+				Concurrency:                     1,
+				KVSBackgroundSyncInterval:       syncInterval.String(),
+				KVSBackgroundCompactionInterval: compactionInterval.String(),
+			},
+		}
+
+		r, err := New(cfg)
+		if err != nil {
+			tt.Fatalf("err: %v", err)
+		}
+		defer func() {
+			if err := r.PreStop(tt.Context()); err != nil {
+				tt.Errorf("PreStop failed: %v", err)
+			}
+		}()
+		rr, ok := r.(*run)
+		if !ok {
+			tt.Fatalf("New returned %T, want *run", r)
+		}
+		// the exporter implementation is unexported in package service, so its
+		// interval fields are read through reflection.
+		ev := reflect.ValueOf(rr.exporter)
+		if ev.Kind() != reflect.Pointer || ev.Elem().Kind() != reflect.Struct {
+			tt.Fatalf("exporter is %T, want a pointer to a struct", rr.exporter)
+		}
+		for field, want := range map[string]time.Duration{
+			"backgroundSyncInterval":       syncInterval,
+			"backgroundCompactionInterval": compactionInterval,
+		} {
+			fv := ev.Elem().FieldByName(field)
+			if !fv.IsValid() {
+				tt.Fatalf("exporter has no field %s", field)
+			}
+			if got := time.Duration(fv.Int()); got != want {
+				tt.Errorf("exporter %s = %v, want %v from the config", field, got, want)
+			}
+		}
+	})
+
 	t.Run("returns an error when the index path cannot be created", func(tt *testing.T) {
 		tt.Parallel()
 		defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
@@ -100,6 +158,80 @@ func TestNew(t *testing.T) {
 			tt.Errorf("returned Runner must be nil, got: %#v", r)
 		}
 	})
+}
+
+type fakeListener struct{}
+
+func (*fakeListener) ListenAndServe(context.Context) <-chan error {
+	return nil
+}
+
+func (*fakeListener) Shutdown(context.Context) error {
+	return nil
+}
+
+// fakeJob embeds the service interface so that only the methods used by
+// run.Start need to be implemented.
+type fakeJob struct {
+	service.Exporter
+}
+
+func (*fakeJob) StartClient(context.Context) (<-chan error, error) {
+	return make(chan error), nil
+}
+
+func (*fakeJob) Start(context.Context) error {
+	return nil
+}
+
+// TestRun_Start_FindProcessError verifies that Start does not terminate the
+// process (log.Fatal) when the job cannot find its own process to SIGTERM.
+// With the old log.Fatalf this test binary would exit instead of reaching the
+// assertions below.
+func TestRun_Start_FindProcessError(t *testing.T) {
+	// not parallel: os.FindProcess is a package level variable.
+	called := make(chan struct{}, 1)
+	orig := os.FindProcess
+	t.Cleanup(func() { os.FindProcess = orig })
+	os.FindProcess = func(int) (*os.Process, error) {
+		select {
+		case called <- struct{}{}:
+		default:
+		}
+		return nil, errors.New("find process failed")
+	}
+
+	ctx, cancel := context.WithCancel(t.Context())
+	defer cancel()
+	eg, ctx := errgroup.New(ctx)
+	r := &run{
+		eg:       eg,
+		server:   new(fakeListener),
+		exporter: new(fakeJob),
+	}
+	if _, err := r.Start(ctx); err != nil {
+		t.Fatalf("Start returned an error: %v", err)
+	}
+
+	select {
+	case <-called:
+	case <-time.After(10 * time.Second):
+		t.Fatal("os.FindProcess was not called by the job goroutine")
+	}
+
+	cancel()
+	done := make(chan error, 1)
+	go func() {
+		done <- eg.Wait()
+	}()
+	select {
+	case err := <-done:
+		if err != nil && !errors.Is(err, context.Canceled) {
+			t.Errorf("unexpected error from errgroup: %v", err)
+		}
+	case <-time.After(10 * time.Second):
+		t.Fatal("goroutines started by Start did not finish")
+	}
 }
 
 // NOT IMPLEMENTED BELOW

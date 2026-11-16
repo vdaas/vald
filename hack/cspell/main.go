@@ -22,6 +22,7 @@ import (
 	"regexp"
 	"slices"
 
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync"
@@ -228,7 +229,7 @@ func parseCspellResult(filePath string, th int) (map[string][]string, map[string
 					globalWords[word] = true
 				}
 			}
-		} else if len(files) >= th {
+		} else if len(slices.Compact(slices.Sorted(slices.Values(files)))) >= th {
 			globalWords[word] = true
 		}
 	}
@@ -255,12 +256,29 @@ func loadConfig(path string) (config *CSpellConfig, err error) {
 	return config, nil
 }
 
-func saveConfig(path string, config *CSpellConfig) error {
+// loadOrInitConfig loads the config at path, or returns an empty config only when path does not exist.
+// Any other failure is returned so that an unreadable or malformed config is never overwritten.
+func loadOrInitConfig(path string) (*CSpellConfig, error) {
+	config, err := loadConfig(path)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return new(CSpellConfig), nil
+		}
+		return nil, err
+	}
+	return config, nil
+}
+
+func saveConfig(path string, config *CSpellConfig) (err error) {
 	file, err := os.Create(path)
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func() {
+		if cerr := file.Close(); cerr != nil && err == nil {
+			err = cerr
+		}
+	}()
 
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "  ")
@@ -305,9 +323,10 @@ func main() {
 		os.Exit(1)
 	}
 
-	config, err := loadConfig(*configPath)
-	if err != nil || config == nil {
-		config = new(CSpellConfig)
+	config, err := loadOrInitConfig(*configPath)
+	if err != nil {
+		fmt.Println("Error: failed to load config:", err)
+		os.Exit(1)
 	}
 	config.Import = mandatoryImports
 	config.IgnorePaths = mandatoryIgnorePaths
@@ -319,7 +338,7 @@ func main() {
 	wordsByFile, globalWords, err := parseCspellResult(*outputPath, *threshold)
 	if err != nil {
 		fmt.Println("Error:", err)
-		return
+		os.Exit(1)
 	}
 
 	if config.IgnoreWords == nil {
@@ -327,9 +346,10 @@ func main() {
 	}
 	for word := range globalWords {
 		config.IgnoreWords = append(config.IgnoreWords, word)
-		fmt.Println(config.IgnoreWords)
 	}
+	// IgnoreWords was loaded from the existing config, so drop re-added words.
 	slices.Sort(config.IgnoreWords)
+	config.IgnoreWords = slices.Compact(config.IgnoreWords)
 	for _, word := range config.IgnoreWords {
 		globalWords[word] = true
 	}
@@ -344,7 +364,7 @@ func main() {
 			im, ok := config.IgnoreWordsMap[filePath]
 			if !ok || im == nil {
 				slices.Sort(words)
-				config.IgnoreWordsMap[filePath] = words
+				config.IgnoreWordsMap[filePath] = slices.Compact(words)
 			} else {
 				words = append(im, words...)
 				slices.Sort(words)
@@ -354,7 +374,7 @@ func main() {
 	}
 
 	if err := saveConfig(*configPath, config); err != nil {
-		fmt.Println("Error: output path is required")
+		fmt.Println("Error: failed to save config:", err)
 		os.Exit(1)
 	}
 }

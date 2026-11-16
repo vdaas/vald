@@ -326,7 +326,7 @@ func (*memoryMetrics) Register(m metrics.Meter) error {
 	numGC, err := m.Int64ObservableGauge(
 		numGCMetricsName,
 		metrics.WithDescription(numGCMetricsDescription),
-		metrics.WithUnit(metrics.Bytes),
+		metrics.WithUnit(metrics.Dimensionless),
 	)
 	if err != nil {
 		return err
@@ -353,7 +353,7 @@ func (*memoryMetrics) Register(m metrics.Meter) error {
 				ptMs = int64(float64(mstats.PauseTotalNs) / float64(time.Millisecond))
 			}
 			o.ObserveInt64(pauseTotalMs, ptMs)
-			o.ObserveInt64(numGC, int64(mstats.NextGC))
+			o.ObserveInt64(numGC, int64(mstats.NumGC))
 			return nil
 		},
 		alloc,

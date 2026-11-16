@@ -30,6 +30,7 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/strings"
+	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/atomic"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 )
@@ -62,6 +63,8 @@ type discovery struct {
 	colocation      string
 	selfMirrAddrStr string
 	selfMirrAddrs   []string
+	retryTargets    sync.Map[string, any]                    // names whose Connect failed; see syncWithAddr
+	staleTargets    sync.Map[string, *payload.Mirror_Target] // addrs whose Disconnect failed; see retryStaleDisconnects
 	dur             time.Duration
 }
 
@@ -150,12 +153,19 @@ func (d *discovery) Start(ctx context.Context) (<-chan error, error) {
 					case ech <- err:
 					}
 				}
-			case err := <-dech:
-				if err != nil {
+			case derr, ok := <-dech:
+				if !ok {
+					// the controller closed its error stream (its manager
+					// returned); a closed channel is always ready, so stop
+					// selecting it or this loop busy-spins until ctx ends.
+					dech = nil
+					continue
+				}
+				if derr != nil {
 					select {
 					case <-ctx.Done():
-						return errors.Join(ctx.Err(), err)
-					case ech <- err:
+						return errors.Join(ctx.Err(), derr)
+					case ech <- derr:
 					}
 				}
 			}
@@ -223,6 +233,8 @@ func (d *discovery) startSync(
 		}
 	}
 
+	errs = d.retryStaleDisconnects(ctx, curAddrs)
+
 	deleted := map[string]*deletedTarget{} // map[addr: *deletedTarget]
 	for name, ptgt := range prev {
 		if _, ok := current[name]; !ok {
@@ -248,16 +260,59 @@ func (d *discovery) startSync(
 		}
 		return current, errs
 	}
-	return current, d.syncWithAddr(ctx, current, curAddrs)
+	return current, errors.Join(errs, d.syncWithAddr(ctx, current, curAddrs))
+}
+
+// retryStaleDisconnects retries Disconnect for replaced/removed targets whose
+// earlier Disconnect failed; otherwise their connection stays open and
+// syncWithAddr would re-create a MirrorTarget for it. An addr that is a
+// current target again is only forgotten.
+func (d *discovery) retryStaleDisconnects(
+	ctx context.Context, curAddrs map[string]string,
+) (errs error) {
+	d.staleTargets.Range(func(addr string, tgt *payload.Mirror_Target) bool {
+		if _, ok := curAddrs[addr]; !ok {
+			if err := d.mirr.Disconnect(ctx, tgt); err != nil {
+				errs = errors.Join(errs, err)
+				return true
+			}
+		}
+		d.staleTargets.Delete(addr)
+		return true
+	})
+	return errs
 }
 
 func (d *discovery) syncWithAddr(
 	ctx context.Context, current map[string]target.Endpoint, curAddrs map[string]string,
 ) (errs error) {
 	for addr, name := range curAddrs {
+		connected := d.mirr.IsConnected(ctx, addr)
+		if _, retry := d.retryTargets.Load(name); retry {
+			if connected {
+				d.retryTargets.Delete(name)
+			} else {
+				// Connect to this target failed in connectTarget/updateTarget and
+				// nothing else reconnects it until the CR changes or the peer
+				// Registers, so retry here. Only such targets are retried: a target
+				// that was connected and then dropped by Mirror.registers (Register
+				// returned Unimplemented) is never in retryTargets, so it is not
+				// redialed and re-dropped on every tick.
+				tgt := current[name]
+				if err := d.mirr.Connect(ctx, newMirrorTarget(tgt.Host, tgt.Port)); err != nil {
+					errs = errors.Join(errs, err)
+					if !isDisconnectedPhase(tgt.Phase) {
+						errs = errors.Join(errs, d.updateMirrorTargetPhase(ctx, name, target.MirrorTargetPhaseDisconnected))
+					}
+					continue
+				}
+				d.retryTargets.Delete(name)
+				errs = errors.Join(errs, d.updateMirrorTargetPhase(ctx, name, target.MirrorTargetPhaseConnected))
+				continue
+			}
+		}
 		// When the status code of a regularly running Register RPC is Unimplemented, the connection to the target will be disconnected
 		// so the status of the resource (CR) may be misaligned. To prevent this, change the status of the resource to Disconnected.
-		connected := d.mirr.IsConnected(ctx, addr)
 		if !connected && isConnectedPhase(current[name].Phase) {
 			errs = errors.Join(errs, d.updateMirrorTargetPhase(ctx, name, target.MirrorTargetPhaseDisconnected))
 		} else if connected && !isConnectedPhase(current[name].Phase) {
@@ -268,16 +323,14 @@ func (d *discovery) syncWithAddr(
 	d.mirr.RangeMirrorAddr(func(addr string, _ any) bool {
 		connected := d.mirr.IsConnected(ctx, addr)
 		if name, ok := curAddrs[addr]; ok {
-			if connected && !isConnectedPhase(current[name].Phase) {
-				errs = errors.Join(errs,
-					d.updateMirrorTargetPhase(ctx, name, target.MirrorTargetPhaseConnected),
-				)
-			} else if !connected && !isDisconnectedPhase(current[name].Phase) {
+			// Transitions to Connected, and from Connected to Disconnected, were already applied by the loop above;
+			// only move the remaining phases (e.g. Pending/Unknown) of a disconnected address to Disconnected.
+			if phase := current[name].Phase; !connected && !isConnectedPhase(phase) && !isDisconnectedPhase(phase) {
 				errs = errors.Join(errs,
 					d.updateMirrorTargetPhase(ctx, name, target.MirrorTargetPhaseDisconnected),
 				)
 			}
-		} else if !ok && connected {
+		} else if _, stale := d.staleTargets.Load(addr); !ok && connected && !stale {
 			host, port, err := net.SplitHostPort(addr)
 			if err != nil {
 				log.Error(err)
@@ -298,6 +351,9 @@ func (d *discovery) connectTarget(ctx context.Context, req map[string]*createdTa
 		if err != nil {
 			errs = errors.Join(errs, err)
 			phase = target.MirrorTargetPhaseDisconnected
+			d.retryTargets.Store(created.name, struct{}{})
+		} else {
+			d.retryTargets.Delete(created.name)
 		}
 		errs = errors.Join(errs, d.updateMirrorTargetPhase(ctx, created.name, phase))
 	}
@@ -327,10 +383,13 @@ func (d *discovery) createMirrorTargetResource(
 func (d *discovery) disconnectTarget(
 	ctx context.Context, req map[string]*deletedTarget,
 ) (errs error) {
-	for _, deleted := range req {
+	for addr, deleted := range req {
+		d.retryTargets.Delete(deleted.name)
 		phase := target.MirrorTargetPhaseDisconnected
-		err := d.mirr.Disconnect(ctx, newMirrorTarget(deleted.host, deleted.port))
+		tgt := newMirrorTarget(deleted.host, deleted.port)
+		err := d.mirr.Disconnect(ctx, tgt)
 		if err != nil {
+			d.staleTargets.Store(addr, tgt)
 			errs = errors.Join(errs, err)
 			phase = target.MirrorTargetPhaseUnknown
 		}
@@ -356,14 +415,19 @@ func (d *discovery) updateMirrorTargetPhase(
 
 func (d *discovery) updateTarget(ctx context.Context, req map[string]*updatedTarget) (errs error) {
 	for _, updated := range req {
-		err := d.mirr.Disconnect(ctx, newMirrorTarget(updated.old.Host, updated.old.Port))
+		// A retry pending for the old endpoint no longer applies.
+		d.retryTargets.Delete(updated.name)
+		old := newMirrorTarget(updated.old.Host, updated.old.Port)
+		if err := d.mirr.Disconnect(ctx, old); err != nil {
+			// The CR now points at the new endpoint: connect it anyway and
+			// retry the old endpoint's Disconnect on later syncs.
+			d.staleTargets.Store(net.JoinHostPort(old.GetHost(), uint16(old.GetPort())), old) //nolint:gosec // port values come from the MirrorTarget CRD spec, not attacker-controlled input
+			errs = errors.Join(errs, err)
+		}
+		err := d.mirr.Connect(ctx, newMirrorTarget(updated.new.Host, updated.new.Port))
 		if err != nil {
-			errs = errors.Join(errs, err, d.updateMirrorTargetPhase(ctx, updated.name, target.MirrorTargetPhaseUnknown))
-		} else {
-			err := d.mirr.Connect(ctx, newMirrorTarget(updated.new.Host, updated.new.Port))
-			if err != nil {
-				errs = errors.Join(errs, err, d.updateMirrorTargetPhase(ctx, updated.name, target.MirrorTargetPhaseDisconnected))
-			}
+			d.retryTargets.Store(updated.name, struct{}{})
+			errs = errors.Join(errs, err, d.updateMirrorTargetPhase(ctx, updated.name, target.MirrorTargetPhaseDisconnected))
 		}
 	}
 	return errs

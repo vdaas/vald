@@ -265,6 +265,54 @@ func TestCollector_Merge(t *testing.T) {
 	}
 }
 
+// TestCollector_MergeInto_DoesNotAliasScales guards that a scale the
+// destination lacks is copied, not shared: merging a second child into the
+// parent must not write into the first child's scale.
+func TestCollector_MergeInto_DoesNotAliasScales(t *testing.T) {
+	t.Parallel()
+	parent, err := NewCollector()
+	if err != nil {
+		t.Fatal(err)
+	}
+	newChild := func() Collector {
+		c, err := NewCollector(WithRangeScale("rs", 10, 10))
+		if err != nil {
+			t.Fatal(err)
+		}
+		return c
+	}
+	c1, c2 := newChild(), newChild()
+	if err := c1.MergeInto(parent); err != nil {
+		t.Fatal(err)
+	}
+	p := parent.(*collector)
+	if len(p.scales) != 1 {
+		t.Fatalf("parent scales = %d, want 1", len(p.scales))
+	}
+	if p.scales[0] == c1.(*collector).scales[0] {
+		t.Fatal("parent shares the child's scale instance")
+	}
+	scaleTotal := func(c Collector) (total uint64) {
+		for _, slot := range c.(*collector).scales[0].Snapshot().Slots {
+			if slot != nil {
+				total += slot.Total
+			}
+		}
+		return total
+	}
+	before := scaleTotal(c1)
+	c2.Record(t.Context(), 1, &RequestResult{Latency: time.Millisecond})
+	if err := c2.MergeInto(parent); err != nil {
+		t.Fatal(err)
+	}
+	if after := scaleTotal(c1); after != before {
+		t.Errorf("child scale total changed by an unrelated merge: %d -> %d", before, after)
+	}
+	if got := scaleTotal(parent); got != 1 {
+		t.Errorf("parent scale total = %d, want 1", got)
+	}
+}
+
 func TestCounterHandle_Value(t *testing.T) {
 	type args struct {
 		adds []int64

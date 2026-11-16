@@ -19,7 +19,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io/fs"
 	"regexp"
 
 	"github.com/vdaas/vald/internal/conv"
@@ -138,17 +137,15 @@ func main() {
 	}
 }
 
-func genJSONSchema(path string) error {
-	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_SYNC, fs.ModePerm)
+func genJSONSchema(path string) (err error) {
+	f, err := os.Open(path)
 	if err != nil {
 		return errors.Errorf("cannot open %s", path)
 	}
 
 	defer func() {
-		err := f.Close()
-		if err != nil {
-			// skipcq: RVV-A0003
-			log.Fatal(err)
+		if cerr := f.Close(); cerr != nil {
+			err = errors.Join(err, cerr)
 		}
 	}()
 
@@ -173,6 +170,7 @@ func genJSONSchema(path string) error {
 			err = json.Unmarshal([]byte(strings.TrimPrefix(tx, prefix)), &l)
 			if err != nil {
 				log.Errorf("error occurred line %d, data %s, error %v", line, tx, err)
+				continue
 			}
 			ls = append(ls, l)
 			continue
@@ -199,6 +197,9 @@ func genJSONSchema(path string) error {
 		currentKey = match[1]
 		descriptions[currentKey] = match[2]
 		continuedLine = true
+	}
+	if err = sc.Err(); err != nil {
+		return errors.Errorf("cannot read %s: %w", path, err)
 	}
 
 	schemas, err := objectProperties(make([]string, 0), ls)

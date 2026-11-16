@@ -138,6 +138,7 @@ on:
       - internal/servers/starter/*.go
       - internal/strings/*.go
       - internal/sync/*.go
+      - internal/sync/atomic/*.go
       - internal/sync/errgroup/*.go
       - internal/sync/semaphore/*.go
       - internal/sync/singleflight/*.go
@@ -145,6 +146,7 @@ on:
       - internal/timeutil/location/*.go
       - internal/tls/*.go
       - internal/version/*.go
+      - pkg/index/job/internal/targets/*.go
       - pkg/index/job/save/config/*.go
       - pkg/index/job/save/service/*.go
       - pkg/index/job/save/usecase/*.go
@@ -250,6 +252,7 @@ on:
       - internal/servers/starter/*.go
       - internal/strings/*.go
       - internal/sync/*.go
+      - internal/sync/atomic/*.go
       - internal/sync/errgroup/*.go
       - internal/sync/semaphore/*.go
       - internal/sync/singleflight/*.go
@@ -257,6 +260,7 @@ on:
       - internal/timeutil/location/*.go
       - internal/tls/*.go
       - internal/version/*.go
+      - pkg/index/job/internal/targets/*.go
       - pkg/index/job/save/config/*.go
       - pkg/index/job/save/service/*.go
       - pkg/index/job/save/usecase/*.go

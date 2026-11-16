@@ -1692,3 +1692,19 @@ func TestWithEpsilonForCreation(t *testing.T) {
 		})
 	}
 }
+
+// WithEpsilonForCreation used to put the error buffer back into the pool after
+// newGoError had already replaced and destroyed it, so a destroyed buffer was pooled
+// and the pool size counter drifted up by one on every failure.
+func TestWithEpsilonForCreation_failureDoesNotRepoolErrorBuffer(t *testing.T) {
+	// a nil prop makes ngt_set_property_epsilon_for_creation fail with an error message.
+	obj := new(ngt)
+	before := obj.eps.Load()
+	err := WithEpsilonForCreation(0.1)(obj)
+	if err == nil {
+		t.Fatal("WithEpsilonForCreation() error = nil, want an error for a nil property")
+	}
+	if got := obj.eps.Load(); got != before {
+		t.Errorf("error buffer pool size = %d, want %d", got, before)
+	}
+}

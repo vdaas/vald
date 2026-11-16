@@ -46,7 +46,7 @@ spec:
         app.kubernetes.io/instance: release-name
         app.kubernetes.io/component: operator
       annotations:
-        checksum/configmap: bb6ee3e4a3b8a0ced53ed36978c906b4a604c21993a40c06b837b5a63ccbfde8
+        checksum/configmap: 3b2d24f3e0fe3f1fe10cd3c8a707d105b50227114646b49f3745e43ffdf9e602
         pyroscope.io/scrape: "true"
         pyroscope.io/application-name: vald-index-operator
         pyroscope.io/profile-cpu-enabled: "true"

@@ -35,6 +35,22 @@ type retry struct {
 	errorFn func(vals ...any)
 }
 
+// failure marks a logging-failure report handed to warnFn/errorFn. Those are
+// usually the very logger that is failing and call back into Out, so a report
+// that cannot be written is dropped instead of being reported again, which
+// would recurse without bound.
+type failure struct{ error }
+
+func (f failure) Unwrap() error { return f.error }
+
+func isFailure(vals []any) bool {
+	if len(vals) != 1 {
+		return false
+	}
+	_, ok := vals[0].(failure)
+	return ok
+}
+
 func New(opts ...Option) Retry {
 	r := new(retry)
 	for _, opt := range append(defaultOption, opts...) {
@@ -45,15 +61,16 @@ func New(opts ...Option) Retry {
 
 func (r *retry) Out(fn func(vals ...any) error, vals ...any) {
 	if fn != nil {
-		if err := fn(vals...); err != nil {
+		if err := fn(vals...); err != nil && !isFailure(vals) {
 			rv := reflect.ValueOf(fn)
-			r.warnFn(errors.ErrLoggingRetry(err, rv))
+			r.report(r.warnFn, errors.ErrLoggingRetry(err, rv))
 			err = fn(vals...)
 			if err != nil {
-				r.errorFn(errors.ErrLoggingFailed(err, rv))
+				r.report(r.errorFn, errors.ErrLoggingFailed(err, rv))
 				err = fn(vals...)
 				if err != nil {
-					panic(err)
+					// do not panic: a failing logger must not crash the caller
+					r.report(r.errorFn, errors.ErrLoggingFailed(err, rv))
 				}
 			}
 		}
@@ -64,16 +81,21 @@ func (r *retry) Outf(fn func(format string, vals ...any) error, format string, v
 	if fn != nil {
 		if err := fn(format, vals...); err != nil {
 			rv := reflect.ValueOf(fn)
-			r.warnFn(errors.ErrLoggingRetry(err, rv))
+			r.report(r.warnFn, errors.ErrLoggingRetry(err, rv))
 			err = fn(format, vals...)
 			if err != nil {
-				r.errorFn(errors.ErrLoggingFailed(err, rv))
+				r.report(r.errorFn, errors.ErrLoggingFailed(err, rv))
 
 				err = fn(format, vals...)
 				if err != nil {
-					panic(err)
+					// do not panic: a failing logger must not crash the caller
+					r.report(r.errorFn, errors.ErrLoggingFailed(err, rv))
 				}
 			}
 		}
 	}
+}
+
+func (*retry) report(fn func(vals ...any), err error) {
+	fn(failure{err})
 }

@@ -75,7 +75,9 @@ func NewSyncer(api k8s.Client, scheme *runtime.Scheme, generationLabel string) *
 // Sync applies the desired objects with owner-reference + managed-generation
 // labels, then prunes objects returned by existing that are controlled by
 // owner but absent from the desired set. existing may be nil to skip pruning.
-// The returned map carries one entry per Create/Update/Prune.
+// The returned map carries one entry per Create/Update/Prune. Objects
+// controlled by another owner are left untouched and reported as joined
+// AlreadyOwnedErrors after the rest has been applied and pruned.
 func (s *Syncer) Sync(
 	ctx context.Context,
 	owner Object,
@@ -91,6 +93,7 @@ func (s *Syncer) Sync(
 
 	generation := strconv.FormatInt(owner.GetGeneration(), 10)
 
+	var conflicts []error
 	for _, obj := range desired {
 		key := syncKey(obj)
 
@@ -114,22 +117,38 @@ func (s *Syncer) Sync(
 			return opes, errors.Errorf("failed to snapshot desired state of %s", key)
 		}
 		ope, err := ctrl.CreateOrUpdate(ctx, s.api, obj, func() error {
+			// obj now holds the live object: refuse to take over one that is
+			// controlled by a different owner (AlreadyOwnedError). Objects
+			// without a controller are still adopted.
+			if err := controllerutil.SetControllerReference(owner, obj, s.scheme); err != nil {
+				return err
+			}
 			return applyDesiredState(obj, want)
 		})
 		if err != nil {
+			// A conflict on one object must not block the remaining objects
+			// or pruning; report it after the rest has converged. prune skips
+			// it as it is not controlled by owner.
+			var aoe *controllerutil.AlreadyOwnedError
+			if errors.As(err, &aoe) {
+				conflicts = append(conflicts, errors.Wrapf(err, "skipped %s", key))
+				continue
+			}
 			return opes, errors.Wrap(err, "failed to create or update resource")
 		}
 		opes[key] = ope
 	}
 
-	if existing == nil {
-		return opes, nil
+	if existing != nil {
+		prune, err := s.prune(ctx, owner, opes, existing)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to prune old resources")
+		}
+		maps.Copy(opes, prune)
 	}
-	prune, err := s.prune(ctx, owner, opes, existing)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to prune old resources")
+	if len(conflicts) > 0 {
+		return opes, errors.Join(conflicts...)
 	}
-	maps.Copy(opes, prune)
 	return opes, nil
 }
 

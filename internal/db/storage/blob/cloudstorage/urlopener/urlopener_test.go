@@ -13,6 +13,89 @@
 // limitations under the License.
 package urlopener
 
+import (
+	"net/http"
+	"testing"
+
+	"cloud.google.com/go/storage"
+)
+
+const (
+	testServiceAccountJSON = `{"type":"service_account","client_email":"sa@example.iam.gserviceaccount.com","private_key":"test-private-key","private_key_id":"kid","token_uri":"https://oauth2.googleapis.com/token"}`
+	testAuthorizedUserJSON = `{"type":"authorized_user","client_id":"cid","client_secret":"secret","refresh_token":"refresh"}`
+)
+
+func Test_signingOptions(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name    string
+		wantID  string
+		wantKey string
+		json    []byte
+		wantErr bool
+	}{
+		{name: "nil JSON (metadata server / Workload Identity)", json: nil},
+		{name: "authorized_user has no signing key", json: []byte(testAuthorizedUserJSON)},
+		{
+			name:    "service_account fills signing fields",
+			json:    []byte(testServiceAccountJSON),
+			wantID:  "sa@example.iam.gserviceaccount.com",
+			wantKey: "test-private-key",
+		},
+		{name: "malformed JSON returns error", json: []byte(`{`), wantErr: true},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			got, err := signingOptions(tc.json, storage.ScopeReadWrite)
+			if (err != nil) != tc.wantErr {
+				t.Fatalf("signingOptions() error = %v, wantErr %v", err, tc.wantErr)
+			}
+			if got.GoogleAccessID != tc.wantID {
+				t.Errorf("GoogleAccessID = %q, want %q", got.GoogleAccessID, tc.wantID)
+			}
+			if string(got.PrivateKey) != tc.wantKey {
+				t.Errorf("PrivateKey = %q, want %q", got.PrivateKey, tc.wantKey)
+			}
+		})
+	}
+}
+
+func Test_urlOpener_URLOpener_credentialTypes(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name   string
+		json   string
+		wantID string
+	}{
+		{name: "authorized_user credentials are accepted", json: testAuthorizedUserJSON},
+		{
+			name:   "service_account credentials keep signing fields",
+			json:   testServiceAccountJSON,
+			wantID: "sa@example.iam.gserviceaccount.com",
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			uo, err := New(WithHTTPClient(&http.Client{}), WithCredentialsJSON(tc.json))
+			if err != nil {
+				t.Fatalf("New() error = %v", err)
+			}
+			got, err := uo.URLOpener(t.Context())
+			if err != nil {
+				t.Fatalf("URLOpener() error = %v", err)
+			}
+			if got.Client == nil {
+				t.Fatal("URLOpener().Client is nil")
+			}
+			if got.Options.GoogleAccessID != tc.wantID {
+				t.Errorf("GoogleAccessID = %q, want %q", got.Options.GoogleAccessID, tc.wantID)
+			}
+		})
+	}
+}
+
 // NOT IMPLEMENTED BELOW
 //
 // func TestNew(t *testing.T) {

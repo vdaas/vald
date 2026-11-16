@@ -122,7 +122,14 @@ func (o *operator) Start(ctx context.Context) (<-chan error, error) {
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
-			case err := <-dech:
+			case err, ok := <-dech:
+				if !ok {
+					// the controller closed its error stream; a closed channel
+					// is always ready, so stop selecting it or this loop
+					// busy-spins until ctx ends.
+					dech = nil
+					continue
+				}
 				if err != nil {
 					select {
 					case <-ctx.Done():

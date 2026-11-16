@@ -46,7 +46,7 @@ remove/empty/file: \
 	files
 	@if [ -f "$(ROOTDIR)/.gitfiles" ]; then \
 		grep -vE '^\s*#' "$(ROOTDIR)/.gitfiles" | grep -v gitkeep \
-		| xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P"$(CORES)" -n1 sh -c ' \
+		| $(XARGS) -n1 $(SHELL_STRICT_EXEC) ' \
 		f="{}"; \
 		if [ -f "$$f" ] && [ -z "$$(tr -d '\''[:space:]'\'' < "$$f")" ]; then \
 			rm "$$f"; \
@@ -67,11 +67,11 @@ format/go: \
 	@echo "Formatting Go files..."
 	@if [ -f "$(ROOTDIR)/.gitfiles" ]; then \
 		grep -e "\.go$$" "$(ROOTDIR)/.gitfiles" | grep -v "_test\.go$$" \
-		| xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P"$(CORES)" bash -c ' \
+		| $(XARGS) $(SHELL_STRICT_EXEC) ' \
 		echo "Formatting Go file {}" && \
 		$(GOBIN)/strictgoimports -w {} && \
 		$(GOBIN)/crlfmt -w -diff=false {} && \
-		$(BINDIR)/golangci-lint fmt --config $(ROOTDIR)/.golangci.json {}'; \
+		$(BINDIR)/golangci-lint fmt $(GOLANGCI_LINT_ARGS) {}'; \
 	fi
 	go fix $(ROOTDIR)/...
 	@echo "Go formatting complete."
@@ -86,11 +86,11 @@ format/go/test: \
 	@echo "Formatting Go Test files..."
 	@if [ -f "$(ROOTDIR)/.gitfiles" ]; then \
 		grep -e "_test\.go$$" "$(ROOTDIR)/.gitfiles" \
-		| xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P"$(CORES)" bash -c ' \
+		| $(XARGS) $(SHELL_STRICT_EXEC) ' \
 		echo "Formatting Go Test file {}" && \
 		$(GOBIN)/strictgoimports -w {} && \
 		$(GOBIN)/crlfmt -w -diff=false {} && \
-		$(BINDIR)/golangci-lint fmt --config $(ROOTDIR)/.golangci.json {}'; \
+		$(BINDIR)/golangci-lint fmt $(GOLANGCI_LINT_ARGS) {}'; \
 	fi
 	@echo "Go test file formatting complete."
 
@@ -102,23 +102,24 @@ format/go/diff: \
 	golangci-lint/install \
 	files
 	@echo "Formatting Go Diff files..."
-	- @git diff --name-only --diff-filter=ACM HEAD | grep -e ".go$$" | xargs -I {} -P$(CORES) bash -c ' \
+	- @$(GIT_DIFF_FILES) | grep -e ".go$$" | $(XARGS) $(SHELL_STRICT_EXEC) ' \
 	echo "Formatting Go file {}" && \
 	$(GOBIN)/strictgoimports -w {} && \
 	$(GOBIN)/crlfmt -w -diff=false {} && \
-	$(BINDIR)/golangci-lint fmt --config $(ROOTDIR)/.golangci.json {}'
+	$(BINDIR)/golangci-lint fmt $(GOLANGCI_LINT_ARGS) {}'
 	@echo "Go file formatting complete."
 
 .PHONY: format/rust
 ## format rust codes
 format/rust: \
+	rust/toolchain/sync \
 	rustfmt/install \
 	files
 	@echo "Formatting Rust files..."
 	- @cd $(ROOTDIR)/rust && $(CARGO_HOME)/bin/cargo fmt
 	@if [ -f "$(ROOTDIR)/.gitfiles" ]; then \
 		grep -e "\.rs$$" "$(ROOTDIR)/.gitfiles" \
-		| xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P"$(CORES)" bash -c ' \
+		| $(XARGS) $(SHELL_STRICT_EXEC) ' \
 		echo "Formatting Rust file {}" && \
 		cd $(ROOTDIR)/rust && $(CARGO_HOME)/bin/rustfmt --edition 2024 --style-edition 2024 $(ROOTDIR)/{}'; \
 	fi
@@ -134,7 +135,7 @@ format/yaml:
 	@echo "Formatting YAML files..."
 	- @if [ -f "$(ROOTDIR)/.gitfiles" ]; then \
 		grep -E '\.ya?ml\b' "$(ROOTDIR)/.gitfiles" | grep -Ev '(templates|s3)' \
-		| xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P"$(CORES)" bash -c ' \
+		| $(XARGS) $(SHELL_STRICT_EXEC) ' \
 		echo "Formatting YAML file {}" && \
 		yamlfmt {} && \
 		bunx prettier --write {}'; \
@@ -147,7 +148,7 @@ clean/yaml:
 	- @$(MAKE) files
 	- @if [ -f "$(ROOTDIR)/.gitfiles" ]; then \
 		grep -E '\.ya?ml\b' "$(ROOTDIR)/.gitfiles" | grep -Ev '(templates|s3)' \
-		| xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P"$(CORES)" bash -c ' \
+		| $(XARGS) $(SHELL_STRICT_EXEC) ' \
 		if ! grep -qEv "^(\\s*#|---|\\s*)$$" "{}"; then \
 			echo "Deleting {}"; rm -rf "{}"; \
 		fi'; \
@@ -160,7 +161,7 @@ format/yaml/diff:
 	- @$(MAKE) clean/yaml
 	- @$(MAKE) files
 	@echo "Formatting YAML files..."
-	- @git diff --name-only --diff-filter=ACM HEAD | grep -E '\.ya?ml\b' | grep -Ev '(templates|s3)' | xargs -I {} -P$(CORES) bash -c ' \
+	- @$(GIT_DIFF_FILES) | grep -E '\.ya?ml\b' | grep -Ev '(templates|s3)' | $(XARGS) $(SHELL_STRICT_EXEC) ' \
 	echo "Formatting YAML file {}" && \
 	yamlfmt {} && \
 	bunx prettier --write {}'
@@ -173,7 +174,7 @@ format/make: \
 	@echo "Formatting Makefile and Makefile.d/*.mk files..."
 	- @if [ -f "$(ROOTDIR)/.gitfiles" ]; then \
 		grep "Makefile" "$(ROOTDIR)/.gitfiles" \
-		| xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P"$(CORES)" bash -c ' \
+		| $(XARGS) $(SHELL_STRICT_EXEC) ' \
 		echo "Formatting Makefile file {}" && mbake format {} '; \
 	fi
 	@echo "Makefile formatting complete."
@@ -181,10 +182,11 @@ format/make: \
 .PHONY: format/md
 format/md: \
 	prettier/install
-	@echo "Formatting Makrdown files..."
+	@echo "Formatting Markdown files..."
 	- @if [ -f "$(ROOTDIR)/.gitfiles" ]; then \
-		grep -E '\.md\b' "$(ROOTDIR)/.gitfiles" \
-		| xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P"$(CORES)" bash -c ' \
+		grep -E '\.md$$' "$(ROOTDIR)/.gitfiles" \
+		| $(XARGS) $(SHELL_STRICT_EXEC) ' \
+		[ -L {} ] && exit 0; \
 		echo "Formatting Markdown file {}" && \
 		bunx prettier --write {}'; \
 	fi
@@ -195,8 +197,9 @@ format/json: \
 	prettier/install
 	@echo "Formatting JSON files..."
 	- @if [ -f "$(ROOTDIR)/.gitfiles" ]; then \
-		grep -E '\.json\b' "$(ROOTDIR)/.gitfiles" \
-		| xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P"$(CORES)" bash -c ' \
+		grep -E '\.json$$' "$(ROOTDIR)/.gitfiles" \
+		| $(XARGS) $(SHELL_STRICT_EXEC) ' \
+		[ -L {} ] && exit 0; \
 		echo "Formatting JSON file {}" && \
 		bunx prettier --write {}'; \
 	fi

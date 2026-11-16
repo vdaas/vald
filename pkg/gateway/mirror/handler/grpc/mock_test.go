@@ -28,6 +28,8 @@ type gatewayMock struct {
 	FromForwardedContextFunc func(ctx context.Context) string
 	BroadCastFunc            func(ctx context.Context,
 		f func(ctx context.Context, target string, vc service.MirrorClient, copts ...grpc.CallOption) error) error
+	DoFunc func(ctx context.Context, target string,
+		f func(ctx context.Context, target string, vc service.MirrorClient, copts ...grpc.CallOption) (any, error)) (any, error)
 	DoMultiFunc func(ctx context.Context, targets []string,
 		f func(ctx context.Context, target string, vc service.MirrorClient, copts ...grpc.CallOption) error) error
 }
@@ -53,4 +55,12 @@ func (gm *gatewayMock) DoMulti(
 	f func(ctx context.Context, target string, vc service.MirrorClient, copts ...grpc.CallOption) error,
 ) error {
 	return gm.DoMultiFunc(ctx, targets, f)
+}
+
+func (gm *gatewayMock) Do(
+	ctx context.Context,
+	target string,
+	f func(ctx context.Context, target string, vc service.MirrorClient, copts ...grpc.CallOption) (any, error),
+) (any, error) {
+	return gm.DoFunc(ctx, target, f)
 }

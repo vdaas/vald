@@ -36,6 +36,10 @@ type LB struct {
 	ReadReplicaReplicas uint64 `json:"read_replica_replicas" yaml:"read_replica_replicas"`
 	// MultiOperationConcurrency represents the multi operation concurrency.
 	MultiOperationConcurrency int `json:"multi_operation_concurrency" yaml:"multi_operation_concurrency"`
+	// SearchQuorumGrace represents how long a search keeps waiting for the remaining
+	// agents once enough agents answered to cover every index replica set
+	// (agents - index_replica + 1); empty or zero disables the early termination.
+	SearchQuorumGrace string `json:"search_quorum_grace" yaml:"search_quorum_grace"`
 }
 
 // Bind binds the actual data from the LB receiver fields.
@@ -44,9 +48,15 @@ func (g *LB) Bind() *LB {
 	g.AgentNamespace = GetActualValue(g.AgentNamespace)
 	g.AgentDNS = GetActualValue(g.AgentDNS)
 	g.NodeName = GetActualValue(g.NodeName)
+	g.SearchQuorumGrace = GetActualValue(g.SearchQuorumGrace)
 
 	if g.Discoverer != nil {
 		g.Discoverer = g.Discoverer.Bind()
+	}
+	// A nil ReadReplicaClient.Client means read replica is disabled; binding
+	// it would fill in a default client and enable it.
+	if g.ReadReplicaClient.Client != nil {
+		g.ReadReplicaClient.Bind()
 	}
 	return g
 }

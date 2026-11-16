@@ -44,6 +44,14 @@ type Handler interface {
 	MultiRemove(w http.ResponseWriter, r *http.Request) (int, error)
 	Flush(w http.ResponseWriter, r *http.Request) (int, error)
 	GetObject(w http.ResponseWriter, r *http.Request) (int, error)
+	GetTimestamp(w http.ResponseWriter, r *http.Request) (int, error)
+	UpdateTimestamp(w http.ResponseWriter, r *http.Request) (int, error)
+	RemoveByTimestamp(w http.ResponseWriter, r *http.Request) (int, error)
+	IndexInfo(w http.ResponseWriter, r *http.Request) (int, error)
+	IndexDetail(w http.ResponseWriter, r *http.Request) (int, error)
+	IndexStatistics(w http.ResponseWriter, r *http.Request) (int, error)
+	IndexStatisticsDetail(w http.ResponseWriter, r *http.Request) (int, error)
+	IndexProperty(w http.ResponseWriter, r *http.Request) (int, error)
 }
 
 type handler struct {
@@ -198,5 +206,63 @@ func (h *handler) Exists(w http.ResponseWriter, r *http.Request) (code int, err 
 	var req *payload.Object_ID
 	return json.Handler(w, r, &req, func() (any, error) {
 		return h.vald.Exists(r.Context(), req)
+	})
+}
+
+func (h *handler) GetTimestamp(w http.ResponseWriter, r *http.Request) (code int, err error) {
+	var req *payload.Object_TimestampRequest
+	return json.Handler(w, r, &req, func() (any, error) {
+		return h.vald.GetTimestamp(r.Context(), req)
+	})
+}
+
+func (h *handler) UpdateTimestamp(w http.ResponseWriter, r *http.Request) (code int, err error) {
+	var req *payload.Update_TimestampRequest
+	return json.Handler(w, r, &req, func() (any, error) {
+		return h.vald.UpdateTimestamp(r.Context(), req)
+	})
+}
+
+func (h *handler) RemoveByTimestamp(w http.ResponseWriter, r *http.Request) (code int, err error) {
+	var req *payload.Remove_TimestampRequest
+	return json.Handler(w, r, &req, func() (any, error) {
+		return h.vald.RemoveByTimestamp(r.Context(), req)
+	})
+}
+
+func (h *handler) IndexInfo(w http.ResponseWriter, r *http.Request) (code int, err error) {
+	var req *payload.Empty
+	return json.Handler(w, r, &req, func() (any, error) {
+		return h.vald.IndexInfo(r.Context(), req)
+	})
+}
+
+func (h *handler) IndexDetail(w http.ResponseWriter, r *http.Request) (code int, err error) {
+	var req *payload.Empty
+	return json.Handler(w, r, &req, func() (any, error) {
+		return h.vald.IndexDetail(r.Context(), req)
+	})
+}
+
+func (h *handler) IndexStatistics(w http.ResponseWriter, r *http.Request) (code int, err error) {
+	var req *payload.Empty
+	return json.Handler(w, r, &req, func() (any, error) {
+		return h.vald.IndexStatistics(r.Context(), req)
+	})
+}
+
+func (h *handler) IndexStatisticsDetail(
+	w http.ResponseWriter, r *http.Request,
+) (code int, err error) {
+	var req *payload.Empty
+	return json.Handler(w, r, &req, func() (any, error) {
+		return h.vald.IndexStatisticsDetail(r.Context(), req)
+	})
+}
+
+func (h *handler) IndexProperty(w http.ResponseWriter, r *http.Request) (code int, err error) {
+	var req *payload.Empty
+	return json.Handler(w, r, &req, func() (any, error) {
+		return h.vald.IndexProperty(r.Context(), req)
 	})
 }

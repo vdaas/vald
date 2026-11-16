@@ -47,6 +47,10 @@ func (s *server) Upsert(
 	if err = s.validateUUID(span, vald.UpsertRPCName, ngtResourceType+"/ngt.Upsert", uuid, req); err != nil {
 		return nil, err
 	}
+	if err = s.validateVectorValue(span, vald.UpsertRPCName, ngtResourceType+"/ngt.Upsert",
+		vec.GetId(), req, vec.GetVector()); err != nil {
+		return nil, err
+	}
 
 	rtName := "/ngt.Upsert"
 	_, exists := s.ngt.Exists(req.GetVector().GetId())
@@ -149,6 +153,10 @@ func (s *server) MultiUpsert(
 			log.Warn(err)
 			return errhandler.HandleError[payload.Object_Locations](span, codes.InvalidArgument, err)
 		}
+		if err = s.validateVectorValue(span, vald.MultiUpsertRPCName, ngtResourceType+"/ngt.MultiUpsert",
+			vec.GetId(), req, vec.GetVector()); err != nil {
+			return nil, err
+		}
 		ids = append(ids, vec.GetId())
 		_, exists := s.ngt.Exists(vec.GetId())
 		if exists {
@@ -181,15 +189,14 @@ func (s *server) MultiUpsert(
 		})
 	default:
 		var (
-			ures, ires *payload.Object_Locations
-			errs       error
-			mu         sync.Mutex
-			wg         sync.WaitGroup
+			errs error
+			mu   sync.Mutex
+			wg   sync.WaitGroup
 		)
 		wg.Add(1)
 		s.eg.Go(safety.RecoverFunc(func() (err error) {
 			defer wg.Done()
-			ures, err = s.MultiUpdate(ctx, &payload.Update_MultiRequest{
+			_, err = s.MultiUpdate(ctx, &payload.Update_MultiRequest{
 				Requests: updateReqs,
 			})
 			if err != nil {
@@ -206,7 +213,7 @@ func (s *server) MultiUpsert(
 		wg.Add(1)
 		s.eg.Go(safety.RecoverFunc(func() (err error) {
 			defer wg.Done()
-			ires, err = s.MultiInsert(ctx, &payload.Insert_MultiRequest{
+			_, err = s.MultiInsert(ctx, &payload.Insert_MultiRequest{
 				Requests: insertReqs,
 			})
 			if err != nil {
@@ -223,18 +230,9 @@ func (s *server) MultiUpsert(
 		wg.Wait()
 
 		if errs == nil {
-			var locs []*payload.Object_Location
-			switch {
-			case ures.GetLocations() == nil:
-				locs = ires.GetLocations()
-			case ires.GetLocations() == nil:
-				locs = ures.GetLocations()
-			default:
-				locs = append(ures.GetLocations(), ires.GetLocations()...)
-			}
-			res = &payload.Object_Locations{
-				Locations: locs,
-			}
+			// every id was updated or inserted; ids keeps the request order,
+			// which concatenating the update and insert results would lose.
+			res = s.newLocations(ids...)
 		} else {
 			err = errs
 		}

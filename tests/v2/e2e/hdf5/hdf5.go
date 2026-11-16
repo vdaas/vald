@@ -37,33 +37,34 @@ type Dataset struct {
 }
 
 func (d *Dataset) TrainCycle(num, offset uint64) iter.Cycle[[][]float32, []float32] {
-	if num > d.maxLen && d.noiseFunc == nil {
-		d.InitNoiseFunc(num)
-	}
-	return iter.NewCycle(d.Train, num, offset, d.noiseFunc)
+	return iter.NewCycle(d.Train, num, offset, d.InitNoiseFunc(num))
 }
 
 func (d *Dataset) TestCycle(num, offset uint64) iter.Cycle[[][]float32, []float32] {
-	if num > d.maxLen && d.noiseFunc == nil {
-		d.InitNoiseFunc(num)
-	}
-	return iter.NewCycle(d.Test, num, offset, d.noiseFunc)
+	return iter.NewCycle(d.Test, num, offset, d.InitNoiseFunc(num))
 }
 
 func (d *Dataset) NeighborsCycle(num, offset uint64) iter.Cycle[[][]int, []int] {
 	return iter.NewCycle(d.Neighbors, num, offset, nil)
 }
 
+// InitNoiseFunc returns the noise function for a request of num vectors, or
+// nil when num fits in the dataset (num <= maxLen) so such requests are never
+// noised. The noise function is built once, by the first caller that needs it
+// (its num and opts size the noise table); later callers reuse it so the same
+// index always gets the same noise. d.noiseFunc is only read after once.Do,
+// which orders the read after the write.
 func (d *Dataset) InitNoiseFunc(num uint64, opts ...noise.Option) noise.Func {
-	if num > d.maxLen && d.noiseFunc == nil {
-		d.once.Do(func() {
-			data := d.Train
-			if len(data) == 0 || len(d.Test) > len(data) {
-				data = d.Test
-			}
-			d.noiseFunc = noise.New(data, num, opts...).Mod()
-		})
+	if num <= d.maxLen {
+		return nil
 	}
+	d.once.Do(func() {
+		data := d.Train
+		if len(data) == 0 || len(d.Test) > len(data) {
+			data = d.Test
+		}
+		d.noiseFunc = noise.New(data, num, opts...).Mod()
+	})
 	return d.noiseFunc
 }
 

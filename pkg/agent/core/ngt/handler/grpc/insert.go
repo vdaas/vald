@@ -43,6 +43,10 @@ func (s *server) Insert(
 		vec.GetId(), req, len(vec.GetVector()), s.ngt.GetDimensionSize()); err != nil {
 		return nil, err
 	}
+	if err = s.validateVectorValue(span, vald.InsertRPCName, ngtResourceType+"/ngt.Insert",
+		vec.GetId(), req, vec.GetVector()); err != nil {
+		return nil, err
+	}
 
 	ts := vec.GetTimestamp()
 	if ts == 0 {
@@ -173,6 +177,10 @@ func (s *server) MultiInsert(
 			log.Warn(err)
 			return errhandler.HandleError[payload.Object_Locations](span, codes.InvalidArgument, err)
 		}
+		if err = s.validateVectorValue(span, vald.MultiInsertRPCName, ngtResourceType+"/ngt.MultiInsert",
+			vec.GetId(), req, vec.GetVector()); err != nil {
+			return nil, err
+		}
 		vmap[vec.GetId()] = vec.GetVector()
 		uuids = append(uuids, vec.GetId())
 	}
@@ -183,6 +191,7 @@ func (s *server) MultiInsert(
 	}
 	if err != nil {
 		var attrs []attribute.KeyValue
+		isErr := errMatcher(err)
 		if errors.Is(err, errors.ErrFlushingIsInProgress) {
 			err = status.WrapWithAborted("MultiInsert API aborted to process insert request due to flushing indices is in progress", err,
 				&errdetails.RequestInfo{
@@ -195,7 +204,7 @@ func (s *server) MultiInsert(
 		} else if alreadyExistsIDs := func() []string {
 			aids := make([]string, 0, len(uuids))
 			for _, id := range uuids {
-				if errors.Is(err, errors.ErrUUIDAlreadyExists(id)) {
+				if isErr(errors.ErrUUIDAlreadyExists(id)) {
 					aids = append(aids, id)
 				}
 			}

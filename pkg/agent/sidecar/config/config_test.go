@@ -14,6 +14,37 @@
 
 package config
 
+import (
+	"testing"
+
+	"github.com/vdaas/vald/internal/file"
+	"github.com/vdaas/vald/internal/os"
+)
+
+// AgentSidecar.Bind leaves default Client/BlobStorage unbound; the usecases dereference their sub-configs.
+func TestNew_defaultClientAndBlobStorageAreBound(t *testing.T) {
+	t.Parallel()
+	path := file.Join(t.TempDir(), "config.json")
+	if err := os.WriteFile(path, []byte(`{"server_config": {}, "agent_sidecar": {"mode": "sidecar"}}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	cfg, err := New(path)
+	if err != nil {
+		t.Fatalf("New() error = %v", err)
+	}
+	sc := cfg.AgentSidecar
+	if sc == nil || sc.Client == nil || sc.BlobStorage == nil {
+		t.Fatalf("New() AgentSidecar = %+v, want non-nil Client and BlobStorage", sc)
+	}
+	if sc.Client.Net == nil || sc.Client.Transport == nil ||
+		sc.Client.Transport.RoundTripper == nil || sc.Client.Transport.Backoff == nil {
+		t.Errorf("New() AgentSidecar.Client = %+v, want bound Net and Transport", sc.Client)
+	}
+	if sc.BlobStorage.S3 == nil || sc.BlobStorage.CloudStorage == nil || sc.BlobStorage.CloudStorage.Client == nil {
+		t.Errorf("New() AgentSidecar.BlobStorage = %+v, want bound S3 and CloudStorage", sc.BlobStorage)
+	}
+}
+
 // NOT IMPLEMENTED BELOW
 //
 // func TestMode_String(t *testing.T) {

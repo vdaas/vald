@@ -162,7 +162,7 @@ func (c *controller) Start(ctx context.Context) (<-chan error, error) {
 			}
 			_, err := bc.Build(rc.NewReconciler(ctx, c.mgr))
 			if err != nil {
-				return nil, err
+				return nil, c.wrapErr(err)
 			}
 		}
 	}
@@ -171,6 +171,7 @@ func (c *controller) Start(ctx context.Context) (<-chan error, error) {
 		defer close(ech)
 		err := c.mgr.Start(ctx)
 		if err != nil {
+			err = c.wrapErr(err)
 			select {
 			case <-ctx.Done():
 			case ech <- err:
@@ -180,6 +181,15 @@ func (c *controller) Start(ctx context.Context) (<-chan error, error) {
 	}))
 
 	return ech, nil
+}
+
+// wrapErr prefixes err with the name set by WithControllerName so a failure
+// can be attributed to the controller that produced it.
+func (c *controller) wrapErr(err error) error {
+	if c.name == "" {
+		return err
+	}
+	return errors.Wrapf(err, "controller %s", c.name)
 }
 
 func (c *controller) GetManager() Manager {

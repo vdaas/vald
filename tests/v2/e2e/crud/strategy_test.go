@@ -189,7 +189,14 @@ func (r *runner) processStrategy(
 		if err := executeWithTimings(tt, ctx, st, st.Name, "strategy", false, func(ttt test.Node, ctx context.Context) error {
 			ttt.Helper()
 			eg, egctx := errgroup.New(ctx)
-			if st.Concurrency > 0 {
+			if test.IsBenchmark(ttt) {
+				// testing.B.Run must not be called concurrently (it double-unlocks
+				// benchmarkLock and aborts with "sync: unlock of unlocked mutex"),
+				// unlike testing.T.Run, so the operations (each a sub-benchmark) run
+				// one at a time.
+				eg.SetLimit(1)
+				ttt.Logf("benchmark mode: operations run sequentially (configured concurrency: %d)", st.Concurrency)
+			} else if st.Concurrency > 0 {
 				eg.SetLimit(int(st.Concurrency))
 				ttt.Logf("concurrency is set to %d, the operations will execute concurrently with limit (%d)", st.Concurrency, st.Concurrency)
 			} else {

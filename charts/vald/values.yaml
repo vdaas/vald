@@ -138,7 +138,7 @@ defaults:
             # defaults.server_config.servers.rest.server.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
             tcp_fast_open: false
             # @schema {"name": "defaults.server_config.servers.rest.server.socket_option.tcp_no_delay", "type": "boolean"}
-            # defaults.server_config.servers.rest.server.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
+            # defaults.server_config.servers.rest.server.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)
             tcp_no_delay: false
             # @schema {"name": "defaults.server_config.servers.rest.server.socket_option.tcp_cork", "type": "boolean"}
             # defaults.server_config.servers.rest.server.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
@@ -274,7 +274,7 @@ defaults:
             reuse_addr: true
             # defaults.server_config.servers.grpc.server.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
             tcp_fast_open: false
-            # defaults.server_config.servers.grpc.server.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
+            # defaults.server_config.servers.grpc.server.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)
             tcp_no_delay: false
             # defaults.server_config.servers.grpc.server.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
             tcp_cork: false
@@ -431,7 +431,7 @@ defaults:
             reuse_addr: true
             # defaults.server_config.healths.liveness.server.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
             tcp_fast_open: true
-            # defaults.server_config.healths.liveness.server.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
+            # defaults.server_config.healths.liveness.server.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)
             tcp_no_delay: true
             # defaults.server_config.healths.liveness.server.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
             tcp_cork: false
@@ -550,7 +550,7 @@ defaults:
             reuse_addr: true
             # defaults.server_config.healths.readiness.server.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
             tcp_fast_open: true
-            # defaults.server_config.healths.readiness.server.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
+            # defaults.server_config.healths.readiness.server.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)
             tcp_no_delay: true
             # defaults.server_config.healths.readiness.server.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
             tcp_cork: false
@@ -643,7 +643,7 @@ defaults:
             reuse_addr: true
             # defaults.server_config.metrics.pprof.server.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
             tcp_fast_open: false
-            # defaults.server_config.metrics.pprof.server.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
+            # defaults.server_config.metrics.pprof.server.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)
             tcp_no_delay: false
             # defaults.server_config.metrics.pprof.server.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
             tcp_cork: true
@@ -760,19 +760,19 @@ defaults:
         closed_refresh_timeout: "10s"
       # @schema {"name": "defaults.grpc.client.call_option", "type": "object"}
       call_option:
-        # @schema {"name": "defaults.grpc.client.wait_for_ready", "type": "boolean"}
+        # @schema {"name": "defaults.grpc.client.call_option.wait_for_ready", "type": "boolean"}
         # defaults.grpc.client.call_option.wait_for_ready -- gRPC client call option wait for ready
         wait_for_ready: true
-        # @schema {"name": "defaults.grpc.client.max_retry_rpc_buffer_size", "type": "integer"}
+        # @schema {"name": "defaults.grpc.client.call_option.max_retry_rpc_buffer_size", "type": "integer"}
         # defaults.grpc.client.call_option.max_retry_rpc_buffer_size -- gRPC client call option max retry rpc buffer size
         max_retry_rpc_buffer_size: 0
-        # @schema {"name": "defaults.grpc.client.max_recv_msg_size", "type": "integer"}
+        # @schema {"name": "defaults.grpc.client.call_option.max_recv_msg_size", "type": "integer"}
         # defaults.grpc.client.call_option.max_recv_msg_size -- gRPC client call option max receive message size
         max_recv_msg_size: 0
-        # @schema {"name": "defaults.grpc.client.max_send_msg_size", "type": "integer"}
+        # @schema {"name": "defaults.grpc.client.call_option.max_send_msg_size", "type": "integer"}
         # defaults.grpc.client.call_option.max_send_msg_size -- gRPC client call option max send message size
         max_send_msg_size: 0
-        # @schema {"name": "defaults.grpc.client.content_subtype", "type": "string"}
+        # @schema {"name": "defaults.grpc.client.call_option.content_subtype", "type": "string"}
         # defaults.grpc.client.call_option.content_subtype -- gRPC client call option content subtype
         content_subtype: ""
       # @schema {"name": "defaults.grpc.client.dial_option", "type": "object"}
@@ -897,7 +897,7 @@ defaults:
             reuse_addr: true
             # defaults.grpc.client.dial_option.net.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
             tcp_fast_open: false
-            # defaults.grpc.client.dial_option.net.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
+            # defaults.grpc.client.dial_option.net.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)
             tcp_no_delay: false
             # defaults.grpc.client.dial_option.net.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
             tcp_cork: false
@@ -1309,14 +1309,17 @@ gateway:
       # @schema {"name": "gateway.lb.gateway_config.index_replica", "type": "integer", "minimum": 1}
       # gateway.lb.gateway_config.index_replica -- number of index replica
       index_replica: 3
-      # @schema {"name": "gateway.lb.gateway_config.multi_operation_concurrency", "type": "integer", "minimum": 2}
-      # gateway.lb.gateway_config.multi_operation_concurrency -- number of concurrency of multiXXX api's operation
-      multi_operation_concurrency: 20
+      # @schema {"name": "gateway.lb.gateway_config.multi_operation_concurrency", "type": "integer", "minimum": 0}
+      # gateway.lb.gateway_config.multi_operation_concurrency -- number of concurrency of multiXXX api's operation; 0 computes it automatically: min(GOMAXPROCS*10, ceil(agents*64/index_replica)) for writes and min(GOMAXPROCS*10, 64) for MultiSearch
+      multi_operation_concurrency: 0
+      # @schema {"name": "gateway.lb.gateway_config.search_quorum_grace", "type": "string"}
+      # gateway.lb.gateway_config.search_quorum_grace -- once agents - index_replica + 1 agents answered a search with results (at least one replica of every index replica set), wait at most this long for the rest before returning; empty disables the early termination
+      search_quorum_grace: ""
       # @schema {"name": "gateway.lb.gateway_config.discoverer", "type": "object"}
       discoverer:
         # @schema {"name": "gateway.lb.gateway_config.discoverer.duration", "type": "string"}
-        # gateway.lb.discoverer.duration -- discoverer duration
-        duration: 200ms
+        # gateway.lb.gateway_config.discoverer.duration -- discoverer duration (polling faster than discoverer.discoverer.discovery_duration only re-fetches the same snapshot)
+        duration: 3s
         # @schema {"name": "gateway.lb.gateway_config.discoverer.client", "alias": "grpc.client"}
         # gateway.lb.gateway_config.discoverer.client -- gRPC client for discoverer (overrides defaults.grpc.client)
         client: {}
@@ -1867,7 +1870,7 @@ gateway:
       # gateway.mirror.ingress.servicePort -- service port to be exposed by ingress
       servicePort: grpc
       # @schema {"name": "gateway.mirror.ingress.tls", "type": "array", "items": {"type": "object"}}
-      # "gateway.mirror.ingress.tls -- ingress tls config
+      # gateway.mirror.ingress.tls -- ingress tls config
       tls:
         - hosts: []
           secretName: ""
@@ -1931,7 +1934,7 @@ gateway:
           reuse_addr: true
           # gateway.mirror.gateway_config.net.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
           tcp_fast_open: true
-          # gateway.mirror.gateway_config.net.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
+          # gateway.mirror.gateway_config.net.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)
           tcp_no_delay: true
           # gateway.mirror.gateway_config.net.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
           tcp_cork: false
@@ -2750,7 +2753,7 @@ agent:
             reuse_addr: true
             # agent.sidecar.config.client.net.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
             tcp_fast_open: true
-            # agent.sidecar.config.client.net.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
+            # agent.sidecar.config.client.net.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)
             tcp_no_delay: false
             # agent.sidecar.config.client.net.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
             tcp_cork: true
@@ -3134,7 +3137,7 @@ discoverer:
         reuse_addr: true
         # discoverer.discoverer.net.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
         tcp_fast_open: false
-        # discoverer.discoverer.net.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
+        # discoverer.discoverer.net.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)
         tcp_no_delay: false
         # discoverer.discoverer.net.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
         tcp_cork: false
@@ -3735,7 +3738,7 @@ manager:
             fieldRef:
               fieldPath: metadata.namespace
       # @schema {"name": "manager.index.deleter.observability", "alias": "observability"}
-      # manager.index.creator.observability -- observability config (overrides defaults.observability)
+      # manager.index.deleter.observability -- observability config (overrides defaults.observability)
       observability:
         otlp:
           attribute:

@@ -156,6 +156,7 @@ on:
       - internal/servers/starter/*.go
       - internal/strings/*.go
       - internal/sync/*.go
+      - internal/sync/atomic/*.go
       - internal/sync/errgroup/*.go
       - internal/sync/semaphore/*.go
       - internal/sync/singleflight/*.go
@@ -174,6 +175,7 @@ on:
       - pkg/agent/sidecar/service/storage/*.go
       - pkg/agent/sidecar/usecase/*.go
       - pkg/agent/sidecar/usecase/initcontainer/*.go
+      - pkg/agent/sidecar/usecase/internal/blobstorage/*.go
       - pkg/agent/sidecar/usecase/sidecar/*.go
       - versions/GO_VERSION
   pull_request_target:
@@ -295,6 +297,7 @@ on:
       - internal/servers/starter/*.go
       - internal/strings/*.go
       - internal/sync/*.go
+      - internal/sync/atomic/*.go
       - internal/sync/errgroup/*.go
       - internal/sync/semaphore/*.go
       - internal/sync/singleflight/*.go
@@ -313,5 +316,6 @@ on:
       - pkg/agent/sidecar/service/storage/*.go
       - pkg/agent/sidecar/usecase/*.go
       - pkg/agent/sidecar/usecase/initcontainer/*.go
+      - pkg/agent/sidecar/usecase/internal/blobstorage/*.go
       - pkg/agent/sidecar/usecase/sidecar/*.go
       - versions/GO_VERSION

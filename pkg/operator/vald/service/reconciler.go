@@ -233,6 +233,7 @@ func (r *reconciler) reconcileValdOperatorRelease(
 		}
 
 		if err := r.reconcilePhase(ctx, p, cr); err != nil {
+			rollback(ps, i, cr)
 			return err
 		}
 	}
@@ -291,6 +292,23 @@ func (r *reconciler) syncPhase(
 		return nil, errors.Wrap(err, "failed to build desired resource")
 	}
 	return r.syncer.Sync(ctx, cr, items, p.fetch)
+}
+
+// rollback records that phase idx is not done: progress is reset to it and
+// every later phase condition (including the terminal Completed) still
+// reporting True is demoted to Progressing, so status consumers never see
+// success while an earlier phase is failing.
+func rollback(ps phases, idx int, cr *v1.ValdOperatorRelease) {
+	cr.Status.Progress.Completed = idx
+	for k := range cr.Status.Conditions {
+		c := cr.Status.Conditions[k]
+		if c.Status != k8s.ConditionTrue {
+			continue
+		}
+		if j := ps.index(c.Type); j > idx {
+			resource.SetStatusCondition(&cr.Status.Conditions, ps[j].condition(progressing("")))
+		}
+	}
 }
 
 func (*reconciler) advance(ps phases, current int, cr *v1.ValdOperatorRelease) int {

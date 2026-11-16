@@ -17,12 +17,12 @@ package worker
 import (
 	"context"
 	"reflect"
-	"sync/atomic"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/internal/sync/atomic"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
@@ -98,16 +98,29 @@ func (w *worker) Start(ctx context.Context) (<-chan error, error) {
 
 	wech = w.startJobLoop(ctx)
 
+	// running must be set before the goroutine starts, otherwise its deferred Store(false)
+	// can run first and the worker would be reported as running after it has stopped.
+	w.running.Store(true)
 	w.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)
 		defer w.running.Store(false)
 
 		for {
+			var ok bool
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
-			case err = <-qech:
-			case err = <-wech:
+			case err, ok = <-qech:
+				if !ok {
+					// a closed channel is always ready; stop selecting on it instead of spinning.
+					qech = nil
+					continue
+				}
+			case err, ok = <-wech:
+				if !ok {
+					// the job loop has stopped, so no job runs any more.
+					return nil
+				}
 			}
 			if err != nil {
 				select {
@@ -119,17 +132,18 @@ func (w *worker) Start(ctx context.Context) (<-chan error, error) {
 		}
 	}))
 
-	w.running.Store(true)
-
 	return ech, nil
 }
 
-func (w *worker) startJobLoop(ctx context.Context) <-chan error {
+// startJobLoop runs jobs popped from the queue.
+// parent is the ctx passed to Start, which matches the lifetime of the error channel reader.
+// A job error is only reported on the error channel; it does not stop the loop, which stops only when parent is done.
+func (w *worker) startJobLoop(parent context.Context) <-chan error {
 	ech := make(chan error, w.limitation)
 
 	w.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)
-		eg, ctx := errgroup.New(ctx)
+		eg, ctx := errgroup.New(parent)
 		eg.SetLimit(w.limitation)
 
 		limitation := make(chan struct{}, w.limitation)
@@ -147,7 +161,10 @@ func (w *worker) startJobLoop(ctx context.Context) <-chan error {
 
 			job, err := w.queue.Pop(ctx)
 			if err != nil {
-				ech <- err
+				select {
+				case ech <- err:
+				case <-parent.Done():
+				}
 				select {
 				case <-limitation:
 				case <-ctx.Done():
@@ -160,13 +177,17 @@ func (w *worker) startJobLoop(ctx context.Context) <-chan error {
 					defer atomic.AddUint64(&w.completedCount, 1)
 					if err = job(ctx); err != nil {
 						log.Debugf("an error occurred while executing a job: %s", err)
-						ech <- err
+						select {
+						case ech <- err:
+						case <-parent.Done():
+						}
 					}
 					select {
 					case <-limitation:
 					case <-ctx.Done():
 					}
-					return err
+					// the error is already reported on ech; returning it would cancel the errgroup ctx and stop the loop.
+					return nil
 				}))
 			} else {
 				select {

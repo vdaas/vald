@@ -59,6 +59,10 @@ func (*MockClient) DeleteAllOf(context.Context, client.Object, ...client.DeleteA
 	return nil
 }
 
+func (*MockClient) List(context.Context, client.ObjectList, ...client.ListOption) error {
+	return nil
+}
+
 type MockManager struct {
 	manager.Manager
 }

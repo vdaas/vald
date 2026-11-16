@@ -13,6 +13,100 @@
 // limitations under the License.
 package main
 
+import (
+	"path/filepath"
+	"slices"
+	"testing"
+
+	"github.com/vdaas/vald/internal/os"
+)
+
+func Test_parseCspellResult_globalWordsCountDistinctFiles(t *testing.T) {
+	t.Parallel()
+	const log = "a.go:1:1 - Unknown word (zzqword) Suggestions: []\n" +
+		"a.go:2:1 - Unknown word (zzqword) Suggestions: []\n" +
+		"a.go:3:1 - Unknown word (zzqword) Suggestions: []\n" +
+		"b.go:1:1 - Unknown word (yyqword) Suggestions: []\n" +
+		"c.go:1:1 - Unknown word (yyqword) Suggestions: []\n"
+	path := filepath.Join(t.TempDir(), "cspell.log")
+	if err := os.WriteFile(path, []byte(log), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	tests := []struct {
+		word string
+		want bool
+	}{
+		{word: "zzqword", want: false}, // 3 occurrences in a single file
+		{word: "yyqword", want: true},  // 2 distinct files
+	}
+	_, global, err := parseCspellResult(path, 2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, tt := range tests {
+		t.Run(tt.word, func(t *testing.T) {
+			t.Parallel()
+			if got := global[tt.word]; got != tt.want {
+				t.Errorf("globalWords[%q] = %v, want %v", tt.word, got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_loadOrInitConfig(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name      string
+		content   string
+		wantWords []string
+		exists    bool
+		wantErr   bool
+	}{
+		{
+			name: "missing config falls back to an empty config",
+		},
+		{
+			name:      "valid config is loaded",
+			content:   `{"ignoreWords":["zzqword"]}`,
+			exists:    true,
+			wantWords: []string{"zzqword"},
+		},
+		{
+			name:    "malformed config is an error so it is not overwritten",
+			content: `{"ignoreWords":["zzqword"],}`,
+			exists:  true,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			path := filepath.Join(t.TempDir(), ".cspell.json")
+			if tt.exists {
+				if err := os.WriteFile(path, []byte(tt.content), 0o600); err != nil {
+					t.Fatal(err)
+				}
+			}
+			got, err := loadOrInitConfig(path)
+			if (err != nil) != tt.wantErr {
+				t.Fatalf("loadOrInitConfig() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			if tt.wantErr {
+				if got != nil {
+					t.Errorf("loadOrInitConfig() = %+v, want nil on error", got)
+				}
+				return
+			}
+			if got == nil {
+				t.Fatal("loadOrInitConfig() returned nil config without error")
+			}
+			if !slices.Equal(got.IgnoreWords, tt.wantWords) {
+				t.Errorf("IgnoreWords = %v, want %v", got.IgnoreWords, tt.wantWords)
+			}
+		})
+	}
+}
+
 // NOT IMPLEMENTED BELOW
 //
 // func Test_extractLine(t *testing.T) {

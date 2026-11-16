@@ -47,19 +47,13 @@ on:
       - v*.*.*-*
   pull_request:
     paths:
-      - "!**/*_mock.go"
-      - "!**/*_test.go"
       - .github/actions/docker-build/action.yaml
       - .github/actions/prepare-docker-build/action.yaml
       - .github/workflows/_docker-image.yaml
       - .github/workflows/dockers-buildkit-syft-scanner-image.yaml
       - .trivyignore.d/buildkit-syft-scanner
-      - apis/proto/**
       - dockers/buildkit/syft/scanner/Dockerfile
-      - go.mod
-      - go.sum
       - hack/docker/gen/main.go
-      - versions/GO_VERSION
   pull_request_target:
     types:
       - opened
@@ -67,16 +61,10 @@ on:
       - synchronize
       - labeled
     paths:
-      - "!**/*_mock.go"
-      - "!**/*_test.go"
       - .github/actions/docker-build/action.yaml
       - .github/actions/prepare-docker-build/action.yaml
       - .github/workflows/_docker-image.yaml
       - .github/workflows/dockers-buildkit-syft-scanner-image.yaml
       - .trivyignore.d/buildkit-syft-scanner
-      - apis/proto/**
       - dockers/buildkit/syft/scanner/Dockerfile
-      - go.mod
-      - go.sum
       - hack/docker/gen/main.go
-      - versions/GO_VERSION

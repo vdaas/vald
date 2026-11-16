@@ -312,13 +312,14 @@ func readCgroupV1Metrics() (metrics *CgroupMetrics, err error) {
 	}
 	for _, path := range cpuPaths {
 		data, err := file.ReadFile(path)
-		if err == nil {
-			cpuUsage, cpuErr = strconv.ParseUint(strings.TrimSpace(conv.Btoa(data)), 10, 64)
-			if cpuErr == nil {
-				break
-			}
+		if err != nil {
+			cpuErr = err
+			continue
 		}
-		cpuErr = err
+		cpuUsage, cpuErr = strconv.ParseUint(strings.TrimSpace(conv.Btoa(data)), 10, 64)
+		if cpuErr == nil {
+			break
+		}
 	}
 	if cpuErr != nil {
 		return nil, errors.ErrCgroupV1CPUUsageReadFailed(cpuErr)

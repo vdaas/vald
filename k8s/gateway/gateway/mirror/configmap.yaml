@@ -25,4 +25,352 @@ metadata:
     app.kubernetes.io/version: v1.8.1
     app.kubernetes.io/component: gateway-mirror
 data:
-  config.yaml: "---\nversion: v0.0.0\ntime_zone: UTC\nlogging:\n  format: raw\n  level: debug\n  logger: glg\nserver_config:\n  servers:\n    - name: grpc\n      host: 0.0.0.0\n      port: 8081\n      grpc:\n        bidirectional_stream_concurrency: 20\n        connection_timeout: \"\"\n        enable_admin: false\n        enable_channelz: false\n        enable_reflection: true\n        header_table_size: 0\n        initial_conn_window_size: 2097152\n        initial_window_size: 1048576\n        interceptors:\n        - RecoverInterceptor\n        keepalive:\n          max_conn_age: \"\"\n          max_conn_age_grace: \"\"\n          max_conn_idle: \"\"\n          min_time: 1s\n          permit_without_stream: true\n          time: 3h\n          timeout: 60s\n        max_concurrent_streams: 0\n        max_header_list_size: 0\n        max_receive_message_size: 0\n        max_send_message_size: 0\n        num_stream_workers: 0\n        read_buffer_size: 0\n        shared_write_buffer: true\n        wait_for_handlers: true\n        write_buffer_size: 0\n      mode: GRPC\n      network: tcp\n      probe_wait_time: 3s\n      restart: true\n      socket_option:\n        ip_recover_destination_addr: false\n        ip_transparent: false\n        reuse_addr: true\n        reuse_port: true\n        tcp_cork: false\n        tcp_defer_accept: false\n        tcp_fast_open: false\n        tcp_no_delay: false\n        tcp_quick_ack: false\n      socket_path: \"\"\n  health_check_servers:\n    - name: liveness\n      host: 0.0.0.0\n      port: 3000\n      http:\n        handler_timeout: \"\"\n        http2:\n          enabled: false\n          handler_limit: 0\n          max_concurrent_streams: 0\n          max_decoder_header_table_size: 4096\n          max_encoder_header_table_size: 4096\n          max_read_frame_size: 0\n          max_upload_buffer_per_connection: 0\n          max_upload_buffer_per_stream: 0\n          permit_prohibited_cipher_suites: true\n        idle_timeout: \"\"\n        read_header_timeout: \"\"\n        read_timeout: \"\"\n        shutdown_duration: 5s\n        write_timeout: \"\"\n      mode: REST\n      network: tcp\n      probe_wait_time: 3s\n      restart: true\n      socket_option:\n        ip_recover_destination_addr: false\n        ip_transparent: false\n        reuse_addr: true\n        reuse_port: true\n        tcp_cork: false\n        tcp_defer_accept: false\n        tcp_fast_open: true\n        tcp_no_delay: true\n        tcp_quick_ack: true\n      socket_path: \"\"\n    - name: readiness\n      host: 0.0.0.0\n      port: 3001\n      http:\n        handler_timeout: \"\"\n        http2:\n          enabled: false\n          handler_limit: 0\n          max_concurrent_streams: 0\n          max_decoder_header_table_size: 4096\n          max_encoder_header_table_size: 4096\n          max_read_frame_size: 0\n          max_upload_buffer_per_connection: 0\n          max_upload_buffer_per_stream: 0\n          permit_prohibited_cipher_suites: true\n        idle_timeout: \"\"\n        read_header_timeout: \"\"\n        read_timeout: \"\"\n        shutdown_duration: 0s\n        write_timeout: \"\"\n      mode: REST\n      network: tcp\n      probe_wait_time: 3s\n      restart: true\n      socket_option:\n        ip_recover_destination_addr: false\n        ip_transparent: false\n        reuse_addr: true\n        reuse_port: true\n        tcp_cork: false\n        tcp_defer_accept: false\n        tcp_fast_open: true\n        tcp_no_delay: true\n        tcp_quick_ack: true\n      socket_path: \"\"\n  metrics_servers:\n    - name: pprof\n      host: 0.0.0.0\n      port: 6060\n      http:\n        handler_timeout: 5s\n        http2:\n          enabled: false\n          handler_limit: 0\n          max_concurrent_streams: 0\n          max_decoder_header_table_size: 4096\n          max_encoder_header_table_size: 4096\n          max_read_frame_size: 0\n          max_upload_buffer_per_connection: 0\n          max_upload_buffer_per_stream: 0\n          permit_prohibited_cipher_suites: true\n        idle_timeout: 2s\n        read_header_timeout: 1s\n        read_timeout: 1s\n        shutdown_duration: 5s\n        write_timeout: 1m\n      mode: REST\n      network: tcp\n      probe_wait_time: 3s\n      restart: true\n      socket_option:\n        ip_recover_destination_addr: false\n        ip_transparent: false\n        reuse_addr: true\n        reuse_port: true\n        tcp_cork: true\n        tcp_defer_accept: false\n        tcp_fast_open: false\n        tcp_no_delay: false\n        tcp_quick_ack: false\n      socket_path: \"\"\n  startup_strategy:\n    - liveness\n    - pprof\n    - grpc\n    - readiness\n  shutdown_strategy:\n    - readiness\n    - grpc\n    - pprof\n    - liveness\n  full_shutdown_duration: 600s\n  tls:\n    ca: /path/to/ca\n    cert: /path/to/cert\n    client_auth: None\n    crl: /path/to/crl\n    enabled: false\n    hot_reload: false\n    insecure_skip_verify: false\n    key: /path/to/key\n    server_name: \"\"\nobservability:\n  enabled: false\n  otlp:\n    collector_endpoint: \"\"\n    trace_batch_timeout: \"1s\"\n    trace_export_timeout: \"1m\"\n    trace_max_export_batch_size: 1024\n    trace_max_queue_size: 256\n    metrics_export_interval: \"1s\"\n    metrics_export_timeout: \"1m\"\n    attribute:\n      namespace: \"_MY_POD_NAMESPACE_\"\n      pod_name: \"_MY_POD_NAME_\"\n      node_name: \"_MY_NODE_NAME_\"\n      service_name: \"vald-mirror-gateway\"\n  metrics:\n    enable_cgo: true\n    enable_goroutine: true\n    enable_memory: true\n    enable_version_info: true\n    version_info_labels:\n    - vald_version\n    - server_name\n    - git_commit\n    - build_time\n    - go_version\n    - go_os\n    - go_arch\n    - algorithm_info\n  trace:\n    enabled: false\ngateway:\n  pod_name: _MY_POD_NAME_\n  register_duration: 1s\n  namespace: _MY_POD_NAMESPACE_\n  discovery_duration: 1s\n  colocation: dc1\n  group: \n  net:\n    dialer:\n      dual_stack_enabled: false\n      keepalive: 10m\n      timeout: 30s\n    dns:\n      cache_enabled: true\n      cache_expiration: 24h\n      refresh_duration: 5m\n    network: tcp\n    socket_option:\n      ip_recover_destination_addr: false\n      ip_transparent: false\n      reuse_addr: true\n      reuse_port: true\n      tcp_cork: false\n      tcp_defer_accept: true\n      tcp_fast_open: true\n      tcp_no_delay: true\n      tcp_quick_ack: true\n    tls:\n      ca: /path/to/ca\n      cert: /path/to/cert\n      client_auth: None\n      enabled: false\n      insecure_skip_verify: false\n      key: /path/to/key\n      server_name: \"\"\n  client:\n    addrs:\n      - vald-lb-gateway.default.svc.cluster.local:8081\n    health_check_duration: \"1s\"\n    connection_pool:\n      enable_dns_resolver: true\n      enable_metrics: false\n      enable_rebalance: true\n      old_conn_close_duration: 2m\n      rebalance_duration: 30m\n      size: 3\n    backoff:\n      backoff_factor: 1.1\n      backoff_time_limit: 5s\n      enable_error_log: true\n      initial_duration: 5ms\n      jitter_limit: 100ms\n      maximum_duration: 5s\n      retry_count: 100\n    circuit_breaker:\n      closed_error_rate: 0.7\n      closed_refresh_timeout: 10s\n      half_open_error_rate: 0.5\n      min_samples: 1000\n      open_timeout: 1s\n    call_option:\n      content_subtype: \"\"\n      max_recv_msg_size: 0\n      max_retry_rpc_buffer_size: 0\n      max_send_msg_size: 0\n      wait_for_ready: true\n    dial_option:\n      authority: \"\"\n      backoff_base_delay: 1s\n      backoff_jitter: 0.2\n      backoff_max_delay: 120s\n      backoff_multiplier: 1.6\n      disable_retry: false\n      enable_backoff: false\n      idle_timeout: \"\"\n      initial_connection_window_size: 2097152\n      initial_window_size: 1048576\n      insecure: true\n      interceptors: []\n      keepalive:\n        permit_without_stream: true\n        time: 10s\n        timeout: 5s\n      max_call_attempts: 0\n      max_header_list_size: 0\n      max_msg_size: 0\n      min_connection_timeout: 20s\n      net:\n        dialer:\n          dual_stack_enabled: true\n          keepalive: \"\"\n          timeout: \"\"\n        dns:\n          cache_enabled: true\n          cache_expiration: 1h\n          refresh_duration: 30m\n        network: tcp\n        socket_option:\n          ip_recover_destination_addr: false\n          ip_transparent: false\n          reuse_addr: true\n          reuse_port: true\n          tcp_cork: false\n          tcp_defer_accept: false\n          tcp_fast_open: false\n          tcp_no_delay: false\n          tcp_quick_ack: false\n        tls:\n          ca: /path/to/ca\n          cert: /path/to/cert\n          client_auth: None\n          crl: /path/to/crl\n          enabled: false\n          hot_reload: false\n          insecure_skip_verify: false\n          key: /path/to/key\n          server_name: \"\"\n      read_buffer_size: 0\n      shared_write_buffer: true\n      timeout: \"\"\n      user_agent: Vald-gRPC\n      write_buffer_size: 0\n    tls:\n      ca: /path/to/ca\n      cert: /path/to/cert\n      client_auth: None\n      crl: /path/to/crl\n      enabled: false\n      hot_reload: false\n      insecure_skip_verify: false\n      key: /path/to/key\n      server_name: \"\"\n  self_mirror_addr: vald-mirror-gateway.default.svc.cluster.local:8081\n  gateway_addr: vald-lb-gateway.default.svc.cluster.local:8081\n          #magic___^_^___line\n"
+  config.yaml: |
+    ---
+    version: v0.0.0
+    time_zone: UTC
+    logging:
+      format: raw
+      level: debug
+      logger: glg
+    server_config:
+      servers:
+        - name: grpc
+          host: 0.0.0.0
+          port: 8081
+          grpc:
+            bidirectional_stream_concurrency: 20
+            connection_timeout: ""
+            enable_admin: false
+            enable_channelz: false
+            enable_reflection: true
+            header_table_size: 0
+            initial_conn_window_size: 2097152
+            initial_window_size: 1048576
+            interceptors:
+            - RecoverInterceptor
+            keepalive:
+              max_conn_age: ""
+              max_conn_age_grace: ""
+              max_conn_idle: ""
+              min_time: 1s
+              permit_without_stream: true
+              time: 3h
+              timeout: 60s
+            max_concurrent_streams: 0
+            max_header_list_size: 0
+            max_receive_message_size: 0
+            max_send_message_size: 0
+            num_stream_workers: 0
+            read_buffer_size: 0
+            shared_write_buffer: true
+            wait_for_handlers: true
+            write_buffer_size: 0
+          mode: GRPC
+          network: tcp
+          probe_wait_time: 3s
+          restart: true
+          socket_option:
+            ip_recover_destination_addr: false
+            ip_transparent: false
+            reuse_addr: true
+            reuse_port: true
+            tcp_cork: false
+            tcp_defer_accept: false
+            tcp_fast_open: false
+            tcp_no_delay: false
+            tcp_quick_ack: false
+          socket_path: ""
+      health_check_servers:
+        - name: liveness
+          host: 0.0.0.0
+          port: 3000
+          http:
+            handler_timeout: ""
+            http2:
+              enabled: false
+              handler_limit: 0
+              max_concurrent_streams: 0
+              max_decoder_header_table_size: 4096
+              max_encoder_header_table_size: 4096
+              max_read_frame_size: 0
+              max_upload_buffer_per_connection: 0
+              max_upload_buffer_per_stream: 0
+              permit_prohibited_cipher_suites: true
+            idle_timeout: ""
+            read_header_timeout: ""
+            read_timeout: ""
+            shutdown_duration: 5s
+            write_timeout: ""
+          mode: REST
+          network: tcp
+          probe_wait_time: 3s
+          restart: true
+          socket_option:
+            ip_recover_destination_addr: false
+            ip_transparent: false
+            reuse_addr: true
+            reuse_port: true
+            tcp_cork: false
+            tcp_defer_accept: false
+            tcp_fast_open: true
+            tcp_no_delay: true
+            tcp_quick_ack: true
+          socket_path: ""
+        - name: readiness
+          host: 0.0.0.0
+          port: 3001
+          http:
+            handler_timeout: ""
+            http2:
+              enabled: false
+              handler_limit: 0
+              max_concurrent_streams: 0
+              max_decoder_header_table_size: 4096
+              max_encoder_header_table_size: 4096
+              max_read_frame_size: 0
+              max_upload_buffer_per_connection: 0
+              max_upload_buffer_per_stream: 0
+              permit_prohibited_cipher_suites: true
+            idle_timeout: ""
+            read_header_timeout: ""
+            read_timeout: ""
+            shutdown_duration: 0s
+            write_timeout: ""
+          mode: REST
+          network: tcp
+          probe_wait_time: 3s
+          restart: true
+          socket_option:
+            ip_recover_destination_addr: false
+            ip_transparent: false
+            reuse_addr: true
+            reuse_port: true
+            tcp_cork: false
+            tcp_defer_accept: false
+            tcp_fast_open: true
+            tcp_no_delay: true
+            tcp_quick_ack: true
+          socket_path: ""
+      metrics_servers:
+        - name: pprof
+          host: 0.0.0.0
+          port: 6060
+          http:
+            handler_timeout: 5s
+            http2:
+              enabled: false
+              handler_limit: 0
+              max_concurrent_streams: 0
+              max_decoder_header_table_size: 4096
+              max_encoder_header_table_size: 4096
+              max_read_frame_size: 0
+              max_upload_buffer_per_connection: 0
+              max_upload_buffer_per_stream: 0
+              permit_prohibited_cipher_suites: true
+            idle_timeout: 2s
+            read_header_timeout: 1s
+            read_timeout: 1s
+            shutdown_duration: 5s
+            write_timeout: 1m
+          mode: REST
+          network: tcp
+          probe_wait_time: 3s
+          restart: true
+          socket_option:
+            ip_recover_destination_addr: false
+            ip_transparent: false
+            reuse_addr: true
+            reuse_port: true
+            tcp_cork: true
+            tcp_defer_accept: false
+            tcp_fast_open: false
+            tcp_no_delay: false
+            tcp_quick_ack: false
+          socket_path: ""
+      startup_strategy:
+        - liveness
+        - pprof
+        - grpc
+        - readiness
+      shutdown_strategy:
+        - readiness
+        - grpc
+        - pprof
+        - liveness
+      full_shutdown_duration: 600s
+      tls:
+        ca: /path/to/ca
+        cert: /path/to/cert
+        client_auth: None
+        crl: /path/to/crl
+        enabled: false
+        hot_reload: false
+        insecure_skip_verify: false
+        key: /path/to/key
+        server_name: ""
+    observability:
+      enabled: false
+      otlp:
+        collector_endpoint: ""
+        trace_batch_timeout: "1s"
+        trace_export_timeout: "1m"
+        trace_max_export_batch_size: 1024
+        trace_max_queue_size: 256
+        metrics_export_interval: "1s"
+        metrics_export_timeout: "1m"
+        attribute:
+          namespace: "_MY_POD_NAMESPACE_"
+          pod_name: "_MY_POD_NAME_"
+          node_name: "_MY_NODE_NAME_"
+          service_name: "vald-mirror-gateway"
+      metrics:
+        enable_cgo: true
+        enable_goroutine: true
+        enable_memory: true
+        enable_version_info: true
+        version_info_labels:
+        - vald_version
+        - server_name
+        - git_commit
+        - build_time
+        - go_version
+        - go_os
+        - go_arch
+        - algorithm_info
+      trace:
+        enabled: false
+    gateway:
+      pod_name: _MY_POD_NAME_
+      register_duration: 1s
+      namespace: _MY_POD_NAMESPACE_
+      discovery_duration: 1s
+      colocation: dc1
+      group: ""
+      net:
+        dialer:
+          dual_stack_enabled: false
+          keepalive: 10m
+          timeout: 30s
+        dns:
+          cache_enabled: true
+          cache_expiration: 24h
+          refresh_duration: 5m
+        network: tcp
+        socket_option:
+          ip_recover_destination_addr: false
+          ip_transparent: false
+          reuse_addr: true
+          reuse_port: true
+          tcp_cork: false
+          tcp_defer_accept: true
+          tcp_fast_open: true
+          tcp_no_delay: true
+          tcp_quick_ack: true
+        tls:
+          ca: /path/to/ca
+          cert: /path/to/cert
+          client_auth: None
+          enabled: false
+          insecure_skip_verify: false
+          key: /path/to/key
+          server_name: ""
+      client:
+        addrs:
+          - vald-lb-gateway.default.svc.cluster.local:8081
+        health_check_duration: "1s"
+        connection_pool:
+          enable_dns_resolver: true
+          enable_metrics: false
+          enable_rebalance: true
+          old_conn_close_duration: 2m
+          rebalance_duration: 30m
+          size: 3
+        backoff:
+          backoff_factor: 1.1
+          backoff_time_limit: 5s
+          enable_error_log: true
+          initial_duration: 5ms
+          jitter_limit: 100ms
+          maximum_duration: 5s
+          retry_count: 100
+        circuit_breaker:
+          closed_error_rate: 0.7
+          closed_refresh_timeout: 10s
+          half_open_error_rate: 0.5
+          min_samples: 1000
+          open_timeout: 1s
+        call_option:
+          content_subtype: ""
+          max_recv_msg_size: 0
+          max_retry_rpc_buffer_size: 0
+          max_send_msg_size: 0
+          wait_for_ready: true
+        dial_option:
+          authority: ""
+          backoff_base_delay: 1s
+          backoff_jitter: 0.2
+          backoff_max_delay: 120s
+          backoff_multiplier: 1.6
+          disable_retry: false
+          enable_backoff: false
+          idle_timeout: ""
+          initial_connection_window_size: 2097152
+          initial_window_size: 1048576
+          insecure: true
+          interceptors: []
+          keepalive:
+            permit_without_stream: true
+            time: 10s
+            timeout: 5s
+          max_call_attempts: 0
+          max_header_list_size: 0
+          max_msg_size: 0
+          min_connection_timeout: 20s
+          net:
+            dialer:
+              dual_stack_enabled: true
+              keepalive: ""
+              timeout: ""
+            dns:
+              cache_enabled: true
+              cache_expiration: 1h
+              refresh_duration: 30m
+            network: tcp
+            socket_option:
+              ip_recover_destination_addr: false
+              ip_transparent: false
+              reuse_addr: true
+              reuse_port: true
+              tcp_cork: false
+              tcp_defer_accept: false
+              tcp_fast_open: false
+              tcp_no_delay: false
+              tcp_quick_ack: false
+            tls:
+              ca: /path/to/ca
+              cert: /path/to/cert
+              client_auth: None
+              crl: /path/to/crl
+              enabled: false
+              hot_reload: false
+              insecure_skip_verify: false
+              key: /path/to/key
+              server_name: ""
+          read_buffer_size: 0
+          shared_write_buffer: true
+          timeout: ""
+          user_agent: Vald-gRPC
+          write_buffer_size: 0
+        tls:
+          ca: /path/to/ca
+          cert: /path/to/cert
+          client_auth: None
+          crl: /path/to/crl
+          enabled: false
+          hot_reload: false
+          insecure_skip_verify: false
+          key: /path/to/key
+          server_name: ""
+      self_mirror_addr: vald-mirror-gateway.default.svc.cluster.local:8081
+      gateway_addr: vald-lb-gateway.default.svc.cluster.local:8081

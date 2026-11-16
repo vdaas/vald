@@ -21,6 +21,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/vdaas/vald/internal/core/algorithm"
 	"github.com/vdaas/vald/internal/errors"
@@ -4922,6 +4923,14 @@ func Test_ngt_Property(t *testing.T) {
 				if p.GraphType != w.want.GraphType {
 					return errors.Errorf("got_graph_type: \"%v\", want_graph_type: \"%v\"", p.GraphType, w.want.GraphType)
 				}
+				// ngt_get_property_info returns these two as dangling c_str() pointers;
+				// reading them yielded leftover C++ stack/heap bytes instead of "".
+				if p.AccuracyTable != "" {
+					return errors.Errorf("got_accuracy_table: %q, want empty", p.AccuracyTable)
+				}
+				if p.SearchType != "" {
+					return errors.Errorf("got_search_type: %q, want empty", p.SearchType)
+				}
 				return nil
 			},
 		},
@@ -4961,5 +4970,247 @@ func Test_ngt_Property(t *testing.T) {
 				tt.Errorf("error = %v", err)
 			}
 		})
+	}
+}
+
+// Search decided "no data stored" from n.cnt, which only counts Insert/Remove in this
+// process and stays 0 after Load, so an empty search on a loaded non-empty index returned
+// ErrSearchResultEmptyButNoDataStored instead of ErrEmptySearchResult.
+func TestSearch_emptyResultAfterLoadWithStoredData(t *testing.T) {
+	t.Parallel()
+	idxPath := idxTempDir(t)
+	opts := []Option{
+		WithDimension(9),
+		WithIndexPath(idxPath),
+		WithObjectType(Float),
+	}
+	n, err := New(opts...)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = n.Insert([]float32{0, 1, 2, 3, 4, 5, 6, 7, 8}); err != nil {
+		n.Close()
+		t.Fatal(err)
+	}
+	if err = n.CreateAndSaveIndex(1); err != nil {
+		n.Close()
+		t.Fatal(err)
+	}
+	n.Close()
+
+	ln, err := Load(opts...)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer ln.Close()
+	// a tiny radius around a far-away query leaves the result empty although an object is stored.
+	far := []float32{1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000}
+	res, err := ln.Search(t.Context(), far, 1, 0, 1e-3, 0)
+	if !errors.Is(err, errors.ErrEmptySearchResult) {
+		t.Errorf("Search() error = %v, want %v (results: %v)", err, errors.ErrEmptySearchResult, res)
+	}
+}
+
+// Vectors with NaN or +-Inf must be rejected at the algorithm boundary: NGT 2.8.1 would
+// otherwise return NaN-distance results for such a query and index such an object.
+func Test_ngt_rejectsNaNOrInfVector(t *testing.T) {
+	t.Parallel()
+	const dim = 9
+	n, err := New(WithDimension(dim), WithIndexPath(idxTempDir(t)), WithObjectType(Float))
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Parallel subtests run after this function returns; Cleanup waits for them, defer would not.
+	t.Cleanup(n.Close)
+	if _, err = n.Insert([]float32{0, 1, 2, 3, 4, 5, 6, 7, 8}); err != nil {
+		t.Fatal(err)
+	}
+	if err = n.CreateIndex(1); err != nil {
+		t.Fatal(err)
+	}
+
+	same := func(v float32) []float32 {
+		vec := make([]float32, dim)
+		for i := range vec {
+			vec[i] = v
+		}
+		return vec
+	}
+	tests := []struct {
+		name string
+		vec  []float32
+	}{
+		{name: "NaN", vec: same(float32(math.NaN()))},
+		{name: "+Inf", vec: same(float32(math.Inf(1)))},
+		{name: "-Inf", vec: same(float32(math.Inf(-1)))},
+		{name: "single NaN at tail", vec: append(same(1), float32(math.NaN()))[1:]},
+	}
+	for _, tc := range tests {
+		t.Run("Search/"+tc.name, func(t *testing.T) {
+			t.Parallel()
+			res, err := n.Search(t.Context(), tc.vec, 1, 0, -1, 0)
+			if !errors.Is(err, errors.ErrNaNOrInfVector) || res != nil {
+				t.Errorf("Search() = (%v, %v), want (nil, %v)", res, err, errors.ErrNaNOrInfVector)
+			}
+		})
+		t.Run("LinearSearch/"+tc.name, func(t *testing.T) {
+			t.Parallel()
+			res, err := n.LinearSearch(t.Context(), tc.vec, 1)
+			if !errors.Is(err, errors.ErrNaNOrInfVector) || res != nil {
+				t.Errorf("LinearSearch() = (%v, %v), want (nil, %v)", res, err, errors.ErrNaNOrInfVector)
+			}
+		})
+		t.Run("Insert/"+tc.name, func(t *testing.T) {
+			t.Parallel()
+			id, err := n.Insert(tc.vec)
+			if !errors.Is(err, errors.ErrNaNOrInfVector) || id != 0 {
+				t.Errorf("Insert() = (%d, %v), want (0, %v)", id, err, errors.ErrNaNOrInfVector)
+			}
+		})
+	}
+}
+
+// newClosedNGT returns an ngt in the state Close leaves it in: mutexes set,
+// index/ospace NULL. No call in these tests may hand the NULL handles to NGT.
+func newClosedNGT(t *testing.T, ot objectType) *ngt {
+	t.Helper()
+	return &ngt{
+		idxPath:    t.TempDir(),
+		dimension:  9,
+		objectType: ot,
+		group:      singleflight.New[*GraphStatistics](),
+		mu:         new(sync.RWMutex),
+		cmu:        new(sync.RWMutex),
+		smu:        new(sync.Mutex),
+	}
+}
+
+// ngt_save_index, ngt_get_property_info and ngt_get_object_as_* / ngt_get_allocated_object_as_float
+// dereference their handle without a NULL check, so the Go side must refuse a closed index.
+func TestNGT_closedIndexGuards(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		call func(n *ngt) error
+		name string
+		ot   objectType
+	}{
+		{
+			name: "SaveIndex",
+			ot:   Float,
+			call: func(n *ngt) error { return n.SaveIndex() },
+		},
+		{
+			name: "SaveIndexWithPath",
+			ot:   Float,
+			call: func(n *ngt) error { return n.SaveIndexWithPath(n.idxPath) },
+		},
+		{
+			name: "GetVector Float",
+			ot:   Float,
+			call: func(n *ngt) error { _, err := n.GetVector(1); return err },
+		},
+		{
+			name: "GetVector HalfFloat",
+			ot:   HalfFloat,
+			call: func(n *ngt) error { _, err := n.GetVector(1); return err },
+		},
+		{
+			name: "GetVector Uint8",
+			ot:   Uint8,
+			call: func(n *ngt) error { _, err := n.GetVector(1); return err },
+		},
+		{
+			name: "GetProperty",
+			ot:   Float,
+			call: func(n *ngt) error { _, err := n.GetProperty(); return err },
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			n := newClosedNGT(t, test.ot)
+			if err := test.call(n); !errors.Is(err, errIndexClosed) {
+				t.Errorf("error = %v, want %v", err, errIndexClosed)
+			}
+		})
+	}
+}
+
+func TestNGT_CloseIdempotent(t *testing.T) {
+	t.Parallel()
+	// A hand-built ngt without mutexes was never opened; Close must be a no-op.
+	new(ngt).Close()
+
+	n := newClosedNGT(t, Float)
+	n.Close()
+	n.Close()
+	n.CloseWithoutSaveIndex()
+	if n.index != nil || n.ospace != nil {
+		t.Error("index and ospace must be nil after Close")
+	}
+}
+
+const (
+	// blockedFor is how long a call must stay blocked to count as excluded by the held lock.
+	blockedFor = 100 * time.Millisecond
+	// releaseTimeout bounds the wait for the call to finish once the lock is released.
+	releaseTimeout = 5 * time.Second
+)
+
+// Close must not free the index while a reader (Search/LinearSearch) holds rLock(true).
+func TestNGT_CloseWaitsForInFlightReader(t *testing.T) {
+	t.Parallel()
+	n := newClosedNGT(t, Float)
+
+	n.rLock(true)
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		n.Close()
+	}()
+
+	select {
+	case <-done:
+		n.rUnlock(true)
+		t.Fatal("Close returned while a reader held the index lock")
+	case <-time.After(blockedFor):
+	}
+	n.rUnlock(true)
+
+	select {
+	case <-done:
+	case <-time.After(releaseTimeout):
+		t.Fatal("Close did not return after the reader released the lock")
+	}
+}
+
+// The statistics walk must not run while a writer (Insert/Remove) holds lock(true).
+func TestNGT_GraphStatisticsWaitsForWriter(t *testing.T) {
+	t.Parallel()
+	n := newClosedNGT(t, Float)
+
+	n.lock(true)
+	errCh := make(chan error, 1)
+	go func() {
+		_, err := n.GetGraphStatistics(t.Context(), NormalStatistics)
+		errCh <- err
+	}()
+
+	select {
+	case <-errCh:
+		n.unlock(true)
+		t.Fatal("GetGraphStatistics ran while a writer held the index lock")
+	case <-time.After(blockedFor):
+	}
+	n.unlock(true)
+
+	select {
+	case err := <-errCh:
+		// NGT reports the NULL index as an error.
+		if err == nil {
+			t.Error("GetGraphStatistics on a closed index must return an error")
+		}
+	case <-time.After(releaseTimeout):
+		t.Fatal("GetGraphStatistics did not return after the writer released the lock")
 	}
 }

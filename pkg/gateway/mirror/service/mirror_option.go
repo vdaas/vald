@@ -83,6 +83,10 @@ func WithRegisterDuration(s string) MirrorOption {
 		if err != nil {
 			return errors.NewErrInvalidOption("registerDuration", s, err)
 		}
+		if dur <= 0 {
+			// time.NewTicker panics for non-positive intervals
+			return errors.NewErrInvalidOption("registerDuration", s)
+		}
 		m.registerDur = dur
 		return nil
 	}

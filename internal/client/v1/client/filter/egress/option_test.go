@@ -14,6 +14,41 @@
 
 package egress
 
+import (
+	"testing"
+	"time"
+)
+
+func TestWithIdleTimeout(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name string
+		dur  string
+		want time.Duration
+	}{
+		{name: "unset keeps the default", dur: "", want: defaultIdleTimeout},
+		{name: "valid duration is used", dur: "5s", want: 5 * time.Second},
+		{name: "invalid duration keeps the default", dur: "invalid", want: defaultIdleTimeout},
+		{name: "non-positive duration keeps the default", dur: "-1s", want: defaultIdleTimeout},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(tt *testing.T) {
+			tt.Parallel()
+			c, err := New(WithAddrs("configured:8081"), WithClient(newConnTracker().mock()), WithIdleTimeout(tc.dur))
+			if err != nil {
+				tt.Fatal(err)
+			}
+			cl, ok := c.(*client)
+			if !ok {
+				tt.Fatalf("New returned %T, want *client", c)
+			}
+			if cl.idle != tc.want {
+				tt.Errorf("idle = %v, want %v", cl.idle, tc.want)
+			}
+		})
+	}
+}
+
 // NOT IMPLEMENTED BELOW
 //
 // func TestWithAddrs(t *testing.T) {

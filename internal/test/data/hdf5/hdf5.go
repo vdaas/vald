@@ -180,8 +180,9 @@ func (d *data) GetByGroupName(name string) [][]float32 {
 		return d.GetTest()
 	case "neighbors":
 		l := d.GetNeighbors()
-		r := make([][]float32, 0)
+		r := make([][]float32, len(l))
 		for x := range l {
+			r[x] = make([]float32, len(l[x]))
 			for y, z := range l[x] {
 				r[x][y] = float32(z)
 			}

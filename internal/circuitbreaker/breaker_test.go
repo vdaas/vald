@@ -14,6 +14,7 @@
 package circuitbreaker
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"testing"
@@ -252,6 +253,36 @@ func Test_breaker_success(t *testing.T) {
 					t.Helper()
 					if b.tripped != 1 {
 						t.Errorf("state changed: %d", b.tripped)
+					}
+				},
+			}
+		}(),
+		func() test {
+			// success() counts this call first, so the samples reach exactly
+			// minSamples (9 failures + 1 success). The tripper ignores that many
+			// samples, so the breaker used to close at a 90% error rate.
+			cnt := &count{
+				successes: 0,
+				failures:  9,
+			}
+			halfOpenErrRate := float32(0.5)
+			minSamples := int64(10)
+			return test{
+				name: "the current state do not change from HalfOpen to Close at exactly minSamples",
+				fields: fields{
+					key:                   "insertRPC",
+					count:                 cnt,
+					tripped:               1,
+					openExp:               time.Now().Add(-100 * time.Second).UnixNano(),
+					halfOpenErrRate:       halfOpenErrRate,
+					halfOpenErrShouldTrip: NewRateTripper(halfOpenErrRate, minSamples),
+					minSamples:            minSamples,
+				},
+				checkFunc: defaultCheckFunc,
+				afterFunc: func(t *testing.T, b *breaker) {
+					t.Helper()
+					if b.tripped != 1 {
+						t.Errorf("state changed at exactly minSamples: %d", b.tripped)
 					}
 				},
 			}
@@ -1218,3 +1249,140 @@ func Test_breaker_fail(t *testing.T) {
 // 		})
 // 	}
 // }
+
+// Test_breaker_do_concurrentWrappedErrors calls do concurrently with errors that must be unwrapped.
+// The errors.As targets used to be package-level variables, which is a data race under -race.
+func Test_breaker_do_concurrentWrappedErrors(t *testing.T) {
+	t.Parallel()
+
+	const callers = 32
+	base := errors.New("base error")
+	tests := []struct {
+		wrap func(error) error
+		name string
+	}{
+		{
+			name: "mark with success error is unwrapped",
+			wrap: errors.NewErrCircuitBreakerMarkWithSuccess,
+		},
+		{
+			name: "ignorable error is unwrapped",
+			wrap: errors.NewErrCircuitBreakerIgnorable,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			b, err := newBreaker("do")
+			if err != nil {
+				t.Fatal(err)
+			}
+			wrapped := test.wrap(base)
+
+			start := make(chan struct{})
+			errs := make(chan error, callers)
+			for range callers {
+				go func() {
+					<-start
+					val, _, err := b.do(context.Background(), func(context.Context) (any, error) {
+						return nil, wrapped
+					})
+					if val != nil {
+						err = errors.Errorf("unexpected value: %v", val)
+					}
+					errs <- err
+				}()
+			}
+			close(start)
+
+			timeout := time.After(10 * time.Second)
+			for range callers {
+				select {
+				case err := <-errs:
+					// do must return the unwrapped base error, not the marker error around it.
+					if !errors.Is(err, base) || errors.Is(err, wrapped) {
+						t.Errorf("got error: %v, want: %v", err, base)
+					}
+				case <-timeout:
+					t.Fatal("timed out waiting for do callers")
+				}
+			}
+		})
+	}
+}
+
+// Test_breaker_trip_keepsClosedRefreshExp guards the trip/currentState race:
+// a concurrent currentState that observed tripped==0 just before trip() must not
+// read an expired (zeroed) closedRefreshExp and reset() the fresh trip away.
+func Test_breaker_trip_keepsClosedRefreshExp(t *testing.T) {
+	t.Parallel()
+	refresh := time.Now().Add(time.Hour).UnixNano()
+	b := &breaker{
+		key:              "insertRPC",
+		count:            &count{successes: 1, failures: 30},
+		openTimeout:      time.Minute,
+		closedRefreshExp: refresh,
+	}
+	b.trip()
+	if !b.isTripped() {
+		t.Fatalf("trip() did not set tripped")
+	}
+	if got := b.closedRefreshExp; got != refresh {
+		t.Errorf("trip() changed closedRefreshExp: got %d, want %d", got, refresh)
+	}
+	if st := b.currentState(); st != StateOpen {
+		t.Errorf("currentState after trip = %s, want %s", st, StateOpen)
+	}
+	if total := b.count.Total(); total != 0 {
+		t.Errorf("trip() did not reset count: %d", total)
+	}
+}
+
+func Test_breaker_currentState_closedRefresh(t *testing.T) {
+	t.Parallel()
+	const refreshTimeout = time.Hour
+	future := time.Now().Add(time.Minute).UnixNano()
+	tests := []struct {
+		name        string
+		exp         int64
+		wantRefresh bool
+	}{
+		{name: "zero deadline is refreshed", exp: 0, wantRefresh: true},
+		{name: "expired deadline is refreshed", exp: time.Now().Add(-time.Minute).UnixNano(), wantRefresh: true},
+		{name: "unexpired deadline is kept", exp: future, wantRefresh: false},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(tt *testing.T) {
+			tt.Parallel()
+			b := &breaker{
+				key:                  "insertRPC",
+				count:                &count{successes: 3, failures: 2},
+				closedRefreshTimeout: refreshTimeout,
+				closedRefreshExp:     tc.exp,
+			}
+			before := time.Now().UnixNano()
+			if st := b.currentState(); st != StateClosed {
+				tt.Fatalf("currentState = %s, want %s", st, StateClosed)
+			}
+			if b.isTripped() || b.openExp != 0 {
+				tt.Errorf("closed refresh touched open state: tripped=%d openExp=%d", b.tripped, b.openExp)
+			}
+			total := b.count.Total()
+			if tc.wantRefresh {
+				if total != 0 {
+					tt.Errorf("count not reset on refresh: %d", total)
+				}
+				if b.closedRefreshExp < before+int64(refreshTimeout) {
+					tt.Errorf("closedRefreshExp not advanced: %d", b.closedRefreshExp)
+				}
+				return
+			}
+			if total != 5 {
+				tt.Errorf("count reset before deadline: %d", total)
+			}
+			if b.closedRefreshExp != tc.exp {
+				tt.Errorf("closedRefreshExp changed before deadline: %d", b.closedRefreshExp)
+			}
+		})
+	}
+}

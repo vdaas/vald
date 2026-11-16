@@ -43,7 +43,6 @@ type cycle[S ~[]E, E any] struct {
 	start   uint64
 	num     uint64
 	size    uint64
-	offset  uint64
 }
 
 // New creates a new cycle iterator instance. It validates the input array and computes the starting index (offset modulo array size).
@@ -59,7 +58,6 @@ func NewCycle[S ~[]E, E any](array S, num, offset uint64, mod func(uint64, E) E)
 		start:   offset % size,
 		num:     num,
 		size:    size,
-		offset:  offset,
 		array:   array,
 		modFunc: mod,
 	}

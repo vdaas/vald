@@ -32,6 +32,8 @@ import (
 
 func TestNewConfig(t *testing.T) {
 	t.Parallel()
+	// wantVersion is the "version" set by every config fixture below.
+	const wantVersion = "v1.0.0"
 	type args struct {
 		path string
 	}
@@ -97,7 +99,7 @@ func TestNewConfig(t *testing.T) {
 				},
 				want: want{
 					wantCfg: &Data{
-						Version: "v1.0.0",
+						Version: wantVersion,
 						Server: &config.Servers{
 							FullShutdownDuration: "10ms",
 							ShutdownStrategy:     make([]string, 0),
@@ -160,7 +162,7 @@ func TestNewConfig(t *testing.T) {
 				},
 				want: want{
 					wantCfg: &Data{
-						Version: "v1.0.0",
+						Version: wantVersion,
 						Server: &config.Servers{
 							FullShutdownDuration: "10ms",
 							ShutdownStrategy:     make([]string, 0),
@@ -216,7 +218,7 @@ func TestNewConfig(t *testing.T) {
 				},
 				want: want{
 					wantCfg: &Data{
-						Version: "v1.0.0",
+						Version: wantVersion,
 						Server: &config.Servers{
 							FullShutdownDuration: "10ms",
 							ShutdownStrategy:     make([]string, 0),
@@ -277,7 +279,7 @@ func TestNewConfig(t *testing.T) {
 				},
 				want: want{
 					wantCfg: &Data{
-						Version: "v1.0.0",
+						Version: wantVersion,
 						Server: &config.Servers{
 							FullShutdownDuration: "10ms",
 							ShutdownStrategy:     make([]string, 0),

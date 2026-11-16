@@ -70,5 +70,10 @@ func New(path string) (cfg *Data, err error) {
 		return nil, errors.ErrInvalidConfig
 	}
 
+	// Corrector.Bind leaves a missing discoverer nil, and the usecase dereferences it unconditionally.
+	if cfg.Corrector.Discoverer == nil {
+		return nil, errors.ErrInvalidConfig
+	}
+
 	return cfg, nil
 }

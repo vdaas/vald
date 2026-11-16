@@ -35,9 +35,16 @@ CVE-2026-84304 exp:2026-11-28
 # in the BuildKit scanner image; remove after updating the scanner binary.
 CVE-2026-84445 exp:2026-12-06
 
-# Upstream syft-scanner embeds Go 1.26.7 and x/net v0.57.0. Temporarily
-# accept these DoS findings in the scanner pending an upstream rebuild
-# with Go 1.26.9/1.27.2 and x/net v0.60.0. Review by 2026-10-21.
-CVE-2026-78667 exp:2026-10-21
-CVE-2026-78669 exp:2026-10-21
-CVE-2026-97031 exp:2026-10-21
+# Reason: upstream docker/buildkit-syft-scanner:edge still embeds containerd
+# v2.3.3, go-jose v4.1.4, x/net v0.57.0 and x/text v0.40.0 (rechecked
+# 2026-11-06). Vald only re-tags this image as a CI SBOM scanner; remove these
+# exceptions when upstream rebuilds with the fixed modules.
+CVE-2026-56851 exp:2026-12-06
+CVE-2026-78669 exp:2026-12-06
+CVE-2026-95837 exp:2026-12-06
+CVE-2026-116587 exp:2026-12-06
+
+# Reason: CVE-2026-78661 (golang.org/x/net/html DoS, fixed in v0.62.0) was
+# first reported by the 2026-11-06 CI scan; upstream syft-scanner still embeds x/net v0.57.0.
+# Remove when upstream rebuilds with x/net >= v0.62.0.
+CVE-2026-78661 exp:2026-12-07

@@ -107,7 +107,61 @@ Vald uses Rust for high-performance indexing and strictly typed logic (`rust/`).
 ### Makefiles
 
 - **Phony Targets:** Ensure `.PHONY` is used for non-file targets.
-- **Portability:** Use POSIX-compliant shell commands (avoid bash-isms).
+- **Portability:** Keep recipe _logic_ POSIX-friendly, but never re-declare shell options: every shell in
+  this repository inherits its strict option set from the root `Makefile` (see “Shell options” below).
+- **No ad-hoc `set -e` / `bash -c`:** inside a recipe use `$(SHELL_STRICT)` for the `set` form and
+  `$(SHELL_STRICT_EXEC)` for an explicit subshell (`xargs ... $(SHELL_STRICT_EXEC) '...'`).
+
+### Shell options (single source of truth)
+
+The root `Makefile` owns the option set. Do not duplicate it anywhere else — extend it there.
+
+| Variable                | Meaning                                                                 |
+| ----------------------- | ----------------------------------------------------------------------- |
+| `SHELL_STRICT_OPTS`     | canonical options (`-euo pipefail`) — the only place to change policy   |
+| `SHELL_STRICT`          | `set` form for recipe bodies (`$(SHELL_STRICT); …`)                     |
+| `SHELL_STRICT_EXEC`     | invocation form for explicit subshells (`xargs … $(SHELL_STRICT_EXEC)`) |
+| `SHELL` / `.SHELLFLAGS` | derived; every make recipe runs with `SHELL_STRICT_OPTS`                |
+
+- Generated Dockerfiles take the same option set: `hack/docker/gen/main.go` reads `SHELL_STRICT_OPTS`
+  (exported by `gen-dockerfile`) and renders `SHELL ["/bin/bash", "-euo", "pipefail", "-c"]` plus
+  `set -euo pipefail -x` in the `RUN` instruction. Regenerate with `make dockerfile`; never hand-edit
+  `dockers/**/Dockerfile`.
+- Hand-written GitHub Actions workflows declare `defaults.run.shell: bash` (GitHub's
+  `bash --noprofile --norc -eo pipefail`), so `run:` blocks need no `set -o pipefail`.
+- Helper scripts (`.devcontainer/postAttachCommand.sh`, `hack/git/hooks/pre-commit`) declare
+  `set -euo pipefail` explicitly; they cannot inherit make variables.
+- `make shell/options/check` (part of `make lint`) fails on any drift: ad-hoc `set`/`bash -c` literals,
+  a workflow without `defaults.run.shell: bash`, or a generated Dockerfile whose shell lines were
+  edited by hand.
+- Container runtime manifests (`charts/**/templates`) run `/bin/sh` in distroless/alpine images where
+  `pipefail` does not exist; they intentionally stay `set -eu`.
+
+### Shared command options (single source of truth)
+
+The same rule applies to the options of the commands themselves: they are defined once and referenced
+from every call site.
+
+| Variable                                                                            | Used by                                                                                         |
+| ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `CURL` / `CURL_AUTH` / `CURL_RETRY*` / `CURL_DOWNLOAD`                              | downloads in `Makefile` / `Makefile.d/*.mk` (workflow `run:` blocks cannot read make variables) |
+| `XARGS` (`xargs $(XARGS_NO_RUN_IF_EMPTY) -I {} -P$(CORES)`)                         | parallel `xargs` in `Makefile` / `Makefile.d/*.mk`                                              |
+| `GOLANGCI_LINT_ARGS` / `GIT_DIFF_FILES`                                             | lint / format recipes                                                                           |
+| `KUBECTL_WAIT_READY` / `_AVAILABLE` / `_CONTAINERS_READY` / `_COMPLETE` / `_DELETE` | `kubectl wait`                                                                                  |
+| `K8S_WAIT_TIMEOUT` / `_SHORT` / `_MID` / `_LONG`                                    | `--timeout=` of kubectl and helm                                                                |
+| `DOCKER_TAG_ARGS` / `DOCKER_NETWORK_ARGS`                                           | both branches of `docker/build/image`                                                           |
+
+- GitHub Actions: `uses:` steps cannot be wrapped by a local composite (a local action is resolved
+  from the workspace, which does not exist before the first checkout), so `actions/checkout@<sha>` stays
+  direct and its one mandatory option is enforced instead: `make options/check` requires as many
+  `persist-credentials: false` entries as checkout steps in every workflow, plus an explicit
+  `timeout-minutes` on every job.
+- Generated Dockerfiles: the apt flag set and the Go toolchain make-argument triple live in
+  `hack/docker/gen/main.go` (`aptInstallFlags`, `goToolchainMakeArgs`), and the ubuntu builder tag comes
+  from `versions/UBUNTU_VERSION`. Regenerate with `make dockerfile`.
+- `make options/check` (part of `make lint`) fails on any drift: a checkout step without
+  `persist-credentials: false`, a job without `timeout-minutes`, a generated Dockerfile whose
+  apt/toolchain lines were edited by hand, or a builder base that disagrees with `versions/UBUNTU_VERSION`.
 
 ### GitHub Actions
 
@@ -129,6 +183,9 @@ Before doing anything, ensure tools are installed in `.bin/`.
 make init          # Installs buf, golangci-lint, k3d, helm, kind, etc. to .bin/
 make update        # Update dependencies and apply standard formatting.
 ```
+
+Shell options are not part of this setup: they are already centralized in the root `Makefile`
+(see “Shell options (single source of truth)” above and `make shell/options/check`).
 
 ### 1️⃣ Code Generation & Formatting (The Zero-Diff Check)
 

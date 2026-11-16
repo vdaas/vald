@@ -15,7 +15,6 @@ package grpc
 
 import (
 	"context"
-	"sync/atomic"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
@@ -27,6 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/attribute"
 	"github.com/vdaas/vald/internal/observability/trace"
+	"github.com/vdaas/vald/internal/sync/atomic"
 )
 
 // Flush removes all vectors that are indexed and uncommitted in the `vald-agent`.

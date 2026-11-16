@@ -2259,8 +2259,7 @@
 
     | field | type | label | description |
     | :---: | :--- | :---- | :---------- |
-    | timestamps | Remove.Timestamp | repeated | The timestamp comparison list. If more than one is specified, the `AND`
-search is applied. |
+    | timestamps | Remove.Timestamp | repeated | The timestamp comparison list. If more than one is specified, the `AND` search is applied. |
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Search" }}
@@ -2478,8 +2477,7 @@ search is applied. |
     | skip_strict_exist_check | bool |  | A flag to skip exist check during update operation. |
     | filters | Filter.Config |  | Filter configuration. |
     | timestamp | int64 |  | Update timestamp. |
-    | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)
-during update operation. |
+    | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation) during update operation. |
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Update.MultiObjectRequest" }}
@@ -2591,8 +2589,7 @@ during update operation. |
     | skip_strict_exist_check | bool |  | A flag to skip exist check during upsert operation. |
     | filters | Filter.Config |  | Filter configuration. |
     | timestamp | int64 |  | Upsert timestamp. |
-    | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation)
-during update operation. |
+    | disable_balanced_update | bool |  | A flag to disable balanced update (split remove -> insert operation) during update operation. |
 {{- end -}}
 
 {{- define "_scheme:payload.v1.Upsert.MultiObjectRequest" }}

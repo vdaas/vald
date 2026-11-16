@@ -28,6 +28,9 @@ on:
     paths:
       - "charts/**"
       - "k8s/**"
+defaults:
+  run:
+    shell: bash
 jobs:
   dump-contexts-to-log:
     timeout-minutes: 30
@@ -35,7 +38,7 @@ jobs:
       contents: read
     runs-on: ubuntu-slim
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           fetch-depth: 0
@@ -58,7 +61,7 @@ jobs:
         username: ${{ secrets.PACKAGE_USER }}
         password: ${{ secrets.PACKAGE_TOKEN }}
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           fetch-depth: 0
@@ -68,10 +71,19 @@ jobs:
       - name: Run kubeval-conflint
         run: |
           set -vx
+          # conflint is installed by the dev container image (make conflint/install). An image
+          # built before that has none; skip instead of failing the step with "command not found".
+          if ! command -v conflint >/dev/null; then
+            echo "::warning::conflint is not installed in the dev container; skipping kubeval-conflint"
+            exit 0
+          fi
           conflint run -c .github/conflint.yaml -efm "%f:%l:%c: %m" || true
-          conflint run -c .github/conflint.yaml -efm "%f:%l:%c: %m" | reviewdog -efm="%f:%l:%c: %m" -reporter=${REPORTER} -tee
+          { conflint run -c .github/conflint.yaml -efm "%f:%l:%c: %m" || true; } | reviewdog -efm="%f:%l:%c: %m" -reporter=${REPORTER} -tee
         env:
           CONFLINT_LOG: DEBUG
+          # kubeval's default schema host (kubernetesjsonschema.dev) has an invalid certificate,
+          # so no schema could be fetched and ignoreMissingSchemas hid that; use the maintained mirror.
+          KUBEVAL_SCHEMA_LOCATION: https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPORTER: github-pr-review
   kubelinter-k8s-manifests:
@@ -87,7 +99,7 @@ jobs:
         username: ${{ secrets.PACKAGE_USER }}
         password: ${{ secrets.PACKAGE_TOKEN }}
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           fetch-depth: 0
@@ -115,7 +127,7 @@ jobs:
         username: ${{ secrets.PACKAGE_USER }}
         password: ${{ secrets.PACKAGE_TOKEN }}
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           fetch-depth: 0

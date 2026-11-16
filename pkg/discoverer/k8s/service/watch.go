@@ -26,9 +26,9 @@ import (
 )
 
 // listSyncController assembles the list-reconciler wiring shared by every
-// discoverer watch: it returns a k8s.Option installing a list reconciler
-// named name that watches obj and, on every reconcile, mirrors the
-// conv-converted snapshot into dst via syncOnReconcile. The common error
+// discoverer watch: it returns a list reconciler named name that watches
+// obj and, on every reconcile, mirrors the conv-converted snapshot into dst
+// via syncOnReconcile. The common error
 // logging ("failed to reconcile <what>:") and namespace/fields/labels
 // selector options are assembled here; per-resource options (scheme
 // registration, field indexes) are passed through extra.
@@ -40,8 +40,8 @@ func listSyncController[L any, PL resource.ListPtr[L], V comparable](
 	namespace string,
 	fields, labels map[string]string,
 	extra ...reconciler.ListOption,
-) k8s.Option {
-	return k8s.WithResourceController(reconciler.NewListReconciler(
+) k8s.ResourceController {
+	return reconciler.NewListReconciler(
 		name,
 		obj,
 		syncOnReconcile(dst, conv),
@@ -53,7 +53,7 @@ func listSyncController[L any, PL resource.ListPtr[L], V comparable](
 			reconciler.WithFields(fields),
 			reconciler.WithLabels(labels),
 		}, extra...)...,
-	))
+	)
 }
 
 // syncOnReconcile returns the reconcile callback shared by every discoverer
@@ -89,15 +89,12 @@ func debugLogged[I, O any](what string, conv func(I) O) func(I) O {
 }
 
 // podEntries converts the listed pods into the per-application-name pointer
-// entries stored in d.pods, raising d.maxPods to the largest group seen.
+// entries stored in d.pods.
 func (d *discoverer) podEntries(list *k8s.PodList) map[string]*[]Pod {
 	podList := podsByAppName(list, d.namespace)
 	log.Debugf("pod resource reconciled\t%#v", podList)
 	entries := make(map[string]*[]Pod, len(podList))
 	for name, pods := range podList {
-		if n := int64(len(pods)); n > d.maxPods.Load() {
-			d.maxPods.Store(n)
-		}
 		entries[name] = &pods
 	}
 	return entries

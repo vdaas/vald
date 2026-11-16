@@ -73,6 +73,11 @@ func New(path string) (cfg *Data, err error) {
 		return nil, errors.ErrInvalidConfig
 	}
 
+	// LB.Bind leaves a missing discoverer nil, and the usecase dereferences it unconditionally.
+	if cfg.Gateway.Discoverer == nil {
+		return nil, errors.ErrInvalidConfig
+	}
+
 	return cfg, nil
 }
 

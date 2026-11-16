@@ -30,6 +30,24 @@ type (
 	ServerOption = grpc.ServerOption
 )
 
+const (
+	// DefaultInitialWindowSize is 4 MB stream window.
+	DefaultInitialWindowSize = 4 * 1024 * 1024
+	// DefaultInitialConnWindowSize is 8 MB connection window.
+	DefaultInitialConnWindowSize = 8 * 1024 * 1024
+	// DefaultReadBufferSize is 64 KB read buffer.
+	DefaultReadBufferSize = 64 * 1024
+	// DefaultWriteBufferSize is 64 KB write buffer.
+	DefaultWriteBufferSize = 64 * 1024
+)
+
+var defaultServerOptions = []ServerOption{
+	InitialWindowSize(DefaultInitialWindowSize),
+	InitialConnWindowSize(DefaultInitialConnWindowSize),
+	ReadBufferSize(DefaultReadBufferSize),
+	WriteBufferSize(DefaultWriteBufferSize),
+}
+
 // ErrServerStopped indicates that the operation is now illegal because of
 // the server being stopped.
 var ErrServerStopped = grpc.ErrServerStopped
@@ -37,7 +55,7 @@ var ErrServerStopped = grpc.ErrServerStopped
 // NewServer returns the gRPC server.
 func NewServer(opts ...ServerOption) *Server {
 	// skipcq: GO-S0902
-	return grpc.NewServer(opts...)
+	return grpc.NewServer(append(defaultServerOptions, opts...)...)
 }
 
 // Creds is a alias of grpc.Creds that sets credentials for server connections.

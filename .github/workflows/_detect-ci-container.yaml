@@ -22,6 +22,9 @@ on:
         value: ${{ jobs.detect.outputs.TAG }}
 env:
   TARGET_IMAGE: vdaas/vald-dev-container
+defaults:
+  run:
+    shell: bash
 jobs:
   detect:
     timeout-minutes: 30

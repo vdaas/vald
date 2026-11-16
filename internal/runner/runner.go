@@ -61,7 +61,9 @@ func Do[T any](ctx context.Context, opts ...Option[T]) error {
 		opt(r)
 	}
 
-	info.Init(r.name)
+	if err := info.Init(r.name); err != nil {
+		return err
+	}
 
 	p, isHelp, err := params.New(
 		params.WithConfigFileDescription(fmt.Sprintf("%s config file path", r.name)),
@@ -162,13 +164,17 @@ func Run(ctx context.Context, run Interface, name string) (err error) {
 
 	for {
 		select {
-		case err = <-ech:
-			if err != nil {
-				log.Error(errors.ErrStartFunc(name, err))
-				if _, ok := emap[err.Error()]; !ok {
-					errs = append(errs, err)
-				}
-				emap[err.Error()]++
+		case e, ok := <-ech:
+			if !ok {
+				// a closed ech is always ready; disable it so the loop blocks on
+				// sctx instead of busy-spinning on zero-value receives.
+				ech = nil
+				continue
+			}
+			// Runtime errors are only logged: the daemon keeps running (and may
+			// recover), so the exit result reflects the stop sequence alone.
+			if e != nil {
+				log.Error(errors.ErrStartFunc(name, e))
 			}
 		case <-sctx.Done():
 			log.Info("executing daemon pre-stop function")

@@ -95,23 +95,28 @@ func NewBenchmarkJob(opts ...BenchmarkTemplateOption) (BenchmarkTpl, error) {
 // given options, with the same severity handling as NewBenchmarkJob: only
 // critical option errors (an empty job name) abort, any other option error is
 // logged as a warning and skipped.
+//
+// Every call works on a deep copy of the base template, so options of one call
+// never leak into later calls and returned jobs share no mutable state with
+// the template or with each other.
 func (b *benchmarkJobTemplate) CreateJobTpl(opts ...BenchmarkOption) (k8s.Job, error) {
+	jobTpl := b.jobTpl.DeepCopy()
 	for _, opt := range append(defaultBenchmarkJobOpts, opts...) {
-		if err := opt(&b.jobTpl); err != nil {
+		if err := opt(jobTpl); err != nil {
 			if abort, oerr := vald.SkipNonCriticalOptionError(err, opt); abort {
-				return b.jobTpl, oerr
+				return *jobTpl, oerr
 			}
 		}
 	}
 	// TODO: check enable pprof flag
-	b.jobTpl.Spec.Template.Annotations = map[string]string{
+	jobTpl.Spec.Template.Annotations = map[string]string{
 		"pyroscope.io/scrape":              pyroscopeScrapeEnabled,
 		"pyroscope.io/application-name":    "benchmark-job",
 		"pyroscope.io/profile-cpu-enabled": pyroscopeScrapeEnabled,
 		"pyroscope.io/profile-mem-enabled": pyroscopeScrapeEnabled,
 		"pyroscope.io/port":                "6060",
 	}
-	b.jobTpl.Spec.Template.Spec.Containers = []corev1.Container{
+	jobTpl.Spec.Template.Spec.Containers = []corev1.Container{
 		{
 			Name:            b.containerName,
 			Image:           b.containerImageName,
@@ -120,12 +125,10 @@ func (b *benchmarkJobTemplate) CreateJobTpl(opts ...BenchmarkOption) (k8s.Job, e
 				InitialDelaySeconds: int32(livenessProbeInitialDelaySeconds),
 				PeriodSeconds:       int32(livenessProbePeriodSeconds),
 				TimeoutSeconds:      int32(livenessProbeTimeoutSeconds),
-				ProbeHandler: corev1.ProbeHandler{
-					Exec: &corev1.ExecAction{
-						Command: []string{
-							"/go/bin/job",
-							"-v",
-						},
+				Exec: &corev1.ExecAction{
+					Command: []string{
+						"/go/bin/job",
+						"-v",
 					},
 				},
 			},
@@ -133,12 +136,10 @@ func (b *benchmarkJobTemplate) CreateJobTpl(opts ...BenchmarkOption) (k8s.Job, e
 				FailureThreshold: int32(startupProbeFailureThreshold),
 				PeriodSeconds:    int32(startupProbePeriodSeconds),
 				TimeoutSeconds:   int32(startupProbeTimeoutSeconds),
-				ProbeHandler: corev1.ProbeHandler{
-					Exec: &corev1.ExecAction{
-						Command: []string{
-							"/go/bin/job",
-							"-v",
-						},
+				Exec: &corev1.ExecAction{
+					Command: []string{
+						"/go/bin/job",
+						"-v",
 					},
 				},
 			},
@@ -172,18 +173,14 @@ func (b *benchmarkJobTemplate) CreateJobTpl(opts ...BenchmarkOption) (k8s.Job, e
 	// mount benchmark operator config map.
 	// It is used for bind only observability config for each benchmark job
 	mode := int32(configVolumeDefaultMode)
-	b.jobTpl.Spec.Template.Spec.Volumes = []corev1.Volume{
+	jobTpl.Spec.Template.Spec.Volumes = []corev1.Volume{
 		{
 			Name: volumeName,
-			VolumeSource: corev1.VolumeSource{
-				ConfigMap: &corev1.ConfigMapVolumeSource{
-					LocalObjectReference: corev1.LocalObjectReference{
-						Name: b.configMapName,
-					},
-					DefaultMode: &mode,
-				},
+			ConfigMap: &corev1.ConfigMapVolumeSource{
+				Name:        b.configMapName,
+				DefaultMode: &mode,
 			},
 		},
 	}
-	return b.jobTpl, nil
+	return *jobTpl, nil
 }

@@ -13,7 +13,11 @@
 // limitations under the License.
 package target
 
-import "github.com/vdaas/vald/internal/errors"
+import (
+	"maps"
+
+	"github.com/vdaas/vald/internal/errors"
+)
 
 type MirrorTargetTemplateOption func(*MirrorTarget) error
 
@@ -53,7 +57,9 @@ func WithMirrorTargetStatus(status *MirrorTargetStatus) MirrorTargetTemplateOpti
 func WithMirrorTargetLabels(labels map[string]string) MirrorTargetTemplateOption {
 	return func(mt *MirrorTarget) error {
 		if len(labels) != 0 {
-			mt.Labels = labels
+			// Copy: the API response is decoded back into mt, which would otherwise
+			// write into the caller's map (the watcher's label selector).
+			mt.Labels = maps.Clone(labels)
 		}
 		return nil
 	}

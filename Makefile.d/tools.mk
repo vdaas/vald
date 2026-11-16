@@ -128,6 +128,11 @@ gotestfmt/install: \
 gotests/install: \
 	$(GOBIN)/gotests
 
+.PHONY: benchstat/install
+## install benchstat
+benchstat/install: \
+	$(GOBIN)/benchstat
+
 .PHONY: protoc-gen-doc/install
 ## install protoc-gen-doc
 protoc-gen-doc/install: \
@@ -154,6 +159,7 @@ GO_BINS = \
 	$(GOBIN)/tparse \
 	$(GOBIN)/gotestfmt \
 	$(GOBIN)/gotests \
+	$(GOBIN)/benchstat \
 	$(GOBIN)/protoc-gen-doc
 
 $(GO_BINS):
@@ -180,6 +186,40 @@ oapi-codegen/install: \
 $(GOBIN)/oapi-codegen:
 	$(call go-tool-install)
 
+# conflint (mumoshu/conflint) and kubeval run the kubeval-conflint check of
+# .github/workflows/reviewdog-k8s.yaml. Both are unmaintained (v0.2.0 of 2020, v0.16.1 of 2021)
+# and have no arm64 release, and their pinned dependencies carry published CVEs (yaml.v3
+# CVE-2022-28948, x/text CVE-2020-14040 and others) that `go install pkg@version` cannot raise.
+# They are therefore built from source inside a throwaway module whose dependencies are upgraded
+# (`go get -u`), and installed under their own names.
+# $1: main package, $2: module@version of the tool, $3: binary name
+define go-install-upgraded
+	mkdir -p $(GOBIN) $(TEMP_DIR)/$3 \
+	&& cd $(TEMP_DIR)/$3 \
+	&& $(GO_ENV_VARS) go mod init $3-build \
+	&& $(GO_ENV_VARS) go get -u $2 \
+	&& $(GO_ENV_VARS) go build -ldflags="-w" -o $(GOBIN)/$3 $1
+endef
+
+CONFLINT_VERSION ?= v0.2.0
+KUBEVAL_VERSION ?= v0.16.1
+
+.PHONY: conflint/install
+## install conflint (kubeval-conflint check)
+conflint/install: \
+	$(GOBIN)/conflint
+
+$(GOBIN)/conflint:
+	$(call go-install-upgraded,github.com/mumoshu/conflint/cmd/main,github.com/mumoshu/conflint@$(CONFLINT_VERSION),conflint)
+
+.PHONY: kubeval/install
+## install kubeval (run by conflint)
+kubeval/install: \
+	$(GOBIN)/kubeval
+
+$(GOBIN)/kubeval:
+	$(call go-install-upgraded,github.com/instrumenta/kubeval,github.com/instrumenta/kubeval@$(KUBEVAL_VERSION),kubeval)
+
 .PHONY: prettier/install
 ## Install prettier via Bun (global)
 prettier/install: $(BUN_GLOBAL_BIN)/prettier
@@ -191,8 +231,14 @@ $(BUN_GLOBAL_BIN)/prettier: bun/install
 reviewdog/install: $(BINDIR)/reviewdog
 
 $(BINDIR)/reviewdog:
-	curl -fsSL https://raw.githubusercontent.com/reviewdog/reviewdog/master/install.sh \
-	| sh -s -- -b $(BINDIR) $(REVIEWDOG_VERSION)
+	# install.sh downloads the release tarball/checksums with a plain curl (no
+	# retry), so transient GitHub 5xx fail the whole job; retry the whole install.
+	for i in 1 2 3 4 5; do \
+		$(CURL_DOWNLOAD) https://raw.githubusercontent.com/reviewdog/reviewdog/master/install.sh \
+		| sh -s -- -b $(BINDIR) $(REVIEWDOG_VERSION) && break; \
+		sleep $$((i * 5)); \
+	done; \
+	test -x $(BINDIR)/reviewdog
 
 .PHONY: mbake/install
 ## install mbake
@@ -207,7 +253,7 @@ kubectl/install: $(BINDIR)/kubectl
 
 $(BINDIR)/kubectl:
 	$(eval DARCH := $(subst aarch64,arm64,$(ARCH)))
-	curl -fsSL "https://dl.k8s.io/release/$(KUBECTL_VERSION)/bin/$(OS)/$(subst x86_64,amd64,$(shell echo $(DARCH) | tr '[:upper:]' '[:lower:]'))/kubectl" -o $(BINDIR)/kubectl
+	$(CURL) "https://dl.k8s.io/release/$(KUBECTL_VERSION)/bin/$(OS)/$(subst x86_64,amd64,$(shell echo $(DARCH) | tr '[:upper:]' '[:lower:]'))/kubectl" -o $(BINDIR)/kubectl
 	chmod a+x $(BINDIR)/kubectl
 
 .PHONY: textlint/install
@@ -249,26 +295,36 @@ $(BUN_GLOBAL_BIN)/cspell: bun/install
 	@cspell/dict-public-licenses \
 	@cspell/dict-rust \
 	@cspell/dict-shell
-	cspell link add @cspell/dict-cpp
-	cspell link add @cspell/dict-docker
-	cspell link add @cspell/dict-en_us
-	cspell link add @cspell/dict-fullstack
-	cspell link add @cspell/dict-git
-	cspell link add @cspell/dict-golang
-	cspell link add @cspell/dict-k8s
-	cspell link add @cspell/dict-makefile
-	cspell link add @cspell/dict-markdown
-	cspell link add @cspell/dict-npm
-	cspell link add @cspell/dict-public-licenses
-	cspell link add @cspell/dict-rust
-	cspell link add @cspell/dict-shell
+	bunx cspell link add @cspell/dict-cpp
+	bunx cspell link add @cspell/dict-docker
+	bunx cspell link add @cspell/dict-en_us
+	bunx cspell link add @cspell/dict-fullstack
+	bunx cspell link add @cspell/dict-git
+	bunx cspell link add @cspell/dict-golang
+	bunx cspell link add @cspell/dict-k8s
+	bunx cspell link add @cspell/dict-makefile
+	bunx cspell link add @cspell/dict-markdown
+	bunx cspell link add @cspell/dict-npm
+	bunx cspell link add @cspell/dict-public-licenses
+	bunx cspell link add @cspell/dict-rust
+	bunx cspell link add @cspell/dict-shell
 
 .PHONY: bun/install
 ## Install Bun runtime into $(BUN_INSTALL) if not already installed
 bun/install: $(BINDIR)/bun
 
+# Reuse a bun already on PATH (e.g. oven-sh/setup-bun in CI) instead of re-downloading it.
+# bun.sh/install downloads the zip from GitHub without retrying; retry the whole install.
+# Silent: lint targets pipe their stdout into reviewdog, and this recipe re-runs whenever
+# bun lives outside $(BINDIR).
 $(BINDIR)/bun:
-	curl -fsSL https://bun.sh/install | BUN_INSTALL=$(BUN_INSTALL) bash
+	@if command -v bun >/dev/null 2>&1; then exit 0; fi; \
+	for i in 1 2 3 4 5; do \
+		$(CURL_DOWNLOAD) https://bun.sh/install \
+		| BUN_INSTALL=$(BUN_INSTALL) bash && break; \
+		sleep $$((i * 5)); \
+	done; \
+	test -x $(BUN_INSTALL)/bin/bun
 
 .PHONY: go/install
 ## install go
@@ -276,7 +332,7 @@ go/install: $(GOROOT)/bin/go
 
 $(GOROOT)/bin/go:
 	TAR_NAME=go$(GO_VERSION).$(OS)-$(subst x86_64,amd64,$(subst aarch64,arm64,$(ARCH))).tar.gz \
-	&& curl -fsSL "https://go.dev/dl/$${TAR_NAME}" -o "$(TEMP_DIR)/$${TAR_NAME}" \
+	&& $(CURL) "https://go.dev/dl/$${TAR_NAME}" -o "$(TEMP_DIR)/$${TAR_NAME}" \
 	&& mkdir -p $(TEMP_DIR)/go \
 	&& tar -xzvf "$(TEMP_DIR)/$${TAR_NAME}" -C $(TEMP_DIR)/go --strip-components 1 \
 	&& rm -rf "$(TEMP_DIR)/$${TAR_NAME}" \
@@ -364,25 +420,28 @@ $(LIB_PATH)/libomp.a: | ninja/install
 		&& $(SUDO) apt-get update -qq \
 		&& $(SUDO) apt-get install -y --no-install-recommends python3; } || true; \
 		rm -rf $(TEMP_DIR)/libomp $(TEMP_DIR)/libomp-archive; \
-		curl -fsSL "https://github.com/llvm/llvm-project/archive/refs/tags/llvmorg-$(LLVM_VERSION).tar.gz" \
+		$(CURL) "https://github.com/llvm/llvm-project/archive/refs/tags/llvmorg-$(LLVM_VERSION).tar.gz" \
 		-o $(TEMP_DIR)/libomp-archive; \
 		mkdir -p $(TEMP_DIR)/libomp; \
 		tar -xzf $(TEMP_DIR)/libomp-archive -C $(TEMP_DIR)/libomp --strip-components 1 \
 		llvm-project-llvmorg-$(LLVM_VERSION)/openmp \
-		llvm-project-llvmorg-$(LLVM_VERSION)/cmake; \
-		cd $(TEMP_DIR)/libomp/openmp \
-		&& _AR=$$(if [ -x '$(AR)' ]; then echo '$(AR)'; else command -v llvm-ar 2>/dev/null || command -v ar; fi) \
-		&& _NM=$$(if [ -x '$(NM)' ]; then echo '$(NM)'; else command -v llvm-nm 2>/dev/null || command -v nm; fi) \
-		&& _RANLIB=$$(if [ -x '$(RANLIB)' ]; then echo '$(RANLIB)'; else command -v llvm-ranlib 2>/dev/null || ls /usr/bin/llvm-ranlib-* 2>/dev/null | sort -V | tail -1 | grep . || command -v gcc-ranlib 2>/dev/null || ls /usr/bin/gcc-ranlib-* 2>/dev/null | sort -V | tail -1 | grep . || command -v ranlib; fi) \
+		llvm-project-llvmorg-$(LLVM_VERSION)/cmake \
+		llvm-project-llvmorg-$(LLVM_VERSION)/runtimes \
+		llvm-project-llvmorg-$(LLVM_VERSION)/llvm/cmake \
+		llvm-project-llvmorg-$(LLVM_VERSION)/llvm/utils/llvm-lit \
+		llvm-project-llvmorg-$(LLVM_VERSION)/third-party; \
+		cd $(TEMP_DIR)/libomp \
 		&& env LDFLAGS="" cmake -G Ninja \
+		-DLLVM_ENABLE_RUNTIMES=openmp \
+		-DLLVM_INCLUDE_TESTS=OFF \
 		-DCMAKE_BUILD_TYPE=Release \
 		-DCMAKE_POLICY_VERSION_MINIMUM=$(CMAKE_VERSION) \
 		-DCMAKE_C_COMPILER="$(CC)" \
 		-DCMAKE_CXX_COMPILER="$(CXX)" \
-		-DCMAKE_AR="$${_AR}" \
-		-DCMAKE_NM="$${_NM}" \
-		-DCMAKE_RANLIB="$${_RANLIB}" \
-		-DCMAKE_MAKE_PROGRAM="$(USR_LOCAL)/bin/ninja" \
+		-DCMAKE_AR="$(AR_BIN)" \
+		-DCMAKE_NM="$(NM)" \
+		-DCMAKE_RANLIB="$(RANLIB)" \
+		-DCMAKE_MAKE_PROGRAM="$$(command -v ninja)" \
 		-DCMAKE_INSTALL_PREFIX="$(USR_LOCAL)" \
 		-DCMAKE_INSTALL_LIBDIR="lib" \
 		-DCMAKE_INSTALL_INCLUDEDIR="include" \
@@ -393,11 +452,26 @@ $(LIB_PATH)/libomp.a: | ninja/install
 		-DPython3_EXECUTABLE="$$(command -v python3)" \
 		-DCMAKE_C_FLAGS="$(CFLAGS_BASE)" \
 		-DCMAKE_CXX_FLAGS="$(CFLAGS_BASE)" \
-		-B $(TEMP_DIR)/libomp/openmp/build $(TEMP_DIR)/libomp/openmp \
-		&& cmake --build $(TEMP_DIR)/libomp/openmp/build --parallel $(CORES) \
-		&& $(SUDO) cmake --install $(TEMP_DIR)/libomp/openmp/build \
+		-B $(TEMP_DIR)/libomp/build $(TEMP_DIR)/libomp/runtimes \
+		&& cmake --build $(TEMP_DIR)/libomp/build --parallel $(CORES) \
+		&& $(SUDO) cmake --install $(TEMP_DIR)/libomp/build \
 		&& rm -rf $(TEMP_DIR)/libomp $(TEMP_DIR)/libomp-archive \
 		&& $(SUDO) ldconfig; \
+	fi
+
+.PHONY: openblas/install
+## install the BLAS/LAPACK (OpenBLAS) -dev packages NGT and Faiss link against (NGT_LDFLAGS)
+openblas/install:
+	# The dev-container Dockerfile ships them, but the published image used by the
+	# runtime jobs can lag. A present runtime lib (libopenblas.so.0) does NOT satisfy
+	# `-lopenblas` / find_package(BLAS) without the -dev package, so install them on
+	# apt-based systems. This target is a prerequisite of ngt/install and faiss, which
+	# many targets (test, bench/go, ...) pull in, so it must do nothing once the packages
+	# are present instead of running apt-get update each time.
+	@if command -v apt-get >/dev/null 2>&1 \
+		&& ! dpkg -s libopenblas-dev liblapack-dev gfortran >/dev/null 2>&1; then \
+		{ $(SUDO) apt-get update -qq \
+		&& $(SUDO) apt-get install -y --no-install-recommends libopenblas-dev liblapack-dev gfortran; } || true; \
 	fi
 
 .PHONY: ngt/install
@@ -410,15 +484,12 @@ ngt/install: $(USR_LOCAL)/include/NGT/Capi.h
 # empty --previous logs on both the GCC and clang images). With GCC, cmake's
 # FindOpenMP resolves -fopenmp to libgomp, the runtime this agent has always
 # shipped with.
-$(USR_LOCAL)/include/NGT/Capi.h: | ninja/install $(if $(findstring clang,$(notdir $(CC))),$(LIB_PATH)/libomp.a)
+$(USR_LOCAL)/include/NGT/Capi.h: | ninja/install openblas/install $(if $(findstring clang,$(notdir $(CC))),$(LIB_PATH)/libomp.a)
 	$(call cmake-install,https://github.com/NGT-labs/NGT.git,ngt, \
 		-DNGT_LARGE_DATASET=ON \
 		$(if $(filter arm64,$(subst aarch64,arm64,$(ARCH))),,-DNGT_AVX2=ON) \
 		-DBUILD_STATIC_EXECS=OFF \
 		-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF \
-		-DCMAKE_AR=$$(command -v llvm-ar 2>/dev/null || ls /usr/bin/llvm-ar-* 2>/dev/null | sort -V | tail -1 | grep . || command -v gcc-ar 2>/dev/null || ls /usr/bin/gcc-ar-* 2>/dev/null | sort -V | tail -1 | grep . || command -v ar) \
-		-DCMAKE_CXX_COMPILER_AR=$$(command -v llvm-ar 2>/dev/null || ls /usr/bin/llvm-ar-* 2>/dev/null | sort -V | tail -1 | grep . || command -v gcc-ar 2>/dev/null || ls /usr/bin/gcc-ar-* 2>/dev/null | sort -V | tail -1 | grep . || command -v ar) \
-		-DCMAKE_RANLIB=$$(command -v llvm-ranlib 2>/dev/null || ls /usr/bin/llvm-ranlib-* 2>/dev/null | sort -V | tail -1 | grep . || command -v gcc-ranlib 2>/dev/null || ls /usr/bin/gcc-ranlib-* 2>/dev/null | sort -V | tail -1 | grep . || command -v ranlib) \
 		-DCMAKE_C_FLAGS="$(CFLAGS) $(LTO_FLAGS) $(if $(filter Linux,$(UNAME)),-fopenmp)" \
 		-DCMAKE_CXX_FLAGS="$(CXXFLAGS) $(LTO_FLAGS) $(if $(filter Linux,$(UNAME)),-fopenmp)" \
 		$(if $(and $(findstring clang,$(notdir $(CC))),$(filter Linux,$(UNAME))), \
@@ -454,15 +525,7 @@ faiss/install: $(LIB_PATH)/libfaiss.a
 # branch (it sets BLAS_LIBRARIES/LAPACK_LIBRARIES from it and skips find_package).
 OPENBLAS_PATH = $(shell ldconfig -p 2>/dev/null | awk '/libopenblas.*\.so.*=>/{print $$NF; exit}')
 
-$(LIB_PATH)/libfaiss.a: | ninja/install $(if $(findstring clang,$(notdir $(CC))),$(LIB_PATH)/libomp.a)
-	# Faiss needs the BLAS/LAPACK (OpenBLAS) -dev packages (headers + .so symlinks)
-	# and a Fortran runtime. The dev-container Dockerfile ships them, but the
-	# published image used by the runtime jobs can lag. A present runtime lib
-	# (libopenblas.so.0) does NOT satisfy `-lopenblas` / find_package(BLAS) without
-	# the -dev package, so install unconditionally on apt-based systems (idempotent).
-	@command -v apt-get >/dev/null 2>&1 \
-		&& { $(SUDO) apt-get update -qq \
-		&& $(SUDO) apt-get install -y --no-install-recommends libopenblas-dev liblapack-dev gfortran; } || true
+$(LIB_PATH)/libfaiss.a: | ninja/install openblas/install $(if $(findstring clang,$(notdir $(CC))),$(LIB_PATH)/libomp.a)
 	$(call cmake-install,https://github.com/facebookresearch/faiss/archive/v$(FAISS_VERSION).tar.gz,faiss, \
 		-DFAISS_ENABLE_PYTHON=OFF \
 		-DFAISS_ENABLE_GPU=OFF \
@@ -515,7 +578,7 @@ $(USR_LOCAL)/include/usearch.h: | ninja/install
 cmake/install:
 	CMAKE_ARCH=$$(if [ "$(ARCH)" = "aarch64" ] || [ "$(ARCH)" = "arm64" ]; then echo "aarch64"; else echo "x86_64"; fi); \
 	TAR_NAME="cmake-$(CMAKE_VERSION)-linux-$${CMAKE_ARCH}.tar.gz" \
-	&& curl -fsSL "https://github.com/Kitware/CMake/releases/download/v$(CMAKE_VERSION)/$${TAR_NAME}" -o "$(TEMP_DIR)/$${TAR_NAME}" \
+	&& $(CURL_DOWNLOAD) "https://github.com/Kitware/CMake/releases/download/v$(CMAKE_VERSION)/$${TAR_NAME}" -o "$(TEMP_DIR)/$${TAR_NAME}" \
 	&& $(SUDO) tar -xzf "$(TEMP_DIR)/$${TAR_NAME}" -C $(USR_LOCAL) --strip-components 1 \
 	&& rm -rf "$(TEMP_DIR)/$${TAR_NAME}" \
 	&& cmake --version
@@ -523,13 +586,21 @@ cmake/install:
 .PHONY: ninja/install
 ## install ninja-build
 ninja/install:
-	NINJA_ARCH=$$(if [ "$(ARCH)" = "aarch64" ] || [ "$(ARCH)" = "arm64" ]; then echo "-aarch64"; else echo ""; fi); \
-	TAR_NAME="ninja-linux$${NINJA_ARCH}.zip" \
-	&& curl -fsSL "https://github.com/ninja-build/ninja/releases/download/v$(NINJA_VERSION)/$${TAR_NAME}" -o "$(TEMP_DIR)/$${TAR_NAME}" \
-	&& $(SUDO) unzip -q -o "$(TEMP_DIR)/$${TAR_NAME}" -d $(USR_LOCAL)/bin \
-	&& rm -rf "$(TEMP_DIR)/$${TAR_NAME}" \
-	&& $(SUDO) chmod +x $(USR_LOCAL)/bin/ninja \
-	&& ninja --version
+	if command -v ninja >/dev/null 2>&1; then \
+		ninja --version; \
+	elif command -v apt-get >/dev/null 2>&1; then \
+		$(SUDO) apt-get update && $(SUDO) apt-get install -y --no-install-recommends ninja-build && ninja --version; \
+	elif command -v apk >/dev/null 2>&1; then \
+		$(SUDO) apk add --no-cache ninja && ninja --version; \
+	else \
+		NINJA_ARCH=$$(if [ "$(ARCH)" = "aarch64" ] || [ "$(ARCH)" = "arm64" ]; then echo "-aarch64"; else echo ""; fi); \
+		TAR_NAME="ninja-linux$${NINJA_ARCH}.zip" \
+		&& curl $(CURL_RETRY_ALL) -fsSL "https://github.com/ninja-build/ninja/releases/download/v$(NINJA_VERSION)/$${TAR_NAME}" -o "$(TEMP_DIR)/$${TAR_NAME}" \
+		&& $(SUDO) unzip -q -o "$(TEMP_DIR)/$${TAR_NAME}" -d $(USR_LOCAL)/bin \
+		&& rm -rf "$(TEMP_DIR)/$${TAR_NAME}" \
+		&& $(SUDO) chmod +x $(USR_LOCAL)/bin/ninja \
+		&& ninja --version; \
+	fi
 
 .PHONY: yq/install
 ## install yq
@@ -539,7 +610,7 @@ $(BINDIR)/yq:
 	mkdir -p $(BINDIR)
 	$(eval DARCH := $(subst aarch64,arm64,$(ARCH)))
 	cd $(TEMP_DIR) \
-	&& curl -fsSL https://github.com/mikefarah/yq/releases/download/$(YQ_VERSION)/yq_$(OS)_$(subst x86_64,amd64,$(shell echo $(DARCH) | tr '[:upper:]' '[:lower:]')) -o $(BINDIR)/yq \
+	&& $(CURL) https://github.com/mikefarah/yq/releases/download/$(YQ_VERSION)/yq_$(OS)_$(subst x86_64,amd64,$(shell echo $(DARCH) | tr '[:upper:]' '[:lower:]')) -o $(BINDIR)/yq \
 	&& chmod a+x $(BINDIR)/yq
 
 .PHONY: docker-cli/install
@@ -547,7 +618,7 @@ $(BINDIR)/yq:
 docker-cli/install: $(BINDIR)/docker
 
 $(BINDIR)/docker: $(BINDIR)
-	curl -fsSL https://download.docker.com/linux/static/stable/$(shell uname -m)/docker-$(shell echo $(DOCKER_VERSION) | cut -c2-).tgz -o $(TEMP_DIR)/docker.tgz \
+	$(CURL) https://download.docker.com/linux/static/stable/$(shell uname -m)/docker-$(shell echo $(DOCKER_VERSION) | cut -c2-).tgz -o $(TEMP_DIR)/docker.tgz \
 	&& tar -xzvf $(TEMP_DIR)/docker.tgz -C $(TEMP_DIR) \
 	&& mv $(TEMP_DIR)/docker/docker $(BINDIR) \
 	&& rm -rf $(TEMP_DIR)/docker $(TEMP_DIR)/docker.tgz
@@ -568,11 +639,15 @@ docker-buildx/install: $(DOCKER_BUILDX_PLUGIN_DIR)/docker-buildx
 $(DOCKER_BUILDX_PLUGIN_DIR)/docker-buildx:
 	$(eval DARCH := $(subst aarch64,arm64,$(subst x86_64,amd64,$(ARCH))))
 	mkdir -p $(DOCKER_BUILDX_PLUGIN_DIR) \
-	&& curl -fsSL https://github.com/docker/buildx/releases/download/$(DOCKER_BUILDX_VERSION)/buildx-$(DOCKER_BUILDX_VERSION).linux-$(DARCH) \
+	&& $(CURL_DOWNLOAD) https://github.com/docker/buildx/releases/download/$(DOCKER_BUILDX_VERSION)/buildx-$(DOCKER_BUILDX_VERSION).linux-$(DARCH) \
 	-o $(DOCKER_BUILDX_PLUGIN_DIR)/docker-buildx \
 	&& chmod +x $(DOCKER_BUILDX_PLUGIN_DIR)/docker-buildx
 
 .PHONY: replace/busybox
 ## replace busybox version
-replace/busybox:
-	cat $(ROOTDIR)/.gitfiles | grep -E '\.(yaml|md)$$' | sed -e 's%^%$(ROOTDIR)/%' | xargs -I {} -P $(CORES) sed -i -E 's/busybox:([0-9]+\.[0-9]+\.[0-9]+|latest)/busybox:$(BUSYBOX_VERSION)/g' "{}"
+replace/busybox: \
+	files
+	# Skip symlinks: `sed -i` replaces a symlink with a regular file (this is how
+	# charts/vald-readreplica/values.yaml lost its link); the link target is
+	# listed in .gitfiles itself and gets rewritten through its own entry.
+	cat $(ROOTDIR)/.gitfiles | grep -E '\.(yaml|md)$$' | sed -e 's%^%$(ROOTDIR)/%' | $(XARGS) $(SHELL_STRICT_EXEC) '[ -L "{}" ] || sed -i -E "s/busybox:([0-9]+\.[0-9]+\.[0-9]+|latest)/busybox:$(BUSYBOX_VERSION)/g" "{}"'

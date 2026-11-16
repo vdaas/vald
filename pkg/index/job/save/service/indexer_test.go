@@ -15,15 +15,18 @@ package service
 
 import (
 	"context"
+	"slices"
 	"testing"
 
 	agent "github.com/vdaas/vald/apis/grpc/v1/agent/core"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/pool"
 	"github.com/vdaas/vald/internal/net/grpc/status"
+	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/test/goleak"
 	clientmock "github.com/vdaas/vald/internal/test/mock/client"
 	grpcmock "github.com/vdaas/vald/internal/test/mock/grpc"
@@ -53,6 +56,12 @@ func Test_index_Start(t *testing.T) {
 		name       string
 		fields     fields
 	}
+	wantAnyError := func(_ want, err error) error {
+		if err == nil {
+			return errors.New("got_error: nil, want: an error for the unprocessed target agents")
+		}
+		return nil
+	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%s\",\n\t\t\t\twant: \"%s\"", err.Error(), w.err.Error())
@@ -65,7 +74,9 @@ func Test_index_Start(t *testing.T) {
 				testAgentAddr,
 			}
 			return test{
-				name: "Success: when there is no error in the save indexing request process",
+				name: "Fail: when OrderedRangeConcurrent never runs the save indexing request for the target agent",
+				// the callback never ran, so no agent was processed and Start must fail.
+				checkFunc: wantAnyError,
 				args: args{
 					ctx: t.Context(),
 				},
@@ -89,7 +100,9 @@ func Test_index_Start(t *testing.T) {
 		}(),
 		func() test {
 			return test{
-				name: "Success: when a target addresses (targetAddrs) is given and there are no errors in the save indexing request process",
+				name: "Fail: when a target addresses (targetAddrs) is given and OrderedRangeConcurrent never runs the save indexing request for them",
+				// the callback never ran, so no agent was processed and Start must fail.
+				checkFunc: wantAnyError,
 				args: args{
 					ctx: t.Context(),
 				},
@@ -210,6 +223,160 @@ func Test_index_Start(t *testing.T) {
 			err := idx.Start(test.args.ctx)
 			if cerr := checkFunc(test.want, err); cerr != nil {
 				tt.Errorf("error = %v", cerr)
+			}
+		})
+	}
+}
+
+// Test_index_doSaveIndex_retriedTarget pins that only the last attempt per target is
+// reported: the client backoff re-runs the callback for the same target, and a
+// retry that succeeds must clear the earlier failure.
+func Test_index_doSaveIndex_retriedTarget(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name       string
+		wantSubstr string
+		notSubstr  string
+		attempts   []error
+		wantErr    bool
+	}{
+		{
+			name:     "a failure followed by a successful retry is not an error",
+			attempts: []error{status.Error(codes.Unavailable, "first failure"), nil},
+		},
+		{
+			name:       "only the last failure of a target is reported",
+			attempts:   []error{status.Error(codes.Unavailable, "first failure"), status.Error(codes.Internal, "final failure")},
+			wantErr:    true,
+			wantSubstr: "final failure",
+			notSubstr:  "first failure",
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(tt *testing.T) {
+			tt.Parallel()
+			idx := &index{
+				client: &clientmock.DiscovererClientMock{
+					GetAddrsFunc: func(_ context.Context) []string {
+						return []string{testAgentAddr}
+					},
+					GetClientFunc: func() grpc.Client {
+						return &grpcmock.GRPCClientMock{
+							// re-run a failing callback like the client backoff does and swallow
+							// the final error like the real OrderedRangeConcurrent.
+							OrderedRangeConcurrentFunc: func(ctx context.Context, order []string, _ int,
+								f func(_ context.Context, _ string, _ *grpc.ClientConn, _ ...grpc.CallOption) error,
+							) error {
+								for _, addr := range order {
+									for range tc.attempts {
+										if f(ctx, addr, nil) == nil {
+											break
+										}
+									}
+								}
+								return nil
+							},
+						}
+					},
+				},
+			}
+			var calls int
+			err := idx.doSaveIndex(tt.Context(),
+				func(context.Context, agent.AgentClient, ...grpc.CallOption) (*payload.Empty, error) {
+					if calls >= len(tc.attempts) {
+						return nil, errors.New("unexpected extra attempt")
+					}
+					aerr := tc.attempts[calls]
+					calls++
+					return nil, aerr
+				})
+			if !tc.wantErr {
+				if err != nil {
+					tt.Errorf("doSaveIndex() error = %v, want nil", err)
+				}
+				return
+			}
+			if err == nil || !strings.Contains(err.Error(), tc.wantSubstr) {
+				tt.Fatalf("doSaveIndex() error = %v, want it to contain %q", err, tc.wantSubstr)
+			}
+			if strings.Contains(err.Error(), tc.notSubstr) {
+				tt.Errorf("doSaveIndex() error = %v, must not contain the retried failure %q", err, tc.notSubstr)
+			}
+		})
+	}
+}
+
+// Test_index_doSaveIndex_unprocessedTarget pins that a target agent the client never ran the
+// callback for (no connection pool, connection lookup failure, open circuit breaker, done
+// ctx) fails the job: OrderedRangeConcurrent swallows those errors and returns nil.
+func Test_index_doSaveIndex_unprocessedTarget(t *testing.T) {
+	t.Parallel()
+	targets := []string{"127.0.0.1:8080", "127.0.0.1:8081", "127.0.0.1:8082"}
+	tests := []struct {
+		name      string
+		result    error
+		reached   []string
+		unreached []string
+	}{
+		{
+			name:    "every target processed is not an error",
+			reached: targets,
+		},
+		{
+			name:      "a target the callback never ran for is an error",
+			reached:   []string{targets[0], targets[2]},
+			unreached: []string{targets[1]},
+		},
+		{
+			name:      "no target reached is an error for every target",
+			unreached: targets,
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(tt *testing.T) {
+			tt.Parallel()
+			idx := &index{
+				client: &clientmock.DiscovererClientMock{
+					GetAddrsFunc: func(_ context.Context) []string {
+						return targets
+					},
+					GetClientFunc: func() grpc.Client {
+						return &grpcmock.GRPCClientMock{
+							// skip the unreached targets and swallow that like the real OrderedRangeConcurrent.
+							OrderedRangeConcurrentFunc: func(ctx context.Context, order []string, _ int,
+								f func(_ context.Context, _ string, _ *grpc.ClientConn, _ ...grpc.CallOption) error,
+							) error {
+								for _, addr := range order {
+									if slices.Contains(tc.reached, addr) {
+										if err := f(ctx, addr, nil); err != nil {
+											tt.Logf("callback for %s returned %v", addr, err)
+										}
+									}
+								}
+								return nil
+							},
+						}
+					},
+				},
+			}
+			err := idx.doSaveIndex(tt.Context(),
+				func(context.Context, agent.AgentClient, ...grpc.CallOption) (*payload.Empty, error) {
+					return nil, tc.result
+				})
+			if len(tc.unreached) == 0 {
+				if err != nil {
+					tt.Errorf("doSaveIndex() error = %v, want nil", err)
+				}
+				return
+			}
+			if err == nil {
+				tt.Fatalf("doSaveIndex() error = nil, want an error for %v", tc.unreached)
+			}
+			for _, addr := range targets {
+				want := slices.Contains(tc.unreached, addr)
+				if got := errors.Is(err, errors.ErrGRPCClientConnNotFound(addr)); got != want {
+					tt.Errorf("doSaveIndex() error = %v, reports %s as unprocessed: %t, want %t", err, addr, got, want)
+				}
 			}
 		})
 	}

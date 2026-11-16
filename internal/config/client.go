@@ -27,15 +27,11 @@ func (c *Client) Bind() *Client {
 	if c.Net == nil {
 		c.Net = new(Net)
 	}
-	if c.Net != nil {
-		c.Net.Bind()
-	}
+	c.Net.Bind()
 
 	if c.Transport == nil {
 		c.Transport = new(Transport)
 	}
-	if c.Transport != nil {
-		c.Transport.Bind()
-	}
+	c.Transport.Bind()
 	return c
 }

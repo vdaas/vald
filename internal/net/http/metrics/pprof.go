@@ -131,7 +131,7 @@ func GetProfileRoutes() (r []routing.Route) {
 			HandlerFunc: rest.HandlerToRestFunc(pyprof.Mutex),
 		},
 		{
-			Name: "Debug mutex profile",
+			Name: "Debug block delta profile",
 			Methods: []string{
 				http.MethodGet,
 			},

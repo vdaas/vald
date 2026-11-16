@@ -657,3 +657,148 @@ func Test_copier_Copy(t *testing.T) {
 // 		})
 // 	}
 // }
+
+// scriptedReader replays steps and counts Read calls. It implements neither
+// io.WriterTo nor io.ReaderFrom so that the copy loop is exercised.
+type scriptedReader struct {
+	steps []scriptedStep
+	reads int
+}
+
+type scriptedStep struct {
+	err  error
+	data string
+}
+
+var errReadAfterEnd = errors.New("read called after the script ended")
+
+func (r *scriptedReader) Read(p []byte) (int, error) {
+	r.reads++
+	if r.reads > len(r.steps) {
+		return 0, errReadAfterEnd
+	}
+	s := r.steps[r.reads-1]
+	return copy(p, s.data), s.err
+}
+
+// writerOnly hides bytes.Buffer's io.ReaderFrom.
+type writerOnly struct {
+	buf bytes.Buffer
+}
+
+func (w *writerOnly) Write(p []byte) (int, error) {
+	return w.buf.Write(p)
+}
+
+const (
+	chunkHello = "hello"
+	chunkABC   = "abc"
+)
+
+func Test_copier_copyBuffer_readError(t *testing.T) {
+	errRead := errors.New("read failed")
+	type want struct {
+		err         error
+		wantDst     string
+		wantReads   int
+		wantWritten int64
+	}
+	tests := []struct {
+		name  string
+		steps []scriptedStep
+		want  want
+	}{
+		{
+			name:  "read error returned with data stops reading and is returned",
+			steps: []scriptedStep{{data: chunkHello, err: errRead}},
+			want:  want{wantWritten: 5, wantDst: chunkHello, wantReads: 1, err: errRead},
+		},
+		{
+			name:  "read error returned with data after a good chunk",
+			steps: []scriptedStep{{data: chunkABC}, {data: "def", err: errRead}},
+			want:  want{wantWritten: 6, wantDst: "abcdef", wantReads: 2, err: errRead},
+		},
+		{
+			name:  "read error without data is returned",
+			steps: []scriptedStep{{data: chunkABC}, {err: errRead}},
+			want:  want{wantWritten: 3, wantDst: chunkABC, wantReads: 2, err: errRead},
+		},
+		{
+			name:  "EOF returned with data completes without reading again",
+			steps: []scriptedStep{{data: chunkHello, err: io.EOF}},
+			want:  want{wantWritten: 5, wantDst: chunkHello, wantReads: 1},
+		},
+		{
+			name:  "EOF returned with data after a good chunk completes without reading again",
+			steps: []scriptedStep{{data: chunkABC}, {data: "def", err: io.EOF}},
+			want:  want{wantWritten: 6, wantDst: "abcdef", wantReads: 2},
+		},
+		{
+			name:  "EOF without data completes",
+			steps: []scriptedStep{{data: chunkABC}, {err: io.EOF}},
+			want:  want{wantWritten: 3, wantDst: chunkABC, wantReads: 2},
+		},
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+
+			run := map[string]func(Copier, *writerOnly, *scriptedReader) (int64, error){
+				"Copy": func(c Copier, dst *writerOnly, src *scriptedReader) (int64, error) {
+					return c.Copy(dst, src)
+				},
+				"CopyBuffer": func(c Copier, dst *writerOnly, src *scriptedReader) (int64, error) {
+					return c.CopyBuffer(dst, src, make([]byte, 16))
+				},
+			}
+			for name, fn := range run {
+				dst := new(writerOnly)
+				src := &scriptedReader{steps: test.steps}
+				gotWritten, err := fn(NewCopier(0), dst, src)
+				if !errors.Is(err, test.want.err) {
+					tt.Errorf("%s: got error: %v, want: %v", name, err, test.want.err)
+				}
+				if gotWritten != test.want.wantWritten {
+					tt.Errorf("%s: got written: %d, want: %d", name, gotWritten, test.want.wantWritten)
+				}
+				if got := dst.buf.String(); got != test.want.wantDst {
+					tt.Errorf("%s: got dst: %q, want: %q", name, got, test.want.wantDst)
+				}
+				if src.reads != test.want.wantReads {
+					tt.Errorf("%s: got Read calls: %d, want: %d", name, src.reads, test.want.wantReads)
+				}
+			}
+		})
+	}
+}
+
+func Test_copier_CopyBuffer_emptyBuffer(t *testing.T) {
+	tests := []struct {
+		name string
+		buf  []byte
+	}{
+		{name: "non-nil empty buffer", buf: []byte{}},
+		{name: "non-nil zero length buffer with capacity", buf: make([]byte, 0, 8)},
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+
+			dst := new(writerOnly)
+			src := &scriptedReader{steps: []scriptedStep{{data: chunkABC, err: io.EOF}}}
+			gotWritten, err := NewCopier(0).CopyBuffer(dst, src, test.buf)
+			if !errors.Is(err, errors.New("empty buffer in CopyBuffer")) {
+				tt.Errorf("got error: %v, want: empty buffer in CopyBuffer", err)
+			}
+			if gotWritten != 0 || src.reads != 0 || dst.buf.Len() != 0 {
+				tt.Errorf("nothing should be copied: written=%d reads=%d dst=%q", gotWritten, src.reads, dst.buf.String())
+			}
+		})
+	}
+}

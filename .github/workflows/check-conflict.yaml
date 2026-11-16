@@ -16,6 +16,9 @@
 name: Check conflict
 on:
   pull_request:
+defaults:
+  run:
+    shell: bash
 jobs:
   dump-contexts-to-log:
     timeout-minutes: 30

@@ -50,7 +50,7 @@ func addMemoryPanel(builder *dashboard.DashboardBuilder) {
 			Label("container", nameVariable).
 			LabelMatchRegexp("pod", podVariable).
 			LabelNeq("image", "")).By([]string{"pod"}).String()).
-		Format("time_series").LegendFormat("{{target_pod}}"))
+		Format("time_series").LegendFormat("{{pod}}"))
 	builder.WithPanel(panel.Min(0))
 }
 
@@ -199,7 +199,7 @@ func addIndexPerPodPanel(dashboard *dashboard.DashboardBuilder) {
 			promql.Sum(addBasicLabel(promql.Vector(
 				ngt.IndexCountMetricsName))).
 				By([]string{"target_pod"}).String(),
-		).Format("time_series").LegendFormat("{{hostname}}"))
+		).Format("time_series").LegendFormat("{{target_pod}}"))
 	dashboard.WithPanel(panel)
 }
 
@@ -229,7 +229,7 @@ func addMemstatsPanels(dashboard *dashboard.DashboardBuilder) {
 	addMetricPanel(dashboard, mem.NextGcSysMetricsDescription, mem.NextGcSysMetricsName, new("decbytes"))
 	addMetricPanel(dashboard, mem.PauseTotalMsMetricsDescription, mem.PauseTotalMsMetricsName, new("ms"))
 	addMetricPanel(dashboard, mem.NumGCMetricsDescription, mem.NumGCMetricsName, nil)
-	addMetricPanel(dashboard, mem.NumForcedGCMetricsDescription, mem.NumGCMetricsName, nil)
+	addMetricPanel(dashboard, mem.NumForcedGCMetricsDescription, mem.NumForcedGCMetricsName, nil)
 	addMetricPanel(dashboard, mem.HeapWillReturnMetricsDescription, mem.HeapWillReturnMetricsName, new("decbytes"))
 	addMetricPanel(dashboard, mem.LiveObjectsMetricsDescription, mem.LiveObjectsMetricsName, nil)
 }

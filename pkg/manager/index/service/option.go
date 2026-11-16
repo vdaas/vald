@@ -26,6 +26,7 @@ type Option func(i *index) error
 var defaultOptions = []Option{
 	WithErrGroup(errgroup.Get()),
 	WithIndexingConcurrency(1),
+	WithSaveConcurrency(1),
 	WithIndexingDuration("1m"),
 	WithIndexingDurationLimit("30m"),
 	WithSaveIndexDurationLimit("3h"),
@@ -75,6 +76,20 @@ func WithIndexingDurationLimit(dur string) Option {
 			return err
 		}
 		idx.indexDurationLimit = d
+		return nil
+	}
+}
+
+func WithSaveIndexDuration(dur string) Option {
+	return func(idx *index) error {
+		if dur == "" {
+			return nil
+		}
+		d, err := timeutil.Parse(dur)
+		if err != nil {
+			return err
+		}
+		idx.saveIndexDuration = d
 		return nil
 	}
 }

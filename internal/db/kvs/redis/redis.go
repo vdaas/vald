@@ -271,13 +271,26 @@ func (rc *redisClient) Connect(ctx context.Context) (Client, error) {
 		return nil, err
 	}
 
-	return rc.ping(ctx)
+	c, err := rc.ping(ctx)
+	if err != nil {
+		// Close the client built by setClient so its connection pool does not leak;
+		// a retried Connect builds a new one.
+		if rc.client != nil {
+			if cerr := rc.client.Close(); cerr != nil {
+				err = errors.Join(err, cerr)
+			}
+			rc.client = nil
+		}
+		return nil, err
+	}
+	return c, nil
 }
 
 func (rc *redisClient) ping(ctx context.Context) (r Client, err error) {
 	pctx, cancel := context.WithTimeout(ctx, rc.initialPingTimeLimit)
 	defer cancel()
 	tick := time.NewTicker(rc.initialPingDuration)
+	defer tick.Stop()
 	for {
 		select {
 		case <-pctx.Done():
@@ -285,7 +298,7 @@ func (rc *redisClient) ping(ctx context.Context) (r Client, err error) {
 			log.Error(err)
 			return nil, err
 		case <-tick.C:
-			err = rc.client.Ping(ctx).Err()
+			err = rc.client.Ping(pctx).Err()
 			if err == nil {
 				return rc.client, nil
 			}

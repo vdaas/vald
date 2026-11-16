@@ -26,6 +26,10 @@ fn main() -> miette::Result<()> {
         // under NGT_AVX512/NGT_AVX2. This shim is built without -march flags, so
         // opt out of SIMD (NoArch comparators, same as the pre-2.7.3 behavior).
         .flag_if_supported("-DNGT_AVX_DISABLED")
+        // NGT >= 2.8.0 Clustering.h calculateMSE references an undeclared `count`
+        // under `#ifndef NDEBUG`, so debug (cargo test) builds of this shim fail.
+        // libngt.a itself is a release build (NDEBUG defined); match it.
+        .define("NDEBUG", None)
         .compile("qbg-rs");
 
     println!("cargo:rustc-link-search=native=/usr/local/lib");

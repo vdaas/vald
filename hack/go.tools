@@ -17,6 +17,7 @@ github.com/stern/stern@upgrade
 github.com/suzuki-shunsuke/ghalint/cmd/ghalint@upgrade
 github.com/suzuki-shunsuke/ghatm/cmd/ghatm@upgrade
 github.com/suzuki-shunsuke/pinact/cmd/pinact@upgrade
+golang.org/x/perf/cmd/benchstat@upgrade
 golang.org/x/tools/cmd/goimports@upgrade
 golang.org/x/tools/gopls@upgrade
 honnef.co/go/tools/cmd/staticcheck@upgrade

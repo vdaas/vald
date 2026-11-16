@@ -13,19 +13,16 @@
 // limitations under the License.
 package v1
 
-import (
-	"testing"
+import "testing"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-)
+// fixtureAppLabel is the "app" label value of newValdMirrorTargetFixture.
+const fixtureAppLabel = "vald-mirror"
 
 func newValdMirrorTargetFixture() *ValdMirrorTarget {
 	return &ValdMirrorTarget{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "target-fixture",
-			Namespace: "default",
-			Labels:    map[string]string{"app": "vald-mirror"},
-		},
+		Name:      "target-fixture",
+		Namespace: "default",
+		Labels:    map[string]string{"app": fixtureAppLabel},
 		Spec: MirrorTargetSpec{
 			Colocation: "dc1",
 			Target:     MirrorTarget{Host: "vald-mirror-gateway", Port: 8081},
@@ -47,7 +44,7 @@ func TestValdMirrorTarget_DeepCopy(t *testing.T) {
 	cp.Spec.Target.Host = "mutated"
 	cp.Status.Phase = MirrorTargetDisconnected
 
-	if orig.Labels["app"] != "vald-mirror" {
+	if orig.Labels["app"] != fixtureAppLabel {
 		t.Errorf("original labels mutated: %v", orig.Labels)
 	}
 	if orig.Spec.Target.Host != "vald-mirror-gateway" {
@@ -78,7 +75,7 @@ func TestValdMirrorTarget_DeepCopyObject(t *testing.T) {
 		t.Fatalf("DeepCopyObject() = %T, want *ValdMirrorTargetList", lobj)
 	}
 	lcp.Items[0].Labels["app"] = "mutated"
-	if orig.Labels["app"] != "vald-mirror" {
+	if orig.Labels["app"] != fixtureAppLabel {
 		t.Errorf("original mutated through list copy: %v", orig.Labels)
 	}
 }

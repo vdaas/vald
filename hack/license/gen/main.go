@@ -19,6 +19,7 @@ import (
 	"bytes"
 	"fmt"
 	"go/format"
+	"io"
 	"io/fs"
 	"path/filepath"
 	"text/template"
@@ -158,8 +159,8 @@ func main() {
 	}
 	paths, err := dirwalk(os.Args[1])
 	if err != nil {
-		log.Error(err)
-		return
+		// skipcq: RVV-A0003
+		log.Fatal(err)
 	}
 	for _, path := range paths {
 		fmt.Println(path)
@@ -279,20 +280,19 @@ func readAndRewrite(path string) error {
 		return nil
 	}
 
-	f, err := os.OpenFile(path, os.O_RDWR|os.O_SYNC, fs.ModePerm)
+	// The file is only read here; the rewrite goes through writeFileAtomic.
+	f, err := os.Open(path)
 	if err != nil {
-		return errors.Errorf("filepath %s, could not open", path)
+		return errors.Errorf("filepath %s, could not open: %w", path, err)
 	}
 	fi, err := f.Stat()
 	if err != nil {
-		err = f.Close()
-		if err != nil {
-			// skipcq: RVV-A0003
-			log.Fatal(err)
+		cerr := f.Close()
+		if cerr != nil {
+			err = errors.Join(err, cerr)
 		}
-		return errors.Errorf("filepath %s, could not open", path)
+		return errors.Errorf("filepath %s, could not open: %w", path, err)
 	}
-	buf := bytes.NewBuffer(make([]byte, 0, fi.Size()))
 	maintainer := os.Getenv(maintainerKey)
 	if maintainer == "" {
 		maintainer = defaultMaintainer
@@ -303,8 +303,11 @@ func readAndRewrite(path string) error {
 	} else {
 		y, err := time.Parse("2006", yearString)
 		if err != nil {
-			// skipcq: RVV-A0003
-			log.Fatal(err)
+			cerr := f.Close()
+			if cerr != nil {
+				err = errors.Join(err, cerr)
+			}
+			return errors.Errorf("filepath %s, invalid %s: %w", path, yearKey, err)
 		}
 		year = y.Year()
 	}
@@ -313,11 +316,31 @@ func readAndRewrite(path string) error {
 		Year:       year,
 		Escape:     sharpEscape,
 	}
+	content, err := generate(f, path, fi, d)
+	cerr := f.Close()
+	if err != nil {
+		if cerr != nil {
+			err = errors.Join(err, cerr)
+		}
+		return err
+	}
+	if cerr != nil {
+		return errors.Errorf("filepath %s, could not close: %w", path, cerr)
+	}
+	return writeFileAtomic(path, content, fi.Mode().Perm())
+}
+
+// generate reads the whole of r and returns the file content with the license
+// header applied. It never touches the file on disk, so that a failure cannot
+// leave a truncated file behind.
+// skipcq: GO-R1005
+func generate(r io.Reader, path string, fi fs.FileInfo, d Data) (string, error) {
+	buf := bytes.NewBuffer(make([]byte, 0, fi.Size()))
+	var err error
 	if fi.Name() == "LICENSE" {
 		err = license.Execute(buf, d)
 		if err != nil {
-			// skipcq: RVV-A0003
-			log.Fatal(err)
+			return "", err
 		}
 	} else {
 		tmpl := apache
@@ -354,7 +377,11 @@ func readAndRewrite(path string) error {
 		}
 		lf := true
 		bf := false
-		sc := bufio.NewScanner(f)
+		sc := bufio.NewScanner(r)
+		// A single line can be as long as the whole file, which may exceed
+		// bufio.MaxScanTokenSize; without this the scan stops silently and the
+		// rewritten file loses the remaining content.
+		sc.Buffer(make([]byte, 0, bufio.MaxScanTokenSize), int(fi.Size())+bufio.MaxScanTokenSize)
 		once := sync.Once{}
 		for sc.Scan() {
 			line := sc.Text()
@@ -366,31 +393,26 @@ func readAndRewrite(path string) error {
 				bf = true
 				_, err = buf.WriteString(line)
 				if err != nil {
-					// skipcq: RVV-A0003
-					log.Fatal(err)
+					return "", err
 				}
 				_, err = buf.WriteString("\n")
 				if err != nil {
-					// skipcq: RVV-A0003
-					log.Fatal(err)
+					return "", err
 				}
 				_, err = buf.WriteString("\n")
 				if err != nil {
-					// skipcq: RVV-A0003
-					log.Fatal(err)
+					return "", err
 				}
 				continue
 			}
 			if (filepath.Ext(path) == ".yaml" || filepath.Ext(path) == ".yml") && strings.HasPrefix(line, "---") {
 				_, err = buf.WriteString(line)
 				if err != nil {
-					// skipcq: RVV-A0003
-					log.Fatal(err)
+					return "", err
 				}
 				_, err = buf.WriteString("\n")
 				if err != nil {
-					// skipcq: RVV-A0003
-					log.Fatal(err)
+					return "", err
 				}
 				continue
 			}
@@ -399,44 +421,27 @@ func readAndRewrite(path string) error {
 			} else if !bf {
 				once.Do(func() {
 					err = tmpl.Execute(buf, d)
-					if err != nil {
-						// skipcq: RVV-A0003
-						log.Fatal(err)
-					}
 				})
+				if err != nil {
+					return "", err
+				}
 				lf = false
 			}
 			if !lf {
 				_, err = buf.WriteString(line)
 				if err != nil {
-					// skipcq: RVV-A0003
-					log.Fatal(err)
+					return "", err
 				}
 				_, err = buf.WriteString("\n")
 				if err != nil {
-					// skipcq: RVV-A0003
-					log.Fatal(err)
+					return "", err
 				}
 			}
 			bf = false
 		}
-	}
-	err = f.Close()
-	if err != nil {
-		return errors.Errorf("filepath %s, could not close", path)
-	}
-	err = os.RemoveAll(path)
-	if err != nil {
-		return errors.Errorf("filepath %s, could not delete", path)
-	}
-	f, err = os.Create(path)
-	if err != nil {
-		err = f.Close()
-		if err != nil {
-			// skipcq: RVV-A0003
-			log.Fatal(err)
+		if err = sc.Err(); err != nil {
+			return "", errors.Errorf("filepath %s, could not scan: %w", path, err)
 		}
-		return errors.Errorf("filepath %s, could not open", path)
 	}
 	content := strings.ReplaceAll(buf.String(), d.Escape+"\n\n\n", d.Escape+"\n\n")
 	// Emit Go sources in gofmt's normal form: a license header that directly
@@ -450,15 +455,35 @@ func readAndRewrite(path string) error {
 			content = conv.Btoa(formatted)
 		}
 	}
-	_, err = f.WriteString(content)
+	return content, nil
+}
+
+// writeFileAtomic replaces path with content by writing a temporary file in
+// the same directory and renaming it over path, so that a failure at any step
+// leaves the original file intact.
+func writeFileAtomic(path, content string, perm fs.FileMode) error {
+	tmp, err := os.CreateTemp(filepath.Dir(path), filepath.Base(path)+".tmp*")
 	if err != nil {
-		// skipcq: RVV-A0003
-		log.Fatal(err)
+		return errors.Errorf("filepath %s, could not create temporary file: %w", path, err)
 	}
-	err = f.Close()
+	tmpPath := tmp.Name()
+	_, err = tmp.WriteString(content)
+	if err == nil {
+		err = tmp.Chmod(perm)
+	}
+	cerr := tmp.Close()
+	if err == nil {
+		err = cerr
+	}
+	if err == nil {
+		err = os.Rename(tmpPath, path)
+	}
 	if err != nil {
-		// skipcq: RVV-A0003
-		log.Fatal(err)
+		rerr := os.Remove(tmpPath)
+		if rerr != nil {
+			err = errors.Join(err, rerr)
+		}
+		return errors.Errorf("filepath %s, could not write: %w", path, err)
 	}
 	return nil
 }

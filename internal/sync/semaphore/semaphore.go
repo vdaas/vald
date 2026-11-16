@@ -137,6 +137,7 @@ func (s *Weighted) Resize(n int64) {
 	}
 	s.mu.Lock()
 	s.size = n
+	s.notifyWaiters() // a larger size can admit queued waiters right away
 	s.mu.Unlock()
 }
 

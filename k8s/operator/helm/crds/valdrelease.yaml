@@ -2245,8 +2245,18 @@ spec:
                                   type: integer
                               type: object
                             call_option:
+                              properties:
+                                content_subtype:
+                                  type: string
+                                max_recv_msg_size:
+                                  type: integer
+                                max_retry_rpc_buffer_size:
+                                  type: integer
+                                max_send_msg_size:
+                                  type: integer
+                                wait_for_ready:
+                                  type: boolean
                               type: object
-                              x-kubernetes-preserve-unknown-fields: true
                             circuit_breaker:
                               properties:
                                 closed_error_rate:
@@ -2275,8 +2285,6 @@ spec:
                                 size:
                                   type: integer
                               type: object
-                            content_subtype:
-                              type: string
                             dial_option:
                               properties:
                                 authority:
@@ -2414,12 +2422,6 @@ spec:
                               type: object
                             health_check_duration:
                               type: string
-                            max_recv_msg_size:
-                              type: integer
-                            max_retry_rpc_buffer_size:
-                              type: integer
-                            max_send_msg_size:
-                              type: integer
                             tls:
                               properties:
                                 ca:
@@ -2448,8 +2450,6 @@ spec:
                                 server_name:
                                   type: string
                               type: object
-                            wait_for_ready:
-                              type: boolean
                           type: object
                       type: object
                     image:
@@ -4318,8 +4318,18 @@ spec:
                                           type: integer
                                       type: object
                                     call_option:
+                                      properties:
+                                        content_subtype:
+                                          type: string
+                                        max_recv_msg_size:
+                                          type: integer
+                                        max_retry_rpc_buffer_size:
+                                          type: integer
+                                        max_send_msg_size:
+                                          type: integer
+                                        wait_for_ready:
+                                          type: boolean
                                       type: object
-                                      x-kubernetes-preserve-unknown-fields: true
                                     circuit_breaker:
                                       properties:
                                         closed_error_rate:
@@ -4348,8 +4358,6 @@ spec:
                                         size:
                                           type: integer
                                       type: object
-                                    content_subtype:
-                                      type: string
                                     dial_option:
                                       properties:
                                         authority:
@@ -4487,12 +4495,6 @@ spec:
                                       type: object
                                     health_check_duration:
                                       type: string
-                                    max_recv_msg_size:
-                                      type: integer
-                                    max_retry_rpc_buffer_size:
-                                      type: integer
-                                    max_send_msg_size:
-                                      type: integer
                                     tls:
                                       properties:
                                         ca:
@@ -4521,8 +4523,6 @@ spec:
                                         server_name:
                                           type: string
                                       type: object
-                                    wait_for_ready:
-                                      type: boolean
                                   type: object
                                 distance_filters:
                                   items:
@@ -4557,8 +4557,18 @@ spec:
                                       type: integer
                                   type: object
                                 call_option:
+                                  properties:
+                                    content_subtype:
+                                      type: string
+                                    max_recv_msg_size:
+                                      type: integer
+                                    max_retry_rpc_buffer_size:
+                                      type: integer
+                                    max_send_msg_size:
+                                      type: integer
+                                    wait_for_ready:
+                                      type: boolean
                                   type: object
-                                  x-kubernetes-preserve-unknown-fields: true
                                 circuit_breaker:
                                   properties:
                                     closed_error_rate:
@@ -4587,8 +4597,6 @@ spec:
                                     size:
                                       type: integer
                                   type: object
-                                content_subtype:
-                                  type: string
                                 dial_option:
                                   properties:
                                     authority:
@@ -4726,12 +4734,6 @@ spec:
                                   type: object
                                 health_check_duration:
                                   type: string
-                                max_recv_msg_size:
-                                  type: integer
-                                max_retry_rpc_buffer_size:
-                                  type: integer
-                                max_send_msg_size:
-                                  type: integer
                                 tls:
                                   properties:
                                     ca:
@@ -4760,8 +4762,6 @@ spec:
                                     server_name:
                                       type: string
                                   type: object
-                                wait_for_ready:
-                                  type: boolean
                               type: object
                             ingress_filter:
                               properties:
@@ -4789,8 +4789,18 @@ spec:
                                           type: integer
                                       type: object
                                     call_option:
+                                      properties:
+                                        content_subtype:
+                                          type: string
+                                        max_recv_msg_size:
+                                          type: integer
+                                        max_retry_rpc_buffer_size:
+                                          type: integer
+                                        max_send_msg_size:
+                                          type: integer
+                                        wait_for_ready:
+                                          type: boolean
                                       type: object
-                                      x-kubernetes-preserve-unknown-fields: true
                                     circuit_breaker:
                                       properties:
                                         closed_error_rate:
@@ -4819,8 +4829,6 @@ spec:
                                         size:
                                           type: integer
                                       type: object
-                                    content_subtype:
-                                      type: string
                                     dial_option:
                                       properties:
                                         authority:
@@ -4958,12 +4966,6 @@ spec:
                                       type: object
                                     health_check_duration:
                                       type: string
-                                    max_recv_msg_size:
-                                      type: integer
-                                    max_retry_rpc_buffer_size:
-                                      type: integer
-                                    max_send_msg_size:
-                                      type: integer
                                     tls:
                                       properties:
                                         ca:
@@ -4992,8 +4994,6 @@ spec:
                                         server_name:
                                           type: string
                                       type: object
-                                    wait_for_ready:
-                                      type: boolean
                                   type: object
                                 insert_filters:
                                   items:
@@ -5967,8 +5967,18 @@ spec:
                                           type: integer
                                       type: object
                                     call_option:
+                                      properties:
+                                        content_subtype:
+                                          type: string
+                                        max_recv_msg_size:
+                                          type: integer
+                                        max_retry_rpc_buffer_size:
+                                          type: integer
+                                        max_send_msg_size:
+                                          type: integer
+                                        wait_for_ready:
+                                          type: boolean
                                       type: object
-                                      x-kubernetes-preserve-unknown-fields: true
                                     circuit_breaker:
                                       properties:
                                         closed_error_rate:
@@ -5997,8 +6007,6 @@ spec:
                                         size:
                                           type: integer
                                       type: object
-                                    content_subtype:
-                                      type: string
                                     dial_option:
                                       properties:
                                         authority:
@@ -6136,12 +6144,6 @@ spec:
                                       type: object
                                     health_check_duration:
                                       type: string
-                                    max_recv_msg_size:
-                                      type: integer
-                                    max_retry_rpc_buffer_size:
-                                      type: integer
-                                    max_send_msg_size:
-                                      type: integer
                                     tls:
                                       properties:
                                         ca:
@@ -6170,8 +6172,6 @@ spec:
                                         server_name:
                                           type: string
                                       type: object
-                                    wait_for_ready:
-                                      type: boolean
                                   type: object
                                 client:
                                   properties:
@@ -6197,8 +6197,18 @@ spec:
                                           type: integer
                                       type: object
                                     call_option:
+                                      properties:
+                                        content_subtype:
+                                          type: string
+                                        max_recv_msg_size:
+                                          type: integer
+                                        max_retry_rpc_buffer_size:
+                                          type: integer
+                                        max_send_msg_size:
+                                          type: integer
+                                        wait_for_ready:
+                                          type: boolean
                                       type: object
-                                      x-kubernetes-preserve-unknown-fields: true
                                     circuit_breaker:
                                       properties:
                                         closed_error_rate:
@@ -6227,8 +6237,6 @@ spec:
                                         size:
                                           type: integer
                                       type: object
-                                    content_subtype:
-                                      type: string
                                     dial_option:
                                       properties:
                                         authority:
@@ -6366,12 +6374,6 @@ spec:
                                       type: object
                                     health_check_duration:
                                       type: string
-                                    max_recv_msg_size:
-                                      type: integer
-                                    max_retry_rpc_buffer_size:
-                                      type: integer
-                                    max_send_msg_size:
-                                      type: integer
                                     tls:
                                       properties:
                                         ca:
@@ -6400,8 +6402,6 @@ spec:
                                         server_name:
                                           type: string
                                       type: object
-                                    wait_for_ready:
-                                      type: boolean
                                   type: object
                                 duration:
                                   type: string
@@ -6429,8 +6429,18 @@ spec:
                                           type: integer
                                       type: object
                                     call_option:
+                                      properties:
+                                        content_subtype:
+                                          type: string
+                                        max_recv_msg_size:
+                                          type: integer
+                                        max_retry_rpc_buffer_size:
+                                          type: integer
+                                        max_send_msg_size:
+                                          type: integer
+                                        wait_for_ready:
+                                          type: boolean
                                       type: object
-                                      x-kubernetes-preserve-unknown-fields: true
                                     circuit_breaker:
                                       properties:
                                         closed_error_rate:
@@ -6459,8 +6469,6 @@ spec:
                                         size:
                                           type: integer
                                       type: object
-                                    content_subtype:
-                                      type: string
                                     dial_option:
                                       properties:
                                         authority:
@@ -6598,12 +6606,6 @@ spec:
                                       type: object
                                     health_check_duration:
                                       type: string
-                                    max_recv_msg_size:
-                                      type: integer
-                                    max_retry_rpc_buffer_size:
-                                      type: integer
-                                    max_send_msg_size:
-                                      type: integer
                                     tls:
                                       properties:
                                         ca:
@@ -6632,17 +6634,17 @@ spec:
                                         server_name:
                                           type: string
                                       type: object
-                                    wait_for_ready:
-                                      type: boolean
                                   type: object
                               type: object
                             index_replica:
                               minimum: 1
                               type: integer
                             multi_operation_concurrency:
-                              minimum: 2
+                              minimum: 0
                               type: integer
                             node_name:
+                              type: string
+                            search_quorum_grace:
                               type: string
                           type: object
                         hpa:
@@ -7609,8 +7611,18 @@ spec:
                                       type: integer
                                   type: object
                                 call_option:
+                                  properties:
+                                    content_subtype:
+                                      type: string
+                                    max_recv_msg_size:
+                                      type: integer
+                                    max_retry_rpc_buffer_size:
+                                      type: integer
+                                    max_send_msg_size:
+                                      type: integer
+                                    wait_for_ready:
+                                      type: boolean
                                   type: object
-                                  x-kubernetes-preserve-unknown-fields: true
                                 circuit_breaker:
                                   properties:
                                     closed_error_rate:
@@ -7639,8 +7651,6 @@ spec:
                                     size:
                                       type: integer
                                   type: object
-                                content_subtype:
-                                  type: string
                                 dial_option:
                                   properties:
                                     authority:
@@ -7778,12 +7788,6 @@ spec:
                                   type: object
                                 health_check_duration:
                                   type: string
-                                max_recv_msg_size:
-                                  type: integer
-                                max_retry_rpc_buffer_size:
-                                  type: integer
-                                max_send_msg_size:
-                                  type: integer
                                 tls:
                                   properties:
                                     ca:
@@ -7812,8 +7816,6 @@ spec:
                                     server_name:
                                       type: string
                                   type: object
-                                wait_for_ready:
-                                  type: boolean
                               type: object
                             colocation:
                               type: string
@@ -8899,8 +8901,18 @@ spec:
                                           type: integer
                                       type: object
                                     call_option:
+                                      properties:
+                                        content_subtype:
+                                          type: string
+                                        max_recv_msg_size:
+                                          type: integer
+                                        max_retry_rpc_buffer_size:
+                                          type: integer
+                                        max_send_msg_size:
+                                          type: integer
+                                        wait_for_ready:
+                                          type: boolean
                                       type: object
-                                      x-kubernetes-preserve-unknown-fields: true
                                     circuit_breaker:
                                       properties:
                                         closed_error_rate:
@@ -8929,8 +8941,6 @@ spec:
                                         size:
                                           type: integer
                                       type: object
-                                    content_subtype:
-                                      type: string
                                     dial_option:
                                       properties:
                                         authority:
@@ -9068,12 +9078,6 @@ spec:
                                       type: object
                                     health_check_duration:
                                       type: string
-                                    max_recv_msg_size:
-                                      type: integer
-                                    max_retry_rpc_buffer_size:
-                                      type: integer
-                                    max_send_msg_size:
-                                      type: integer
                                     tls:
                                       properties:
                                         ca:
@@ -9102,8 +9106,6 @@ spec:
                                         server_name:
                                           type: string
                                       type: object
-                                    wait_for_ready:
-                                      type: boolean
                                   type: object
                                 client:
                                   properties:
@@ -9129,8 +9131,18 @@ spec:
                                           type: integer
                                       type: object
                                     call_option:
+                                      properties:
+                                        content_subtype:
+                                          type: string
+                                        max_recv_msg_size:
+                                          type: integer
+                                        max_retry_rpc_buffer_size:
+                                          type: integer
+                                        max_send_msg_size:
+                                          type: integer
+                                        wait_for_ready:
+                                          type: boolean
                                       type: object
-                                      x-kubernetes-preserve-unknown-fields: true
                                     circuit_breaker:
                                       properties:
                                         closed_error_rate:
@@ -9159,8 +9171,6 @@ spec:
                                         size:
                                           type: integer
                                       type: object
-                                    content_subtype:
-                                      type: string
                                     dial_option:
                                       properties:
                                         authority:
@@ -9298,12 +9308,6 @@ spec:
                                       type: object
                                     health_check_duration:
                                       type: string
-                                    max_recv_msg_size:
-                                      type: integer
-                                    max_retry_rpc_buffer_size:
-                                      type: integer
-                                    max_send_msg_size:
-                                      type: integer
                                     tls:
                                       properties:
                                         ca:
@@ -9332,8 +9336,6 @@ spec:
                                         server_name:
                                           type: string
                                       type: object
-                                    wait_for_ready:
-                                      type: boolean
                                   type: object
                                 duration:
                                   type: string
@@ -9369,8 +9371,18 @@ spec:
                                       type: integer
                                   type: object
                                 call_option:
+                                  properties:
+                                    content_subtype:
+                                      type: string
+                                    max_recv_msg_size:
+                                      type: integer
+                                    max_retry_rpc_buffer_size:
+                                      type: integer
+                                    max_send_msg_size:
+                                      type: integer
+                                    wait_for_ready:
+                                      type: boolean
                                   type: object
-                                  x-kubernetes-preserve-unknown-fields: true
                                 circuit_breaker:
                                   properties:
                                     closed_error_rate:
@@ -9399,8 +9411,6 @@ spec:
                                     size:
                                       type: integer
                                   type: object
-                                content_subtype:
-                                  type: string
                                 dial_option:
                                   properties:
                                     authority:
@@ -9538,12 +9548,6 @@ spec:
                                   type: object
                                 health_check_duration:
                                   type: string
-                                max_recv_msg_size:
-                                  type: integer
-                                max_retry_rpc_buffer_size:
-                                  type: integer
-                                max_send_msg_size:
-                                  type: integer
                                 tls:
                                   properties:
                                     ca:
@@ -9572,8 +9576,6 @@ spec:
                                     server_name:
                                       type: string
                                   type: object
-                                wait_for_ready:
-                                  type: boolean
                               type: object
                             image:
                               properties:
@@ -10389,8 +10391,18 @@ spec:
                                           type: integer
                                       type: object
                                     call_option:
+                                      properties:
+                                        content_subtype:
+                                          type: string
+                                        max_recv_msg_size:
+                                          type: integer
+                                        max_retry_rpc_buffer_size:
+                                          type: integer
+                                        max_send_msg_size:
+                                          type: integer
+                                        wait_for_ready:
+                                          type: boolean
                                       type: object
-                                      x-kubernetes-preserve-unknown-fields: true
                                     circuit_breaker:
                                       properties:
                                         closed_error_rate:
@@ -10419,8 +10431,6 @@ spec:
                                         size:
                                           type: integer
                                       type: object
-                                    content_subtype:
-                                      type: string
                                     dial_option:
                                       properties:
                                         authority:
@@ -10558,12 +10568,6 @@ spec:
                                       type: object
                                     health_check_duration:
                                       type: string
-                                    max_recv_msg_size:
-                                      type: integer
-                                    max_retry_rpc_buffer_size:
-                                      type: integer
-                                    max_send_msg_size:
-                                      type: integer
                                     tls:
                                       properties:
                                         ca:
@@ -10592,8 +10596,6 @@ spec:
                                         server_name:
                                           type: string
                                       type: object
-                                    wait_for_ready:
-                                      type: boolean
                                   type: object
                                 client:
                                   properties:
@@ -10619,8 +10621,18 @@ spec:
                                           type: integer
                                       type: object
                                     call_option:
+                                      properties:
+                                        content_subtype:
+                                          type: string
+                                        max_recv_msg_size:
+                                          type: integer
+                                        max_retry_rpc_buffer_size:
+                                          type: integer
+                                        max_send_msg_size:
+                                          type: integer
+                                        wait_for_ready:
+                                          type: boolean
                                       type: object
-                                      x-kubernetes-preserve-unknown-fields: true
                                     circuit_breaker:
                                       properties:
                                         closed_error_rate:
@@ -10649,8 +10661,6 @@ spec:
                                         size:
                                           type: integer
                                       type: object
-                                    content_subtype:
-                                      type: string
                                     dial_option:
                                       properties:
                                         authority:
@@ -10788,12 +10798,6 @@ spec:
                                       type: object
                                     health_check_duration:
                                       type: string
-                                    max_recv_msg_size:
-                                      type: integer
-                                    max_retry_rpc_buffer_size:
-                                      type: integer
-                                    max_send_msg_size:
-                                      type: integer
                                     tls:
                                       properties:
                                         ca:
@@ -10822,8 +10826,6 @@ spec:
                                         server_name:
                                           type: string
                                       type: object
-                                    wait_for_ready:
-                                      type: boolean
                                   type: object
                                 duration:
                                   type: string
@@ -11644,8 +11646,18 @@ spec:
                                           type: integer
                                       type: object
                                     call_option:
+                                      properties:
+                                        content_subtype:
+                                          type: string
+                                        max_recv_msg_size:
+                                          type: integer
+                                        max_retry_rpc_buffer_size:
+                                          type: integer
+                                        max_send_msg_size:
+                                          type: integer
+                                        wait_for_ready:
+                                          type: boolean
                                       type: object
-                                      x-kubernetes-preserve-unknown-fields: true
                                     circuit_breaker:
                                       properties:
                                         closed_error_rate:
@@ -11674,8 +11686,6 @@ spec:
                                         size:
                                           type: integer
                                       type: object
-                                    content_subtype:
-                                      type: string
                                     dial_option:
                                       properties:
                                         authority:
@@ -11813,12 +11823,6 @@ spec:
                                       type: object
                                     health_check_duration:
                                       type: string
-                                    max_recv_msg_size:
-                                      type: integer
-                                    max_retry_rpc_buffer_size:
-                                      type: integer
-                                    max_send_msg_size:
-                                      type: integer
                                     tls:
                                       properties:
                                         ca:
@@ -11847,8 +11851,6 @@ spec:
                                         server_name:
                                           type: string
                                       type: object
-                                    wait_for_ready:
-                                      type: boolean
                                   type: object
                                 client:
                                   properties:
@@ -11874,8 +11876,18 @@ spec:
                                           type: integer
                                       type: object
                                     call_option:
+                                      properties:
+                                        content_subtype:
+                                          type: string
+                                        max_recv_msg_size:
+                                          type: integer
+                                        max_retry_rpc_buffer_size:
+                                          type: integer
+                                        max_send_msg_size:
+                                          type: integer
+                                        wait_for_ready:
+                                          type: boolean
                                       type: object
-                                      x-kubernetes-preserve-unknown-fields: true
                                     circuit_breaker:
                                       properties:
                                         closed_error_rate:
@@ -11904,8 +11916,6 @@ spec:
                                         size:
                                           type: integer
                                       type: object
-                                    content_subtype:
-                                      type: string
                                     dial_option:
                                       properties:
                                         authority:
@@ -12043,12 +12053,6 @@ spec:
                                       type: object
                                     health_check_duration:
                                       type: string
-                                    max_recv_msg_size:
-                                      type: integer
-                                    max_retry_rpc_buffer_size:
-                                      type: integer
-                                    max_send_msg_size:
-                                      type: integer
                                     tls:
                                       properties:
                                         ca:
@@ -12077,8 +12081,6 @@ spec:
                                         server_name:
                                           type: string
                                       type: object
-                                    wait_for_ready:
-                                      type: boolean
                                   type: object
                                 duration:
                                   type: string
@@ -12890,8 +12892,18 @@ spec:
                                           type: integer
                                       type: object
                                     call_option:
+                                      properties:
+                                        content_subtype:
+                                          type: string
+                                        max_recv_msg_size:
+                                          type: integer
+                                        max_retry_rpc_buffer_size:
+                                          type: integer
+                                        max_send_msg_size:
+                                          type: integer
+                                        wait_for_ready:
+                                          type: boolean
                                       type: object
-                                      x-kubernetes-preserve-unknown-fields: true
                                     circuit_breaker:
                                       properties:
                                         closed_error_rate:
@@ -12920,8 +12932,6 @@ spec:
                                         size:
                                           type: integer
                                       type: object
-                                    content_subtype:
-                                      type: string
                                     dial_option:
                                       properties:
                                         authority:
@@ -13059,12 +13069,6 @@ spec:
                                       type: object
                                     health_check_duration:
                                       type: string
-                                    max_recv_msg_size:
-                                      type: integer
-                                    max_retry_rpc_buffer_size:
-                                      type: integer
-                                    max_send_msg_size:
-                                      type: integer
                                     tls:
                                       properties:
                                         ca:
@@ -13093,8 +13097,6 @@ spec:
                                         server_name:
                                           type: string
                                       type: object
-                                    wait_for_ready:
-                                      type: boolean
                                   type: object
                                 client:
                                   properties:
@@ -13120,8 +13122,18 @@ spec:
                                           type: integer
                                       type: object
                                     call_option:
+                                      properties:
+                                        content_subtype:
+                                          type: string
+                                        max_recv_msg_size:
+                                          type: integer
+                                        max_retry_rpc_buffer_size:
+                                          type: integer
+                                        max_send_msg_size:
+                                          type: integer
+                                        wait_for_ready:
+                                          type: boolean
                                       type: object
-                                      x-kubernetes-preserve-unknown-fields: true
                                     circuit_breaker:
                                       properties:
                                         closed_error_rate:
@@ -13150,8 +13162,6 @@ spec:
                                         size:
                                           type: integer
                                       type: object
-                                    content_subtype:
-                                      type: string
                                     dial_option:
                                       properties:
                                         authority:
@@ -13289,12 +13299,6 @@ spec:
                                       type: object
                                     health_check_duration:
                                       type: string
-                                    max_recv_msg_size:
-                                      type: integer
-                                    max_retry_rpc_buffer_size:
-                                      type: integer
-                                    max_send_msg_size:
-                                      type: integer
                                     tls:
                                       properties:
                                         ca:
@@ -13323,8 +13327,6 @@ spec:
                                         server_name:
                                           type: string
                                       type: object
-                                    wait_for_ready:
-                                      type: boolean
                                   type: object
                                 duration:
                                   type: string
@@ -15177,8 +15179,18 @@ spec:
                                           type: integer
                                       type: object
                                     call_option:
+                                      properties:
+                                        content_subtype:
+                                          type: string
+                                        max_recv_msg_size:
+                                          type: integer
+                                        max_retry_rpc_buffer_size:
+                                          type: integer
+                                        max_send_msg_size:
+                                          type: integer
+                                        wait_for_ready:
+                                          type: boolean
                                       type: object
-                                      x-kubernetes-preserve-unknown-fields: true
                                     circuit_breaker:
                                       properties:
                                         closed_error_rate:
@@ -15207,8 +15219,6 @@ spec:
                                         size:
                                           type: integer
                                       type: object
-                                    content_subtype:
-                                      type: string
                                     dial_option:
                                       properties:
                                         authority:
@@ -15346,12 +15356,6 @@ spec:
                                       type: object
                                     health_check_duration:
                                       type: string
-                                    max_recv_msg_size:
-                                      type: integer
-                                    max_retry_rpc_buffer_size:
-                                      type: integer
-                                    max_send_msg_size:
-                                      type: integer
                                     tls:
                                       properties:
                                         ca:
@@ -15380,8 +15384,6 @@ spec:
                                         server_name:
                                           type: string
                                       type: object
-                                    wait_for_ready:
-                                      type: boolean
                                   type: object
                                 client:
                                   properties:
@@ -15407,8 +15409,18 @@ spec:
                                           type: integer
                                       type: object
                                     call_option:
+                                      properties:
+                                        content_subtype:
+                                          type: string
+                                        max_recv_msg_size:
+                                          type: integer
+                                        max_retry_rpc_buffer_size:
+                                          type: integer
+                                        max_send_msg_size:
+                                          type: integer
+                                        wait_for_ready:
+                                          type: boolean
                                       type: object
-                                      x-kubernetes-preserve-unknown-fields: true
                                     circuit_breaker:
                                       properties:
                                         closed_error_rate:
@@ -15437,8 +15449,6 @@ spec:
                                         size:
                                           type: integer
                                       type: object
-                                    content_subtype:
-                                      type: string
                                     dial_option:
                                       properties:
                                         authority:
@@ -15576,12 +15586,6 @@ spec:
                                       type: object
                                     health_check_duration:
                                       type: string
-                                    max_recv_msg_size:
-                                      type: integer
-                                    max_retry_rpc_buffer_size:
-                                      type: integer
-                                    max_send_msg_size:
-                                      type: integer
                                     tls:
                                       properties:
                                         ca:
@@ -15610,8 +15614,6 @@ spec:
                                         server_name:
                                           type: string
                                       type: object
-                                    wait_for_ready:
-                                      type: boolean
                                   type: object
                                 duration:
                                   type: string

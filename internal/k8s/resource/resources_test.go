@@ -94,7 +94,7 @@ func TestBaseClient_CreateJob_UniqueNames(t *testing.T) {
 	t.Parallel()
 
 	deploy := &appsv1.Deployment{
-		ObjectMeta: metav1.ObjectMeta{Name: "vald-index-creation", Namespace: "default"},
+		Name: "vald-index-creation", Namespace: "default",
 		Spec: appsv1.DeploymentSpec{
 			Template: corev1.PodTemplateSpec{
 				Spec: corev1.PodSpec{

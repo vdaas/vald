@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/kpango/fastime"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/strings"
 )
@@ -25,15 +26,21 @@ func Set(loc string) {
 	switch strings.ToLower(loc) {
 	case strings.ToLower(locationUTC):
 		time.Local = UTC()
-		os.Setenv("TZ", "UTC")
+		setTZ("UTC")
 	case strings.ToLower(locationGMT):
 		time.Local = GMT()
-		os.Setenv("TZ", "GMT")
+		setTZ("GMT")
 	case strings.ToLower(locationJST), strings.ToLower(locationTokyo):
 		time.Local = JST()
-		os.Setenv("TZ", "JST")
+		setTZ("JST")
 	default:
 		time.Local = location(loc, 0)
 	}
 	fastime.SetLocation(time.Local)
+}
+
+func setTZ(tz string) {
+	if err := os.Setenv("TZ", tz); err != nil {
+		log.Warnf("failed to set TZ=%s: %v", tz, err)
+	}
 }

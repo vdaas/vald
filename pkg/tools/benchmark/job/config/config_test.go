@@ -17,10 +17,12 @@ package config
 
 import (
 	"io/fs"
+	"path/filepath"
 	"testing"
 
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/test/comparator"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
@@ -52,7 +54,21 @@ func TestNewConfig(t *testing.T) {
 		}
 		return nil
 	}
+	emptyPath := filepath.Join(t.TempDir(), "empty.yaml")
+	if err := os.WriteFile(emptyPath, nil, 0o600); err != nil {
+		t.Fatal(err)
+	}
 	tests := []test{
+		{
+			name: "return ErrInvalidConfig when the config file is empty",
+			args: args{
+				path: emptyPath,
+			},
+			want: want{
+				wantCfg: nil,
+				err:     errors.ErrInvalidConfig,
+			},
+		},
 		func() test {
 			var path string
 			return test{

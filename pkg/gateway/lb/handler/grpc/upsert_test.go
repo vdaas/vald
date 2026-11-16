@@ -13,6 +13,34 @@
 // limitations under the License.
 package grpc
 
+import (
+	"testing"
+
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
+	"github.com/vdaas/vald/internal/net/grpc/codes"
+	"github.com/vdaas/vald/internal/net/grpc/status"
+)
+
+// Upsert with an empty uuid used to dereference a nil err while building the BadRequest detail.
+func Test_server_Upsert_emptyUUID(t *testing.T) {
+	t.Parallel()
+	s := &server{gateway: new(regGateway), replica: 3}
+
+	loc, err := s.Upsert(t.Context(), &payload.Upsert_Request{
+		Vector: &payload.Object_Vector{Vector: []float32{1, 2, 3}},
+	})
+	if loc != nil {
+		t.Errorf("unexpected location: %v", loc)
+	}
+	if err == nil {
+		t.Fatal("expected an error for empty uuid, got nil")
+	}
+	st, ok := status.FromError(err)
+	if !ok || st == nil || st.Code() != codes.InvalidArgument {
+		t.Errorf("expected InvalidArgument, got: %v", err)
+	}
+}
+
 // NOT IMPLEMENTED BELOW
 //
 // func Test_server_Upsert(t *testing.T) {

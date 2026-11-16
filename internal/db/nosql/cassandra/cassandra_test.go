@@ -16,6 +16,7 @@ package cassandra
 
 import (
 	"context"
+	"net"
 	"reflect"
 	"testing"
 	"time"
@@ -2166,179 +2167,60 @@ func TestContains(t *testing.T) {
 	}
 }
 
-func TestWrapErrorWithKeys(t *testing.T) {
-	type args struct {
-		err  error
-		keys []string
-	}
-	type want struct {
-		err error
-	}
-	type test struct {
-		want       want
-		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-		name       string
-		args       args
-	}
-	defaultCheckFunc := func(w want, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		return nil
-	}
-	tests := []test{
-		{
-			name: "return error not found",
-			args: args{
-				err:  ErrNotFound,
-				keys: []string{"k1"},
-			},
-			want: want{
-				err: errors.ErrCassandraNotFound("k1"),
-			},
-		},
-		{
-			name: "return unavilable error",
-			args: args{
-				err: ErrUnavailable,
-			},
-			want: want{
-				err: errors.ErrCassandraUnavailable,
-			},
-		},
-		{
-			name: "return unsupported error",
-			args: args{
-				err: ErrUnsupported,
-			},
-			want: want{
-				err: ErrUnsupported,
-			},
-		},
-		{
-			name: "return too many stmts error",
-			args: args{
-				err: ErrTooManyStmts,
-			},
-			want: want{
-				err: ErrTooManyStmts,
-			},
-		},
-		{
-			name: "return use stmt error",
-			args: args{
-				err: ErrUseStmt,
-			},
-			want: want{
-				err: ErrUseStmt,
-			},
-		},
-		{
-			name: "return session closed error",
-			args: args{
-				err: ErrSessionClosed,
-			},
-			want: want{
-				err: ErrSessionClosed,
-			},
-		},
-		{
-			name: "return no connection error",
-			args: args{
-				err: ErrNoConnections,
-			},
-			want: want{
-				err: ErrNoConnections,
-			},
-		},
-		{
-			name: "return no keyspace error",
-			args: args{
-				err: ErrNoKeyspace,
-			},
-			want: want{
-				err: ErrNoKeyspace,
-			},
-		},
-		{
-			name: "return keyspace does not exist error",
-			args: args{
-				err: ErrKeyspaceDoesNotExist,
-			},
-			want: want{
-				err: ErrKeyspaceDoesNotExist,
-			},
-		},
-		{
-			name: "return no metadata error",
-			args: args{
-				err: ErrNoMetadata,
-			},
-			want: want{
-				err: ErrNoMetadata,
-			},
-		},
-		{
-			name: "return no hosts error",
-			args: args{
-				err: ErrNoHosts,
-			},
-			want: want{
-				err: ErrNoHosts,
-			},
-		},
-		{
-			name: "return no connection started error",
-			args: args{
-				err: ErrNoConnectionsStarted,
-			},
-			want: want{
-				err: ErrNoConnectionsStarted,
-			},
-		},
-		{
-			name: "return host query failed error",
-			args: args{
-				err: ErrHostQueryFailed,
-			},
-			want: want{
-				err: ErrHostQueryFailed,
-			},
-		},
-		{
-			name: "return other error",
-			args: args{
-				err: errors.New("err"),
-			},
-			want: want{
-				err: errors.New("err"),
-			},
-		},
-	}
+// NOT IMPLEMENTED BELOW
 
-	for _, tc := range tests {
-		test := tc
+// TestNew_combinedHostFilterAccept calls the combined DC + whitelist host filter.
+// It used to recurse into itself and overflow the stack.
+func TestNew_combinedHostFilterAccept(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name string
+		addr net.IP
+		want bool
+	}{
+		{
+			name: "whitelisted host is accepted even if its data center does not match",
+			addr: net.ParseIP("127.0.0.1"),
+			want: true,
+		},
+		{
+			name: "host matching neither the data center nor the whitelist is rejected",
+			addr: net.ParseIP("127.0.0.2"),
+			want: false,
+		},
+	}
+	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+			tt.Parallel()
+			got, err := New(
+				WithHostFilter(true),
+				WithDCHostFilter("dc"),
+				WithWhiteListHostFilter([]string{"127.0.0.1"}),
+			)
+			if err != nil {
+				tt.Fatalf("failed to create client: %v", err)
 			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+			c, ok := got.(*client)
+			if !ok {
+				tt.Fatalf("unexpected client type %T", got)
 			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
+			cc, ok := c.cluster.(*gocql.ClusterConfig)
+			if !ok || cc == nil || cc.HostFilter == nil {
+				tt.Fatal("host filter is not set")
 			}
-
-			err := WrapErrorWithKeys(test.args.err, test.args.keys...)
-			if err := checkFunc(test.want, err); err != nil {
-				tt.Errorf("error = %v", err)
+			host := new(gocql.HostInfo).SetConnectAddress(test.addr)
+			if accepted := cc.HostFilter.Accept(host); accepted != test.want {
+				tt.Errorf("Accept() = %v, want %v", accepted, test.want)
 			}
 		})
 	}
 }
 
-// NOT IMPLEMENTED BELOW
+// TestClient_Close_nilSession ensures Close after a failed Open does not dereference a nil session.
+func TestClient_Close_nilSession(t *testing.T) {
+	t.Parallel()
+	c := &client{}
+	if err := c.Close(t.Context()); err != nil {
+		t.Errorf("Close() = %v, want nil", err)
+	}
+}

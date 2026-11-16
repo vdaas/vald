@@ -33,7 +33,9 @@ type writer struct {
 	s3manager   s3manager.S3Manager
 	service     s3iface.S3API
 	pw          io.WriteCloser
+	pr          *io.PipeReader
 	wg          *sync.WaitGroup
+	err         error // the result of the upload, valid after wg.Wait
 	bucket      string
 	contentType string
 	maxPartSize int64
@@ -61,36 +63,61 @@ func New(opts ...Option) Writer {
 
 // Open creates io.Pipe. When the write method is called, the written data will be uploaded to s3.
 // Open method returns an error to align the interface, but it doesn't actually return an error.
+// The result of the upload is returned from Close.
+// If the previous stream was not closed, it is aborted and waited for so that its goroutine does not leak.
 func (w *writer) Open(ctx context.Context, key string) (err error) {
-	w.wg = new(sync.WaitGroup)
+	if w.pr != nil {
+		if cerr := w.pr.CloseWithError(io.ErrClosedPipe); cerr != nil {
+			log.Warn(cerr)
+		}
+		if w.wg != nil {
+			w.wg.Wait()
+		}
+	}
 
-	var pr io.ReadCloser
+	pr, pw := io.Pipe()
+	w.pr, w.pw, w.err = pr, pw, nil
 
-	pr, w.pw = io.Pipe()
+	wg := new(sync.WaitGroup)
+	w.wg = wg
+	wg.Add(1)
 
-	w.wg.Add(1)
+	w.eg.Go(func() (err error) {
+		defer wg.Done()
 
-	w.eg.Go(safety.RecoverFunc(func() (err error) {
-		defer w.wg.Done()
-		defer pr.Close()
+		err = safety.RecoverFunc(func() error {
+			return w.upload(ctx, key, pr)
+		})()
+		// The reader must be closed with the error so that a blocked Write returns it
+		// instead of waiting for a consumer that is gone.
+		if cerr := pr.CloseWithError(err); cerr != nil {
+			log.Warn(cerr)
+		}
+		w.err = err // read by Close after wg.Wait
 
-		return w.upload(ctx, key, pr)
-	}))
+		// Close returns the upload error to the caller. It is not returned to the
+		// errgroup as well: that may be the process-wide group, where every failed
+		// upload would be recorded until shutdown and cancel the daemon context.
+		return nil
+	})
 
-	return err
+	return nil
 }
 
-// Close closes the writer.
-func (w *writer) Close() error {
+// Close closes the writer, waits for the upload to complete and returns the result of the upload.
+func (w *writer) Close() (err error) {
 	if w.pw != nil {
-		return w.pw.Close()
+		err = w.pw.Close()
 	}
 
 	if w.wg != nil {
 		w.wg.Wait()
+		if w.err != nil {
+			return w.err
+		}
 	}
 
-	return nil
+	return err
 }
 
 // Write writes len(p) bytes from p to the underlying data stream. The written data will be uploaded to s3.

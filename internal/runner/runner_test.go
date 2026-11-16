@@ -16,6 +16,7 @@ package runner
 
 import (
 	"context"
+	"syscall"
 	"testing"
 	"time"
 
@@ -159,7 +160,7 @@ func TestRun(t *testing.T) {
 		func() test {
 			ctx, cancel := context.WithCancel(t.Context())
 			return test{
-				name: "returns error when channel of run.StartFunc contains error",
+				name: "returns nil when channel of run.StartFunc contains only runtime errors",
 				args: args{
 					ctx:  ctx,
 					name: "vald",
@@ -195,27 +196,53 @@ func TestRun(t *testing.T) {
 					}()
 				},
 				want: want{
-					err: func() (err error) {
-						details := []struct {
-							err error
-							cnt int
-						}{
-							{
-								err: errors.New("err1"),
-								cnt: 2,
+					err: nil,
+				},
+			}
+		}(),
+
+		func() test {
+			ctx, cancel := context.WithCancel(t.Context())
+			return test{
+				name: "returns only stop sequence errors when runtime errors were also reported",
+				args: args{
+					ctx:  ctx,
+					name: "vald",
+					run: func() Interface {
+						return &runnerMock{
+							PreStartFunc: func(ctx context.Context) error {
+								return nil
 							},
-							{
-								err: errors.New("err2"),
-								cnt: 1,
+							StartFunc: func(ctx context.Context) (<-chan error, error) {
+								ch := make(chan error, 3)
+								ch <- errors.New("err1")
+								ch <- errors.New("err2")
+								ch <- errors.New("err2")
+								return ch, nil
+							},
+							PreStopFunc: func(ctx context.Context) error {
+								return nil
+							},
+							StopFunc: func(ctx context.Context) error {
+								return errors.New("err2")
+							},
+							PostStopFunc: func(ctx context.Context) error {
+								return nil
 							},
 						}
-
-						for _, detail := range details {
-							err = errors.Wrapf(err, "error:\t%s\tcount:\t%d", detail.err.Error(), detail.cnt)
-						}
-
-						return errors.ErrDaemonStopFailed(err)
 					}(),
+				},
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
+					go func() {
+						time.Sleep(2 * time.Second)
+						cancel()
+					}()
+				},
+				want: want{
+					err: errors.ErrDaemonStopFailed(
+						errors.Wrapf(nil, "error:\t%s\tcount:\t%d", "err2", 1),
+					),
 				},
 			}
 		}(),
@@ -372,3 +399,72 @@ func TestRun(t *testing.T) {
 // 		})
 // 	}
 // }
+
+// cpuTime returns the user+system CPU time consumed by the whole test process.
+func cpuTime(t *testing.T) time.Duration {
+	t.Helper()
+	var ru syscall.Rusage
+	if err := syscall.Getrusage(syscall.RUSAGE_SELF, &ru); err != nil {
+		t.Fatalf("getrusage: %v", err)
+	}
+	return time.Duration(ru.Utime.Nano() + ru.Stime.Nano())
+}
+
+// TestRun_ClosedErrorChannelDoesNotSpin guards against Run busy-looping on a
+// daemon error channel that was closed before the daemon is stopped (for
+// example a Start goroutine that returns early with `defer close(ech)`). A
+// closed channel is always ready, so without disabling it the select loop
+// burns a full CPU core until the context is cancelled.
+// Not parallel: it measures process-wide CPU time.
+func TestRun_ClosedErrorChannelDoesNotSpin(t *testing.T) {
+	const idle = 500 * time.Millisecond
+
+	ctx, cancel := context.WithCancel(t.Context())
+	defer cancel()
+
+	started := make(chan struct{})
+	run := &runnerMock{
+		PreStartFunc: func(context.Context) error { return nil },
+		StartFunc: func(context.Context) (<-chan error, error) {
+			ech := make(chan error)
+			close(ech)
+			close(started)
+			return ech, nil
+		},
+		PreStopFunc:  func(context.Context) error { return nil },
+		StopFunc:     func(context.Context) error { return nil },
+		PostStopFunc: func(context.Context) error { return nil },
+	}
+
+	errCh := make(chan error, 1)
+	go func() {
+		errCh <- Run(ctx, run, "closed-ech")
+	}()
+
+	select {
+	case <-started:
+	case <-time.After(10 * time.Second):
+		cancel()
+		t.Fatal("Start was not called")
+	}
+
+	before := cpuTime(t)
+	time.Sleep(idle)
+	used := cpuTime(t) - before
+	cancel()
+
+	select {
+	case err := <-errCh:
+		if err != nil {
+			t.Errorf("Run() error = %v, want nil", err)
+		}
+	case <-time.After(10 * time.Second):
+		t.Fatal("Run did not return after context cancellation")
+	}
+
+	// A spinning loop consumes about one full core (~idle); an idle loop
+	// consumes almost nothing. Half of idle leaves ample room for noise.
+	if used > idle/2 {
+		t.Errorf("Run consumed %v CPU while idle for %v: select loop is spinning on the closed error channel", used, idle)
+	}
+}

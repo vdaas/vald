@@ -18,6 +18,7 @@ import (
 	"context"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/vdaas/vald/internal/cache/cacher"
 	"github.com/vdaas/vald/internal/errors"
@@ -333,6 +334,32 @@ func TestWithExpireCheckDuration(t *testing.T) {
 			opts(got)
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+// A zero/negative expire check duration must not overwrite the default (5m):
+// it is later handed to a ticker, which panics for a non-positive interval.
+func TestWithExpireCheckDuration_NonPositive(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name string
+		dur  string
+		want time.Duration
+	}{
+		{name: "zero keeps previous value", dur: "0s", want: 7 * time.Second},
+		{name: "negative keeps previous value", dur: "-1s", want: 7 * time.Second},
+		{name: "positive is applied", dur: "2s", want: 2 * time.Second},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			c := new(cache[any])
+			c.expireCheckDur = 7 * time.Second
+			WithExpireCheckDuration[any](tt.dur)(c)
+			if c.expireCheckDur != tt.want {
+				t.Errorf("expireCheckDur = %v, want %v", c.expireCheckDur, tt.want)
 			}
 		})
 	}

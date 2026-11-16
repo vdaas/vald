@@ -24,7 +24,28 @@ import (
 	"github.com/vdaas/vald/internal/net/http/middleware"
 	"github.com/vdaas/vald/internal/net/http/rest"
 	"github.com/vdaas/vald/internal/strings"
+	"github.com/vdaas/vald/internal/sync"
 )
+
+// defaultMaxIdleConnsPerHost is the MaxIdleConnsPerHost applied to http.DefaultTransport.
+const defaultMaxIdleConnsPerHost = 32
+
+// tuneOnce guards the one-time mutation of the process-global http.DefaultTransport,
+// so that concurrent or repeated New calls do not race on it.
+var tuneOnce sync.Once //nolint:gochecknoglobals // guard for the process-global http.DefaultTransport
+
+// tuneDefaultTransport raises MaxIdleConnsPerHost of http.DefaultTransport once per process.
+// It is a no-op (with a warning) if http.DefaultTransport has been replaced by a non *http.Transport.
+func tuneDefaultTransport() {
+	tuneOnce.Do(func() {
+		tr, ok := http.DefaultTransport.(*http.Transport)
+		if !ok {
+			log.Warnf("http.DefaultTransport is %T, not *http.Transport; skip setting MaxIdleConnsPerHost", http.DefaultTransport)
+			return
+		}
+		tr.MaxIdleConnsPerHost = defaultMaxIdleConnsPerHost
+	})
+}
 
 type router struct {
 	middlewares []middleware.Wrapper
@@ -38,7 +59,7 @@ func New(opts ...Option) http.Handler {
 		opt(r)
 	}
 
-	http.DefaultTransport.(*http.Transport).MaxIdleConnsPerHost = 32
+	tuneDefaultTransport()
 
 	rt := mux.NewRouter().StrictSlash(true)
 	for _, route := range r.routes {
@@ -70,7 +91,14 @@ func (*router) routing(name, _ string, m []string, h rest.Func) http.Handler {
 					// execute only if the request method is inside the method list
 					code, err = h(w, r)
 					if err != nil && code != http.StatusServiceUnavailable {
-						err = json.ErrorHandler(w, r,
+						er := r
+						if code == http.StatusRequestTimeout {
+							// the timed-out handler goroutine may still be reading r.Body,
+							// so do not read it again for the error detail.
+							er = r.WithContext(r.Context())
+							er.Body = http.NoBody
+						}
+						err = json.ErrorHandler(w, er,
 							err.Error()+" at handler "+name,
 							code,
 							err)

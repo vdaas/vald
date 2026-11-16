@@ -30,11 +30,11 @@ var defaultTimeoutOpts = []TimeoutOption{
 
 func WithTimeout(dur string) TimeoutOption {
 	return func(t *timeout) {
-		var err error
-		t.dur, err = timeutil.Parse(dur)
-		if err != nil {
-			t.dur = time.Second * 3
+		d, err := timeutil.Parse(dur)
+		if err != nil || d <= 0 {
+			d = time.Second * 3
 		}
+		t.dur = d
 	}
 }
 

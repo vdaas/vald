@@ -41,7 +41,6 @@ func (s *server) Update(
 		vec.GetId(), req, len(vec.GetVector()), s.faiss.GetDimensionSize()); err != nil {
 		return nil, err
 	}
-
 	uuid := vec.GetId()
 	if len(uuid) == 0 {
 		err = errors.ErrInvalidUUID(uuid)
@@ -63,6 +62,11 @@ func (s *server) Update(
 		return nil, err
 	}
 
+	if err = s.validateVectorValue(span, vald.UpdateRPCName, faissResourceType+"/faiss.Update",
+		vec.GetId(), req, vec.GetVector()); err != nil {
+		return nil, err
+	}
+
 	err = s.faiss.UpdateWithTime(uuid, vec.GetVector(), req.GetConfig().GetTimestamp())
 	if err != nil {
 		var attrs []attribute.KeyValue
@@ -75,7 +79,8 @@ func (s *server) Update(
 				s.resourceInfo(faissResourceType+"/faiss.Update"))
 			log.Warn(err)
 			attrs = trace.StatusCodeNotFound(err.Error())
-		} else if errors.Is(err, errors.ErrUUIDNotFound(0)) || errors.Is(err, errors.ErrInvalidDimensionSize(len(vec.GetVector()), s.faiss.GetDimensionSize())) {
+		} else if errors.Is(err, errors.ErrUUIDNotFound(0)) || errors.Is(err, errors.ErrInvalidDimensionSize(len(vec.GetVector()), s.faiss.GetDimensionSize())) ||
+			errors.Is(err, errors.ErrInvalidTimestamp(req.GetConfig().GetTimestamp())) {
 			err = status.WrapWithInvalidArgument(fmt.Sprintf("Update API invalid argument for uuid \"%s\" vec \"%v\" detected", vec.GetId(), vec.GetVector()), err,
 				&errdetails.RequestInfo{
 					RequestId:   req.GetVector().GetId(),

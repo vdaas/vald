@@ -93,6 +93,14 @@ func New(path string) (cfg *Data, err error) {
 	}
 
 	if cfg.AgentSidecar != nil {
+		// AgentSidecar.Bind leaves its default Client and BlobStorage unbound (nil Net/Transport/S3/CloudStorage),
+		// and the usecases dereference those sub-configs unconditionally.
+		if cfg.AgentSidecar.Client == nil {
+			cfg.AgentSidecar.Client = new(config.Client)
+		}
+		if cfg.AgentSidecar.BlobStorage == nil {
+			cfg.AgentSidecar.BlobStorage = new(config.Blob)
+		}
 		cfg.AgentSidecar = cfg.AgentSidecar.Bind()
 	} else {
 		return nil, errors.ErrInvalidConfig
