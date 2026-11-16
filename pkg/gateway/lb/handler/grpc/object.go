@@ -154,14 +154,18 @@ func broadcastFirst[T any](
 	if hasHit.Load() {
 		return hitVal, true, nil
 	}
+	if err == nil {
+		err = ctx.Err()
+	}
 	var zero T
 	return zero, false, err
 }
 
 func (s *server) exists(ctx context.Context, uuid string) (id *payload.Object_ID, err error) {
+	ctx = grpc.WrapGRPCMethod(ctx, "exists")
 	var span trace.Span
 	if trace.Enabled() {
-		ctx, span = trace.StartSpan(grpc.WrapGRPCMethod(ctx, "exists"), apiName+"/"+vald.ExistsRPCName+"/exists")
+		ctx, span = trace.StartSpan(ctx, apiName+"/"+vald.ExistsRPCName+"/exists")
 		defer trace.End(span)
 	}
 
@@ -194,9 +198,10 @@ func (s *server) exists(ctx context.Context, uuid string) (id *payload.Object_ID
 func (s *server) Exists(
 	ctx context.Context, meta *payload.Object_ID,
 ) (id *payload.Object_ID, err error) {
+	ctx = grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.ObjectRPCServiceName+"/"+vald.ExistsRPCName)
 	var span trace.Span
 	if trace.Enabled() {
-		ctx, span = trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.ObjectRPCServiceName+"/"+vald.ExistsRPCName), apiName+"/"+vald.ExistsRPCName)
+		ctx, span = trace.StartSpan(ctx, apiName+"/"+vald.ExistsRPCName)
 		defer trace.End(span)
 	}
 	uuid := meta.GetId()
@@ -282,9 +287,10 @@ func (s *server) getObject(
 func (s *server) GetObject(
 	ctx context.Context, req *payload.Object_VectorRequest,
 ) (vec *payload.Object_Vector, err error) {
+	ctx = grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.ObjectRPCServiceName+"/"+vald.GetObjectRPCName)
 	var span trace.Span
 	if trace.Enabled() {
-		ctx, span = trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.ObjectRPCServiceName+"/"+vald.GetObjectRPCName), apiName+"/"+vald.GetObjectRPCName)
+		ctx, span = trace.StartSpan(ctx, apiName+"/"+vald.GetObjectRPCName)
 		defer trace.End(span)
 	}
 	uuid := req.GetId().GetId()
@@ -451,9 +457,10 @@ func (s *server) StreamListObject(
 func (s *server) GetTimestamp(
 	ctx context.Context, req *payload.Object_TimestampRequest,
 ) (ts *payload.Object_Timestamp, err error) {
+	ctx = grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.ObjectRPCServiceName+"/"+vald.GetTimestampRPCName)
 	var span trace.Span
 	if trace.Enabled() {
-		ctx, span = trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.ObjectRPCServiceName+"/"+vald.GetTimestampRPCName), apiName+"/"+vald.GetTimestampRPCName)
+		ctx, span = trace.StartSpan(ctx, apiName+"/"+vald.GetTimestampRPCName)
 		defer trace.End(span)
 	}
 	uuid := req.GetId().GetId()

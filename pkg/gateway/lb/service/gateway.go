@@ -31,6 +31,7 @@ import (
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/atomic"
+	"google.golang.org/grpc/connectivity"
 )
 
 type Gateway interface {
@@ -65,6 +66,12 @@ func (g *gateway) getValdClient(conn *grpc.ClientConn) vald.Client {
 	if c, ok := g.vcs.Load(conn); ok {
 		return c
 	}
+	g.vcs.Range(func(k *grpc.ClientConn, _ vald.Client) bool {
+		if k.GetState() == connectivity.Shutdown {
+			g.vcs.Delete(k)
+		}
+		return true
+	})
 	c := vc.NewFromConn(conn)
 	actual, _ := g.vcs.LoadOrStore(conn, c)
 	return actual

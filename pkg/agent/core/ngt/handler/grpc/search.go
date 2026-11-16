@@ -159,6 +159,24 @@ func (s *server) Search(
 				})
 			log.Warn(err)
 			attrs = trace.StatusCodeInvalidArgument(err.Error())
+		case errors.Is(err, context.Canceled):
+			err = status.WrapWithCanceled("Search API canceled to process search request", err,
+				&errdetails.RequestInfo{
+					RequestId:   req.GetConfig().GetRequestId(),
+					ServingData: errdetails.Serialize(req),
+				},
+				s.resourceInfo(ngtResourceType+"/ngt.Search"))
+			log.Debug(err)
+			attrs = trace.StatusCodeCancelled(err.Error())
+		case errors.Is(err, context.DeadlineExceeded):
+			err = status.WrapWithDeadlineExceeded("Search API deadline exceeded to process search request", err,
+				&errdetails.RequestInfo{
+					RequestId:   req.GetConfig().GetRequestId(),
+					ServingData: errdetails.Serialize(req),
+				},
+				s.resourceInfo(ngtResourceType+"/ngt.Search"))
+			log.Debug(err)
+			attrs = trace.StatusCodeDeadlineExceeded(err.Error())
 		default:
 			err = status.WrapWithInternal("Search API failed to process search request", err,
 				&errdetails.RequestInfo{
@@ -282,6 +300,24 @@ func (s *server) SearchByID(
 				})
 			log.Warn(err)
 			attrs = trace.StatusCodeFailedPrecondition(err.Error())
+		case errors.Is(err, context.Canceled):
+			err = status.WrapWithCanceled("Search API canceled to process search request", err,
+				&errdetails.RequestInfo{
+					RequestId:   req.GetConfig().GetRequestId(),
+					ServingData: errdetails.Serialize(req),
+				},
+				s.resourceInfo(ngtResourceType+"/ngt.Search"))
+			log.Debug(err)
+			attrs = trace.StatusCodeCancelled(err.Error())
+		case errors.Is(err, context.DeadlineExceeded):
+			err = status.WrapWithDeadlineExceeded("Search API deadline exceeded to process search request", err,
+				&errdetails.RequestInfo{
+					RequestId:   req.GetConfig().GetRequestId(),
+					ServingData: errdetails.Serialize(req),
+				},
+				s.resourceInfo(ngtResourceType+"/ngt.Search"))
+			log.Debug(err)
+			attrs = trace.StatusCodeDeadlineExceeded(err.Error())
 		default:
 			err = status.WrapWithInternal("SearchByID API failed to process search request", err,
 				&errdetails.RequestInfo{

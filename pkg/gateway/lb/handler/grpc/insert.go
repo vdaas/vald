@@ -41,9 +41,10 @@ import (
 func (s *server) Insert(
 	ctx context.Context, req *payload.Insert_Request,
 ) (ce *payload.Object_Location, err error) {
+	ctx = grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.InsertRPCServiceName+"/"+vald.InsertRPCName)
 	var span trace.Span
 	if trace.Enabled() {
-		ctx, span = trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.InsertRPCServiceName+"/"+vald.InsertRPCName), apiName+"/"+vald.InsertRPCName)
+		ctx, span = trace.StartSpan(ctx, apiName+"/"+vald.InsertRPCName)
 		defer trace.End(span)
 	}
 	uuid := req.GetVector().GetId()

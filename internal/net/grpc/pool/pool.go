@@ -378,10 +378,10 @@ func slotAt(slots []atomic.Pointer[poolConn], idx uint64) (ridx uint64, pc *pool
 // loadFrom reads idx from the caller's slots snapshot and falls back to the
 // current slots only when the snapshot was empty.
 func (p *pool) loadFrom(slots []atomic.Pointer[poolConn], idx uint64) (ridx uint64, pc *poolConn) {
-	if len(slots) == 0 {
-		return p.load(idx)
+	if int(idx) < len(slots) {
+		return idx, slots[idx].Load()
 	}
-	return slotAt(slots, idx)
+	return p.load(idx)
 }
 
 // casStore atomically replaces the connection at idx of slots only if the slot
@@ -761,11 +761,7 @@ func (p *pool) getHealthyConn(ctx context.Context) (pc *poolConn, ok bool) {
 			idx -= sz
 		}
 
-		if int(idx) < len(slots) {
-			pc = slots[idx].Load()
-		} else {
-			_, pc = p.load(idx)
-		}
+		_, pc = p.loadFrom(slots, idx)
 
 		if pc != nil && pc.conn != nil {
 			state := pc.getState()
@@ -797,11 +793,7 @@ func (p *pool) getHealthyConn(ctx context.Context) (pc *poolConn, ok bool) {
 			idx -= sz
 		}
 
-		if int(idx) < len(slots) {
-			pc = slots[idx].Load()
-		} else {
-			_, pc = p.load(idx)
-		}
+		_, pc = p.loadFrom(slots, idx)
 
 		if pc == nil || pc.conn == nil {
 			rc = append(rc, idx)
@@ -851,11 +843,7 @@ func (p *pool) getHealthyConn(ctx context.Context) (pc *poolConn, ok bool) {
 
 	// Third pass return connected pool conn
 	for _, idx := range rc {
-		if int(idx) < len(slots) {
-			pc = slots[idx].Load()
-		} else {
-			_, pc = p.load(idx)
-		}
+		_, pc = p.loadFrom(slots, idx)
 		if pc != nil && pc.conn != nil && pc.getState() != connectivity.Shutdown {
 			return pc, true
 		}

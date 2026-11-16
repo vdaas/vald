@@ -702,7 +702,7 @@ func (v *valdPairingHeapAggr) Send(ctx context.Context, data *payload.Search_Res
 }
 
 func (v *valdPairingHeapAggr) Result() *payload.Search_Response {
-	for !v.ph.IsEmpty() && (v.num == 0 || len(v.result) <= v.num) {
+	for !v.ph.IsEmpty() && (v.num == 0 || len(v.result) < v.num) {
 		var minDist *DistPayload
 		minDist, v.ph = v.ph.ExtractMin()
 		if minDist != nil {

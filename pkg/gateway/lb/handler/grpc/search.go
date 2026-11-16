@@ -38,9 +38,10 @@ import (
 func (s *server) Search(
 	ctx context.Context, req *payload.Search_Request,
 ) (res *payload.Search_Response, err error) {
+	ctx = grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.SearchRPCName)
 	var span trace.Span
 	if trace.Enabled() {
-		ctx, span = trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.SearchRPCName), apiName+"/"+vald.SearchRPCName)
+		ctx, span = trace.StartSpan(ctx, apiName+"/"+vald.SearchRPCName)
 		defer trace.End(span)
 	}
 	vl := len(req.GetVector())
@@ -83,9 +84,10 @@ func (s *server) Search(
 func (s *server) SearchByID(
 	ctx context.Context, req *payload.Search_IDRequest,
 ) (res *payload.Search_Response, err error) {
+	ctx = grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.SearchByIDRPCName)
 	var span trace.Span
 	if trace.Enabled() {
-		ctx, span = trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.SearchByIDRPCName), apiName+"/"+vald.SearchByIDRPCName)
+		ctx, span = trace.StartSpan(ctx, apiName+"/"+vald.SearchByIDRPCName)
 		defer trace.End(span)
 	}
 	uuid := req.GetId()
