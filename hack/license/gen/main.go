@@ -135,6 +135,7 @@ var (
 	sharpEscape = "#"
 	skipDir     = []string{
 		"apis/proto/v1/tikv",
+		"pprof",
 	}
 )
 
@@ -200,6 +201,8 @@ func dirwalk(dir string) ([]string, error) {
 			continue
 		}
 		switch filepath.Ext(f.Name()) {
+		case ".gz", ".pb.gz", ".pb":
+			continue
 		case
 			".ai",
 			".all-contributorsrc",
@@ -277,6 +280,10 @@ func readAndRewrite(path string) error {
 		return err
 	}
 	if isSym {
+		return nil
+	}
+	switch filepath.Ext(path) {
+	case ".gz", ".pb.gz", ".pb":
 		return nil
 	}
 
