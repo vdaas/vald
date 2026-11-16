@@ -24,13 +24,14 @@ import (
 
 func TestLB_Bind(t *testing.T) {
 	type fields struct {
-		Discoverer     *DiscovererClient
-		AgentName      string
-		AgentNamespace string
-		AgentDNS       string
-		NodeName       string
-		AgentPort      int
-		IndexReplica   int
+		Discoverer        *DiscovererClient
+		ReadReplicaClient ReadReplicaClient
+		AgentName         string
+		AgentNamespace    string
+		AgentDNS          string
+		NodeName          string
+		AgentPort         int
+		IndexReplica      int
 	}
 	type want struct {
 		want *LB
@@ -162,6 +163,57 @@ func TestLB_Bind(t *testing.T) {
 				},
 			}
 		}(),
+		func() test {
+			envPrefix := "LB_BIND_READ_REPLICA_"
+			duration := "1s"
+			healthCheckDuration := "5s"
+			m := map[string]string{
+				envPrefix + "DURATION":              duration,
+				envPrefix + "HEALTH_CHECK_DURATION": healthCheckDuration,
+			}
+			return test{
+				name: "return LB with the ReadReplicaClient bound from the environment variable when its Client is not nil",
+				fields: fields{
+					ReadReplicaClient: ReadReplicaClient{
+						Duration: "_" + envPrefix + "DURATION_",
+						Client: &GRPCClient{
+							HealthCheckDuration: "_" + envPrefix + "HEALTH_CHECK_DURATION_",
+						},
+					},
+				},
+				beforeFunc: func(t *testing.T) {
+					t.Helper()
+					for k, v := range m {
+						t.Setenv(k, v)
+					}
+				},
+				checkFunc: func(_ want, got *LB) error {
+					rr := got.ReadReplicaClient
+					if rr.Duration != duration {
+						return errors.Errorf("ReadReplicaClient.Duration got = %q, want %q", rr.Duration, duration)
+					}
+					if rr.Client == nil || rr.Client.HealthCheckDuration != healthCheckDuration {
+						return errors.Errorf("ReadReplicaClient.Client got = %+v, want HealthCheckDuration %q", rr.Client, healthCheckDuration)
+					}
+					return nil
+				},
+			}
+		}(),
+		{
+			name: "return LB with the ReadReplicaClient left disabled when its Client is nil",
+			fields: fields{
+				ReadReplicaClient: ReadReplicaClient{
+					Duration: "1s",
+				},
+			},
+			checkFunc: func(_ want, got *LB) error {
+				// a nil Client disables read replica (pkg/gateway/lb/usecase), so Bind must not default it.
+				if got.ReadReplicaClient.Client != nil || got.ReadReplicaClient.AgentClientOptions != nil {
+					return errors.Errorf("ReadReplicaClient got = %+v, want nil Client and AgentClientOptions", got.ReadReplicaClient)
+				}
+				return nil
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -186,6 +238,8 @@ func TestLB_Bind(t *testing.T) {
 				NodeName:       test.fields.NodeName,
 				IndexReplica:   test.fields.IndexReplica,
 				Discoverer:     test.fields.Discoverer,
+
+				ReadReplicaClient: test.fields.ReadReplicaClient,
 			}
 
 			got := g.Bind()

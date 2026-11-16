@@ -25,10 +25,8 @@ import (
 	"github.com/vdaas/vald/internal/test/goleak"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/util/workqueue"
 	kclient "sigs.k8s.io/controller-runtime/pkg/client"
@@ -112,11 +110,9 @@ func newManagerMock(t *testing.T, c k8s.Client) *managerMock {
 
 func newPod(name, namespace string) *corev1.Pod {
 	return &corev1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-			Labels:    map[string]string{"app": "vald-agent"},
-		},
+		Name:      name,
+		Namespace: namespace,
+		Labels:    map[string]string{"app": "vald-agent"},
 	}
 }
 
@@ -200,7 +196,7 @@ func TestListReconciler_Watches_SingleFixedRequest(t *testing.T) {
 		t.Fatalf("workqueue length = %d, want 1 (all events must dedup to the fixed request)", got)
 	}
 	req, _ := q.Get()
-	want := reconcile.Request{NamespacedName: types.NamespacedName{Name: "pod watcher"}}
+	want := reconcile.Request{Name: "pod watcher"}
 	if req != want {
 		t.Errorf("queued request = %+v, want %+v", req, want)
 	}
@@ -536,7 +532,7 @@ func TestObjectReconciler_Reconcile(t *testing.T) {
 			rec := rc.NewReconciler(context.Background(), mgr)
 
 			res, err := rec.Reconcile(context.Background(), reconcile.Request{
-				NamespacedName: types.NamespacedName{Name: "target", Namespace: "default"},
+				Name: "target", Namespace: "default",
 			})
 			if tc.want.err != (err != nil) {
 				t.Errorf("Reconcile() error = %v, wantErr %v", err, tc.want.err)

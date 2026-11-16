@@ -56,20 +56,21 @@ func New(path string) (cfg *Data, err error) {
 		cfg.Server = cfg.Server.Bind()
 	}
 
-	if cfg.Observability != nil {
-		cfg.Observability = cfg.Observability.Bind()
+	// The usecase dereferences Observability and Job.Image unconditionally, so a
+	// config that omits those sections gets bound empty defaults instead of a nil
+	// pointer panic (the vald operator config does the same for Observability).
+	if cfg.Observability == nil {
+		cfg.Observability = new(config.Observability)
 	}
+	cfg.Observability = cfg.Observability.Bind()
 
-	if cfg.Job != nil {
-		// Image is *BenchmarkJobImageInfo with json:"...,omitempty", so it can be
-		// nil even when Job is set (a config that specifies job: but omits image:).
-		// Bind() has a pointer receiver that dereferences the receiver, so guard it.
-		if cfg.Job.Image != nil {
-			cfg.Job.Image = cfg.Job.Image.Bind()
-		}
-	} else {
+	if cfg.Job == nil {
 		cfg.Job = new(config.OperatorJobConfig)
 	}
+	if cfg.Job.Image == nil {
+		cfg.Job.Image = new(config.BenchmarkJobImageInfo)
+	}
+	cfg.Job.Image = cfg.Job.Image.Bind()
 	return cfg, nil
 }
 

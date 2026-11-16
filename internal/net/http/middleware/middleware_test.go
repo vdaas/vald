@@ -16,10 +16,15 @@ package middleware
 import (
 	"testing"
 
+	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/log/logger"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestMain(m *testing.M) {
+	// The timeout tests make handlers panic on purpose; safety logs a goroutine dump for
+	// each one, and tparse reports a dump in the test output as a panic of the package.
+	log.Init(log.WithLoggerType(logger.NOP.String()))
 	goleak.VerifyTestMain(m)
 }
 

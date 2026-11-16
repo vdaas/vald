@@ -14,6 +14,7 @@
 package middleware
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -175,6 +176,145 @@ func Test_timeout_Wrap(t *testing.T) {
 			code, err := to.Wrap(test.args.h)(test.args.w, test.args.r)
 			if err := test.checkFunc(code, err); err != nil {
 				t.Error(err)
+			}
+		})
+	}
+}
+
+func Test_timeout_Wrap_discardsLateWrite(t *testing.T) {
+	t.Parallel()
+	release := make(chan struct{})
+	written := make(chan error, 1)
+	h := func(w http.ResponseWriter, _ *http.Request) (int, error) {
+		select {
+		case <-release:
+		case <-t.Context().Done():
+			written <- t.Context().Err()
+			return http.StatusOK, nil
+		}
+		w.Header().Set("X-Late", "1")
+		w.WriteHeader(http.StatusOK)
+		_, err := w.Write([]byte("late"))
+		written <- err
+		return http.StatusOK, nil
+	}
+	eg, _ := errgroup.New(t.Context())
+	to := &timeout{dur: time.Millisecond, eg: eg}
+	rec := httptest.NewRecorder()
+	// the handler is blocked until release is closed, so Wrap can only return by the timeout.
+	code, err := to.Wrap(h)(rec, httptest.NewRequest(http.MethodPost, "/", nil))
+	if code != http.StatusRequestTimeout || err == nil {
+		t.Fatalf("want (%d, non-nil error), got (%d, %v)", http.StatusRequestTimeout, code, err)
+	}
+	close(release)
+	select {
+	case werr := <-written:
+		if !errors.Is(werr, http.ErrHandlerTimeout) {
+			t.Errorf("late write error want: %v, got: %v", http.ErrHandlerTimeout, werr)
+		}
+	case <-time.After(10 * time.Second):
+		t.Fatal("handler did not finish")
+	}
+	if rec.Body.Len() != 0 || rec.Header().Get("X-Late") != "" {
+		t.Errorf("late handler output reached the real writer: header=%v body=%q", rec.Header(), rec.Body.String())
+	}
+}
+
+func Test_timeout_Wrap_flushesResponse(t *testing.T) {
+	t.Parallel()
+	h := func(w http.ResponseWriter, _ *http.Request) (int, error) {
+		w.Header().Set("X-Test", "1")
+		w.WriteHeader(http.StatusCreated)
+		_, err := w.Write([]byte("ok"))
+		return http.StatusOK, err
+	}
+	eg, _ := errgroup.New(t.Context())
+	to := &timeout{dur: time.Minute, eg: eg}
+	rec := httptest.NewRecorder()
+	code, err := to.Wrap(h)(rec, httptest.NewRequest(http.MethodPost, "/", nil))
+	if code != http.StatusOK || err != nil {
+		t.Fatalf("want (%d, nil), got (%d, %v)", http.StatusOK, code, err)
+	}
+	if rec.Code != http.StatusCreated || rec.Body.String() != "ok" || rec.Header().Get("X-Test") != "1" {
+		t.Errorf("response not flushed: code=%d header=%v body=%q", rec.Code, rec.Header(), rec.Body.String())
+	}
+}
+
+// Test_timeout_Wrap_inline runs the handler inline (errgroup limit 1) so that its result is
+// already sent when Wrap selects, which makes the outcome independent of goroutine scheduling.
+func Test_timeout_Wrap_inline(t *testing.T) {
+	t.Parallel()
+	wantErr := errors.New("failed")
+	type test struct {
+		h        func(cancel context.CancelFunc) rest.Func
+		name     string
+		wantMsg  string
+		wantCode int
+	}
+	tests := []test{
+		{
+			name: "returns timeout when the context is done before the failed handler returns",
+			h: func(cancel context.CancelFunc) rest.Func {
+				return func(w http.ResponseWriter, _ *http.Request) (int, error) {
+					cancel()
+					return http.StatusInternalServerError, wantErr
+				}
+			},
+			wantCode: http.StatusRequestTimeout,
+			wantMsg:  "handler timeout",
+		},
+		{
+			name: "returns timeout when the context is done before the succeeded handler returns",
+			h: func(cancel context.CancelFunc) rest.Func {
+				return func(w http.ResponseWriter, _ *http.Request) (int, error) {
+					cancel()
+					return http.StatusOK, nil
+				}
+			},
+			wantCode: http.StatusRequestTimeout,
+			wantMsg:  "handler timeout",
+		},
+		{
+			name: "returns internal server error when the handler panics",
+			h: func(context.CancelFunc) rest.Func {
+				return func(w http.ResponseWriter, _ *http.Request) (int, error) {
+					panic("handler panic")
+				}
+			},
+			wantCode: http.StatusInternalServerError,
+			wantMsg:  "handler panic",
+		},
+		{
+			// a runtime.Error is re-panicked by safety.RecoverFunc and would end the process
+			name: "returns internal server error when the handler panics with a runtime error",
+			h: func(context.CancelFunc) rest.Func {
+				return func(w http.ResponseWriter, _ *http.Request) (int, error) {
+					s := make([]int, len(w.Header())) // empty: w has no headers
+					idx := len(s) + 1                 // not a constant, so vet does not see the out-of-range index
+					_ = s[idx]                        //nolint:gosec // out of range on purpose: this raises a runtime.Error
+					return http.StatusOK, nil
+				}
+			},
+			wantCode: http.StatusInternalServerError,
+			wantMsg:  "index out of range",
+		},
+	}
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			eg, _ := errgroup.New(tt.Context())
+			eg.SetLimit(1)
+			to := &timeout{dur: time.Minute, eg: eg}
+			ctx, cancel := context.WithCancel(tt.Context())
+			defer cancel()
+			r := httptest.NewRequest(http.MethodPost, "/", nil).WithContext(ctx)
+			// repeat because the old implementation returned a random result
+			for range 100 {
+				code, err := to.Wrap(test.h(cancel))(httptest.NewRecorder(), r)
+				if code != test.wantCode || err == nil || !strings.Contains(err.Error(), test.wantMsg) {
+					tt.Fatalf("want (%d, error containing %q), got (%d, %v)", test.wantCode, test.wantMsg, code, err)
+				}
 			}
 		})
 	}

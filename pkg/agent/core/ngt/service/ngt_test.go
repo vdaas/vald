@@ -17,11 +17,14 @@ package service
 
 import (
 	"context"
+	"encoding/gob"
 	"fmt"
 	"io/fs"
 	"math"
 	"path/filepath"
-	"sync/atomic"
+	"slices"
+	"strconv"
+	"syscall"
 	"testing"
 	"time"
 
@@ -30,6 +33,7 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/core/algorithm"
 	core "github.com/vdaas/vald/internal/core/algorithm/ngt"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
@@ -40,6 +44,7 @@ import (
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/atomic"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	testdata "github.com/vdaas/vald/internal/test"
 	"github.com/vdaas/vald/internal/test/data/vector"
@@ -795,6 +800,70 @@ func Test_needsBackup(t *testing.T) {
 			}
 		}(),
 	}
+	// An unreadable metadata.json next to index data (crash while writing it) must be
+	// treated as a broken index so that rebuild backs it up instead of deleting it.
+	for _, corrupt := range []struct {
+		modify func(t *testing.T, metafile string)
+		name   string
+	}{
+		{
+			name: "returns true when metadata.json is empty",
+			modify: func(t *testing.T, metafile string) {
+				t.Helper()
+				if err := os.Truncate(metafile, 0); err != nil {
+					t.Errorf("failed to truncate metadata.json: %v", err)
+				}
+			},
+		},
+		{
+			name: "returns true when metadata.json is truncated",
+			modify: func(t *testing.T, metafile string) {
+				t.Helper()
+				b, err := os.ReadFile(metafile)
+				if err != nil {
+					t.Errorf("failed to read metadata.json: %v", err)
+					return
+				}
+				if len(b) < 2 {
+					t.Errorf("metadata.json is too short to truncate: %d bytes", len(b))
+					return
+				}
+				if err := os.Truncate(metafile, int64(len(b)/2)); err != nil {
+					t.Errorf("failed to truncate metadata.json: %v", err)
+				}
+			},
+		},
+		{
+			name: "returns true when metadata.json is null",
+			modify: func(t *testing.T, metafile string) {
+				t.Helper()
+				if err := os.WriteFile(metafile, []byte("null"), fs.ModePerm); err != nil {
+					t.Errorf("failed to write metadata.json: %v", err)
+				}
+			},
+		},
+	} {
+		tests = append(tests, func() test {
+			tmpDir := t.TempDir()
+			validIndexDir := testdata.GetTestdataPath(testdata.ValidIndex)
+			return test{
+				name: corrupt.name,
+				args: args{
+					path: tmpDir,
+				},
+				want: want{
+					need: true,
+				},
+				beforeFunc: func(t *testing.T, a args) {
+					t.Helper()
+					if err := file.CopyDir(t.Context(), validIndexDir, tmpDir); err != nil {
+						t.Errorf("failed to copy index files: %v", err)
+					}
+					corrupt.modify(t, filepath.Join(tmpDir, metadata.AgentMetadataFileName))
+				},
+			}
+		}())
+	}
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
@@ -1111,6 +1180,85 @@ func Test_ngt_Close(t *testing.T) {
 			require.Equal(tt, test.want, err)
 		})
 	}
+}
+
+func Test_ngt_Close_waitsForInflightCreateIndex(t *testing.T) {
+	t.Parallel()
+	cfg := defaultConfig
+	cfg.Dimension = 3
+
+	nn, err := New(&cfg, WithIndexPath(t.TempDir()))
+	require.NoError(t, err)
+	n, ok := nn.(*ngt)
+	require.True(t, ok)
+
+	require.NoError(t, n.InsertWithTime("test-uuid", []float32{1.0, 2.0, 3.0}, time.Now().UnixNano()))
+	require.NoError(t, n.CreateIndex(t.Context(), 10))
+	require.NoError(t, n.SaveIndex(t.Context()))
+	require.Equal(t, n.NumberOfCreateIndexExecution(), n.lastNumberOfCreateIndexExecution())
+
+	// Simulate an auto-index CreateIndex in its graph build phase: the batch is already popped
+	// from the vqueue and nocie is not bumped yet.
+	n.indexing.Store(true)
+
+	ctx, cancel := context.WithTimeout(t.Context(), 30*time.Second)
+	defer cancel()
+	done := make(chan error, 1)
+	go func() {
+		done <- n.Close(ctx)
+	}()
+	select {
+	case err := <-done:
+		t.Fatalf("Close returned while CreateIndex was still in progress: %v", err)
+	case <-time.After(300 * time.Millisecond):
+	}
+
+	// The in-flight CreateIndex finishes.
+	n.nocie.Add(1)
+	n.indexing.Store(false)
+
+	select {
+	case err := <-done:
+		require.NoError(t, err)
+	case <-time.After(20 * time.Second):
+		cancel()
+		t.Fatal("Close did not return after the in-flight CreateIndex finished")
+	}
+	require.Equal(t, n.NumberOfCreateIndexExecution(), n.lastNumberOfCreateIndexExecution(),
+		"Close must save the generation produced by the in-flight CreateIndex")
+}
+
+func TestCreateIndex_exportsIndexInfoOutsideIndexingWindow(t *testing.T) {
+	t.Parallel()
+	cfg := defaultConfig
+	cfg.Dimension = 3
+	cfg.EnableExportIndexInfoToK8s = true
+	cfg.PodName = "test-pod"
+
+	var (
+		n                    NGT
+		exported             atomic.Bool
+		indexingDuringExport atomic.Bool
+	)
+	mock := &k8s.PatcherMock{}
+	mock.On("ApplyPodAnnotations",
+		testify.Anything,
+		testify.Anything,
+		testify.Anything,
+		testify.Anything,
+	).Run(func(testify.Arguments) {
+		exported.Store(true)
+		indexingDuringExport.Store(n.IsIndexing())
+	}).Return(nil)
+
+	var err error
+	n, err = New(&cfg, WithPatcher(mock))
+	require.NoError(t, err)
+	require.NoError(t, n.InsertWithTime("test-uuid", []float32{1.0, 2.0, 3.0}, time.Now().UnixNano()))
+	require.NoError(t, n.CreateIndex(t.Context(), 10))
+
+	require.True(t, exported.Load(), "index info must be exported after CreateIndex")
+	require.False(t, indexingDuringExport.Load(), "search must not be blocked by the k8s export")
 }
 
 func TestExportIndexInfo(t *testing.T) {
@@ -1668,6 +1816,849 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 	}
 
 	return result
+}
+
+// doneDuringDeletePhaseCtx is done from the start (so vqueue ranges stop after their first
+// entry), but its Err reports nil on the first call, i.e. it looks live when createIndexLocked
+// starts and is cancelled while the delete phase runs.
+//
+//nolint:containedctx // test fake overriding Done/Err of a parent ctx
+type doneDuringDeletePhaseCtx struct {
+	context.Context
+	done     chan struct{}
+	errCalls atomic.Int32
+}
+
+func (c *doneDuringDeletePhaseCtx) Done() <-chan struct{} { return c.done }
+
+func (c *doneDuringDeletePhaseCtx) Err() error {
+	if c.errCalls.Add(1) == 1 {
+		return nil
+	}
+	return context.Canceled
+}
+
+// Test_ngt_createIndexLocked_doesNotApplyInsertsAfterPartialDeletes pins that a run whose ctx
+// is done never applies an insert while the delete of the same Update may still be queued.
+func Test_ngt_createIndexLocked_doesNotApplyInsertsAfterPartialDeletes(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		ctx         func(t *testing.T) context.Context
+		name        string
+		wantIVQ     int
+		wantDVQ     int
+		wantCreated bool
+	}{
+		{
+			name: "ctx done before the run starts leaves the vqueue untouched",
+			ctx: func(t *testing.T) context.Context {
+				t.Helper()
+				ctx, cancel := context.WithCancel(t.Context())
+				cancel()
+				return ctx
+			},
+			wantIVQ:     2,
+			wantDVQ:     2,
+			wantCreated: false,
+		},
+		{
+			name: "ctx done during the delete phase keeps every insert queued",
+			ctx: func(t *testing.T) context.Context {
+				t.Helper()
+				done := make(chan struct{})
+				close(done)
+				return &doneDuringDeletePhaseCtx{Context: t.Context(), done: done}
+			},
+			wantIVQ: 2,
+			wantDVQ: 1,
+			// the delete already applied is still finished and counted so that it gets saved
+			wantCreated: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			cfg := defaultConfig
+			cfg.Dimension = 3
+
+			nn, err := New(&cfg)
+			require.NoError(t, err)
+			n, ok := nn.(*ngt)
+			require.True(t, ok)
+
+			base := time.Now().UnixNano()
+			uuids := []string{"uuid-a", "uuid-b"}
+			for _, uuid := range uuids {
+				require.NoError(t, n.InsertWithTime(uuid, []float32{1, 2, 3}, base))
+			}
+			require.NoError(t, n.CreateIndex(t.Context(), 10))
+			oids := make(map[string]uint32, len(uuids))
+			for _, uuid := range uuids {
+				oid, _, ok := n.kvs.Get(uuid)
+				require.True(t, ok)
+				oids[uuid] = oid
+			}
+			// Update pairs: delete at t, insert at t+1.
+			newVec := []float32{4, 5, 6}
+			for _, uuid := range uuids {
+				require.NoError(t, n.vq.PushDelete(uuid, base+10))
+				require.NoError(t, n.vq.PushInsert(uuid, newVec, base+11))
+			}
+			nocie := n.NumberOfCreateIndexExecution()
+
+			created, err := n.createIndexLocked(tt.ctx(t), 10)
+			require.ErrorIs(t, err, context.Canceled)
+			require.Equal(t, tt.wantCreated, created)
+			require.Equal(t, tt.wantIVQ, n.vq.IVQLen(), "no insert may be applied")
+			require.Equal(t, tt.wantDVQ, n.vq.DVQLen())
+			if tt.wantCreated {
+				require.Equal(t, nocie+1, n.NumberOfCreateIndexExecution())
+			} else {
+				require.Equal(t, nocie, n.NumberOfCreateIndexExecution())
+			}
+			for _, uuid := range uuids {
+				// a uuid whose delete is still queued must keep its old mapping
+				if _, _, dts, _ := n.vq.GetVectorWithTimestamp(uuid); dts != 0 {
+					oid, _, ok := n.kvs.Get(uuid)
+					require.True(t, ok)
+					require.Equal(t, oids[uuid], oid)
+				}
+			}
+
+			// The next run with a live ctx applies the rest.
+			require.NoError(t, n.CreateIndex(t.Context(), 10))
+			require.Zero(t, n.vq.IVQLen())
+			require.Zero(t, n.vq.DVQLen())
+			require.Equal(t, uint64(len(uuids)), n.Len())
+			for _, uuid := range uuids {
+				vec, ts, err := n.GetObject(uuid)
+				require.NoError(t, err)
+				require.Equal(t, newVec, vec)
+				require.Equal(t, base+11, ts)
+			}
+		})
+	}
+}
+
+// Test_ngt_copyNGT_keepsCreateIndexWaiters pins that RegenerateIndexes' copyNGT does not reset
+// the waiter count of CreateIndex callers blocked on this instance; resetting it made the
+// waiter's decrement wrap wfci, disabling CreateIndex dedup and hanging Close's wait.
+func Test_ngt_copyNGT_keepsCreateIndexWaiters(t *testing.T) {
+	t.Parallel()
+
+	n := new(ngt)
+	atomic.StoreUint64(&n.wfci, 1)
+	n.copyNGT(new(ngt))
+	require.Equal(t, uint64(1), atomic.LoadUint64(&n.wfci))
+
+	// the waiter leaves its wait loop
+	atomic.AddUint64(&n.wfci, ^uint64(0))
+	require.Zero(t, atomic.LoadUint64(&n.wfci))
+
+	ctx, cancel := context.WithTimeout(t.Context(), 5*time.Second)
+	defer cancel()
+	require.NoError(t, n.waitForInflightIndexing(ctx), "Close must not wait for a waiter that already left")
+}
+
+func writeGob(t *testing.T, path string, v any) {
+	t.Helper()
+	fi, err := file.Open(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, os.ModePerm)
+	require.NoError(t, err)
+	if err := gob.NewEncoder(fi).Encode(v); err != nil {
+		t.Fatal(errors.Join(err, fi.Close()))
+	}
+	require.NoError(t, fi.Close())
+}
+
+func closeKVS(t *testing.T, n *ngt) {
+	t.Helper()
+	if n.kvs != nil {
+		if err := n.kvs.Close(); err != nil {
+			t.Error(err)
+		}
+	}
+}
+
+// Test_ngt_initNGT_loadTimeout verifies that initNGT returns on a load timeout
+// instead of rebuilding the index while the abandoned load is still running.
+// The timestamp kvsdb file is a FIFO with no writer, so loadKVS blocks in open
+// and load deterministically times out.
+func Test_ngt_initNGT_loadTimeout(t *testing.T) {
+	t.Parallel()
+	dir := t.TempDir()
+	require.NoError(t, metadata.Store(file.Join(dir, metadata.AgentMetadataFileName), &metadata.Metadata{
+		NGT: &metadata.NGT{IndexCount: 1},
+	}))
+	writeGob(t, file.Join(dir, kvsFileName), map[string]uint32{"a": 1})
+	fifo := file.Join(dir, kvsTimestampFileName)
+	require.NoError(t, syscall.Mkfifo(fifo, 0o600))
+
+	eg, _ := errgroup.New(t.Context())
+	n := &ngt{
+		path:             dir,
+		fmap:             make(map[string]int64),
+		kvsdbConcurrency: 1,
+		eg:               eg,
+		minLit:           100 * time.Millisecond,
+		maxLit:           100 * time.Millisecond,
+		litFactor:        time.Millisecond,
+	}
+
+	err := n.initNGT(core.WithDimension(2))
+	if !errors.Is(err, errors.ErrIndexLoadTimeout) {
+		t.Errorf("initNGT() err = %v, want ErrIndexLoadTimeout", err)
+	}
+
+	// Release the abandoned loadKVS: an O_RDWR open of a FIFO does not block on
+	// Linux and serves the reader whether it is already blocked in open or
+	// opens later; the fd stays open until the abandoned load has finished.
+	w, err := file.Open(fifo, os.O_RDWR, 0)
+	if err != nil {
+		// a fallback removed the FIFO, so the abandoned load cannot be released.
+		t.Fatal(err)
+	}
+	if err := gob.NewEncoder(w).Encode(map[string]int64{}); err != nil {
+		t.Error(err)
+	}
+	done := make(chan error, 1)
+	go func() { done <- eg.Wait() }()
+	select {
+	case err := <-done:
+		if err != nil {
+			t.Error(err)
+		}
+		closeKVS(t, n)
+		if n.core != nil {
+			n.core.Close()
+		}
+	case <-time.After(30 * time.Second):
+		t.Error("abandoned load did not finish")
+	}
+	if err := w.Close(); err != nil {
+		t.Error(err)
+	}
+}
+
+// saveTestIndex stores an NGT index of one vector at dir together with its
+// metadata (claiming indexCount entries) and a kvsdb with the given uuids.
+func saveTestIndex(t *testing.T, dir string, indexCount uint64, uuids map[string]uint32) {
+	t.Helper()
+	require.NoError(t, file.MkdirAll(dir, os.ModePerm))
+	c, err := core.New(core.WithIndexPath(dir), core.WithDimension(2))
+	require.NoError(t, err)
+	_, err = c.Insert([]float32{1, 2})
+	require.NoError(t, errors.Join(err, c.CreateIndex(1), c.SaveIndex()))
+	c.Close()
+	require.NoError(t, metadata.Store(file.Join(dir, metadata.AgentMetadataFileName), &metadata.Metadata{
+		NGT: &metadata.NGT{IndexCount: indexCount},
+	}))
+	ts := make(map[string]int64, len(uuids))
+	for k := range uuids {
+		ts[k] = 1
+	}
+	writeGob(t, file.Join(dir, kvsFileName), uuids)
+	writeGob(t, file.Join(dir, kvsTimestampFileName), ts)
+}
+
+// Test_ngt_initNGT_reloadsTooFewPrimary verifies that, in CoW mode, when the
+// primary kvsdb is too small for its metadata and the secondary has even fewer
+// entries, initNGT starts with the reloaded primary. The reload reports the
+// same ErrIndicesAreTooFewComparedToMetadata as the first primary load; treating
+// it as a failure fell through to a fresh empty index and kvsdb.
+func Test_ngt_initNGT_reloadsTooFewPrimary(t *testing.T) {
+	t.Parallel()
+	base := t.TempDir()
+	eg, _ := errgroup.New(t.Context())
+	n := &ngt{
+		basePath:          base,
+		path:              file.Join(base, originIndexDirName),
+		oldPath:           file.Join(base, oldIndexDirName),
+		brokenPath:        file.Join(base, brokenIndexDirName),
+		fmap:              make(map[string]int64),
+		kvsdbConcurrency:  1,
+		eg:                eg,
+		minLit:            time.Minute,
+		maxLit:            time.Minute,
+		litFactor:         time.Millisecond,
+		enableCopyOnWrite: true,
+	}
+	n.tmpPath.Store(t.TempDir())
+	// primary: 2 entries for 10 indices (too few); secondary: 1 entry, consistent.
+	saveTestIndex(t, n.path, 10, map[string]uint32{"a": 1, "b": 2})
+	saveTestIndex(t, n.oldPath, 1, map[string]uint32{"a": 1})
+
+	require.NoError(t, n.initNGT(core.WithDimension(2)))
+	defer closeKVS(t, n)
+	require.NotNil(t, n.core)
+	defer n.core.Close()
+	require.Equal(t, uint64(2), n.kvs.Len(), "the reloaded primary kvsdb must be kept")
+	for _, uuid := range []string{"a", "b"} {
+		_, _, ok := n.kvs.Get(uuid)
+		require.True(t, ok, "kvs entry of %s is missing", uuid)
+	}
+}
+
+// Test_ngt_initNGT_keepsTooFewPrimaryWithoutSecondary verifies that, in CoW
+// mode, when the primary kvsdb is too small for its metadata and neither the
+// secondary nor the non-CoW index can be loaded, initNGT starts with the
+// reloaded primary instead of discarding it for a fresh empty index.
+func Test_ngt_initNGT_keepsTooFewPrimaryWithoutSecondary(t *testing.T) {
+	t.Parallel()
+	base := t.TempDir()
+	eg, _ := errgroup.New(t.Context())
+	n := &ngt{
+		basePath:          base,
+		path:              file.Join(base, originIndexDirName),
+		oldPath:           file.Join(base, oldIndexDirName),
+		brokenPath:        file.Join(base, brokenIndexDirName),
+		fmap:              make(map[string]int64),
+		kvsdbConcurrency:  1,
+		eg:                eg,
+		minLit:            time.Minute,
+		maxLit:            time.Minute,
+		litFactor:         time.Millisecond,
+		enableCopyOnWrite: true,
+	}
+	n.tmpPath.Store(t.TempDir())
+	// primary: 2 entries for 10 indices (too few); no secondary, and base holds
+	// no metadata, so both fallback loads fail.
+	saveTestIndex(t, n.path, 10, map[string]uint32{"a": 1, "b": 2})
+
+	require.NoError(t, n.initNGT(core.WithDimension(2)))
+	defer closeKVS(t, n)
+	require.NotNil(t, n.core)
+	defer n.core.Close()
+	require.Equal(t, uint64(2), n.kvs.Len(), "the reloaded primary kvsdb must be kept")
+	for _, uuid := range []string{"a", "b"} {
+		_, _, ok := n.kvs.Get(uuid)
+		require.True(t, ok, "kvs entry of %s is missing", uuid)
+	}
+}
+
+// closeCountCore counts Close calls on the wrapped core.
+type closeCountCore struct {
+	core.NGT
+	closes atomic.Int32
+}
+
+func (c *closeCountCore) Close() {
+	c.closes.Add(1)
+	c.NGT.Close()
+}
+
+// Test_ngt_RegenerateIndexes_closesOldCore verifies that Flush frees the
+// replaced core instead of leaking the whole C-side index on every call.
+func Test_ngt_RegenerateIndexes_closesOldCore(t *testing.T) {
+	t.Parallel()
+	cfg := defaultConfig
+	cfg.Dimension = 3
+	nn, err := New(&cfg)
+	require.NoError(t, err)
+	n, ok := nn.(*ngt)
+	require.True(t, ok)
+	old := &closeCountCore{NGT: n.core}
+	n.core = old
+
+	require.NoError(t, n.RegenerateIndexes(t.Context()))
+	require.Equal(t, int32(1), old.closes.Load(), "the replaced core must be closed once")
+	require.NotSame(t, old, n.core)
+	require.NotNil(t, n.core)
+	require.NoError(t, n.Close(t.Context()))
+	require.Equal(t, int32(1), old.closes.Load(), "Close must not close the replaced core again")
+}
+
+// Test_ngt_multiple_flatErrors verifies that insertMultiple and deleteMultiple
+// join the per-ID errors once into a flat error (one entry per failed ID)
+// instead of nesting one level per failure, and that every per-ID error the
+// gRPC handlers look up with errors.Is is still reported.
+func Test_ngt_multiple_flatErrors(t *testing.T) {
+	t.Parallel()
+	const n = 4
+	uuids := make([]string, 0, n)
+	for i := range n {
+		uuids = append(uuids, fmt.Sprintf("flat-err-uuid-%d", i))
+	}
+
+	newNGT := func(t *testing.T, stored []string) *ngt {
+		t.Helper()
+		vq, err := vqueue.New()
+		if err != nil {
+			t.Fatal(err)
+		}
+		kv := kvs.New()
+		now := time.Now().UnixNano()
+		for i, uuid := range stored {
+			kv.Set(uuid, uint32(i+1), now)
+		}
+		return &ngt{kvs: kv, vq: vq}
+	}
+
+	tests := []struct {
+		run     func(t *testing.T) error
+		want    func(uuid string) error
+		name    string
+		ordered bool
+	}{
+		{
+			name: "insertMultiple reports ErrUUIDAlreadyExists for every stored id",
+			run: func(t *testing.T) error {
+				t.Helper()
+				vecs := make(map[string][]float32, n)
+				for _, uuid := range uuids {
+					vecs[uuid] = []float32{1}
+				}
+				return newNGT(t, uuids).insertMultiple(vecs, time.Now().UnixNano(), true)
+			},
+			want: errors.ErrUUIDAlreadyExists,
+		},
+		{
+			name: "deleteMultiple reports ErrObjectIDNotFound for every missing id newest first",
+			run: func(t *testing.T) error {
+				t.Helper()
+				return newNGT(t, nil).deleteMultiple(uuids, time.Now().UnixNano(), true)
+			},
+			want:    errors.ErrObjectIDNotFound,
+			ordered: true,
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			err := tc.run(t)
+			if err == nil {
+				t.Fatal("got nil error, want joined per-ID errors")
+			}
+			u, ok := err.(interface{ Unwrap() []error })
+			if !ok {
+				t.Fatalf("got %T, want a joined error", err)
+			}
+			got := u.Unwrap()
+			if len(got) != n {
+				t.Fatalf("got %d flat entries, want %d: %v", len(got), n, err)
+			}
+			for i, uuid := range uuids {
+				want := tc.want(uuid)
+				if !errors.Is(err, want) {
+					t.Errorf("errors.Is(err, %v) = false, err = %v", want, err)
+				}
+				if tc.ordered && got[n-1-i].Error() != want.Error() {
+					t.Errorf("entry %d = %v, want %v (newest first)", n-1-i, got[n-1-i], want)
+				}
+			}
+		})
+	}
+}
+
+// Test_ngt_toSearchResponse_dropsNaNDistance verifies that results whose
+// distance is NaN are dropped while the order of the finite results is kept,
+// and that an all-NaN result set on a non-empty index is reported as
+// ErrEmptySearchResult.
+func Test_ngt_toSearchResponse_dropsNaNDistance(t *testing.T) {
+	t.Parallel()
+	nan := float32(math.NaN())
+	// kvs oid -> uuid: 1 -> "a", 2 -> "b", 3 -> "c"
+	stored := []string{"a", "b", "c"}
+	tests := []struct {
+		wantErr   error
+		name      string
+		stored    []string
+		sr        []algorithm.SearchResult
+		wantIDs   []string
+		wantDists []float32
+		wantNil   bool
+	}{
+		{
+			name:   "mixed NaN and finite keeps only finite in the original order",
+			stored: stored,
+			sr: []algorithm.SearchResult{
+				{ID: 3, Distance: 0.3},
+				{ID: 1, Distance: nan},
+				{ID: 2, Distance: 0.5},
+				{ID: 4, Distance: nan},
+			},
+			wantIDs:   []string{"c", "b"},
+			wantDists: []float32{0.3, 0.5},
+		},
+		{
+			name:   "all NaN on a non-empty index returns ErrEmptySearchResult",
+			stored: stored,
+			sr: []algorithm.SearchResult{
+				{ID: 1, Distance: nan},
+				{ID: 2, Distance: nan},
+			},
+			wantErr: errors.ErrEmptySearchResult,
+			wantNil: true,
+		},
+		{
+			name:    "all NaN on an empty index returns nil, nil",
+			sr:      []algorithm.SearchResult{{ID: 1, Distance: nan}},
+			wantNil: true,
+		},
+		{
+			name:    "empty input on an empty index returns nil, nil",
+			wantNil: true,
+		},
+		{
+			name:    "empty input on a non-empty index returns ErrEmptySearchResult",
+			stored:  stored,
+			wantErr: errors.ErrEmptySearchResult,
+			wantNil: true,
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			kv := kvs.New()
+			now := time.Now().UnixNano()
+			for i, uuid := range tc.stored {
+				kv.Set(uuid, uint32(i+1), now)
+			}
+			n := &ngt{kvs: kv}
+			res, err := n.toSearchResponse(tc.sr)
+			if !errors.Is(err, tc.wantErr) {
+				t.Fatalf("toSearchResponse() error = %v, want %v", err, tc.wantErr)
+			}
+			if tc.wantNil {
+				if res != nil {
+					t.Fatalf("toSearchResponse() = %v, want nil", res)
+				}
+				return
+			}
+			var gotIDs []string
+			var gotDists []float32
+			for _, r := range res.GetResults() {
+				gotIDs = append(gotIDs, r.GetId())
+				gotDists = append(gotDists, r.GetDistance())
+			}
+			if !slices.Equal(gotIDs, tc.wantIDs) || !slices.Equal(gotDists, tc.wantDists) {
+				t.Errorf("toSearchResponse() = ids %v dists %v, want ids %v dists %v", gotIDs, gotDists, tc.wantIDs, tc.wantDists)
+			}
+		})
+	}
+}
+
+// Test_ngt_createIndexLocked_newestWins pins that CreateIndex applies a queued delete or
+// insert only when it is newer than the indexed object. A delete older than the indexed
+// object used to remove it, and a stale Update (delete at t, insert at t+1 <= indexed ts)
+// used to repoint the uuid to the stale vector. An insert applied over an indexed object
+// must remove the replaced object instead of orphaning it in the core.
+func Test_ngt_createIndexLocked_newestWins(t *testing.T) {
+	t.Parallel()
+
+	const uuid = "uuid"
+	oldVec := []float32{1, 2, 3}
+	newVec := []float32{4, 5, 6}
+	tests := []struct {
+		op         func(t *testing.T, n *ngt, base int64)
+		wantTS     func(base int64) int64
+		name       string
+		wantVec    []float32
+		wantExists bool
+		// wantOldRemoved reports whether the initially indexed object is gone from the core.
+		wantOldRemoved bool
+	}{
+		{
+			name: "delete older than the indexed object is skipped",
+			op: func(t *testing.T, n *ngt, base int64) {
+				t.Helper()
+				require.NoError(t, n.DeleteWithTime(uuid, base-10))
+			},
+			wantExists: true,
+			wantVec:    oldVec,
+			wantTS:     func(base int64) int64 { return base },
+		},
+		{
+			name: "stale update is skipped",
+			op: func(t *testing.T, n *ngt, base int64) {
+				t.Helper()
+				require.NoError(t, n.UpdateWithTime(uuid, newVec, base-5))
+			},
+			wantExists: true,
+			wantVec:    oldVec,
+			wantTS:     func(base int64) int64 { return base },
+		},
+		{
+			name: "update whose insert ties the indexed timestamp is skipped",
+			op: func(t *testing.T, n *ngt, base int64) {
+				t.Helper()
+				require.NoError(t, n.UpdateWithTime(uuid, newVec, base-1))
+			},
+			wantExists: true,
+			wantVec:    oldVec,
+			wantTS:     func(base int64) int64 { return base },
+		},
+		{
+			name: "delete at the indexed timestamp is applied",
+			op: func(t *testing.T, n *ngt, base int64) {
+				t.Helper()
+				require.NoError(t, n.DeleteWithTime(uuid, base))
+			},
+			wantOldRemoved: true,
+		},
+		{
+			name: "newer delete is applied",
+			op: func(t *testing.T, n *ngt, base int64) {
+				t.Helper()
+				require.NoError(t, n.DeleteWithTime(uuid, base+10))
+			},
+			wantOldRemoved: true,
+		},
+		{
+			name: "newer update is applied",
+			op: func(t *testing.T, n *ngt, base int64) {
+				t.Helper()
+				require.NoError(t, n.UpdateWithTime(uuid, newVec, base+10))
+			},
+			wantExists:     true,
+			wantVec:        newVec,
+			wantTS:         func(base int64) int64 { return base + 11 },
+			wantOldRemoved: true,
+		},
+		{
+			name: "UpdateTimestamp of a queued update keeps the new vector",
+			op: func(t *testing.T, n *ngt, base int64) {
+				t.Helper()
+				require.NoError(t, n.UpdateWithTime(uuid, newVec, base+10))
+				require.NoError(t, n.UpdateTimestamp(uuid, base+20, false))
+			},
+			wantExists:     true,
+			wantVec:        newVec,
+			wantTS:         func(base int64) int64 { return base + 20 },
+			wantOldRemoved: true,
+		},
+		{
+			// UpdateTimestamp used to raise the kvs timestamp past the queued delete, so
+			// CreateIndex skipped it and served the superseded indexed vector.
+			name: "UpdateTimestamp after a queued update and a newer delete does not resurrect",
+			op: func(t *testing.T, n *ngt, base int64) {
+				t.Helper()
+				require.NoError(t, n.UpdateWithTime(uuid, newVec, base+10))
+				require.NoError(t, n.DeleteWithTime(uuid, base+20))
+				require.Error(t, n.UpdateTimestamp(uuid, base+30, false))
+			},
+			wantOldRemoved: true,
+		},
+		{
+			name: "newer insert over the indexed object replaces it",
+			op: func(t *testing.T, n *ngt, base int64) {
+				t.Helper()
+				require.NoError(t, n.vq.PushInsert(uuid, newVec, base+5))
+			},
+			wantExists:     true,
+			wantVec:        newVec,
+			wantTS:         func(base int64) int64 { return base + 5 },
+			wantOldRemoved: true,
+		},
+		{
+			name: "older insert over the indexed object is dropped",
+			op: func(t *testing.T, n *ngt, base int64) {
+				t.Helper()
+				require.NoError(t, n.vq.PushInsert(uuid, newVec, base-5))
+			},
+			wantExists: true,
+			wantVec:    oldVec,
+			wantTS:     func(base int64) int64 { return base },
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			cfg := defaultConfig
+			cfg.Dimension = len(oldVec)
+
+			nn, err := New(&cfg)
+			require.NoError(t, err)
+			n, ok := nn.(*ngt)
+			require.True(t, ok)
+
+			base := time.Now().UnixNano()
+			require.NoError(t, n.InsertWithTime(uuid, oldVec, base))
+			require.NoError(t, n.CreateIndex(t.Context(), 10))
+			oldOid, _, ok := n.kvs.Get(uuid)
+			require.True(t, ok)
+
+			tt.op(t, n, base)
+			require.NoError(t, n.CreateIndex(t.Context(), 10))
+
+			require.Zero(t, n.vq.IVQLen())
+			require.Zero(t, n.vq.DVQLen())
+			coreVec, err := n.core.GetVector(uint(oldOid))
+			if tt.wantOldRemoved {
+				// NGT reuses removed object IDs, so an insert applied after the old object was
+				// removed may get oldOid back. Only require that oldOid no longer holds oldVec.
+				if err == nil {
+					require.NotEqual(t, oldVec, coreVec, "the replaced or deleted object must be removed from the core")
+				}
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, oldVec, coreVec)
+			}
+
+			oid, kts, ok := n.kvs.Get(uuid)
+			require.Equal(t, tt.wantExists, ok)
+			if !tt.wantExists {
+				require.Zero(t, n.Len())
+				_, _, err = n.GetObject(uuid)
+				require.Error(t, err)
+				return
+			}
+			require.Equal(t, uint64(1), n.Len())
+			if !tt.wantOldRemoved {
+				require.Equal(t, oldOid, oid, "a skipped operation must not repoint the uuid")
+			}
+			require.Equal(t, tt.wantTS(base), kts)
+			vec, ts, err := n.GetObject(uuid)
+			require.NoError(t, err)
+			require.Equal(t, tt.wantVec, vec)
+			require.Equal(t, tt.wantTS(base), ts)
+		})
+	}
+}
+
+// Test_ngt_saveIndex_cancelledCtxFullSnapshot verifies that a save started
+// with a cancelled context still persists the whole kvs. kvs.Range stops
+// silently on cancellation, so the snapshot used to be partial (here: empty)
+// while kvsdb was truncated and the metadata IndexCount matched the truncated
+// count, hiding the loss from the load-time IndexCount/2 > kvs.Len() check.
+// This is the path of the Start loop's SaveIndex on SIGTERM and of a SaveIndex
+// RPC whose client cancels.
+func Test_ngt_saveIndex_cancelledCtxFullSnapshot(t *testing.T) {
+	t.Parallel()
+	const num = 100
+
+	svc, err := New(&defaultConfig, WithIndexPath(t.TempDir()))
+	if err != nil {
+		t.Fatalf("failed to create ngt service: %v", err)
+	}
+	n, ok := svc.(*ngt)
+	if !ok {
+		t.Fatalf("New returned %T, want *ngt", svc)
+	}
+	defer func() {
+		if cerr := n.Close(context.WithoutCancel(t.Context())); cerr != nil {
+			t.Errorf("Close() err = %v", cerr)
+		}
+	}()
+
+	for i := range num {
+		vec := make([]float32, defaultConfig.Dimension)
+		for j := range vec {
+			vec[j] = float32(i*defaultConfig.Dimension + j + 1)
+		}
+		if err = n.Insert("uuid-"+strconv.Itoa(i), vec); err != nil {
+			t.Fatalf("Insert(%d) err = %v", i, err)
+		}
+	}
+	if err = n.CreateIndex(t.Context(), 4); err != nil {
+		t.Fatalf("CreateIndex() err = %v", err)
+	}
+	if got := n.kvs.Len(); got != num {
+		t.Fatalf("setup: kvs.Len() = %d, want %d", got, num)
+	}
+
+	ctx, cancel := context.WithCancel(t.Context())
+	cancel()
+	if err = n.saveIndex(ctx); err != nil {
+		t.Fatalf("saveIndex() err = %v, want nil", err)
+	}
+
+	readGob := func(name string, v any) {
+		t.Helper()
+		fi, oerr := file.Open(file.Join(n.path, name), os.O_RDONLY, os.ModePerm)
+		if oerr != nil {
+			t.Fatal(oerr)
+		}
+		if derr := gob.NewDecoder(fi).Decode(v); derr != nil {
+			t.Fatal(errors.Join(derr, fi.Close()))
+		}
+		if cerr := fi.Close(); cerr != nil {
+			t.Fatal(cerr)
+		}
+	}
+	m := make(map[string]uint32)
+	readGob(kvsFileName, &m)
+	if len(m) != num {
+		t.Errorf("kvsdb entries = %d, want %d", len(m), num)
+	}
+	mt := make(map[string]int64)
+	readGob(kvsTimestampFileName, &mt)
+	if len(mt) != num {
+		t.Errorf("kvs timestamp entries = %d, want %d", len(mt), num)
+	}
+	meta, err := metadata.Load(file.Join(n.path, metadata.AgentMetadataFileName))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if meta.NGT == nil || meta.NGT.IndexCount != num {
+		t.Errorf("metadata = %+v, want NGT.IndexCount %d", meta.NGT, num)
+	}
+}
+
+// update deletes at t and inserts at t+1. t == MaxInt64 used to wrap the
+// insert to MinInt64, which the queue drops behind the MaxInt64 delete: the
+// update reported success and the object disappeared. It must be rejected
+// before the delete; ordinary timestamps keep the delete-at-t / insert-at-t+1.
+func Test_ngt_update_maxTimestamp(t *testing.T) {
+	t.Parallel()
+	const (
+		uuid = "update-ts-uuid"
+		oldT = int64(100)
+	)
+	oldVec, newVec := []float32{9}, []float32{1}
+	tests := []struct {
+		run     func(n *ngt, ts int64) error
+		name    string
+		ts      int64
+		wantErr bool
+	}{
+		{name: "update rejects MaxInt64", run: func(n *ngt, ts int64) error { return n.update(uuid, newVec, ts) }, ts: math.MaxInt64, wantErr: true},
+		{name: "update keeps a normal timestamp", run: func(n *ngt, ts int64) error { return n.update(uuid, newVec, ts) }, ts: 200},
+		{name: "update keeps MaxInt64-1", run: func(n *ngt, ts int64) error { return n.update(uuid, newVec, ts) }, ts: math.MaxInt64 - 1},
+		{name: "updateMultiple rejects MaxInt64", run: func(n *ngt, ts int64) error {
+			return n.updateMultiple(map[string][]float32{uuid: newVec}, ts)
+		}, ts: math.MaxInt64, wantErr: true},
+		{name: "updateMultiple keeps a normal timestamp", run: func(n *ngt, ts int64) error {
+			return n.updateMultiple(map[string][]float32{uuid: newVec}, ts)
+		}, ts: 200},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			vq, err := vqueue.New()
+			if err != nil {
+				t.Fatal(err)
+			}
+			kv := kvs.New()
+			t.Cleanup(func() {
+				if cerr := kv.Close(); cerr != nil {
+					t.Error(cerr)
+				}
+			})
+			if err = vq.PushInsert(uuid, oldVec, oldT); err != nil {
+				t.Fatal(err)
+			}
+			n := &ngt{kvs: kv, vq: vq, dim: 1}
+
+			err = test.run(n, test.ts)
+			vec, its, dts, exists := vq.GetVectorWithTimestamp(uuid)
+			if test.wantErr {
+				if !errors.Is(err, errors.ErrInvalidTimestamp(test.ts)) {
+					t.Fatalf("got error %v, want %v", err, errors.ErrInvalidTimestamp(test.ts))
+				}
+				if !exists || !slices.Equal(vec, oldVec) || its != oldT || dts != 0 {
+					t.Errorf("rejected update changed the queue: vec=%v its=%d dts=%d exists=%t", vec, its, dts, exists)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if !exists || !slices.Equal(vec, newVec) || dts != test.ts || its != test.ts+1 {
+				t.Errorf("got vec=%v its=%d dts=%d exists=%t, want vec=%v its=%d dts=%d", vec, its, dts, exists, newVec, test.ts+1, test.ts)
+			}
+		})
+	}
 }
 
 // NOT IMPLEMENTED BELOW

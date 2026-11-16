@@ -67,5 +67,10 @@ func New(path string) (cfg *Data, err error) {
 	} else {
 		return nil, errors.ErrInvalidConfig
 	}
+
+	// IndexDeleter.Bind leaves a missing discoverer nil, and the usecase dereferences it unconditionally.
+	if cfg.Deletion.Discoverer == nil {
+		return nil, errors.ErrInvalidConfig
+	}
 	return cfg, nil
 }

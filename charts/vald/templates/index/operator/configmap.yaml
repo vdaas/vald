@@ -48,7 +48,7 @@ data:
     operator:
       namespace: {{ $operator.namespace }}
       agent_name: {{ $agent.name }}
-      agent_namespace: {{ $agent.namespace }}
+      agent_namespace: {{ $agent.namespace | default "" | quote }}
       rotator_name: {{ $rotator.name }}
       target_read_replica_id_annotations_key: {{ $rotator.target_read_replica_id_annotations_key }}
       rotation_job_concurrency: {{ $operator.rotation_job_concurrency }}

@@ -46,6 +46,7 @@ func (s *server) IndexInfo(
 		Stored:      s.indexer.NumberOfUUIDs(),
 		Uncommitted: s.indexer.NumberOfUncommittedUUIDs(),
 		Indexing:    s.indexer.IsIndexing(),
+		Saving:      s.indexer.IsSaving(),
 	}, nil
 }
 

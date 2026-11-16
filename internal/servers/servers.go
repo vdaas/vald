@@ -54,7 +54,12 @@ func New(opts ...Option) Listener {
 }
 
 func (l *listener) ListenAndServe(ctx context.Context) <-chan error {
-	ech := make(chan error, len(l.servers)*10)
+	// the channel is returned only after the loops below, so it must be able to hold every error they send even when there are no servers.
+	ech := make(chan error, len(l.servers)*10+len(l.sus))
+	// servers send their runtime errors from their own goroutines, which may outlive ctx.
+	// They get sch instead of ech: sch is never closed, so a send racing the close of ech
+	// below cannot panic, and the goroutine below forwards its errors to ech until ctx is done.
+	sch := make(chan error, len(l.servers))
 
 	for _, name := range l.sus {
 		srv, ok := l.servers[name]
@@ -68,7 +73,7 @@ func (l *listener) ListenAndServe(ctx context.Context) <-chan error {
 		}
 
 		if !l.servers[name].IsRunning() {
-			err := l.servers[name].ListenAndServe(ctx, ech)
+			err := l.servers[name].ListenAndServe(ctx, sch)
 			if err != nil {
 				select {
 				case <-ctx.Done():
@@ -80,7 +85,7 @@ func (l *listener) ListenAndServe(ctx context.Context) <-chan error {
 
 	for name := range l.servers {
 		if !l.servers[name].IsRunning() {
-			err := l.servers[name].ListenAndServe(ctx, ech)
+			err := l.servers[name].ListenAndServe(ctx, sch)
 			if err != nil {
 				select {
 				case <-ctx.Done():
@@ -92,12 +97,23 @@ func (l *listener) ListenAndServe(ctx context.Context) <-chan error {
 
 	l.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)
-		<-ctx.Done()
-		err = ctx.Err()
-		if errors.IsNot(err, context.Canceled, context.DeadlineExceeded) {
-			return err
+		for {
+			select {
+			case <-ctx.Done():
+				err = ctx.Err()
+				if errors.IsNot(err, context.Canceled, context.DeadlineExceeded) {
+					return err
+				}
+				return nil
+			case err = <-sch:
+				if err != nil {
+					select {
+					case <-ctx.Done():
+					case ech <- err:
+					}
+				}
+			}
 		}
-		return nil
 	}))
 	return ech
 }
@@ -112,7 +128,9 @@ func (l *listener) Shutdown(ctx context.Context) (err error) {
 		srv, ok := l.servers[name]
 
 		if !ok || srv == nil {
-			return errors.ErrServerNotFound(name)
+			// keep shutting down the remaining servers and report the missing one at the end.
+			emap[errors.ErrServerNotFound(name).Error()] = struct{}{}
+			continue
 		}
 
 		if l.servers[name].IsRunning() {

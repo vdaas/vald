@@ -36,6 +36,9 @@ on:
         required: true
       DISPATCH_USER:
         required: true
+defaults:
+  run:
+    shell: bash
 jobs:
   dump-contexts-to-log:
     timeout-minutes: 30

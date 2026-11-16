@@ -14,6 +14,118 @@
 
 package observer
 
+import (
+	"testing"
+	"time"
+)
+
+// time.NewTicker panics for a non-positive interval, and both values feed a ticker,
+// so non-positive input must leave the previously configured (default) value untouched.
+func TestObserverDurationOptions_NonPositive(t *testing.T) {
+	t.Parallel()
+	const initial = 7 * time.Second
+	tests := []struct {
+		name  string
+		opt   func(string) Option
+		field func(*observer) *time.Duration
+		dur   string
+		want  time.Duration
+	}{
+		{
+			name:  "backup duration zero is ignored",
+			opt:   WithBackupDuration,
+			field: func(o *observer) *time.Duration { return &o.checkDuration },
+			dur:   "0s",
+			want:  initial,
+		},
+		{
+			name:  "backup duration negative is ignored",
+			opt:   WithBackupDuration,
+			field: func(o *observer) *time.Duration { return &o.checkDuration },
+			dur:   "-1s",
+			want:  initial,
+		},
+		{
+			name:  "backup duration positive is applied",
+			opt:   WithBackupDuration,
+			field: func(o *observer) *time.Duration { return &o.checkDuration },
+			dur:   "2s",
+			want:  2 * time.Second,
+		},
+		{
+			name:  "post stop timeout zero is ignored",
+			opt:   WithPostStopTimeout,
+			field: func(o *observer) *time.Duration { return &o.postStopTimeout },
+			dur:   "0s",
+			want:  initial,
+		},
+		{
+			name:  "post stop timeout negative is ignored",
+			opt:   WithPostStopTimeout,
+			field: func(o *observer) *time.Duration { return &o.postStopTimeout },
+			dur:   "-1s",
+			want:  initial,
+		},
+		{
+			name:  "post stop timeout positive is applied",
+			opt:   WithPostStopTimeout,
+			field: func(o *observer) *time.Duration { return &o.postStopTimeout },
+			dur:   "2s",
+			want:  2 * time.Second,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			o := new(observer)
+			*tt.field(o) = initial
+			if err := tt.opt(tt.dur)(o); err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if got := *tt.field(o); got != tt.want {
+				t.Errorf("duration = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+// TestWithHooks_accumulates pins that repeated WithHooks calls append instead
+// of replacing the hooks registered by an earlier call.
+func TestWithHooks_accumulates(t *testing.T) {
+	t.Parallel()
+
+	h1, h2, h3 := new(recordHook), new(recordHook), new(recordHook)
+	tests := []struct {
+		name  string
+		calls [][]Hook
+		want  []Hook
+	}{
+		{name: "single call", calls: [][]Hook{{h1}}, want: []Hook{h1}},
+		{name: "second call keeps the first hooks", calls: [][]Hook{{h1}, {h2, h3}}, want: []Hook{h1, h2, h3}},
+		{name: "nil call is a no-op", calls: [][]Hook{{h1}, nil}, want: []Hook{h1}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			o := new(observer)
+			for _, hooks := range tt.calls {
+				if err := WithHooks(hooks...)(o); err != nil {
+					t.Fatalf("WithHooks returned error: %v", err)
+				}
+			}
+			if len(o.hooks) != len(tt.want) {
+				t.Fatalf("hooks = %v, want %v", o.hooks, tt.want)
+			}
+			for i := range tt.want {
+				if o.hooks[i] != tt.want[i] {
+					t.Errorf("hooks[%d] = %p, want %p", i, o.hooks[i], tt.want[i])
+				}
+			}
+		})
+	}
+}
+
 // NOT IMPLEMENTED BELOW
 //
 // func TestWithBackupDuration(t *testing.T) {

@@ -28,11 +28,7 @@ func WithMiddleware(mw middleware.Wrapper) Option {
 
 func WithMiddlewares(mws ...middleware.Wrapper) Option {
 	return func(r *router) {
-		if r.middlewares == nil || len(r.middlewares) == 0 {
-			r.middlewares = mws
-		} else {
-			r.middlewares = append(r.middlewares, mws...)
-		}
+		r.middlewares = append(r.middlewares, mws...)
 	}
 }
 
@@ -44,10 +40,6 @@ func WithRoute(route Route) Option {
 
 func WithRoutes(routes ...Route) Option {
 	return func(r *router) {
-		if r.routes == nil || len(r.routes) == 0 {
-			r.routes = routes
-		} else {
-			r.routes = append(r.routes, routes...)
-		}
+		r.routes = append(r.routes, routes...)
 	}
 }

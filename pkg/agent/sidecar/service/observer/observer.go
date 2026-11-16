@@ -33,6 +33,7 @@ import (
 	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/atomic"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/pkg/agent/internal/metadata"
 	"github.com/vdaas/vald/pkg/agent/sidecar/service/storage"
@@ -66,7 +67,7 @@ func New(opts ...Option) (so StorageObserver, err error) {
 	}
 
 	o.w, err = watch.New(
-		watch.WithDirs(o.dir),
+		watch.WithDirs(o.watchDirs()...),
 		watch.WithErrGroup(o.eg),
 		watch.WithOnWrite(o.onWrite),
 		watch.WithOnCreate(o.onCreate),
@@ -76,6 +77,68 @@ func New(opts ...Option) (so StorageObserver, err error) {
 	}
 
 	return o, nil
+}
+
+// errSaveInProgress reports that the backup walk saw the agent's in-place index
+// save still running. The upload is aborted and the backup is skipped, not
+// failed: the next metadata write event or ticker tick retries it. Fresh mtimes
+// after a restore or a migrate() copy also look like this until the agent's
+// next save, so reporting it as an error would fail every tick and the exit.
+var errSaveInProgress = errors.New("an index save is in progress")
+
+// originIndexDirName is the subdirectory of the index path that the NGT agent
+// saves its index into (pkg/agent/core/ngt/service prepareFolders).
+const originIndexDirName = "origin"
+
+// originDir is <dir>/origin. Without copy-on-write the chart sets watch_dir to
+// the index path, but the agent saves the index into <index path>/origin, so
+// the metadata file at o.metadataPath never appears there.
+func (o *observer) originDir() string {
+	return file.Join(o.dir, originIndexDirName)
+}
+
+// indexDir returns the directory holding the agent's latest index and its
+// metadata file: <dir>/origin when it has the metadata (it is where the agent
+// saves; a metadata file in <dir> itself is then a stale restored copy that the
+// agent no longer uses), otherwise <dir>. inPlace reports the <dir>/origin case,
+// where the agent rewrites the index files in place.
+func (o *observer) indexDir() (dir, metadataPath string, inPlace bool) {
+	od := o.originDir()
+	mp := file.Join(od, metadata.AgentMetadataFileName)
+	if file.Exists(mp) {
+		return od, mp, true
+	}
+	return o.dir, o.metadataPath, false
+}
+
+// isMetadataPath reports whether name is the metadata file of either layout.
+func (o *observer) isMetadataPath(name string) bool {
+	return name == o.metadataPath || name == file.Join(o.originDir(), metadata.AgentMetadataFileName)
+}
+
+// watchDirs returns o.dir and, when it already exists, <dir>/origin: the
+// watcher is not recursive, and the metadata file may be written there.
+func (o *observer) watchDirs() []string {
+	if isDir(o.originDir()) {
+		return []string{o.dir, o.originDir()}
+	}
+	return []string{o.dir}
+}
+
+// isDir reports whether path is an existing directory. A path that cannot be
+// stat'ed is not watched; it is added when its create event arrives.
+func isDir(path string) bool {
+	exists, fi, err := file.ExistsWithDetail(path)
+	return exists && err == nil && fi != nil && fi.IsDir()
+}
+
+// watchOrigin adds <dir>/origin to w when name is it, so a metadata file saved
+// into an origin directory created after the watcher started is still seen.
+func (o *observer) watchOrigin(w watch.Watcher, name string) error {
+	if w == nil || name != o.originDir() || !isDir(name) {
+		return nil
+	}
+	return w.Add(name)
 }
 
 func (o *observer) Start(ctx context.Context) (<-chan error, error) {
@@ -137,7 +200,11 @@ func (o *observer) Start(ctx context.Context) (<-chan error, error) {
 }
 
 func (o *observer) PostStop(ctx context.Context) (err error) {
-	defer o.storage.Stop(ctx)
+	defer func() {
+		if serr := o.storage.Stop(ctx); serr != nil {
+			err = errors.Join(err, serr)
+		}
+	}()
 
 	finalize := func() (err error) {
 		err = ctx.Err()
@@ -147,8 +214,9 @@ func (o *observer) PostStop(ctx context.Context) (err error) {
 		return nil
 	}
 
-	backup := func() error {
-		metadata, err := metadata.Load(o.metadataPath)
+	backup := func() (err error) {
+		_, mpath, _ := o.indexDir()
+		metadata, err := metadata.Load(mpath)
 		if err != nil {
 			log.Warn("cannot read metadata of the backup files:", err)
 			return err
@@ -159,25 +227,40 @@ func (o *observer) PostStop(ctx context.Context) (err error) {
 			return nil
 		}
 
-		return o.backup(ctx)
+		err = o.backup(ctx)
+		if errors.Is(err, errSaveInProgress) {
+			// The agent has stopped, so this is not a running save but mtimes
+			// left by a restore or migrate() copy; the remote already has it.
+			log.Info("final backup skipped:", err)
+			return nil
+		}
+		return err
 	}
 
-	t := time.Now()
+	// f runs on the watcher goroutine while the loop below reads the last write
+	// time, so keep it atomic. ch is never closed and only ever holds one pending
+	// signal: a metadata store fires several events, and a blocking send (or a
+	// send after close) would hang or panic the watcher goroutine at shutdown.
+	var last atomic.Int64
+	last.Store(time.Now().UnixNano())
 	ch := make(chan struct{}, 1)
-	defer close(ch)
 
+	var w watch.Watcher
 	f := func(ctx context.Context, name string) error {
-		if name == o.metadataPath {
-			ch <- struct{}{}
+		if o.isMetadataPath(name) {
+			select {
+			case ch <- struct{}{}:
+			default:
+			}
 			return nil
 		}
 
-		t = time.Now()
-		return nil
+		last.Store(time.Now().UnixNano())
+		return o.watchOrigin(w, name)
 	}
 
-	o.w, err = watch.New(
-		watch.WithDirs(o.dir),
+	w, err = watch.New(
+		watch.WithDirs(o.watchDirs()...),
 		watch.WithErrGroup(o.eg),
 		watch.WithOnWrite(f),
 		watch.WithOnCreate(f),
@@ -185,6 +268,7 @@ func (o *observer) PostStop(ctx context.Context) (err error) {
 	if err != nil {
 		return err
 	}
+	o.w = w
 
 	wctx, cancel := context.WithCancel(ctx)
 	defer cancel()
@@ -200,12 +284,7 @@ func (o *observer) PostStop(ctx context.Context) (err error) {
 		}
 	}()
 
-	ticker := time.NewTicker(func() time.Duration {
-		if o.postStopTimeout/5 < 2*time.Second {
-			return o.postStopTimeout / 5
-		}
-		return 2 * time.Second
-	}())
+	ticker := time.NewTicker(postStopCheckInterval(o.postStopTimeout))
 	defer ticker.Stop()
 
 	for {
@@ -215,7 +294,7 @@ func (o *observer) PostStop(ctx context.Context) (err error) {
 		case <-ch:
 			return backup()
 		case <-ticker.C:
-			if time.Since(t) > o.postStopTimeout {
+			if time.Since(time.Unix(0, last.Load())) > o.postStopTimeout {
 				return backup()
 			}
 		}
@@ -243,10 +322,15 @@ func (o *observer) startTicker(ctx context.Context) (<-chan error, error) {
 			case <-ctx.Done():
 				return finalize()
 			case <-ct.C:
-				metadata, err := metadata.Load(o.metadataPath)
+				_, mpath, _ := o.indexDir()
+				metadata, err := metadata.Load(mpath)
 				if err != nil {
 					log.Warn("cannot read metadata of the backup files:", err)
-					ech <- err
+					select {
+					case <-ctx.Done():
+						return finalize()
+					case ech <- err:
+					}
 					continue
 				}
 
@@ -255,19 +339,13 @@ func (o *observer) startTicker(ctx context.Context) (<-chan error, error) {
 					continue
 				}
 
-				err = o.requestBackup(ctx)
-				if err != nil {
-					ech <- err
+				if err = o.requestBackup(ctx); err != nil {
 					log.Error("failed to request backup:", err)
-					err = nil
-				}
-			}
-			if err != nil {
-				log.Error("an error occurred on observer loop:", err)
-				select {
-				case <-ctx.Done():
-					return finalize()
-				case ech <- err:
+					select {
+					case <-ctx.Done():
+						return finalize()
+					case ech <- err:
+					}
 				}
 			}
 		}
@@ -296,11 +374,17 @@ func (o *observer) startBackupLoop(ctx context.Context) (<-chan error, error) {
 			case <-ctx.Done():
 				return finalize()
 			case <-o.ch:
-				err = o.backup(ctx)
-				if err != nil {
-					ech <- err
+				if err := o.backup(ctx); err != nil {
+					if errors.Is(err, errSaveInProgress) {
+						log.Info("backup skipped and will be retried:", err)
+						continue
+					}
 					log.Error("an error occurred during backup:", err)
-					err = nil
+					select {
+					case <-ctx.Done():
+						return finalize()
+					case ech <- err:
+					}
 				}
 			}
 		}
@@ -317,11 +401,11 @@ func (o *observer) onWrite(ctx context.Context, name string) error {
 		}
 	}()
 
-	if name != o.metadataPath {
+	if !o.isMetadataPath(name) {
 		return nil
 	}
 
-	ok, err := o.isValidMetadata()
+	ok, err := o.isValidMetadata(name)
 	if err != nil {
 		log.Warn("cannot read metadata of the backup files:", err)
 		return err
@@ -342,11 +426,15 @@ func (o *observer) onCreate(ctx context.Context, name string) error {
 		}
 	}()
 
-	if name != o.metadataPath {
+	if err := o.watchOrigin(o.w, name); err != nil {
+		return err
+	}
+
+	if !o.isMetadataPath(name) {
 		return nil
 	}
 
-	ok, err := o.isValidMetadata()
+	ok, err := o.isValidMetadata(name)
 	if err != nil {
 		log.Warn("cannot read metadata of the backup files:", err)
 		return err
@@ -359,8 +447,8 @@ func (o *observer) onCreate(ctx context.Context, name string) error {
 	return o.terminate()
 }
 
-func (o *observer) isValidMetadata() (bool, error) {
-	metadata, err := metadata.Load(o.metadataPath)
+func (*observer) isValidMetadata(path string) (bool, error) {
+	metadata, err := metadata.Load(path)
 	if err != nil {
 		return false, err
 	}
@@ -416,7 +504,14 @@ func (o *observer) backup(ctx context.Context) (err error) {
 		}
 	}()
 
-	log.Infof("started to backup directory %s", o.dir)
+	dir, metadataPath, inPlace := o.indexDir()
+	log.Infof("started to backup directory %s", dir)
+
+	// Taken before the walk and compared after it (see below).
+	pmfi, err := os.Stat(metadataPath)
+	if err != nil {
+		return errors.Wrap(err, "failed to stat metadata before backup walk")
+	}
 
 	pr, pw := io.Pipe()
 	defer func() {
@@ -426,11 +521,25 @@ func (o *observer) backup(ctx context.Context) (err error) {
 		}
 	}()
 
-	sw, err := o.storage.Writer(ctx)
+	// The blob-storage writer gets its own cancellable context. Close commits
+	// the upload, so on a failure path the context is cancelled first: the S3
+	// uploader and the gocloud writer then fail their final request instead of
+	// committing a partial object over the last good backup.
+	wctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	sw, err := o.storage.Writer(wctx)
 	if err != nil {
 		return err
 	}
+	// swClosed is set once the success path has closed sw itself and checked
+	// the result, so the deferred close below does not close it twice.
+	swClosed := false
 	defer func() {
+		if swClosed {
+			return
+		}
+		cancel()
 		e := sw.Close()
 		if e != nil {
 			log.Errorf("error on closing blob-storage writer: %s", e)
@@ -440,29 +549,20 @@ func (o *observer) backup(ctx context.Context) (err error) {
 	wg := new(sync.WaitGroup)
 	wg.Add(1)
 
-	o.eg.Go(safety.RecoverFunc(func() (err error) {
-		defer wg.Done()
-		defer func() {
-			// Propagate the walk/tar error to the pipe reader (the blob-storage
-			// uploader). A plain Close() surfaces a clean io.EOF, so a truncated
-			// archive from a mid-walk failure would be uploaded and reported as
-			// a successful backup. On success err is nil and this behaves like
-			// Close(). PipeWriter.CloseWithError never returns a non-nil error,
-			// but keep the guard so the result is not silently discarded.
-			if e := pw.CloseWithError(err); e != nil {
-				log.Errorf("error on closing pipe writer: %s", e)
-			}
-		}()
-
+	walk := safety.RecoverFunc(func() (err error) {
 		tw := tar.NewWriter(pw)
 		defer func() {
+			// tar reports a short final entry (a file that shrank after its
+			// header was written) only from Close, so the error must reach the
+			// pipe reader via err; logging alone would commit a corrupt archive.
 			e := tw.Close()
 			if e != nil {
 				log.Errorf("error on closing tar writer: %s", e)
+				err = errors.Join(err, e)
 			}
 		}()
 
-		return filepath.Walk(o.dir, func(path string, fi os.FileInfo, err error) error {
+		return filepath.Walk(dir, func(path string, fi os.FileInfo, err error) error {
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
@@ -473,12 +573,24 @@ func (o *observer) backup(ctx context.Context) (err error) {
 				return err
 			}
 
+			// In the origin layout the agent rewrites the index files in place
+			// and writes the metadata last, so a file newer than the metadata
+			// taken before the walk belongs to a save that is still running; the
+			// metadata check after the walk cannot see a save that has not
+			// finished yet. With copy-on-write a save swaps in a whole directory
+			// whose mtimes the copy fallback of MoveDir does not keep, so the
+			// check is limited to this layout and the swap is caught by the
+			// metadata check below.
+			if inPlace && fi.Mode().IsRegular() && path != metadataPath && fi.ModTime().After(pmfi.ModTime()) {
+				return errors.Errorf("index file %s is newer than metadata %s: %w", path, metadataPath, errSaveInProgress)
+			}
+
 			header, err := tar.FileInfoHeader(fi, path)
 			if err != nil {
 				return err
 			}
 
-			rel, err := filepath.Rel(o.dir, path)
+			rel, err := filepath.Rel(dir, path)
 			if err != nil {
 				return err
 			}
@@ -518,7 +630,24 @@ func (o *observer) backup(ctx context.Context) (err error) {
 			}
 			return nil
 		})
-	}))
+	})
+	o.eg.Go(func() error {
+		defer wg.Done()
+		// Propagate the walk/tar error (including a recovered panic) to the pipe
+		// reader (the blob-storage uploader). A plain Close() surfaces a clean
+		// io.EOF, so a truncated archive from a mid-walk failure would be
+		// uploaded and reported as a successful backup. On success err is nil
+		// and this behaves like Close(). PipeWriter.CloseWithError never returns
+		// a non-nil error, but keep the guard so the result is not silently
+		// discarded.
+		if e := pw.CloseWithError(walk()); e != nil {
+			log.Errorf("error on closing pipe writer: %s", e)
+		}
+		// The error reaches backup()'s caller through the pipe only. o.eg is the
+		// process-wide errgroup: returning the error there would cancel the
+		// daemon context and fail the shutdown for a backup that is retried.
+		return nil
+	})
 
 	prr, err := io.NewReaderWithContext(ctx, pr)
 	if err != nil {
@@ -527,10 +656,37 @@ func (o *observer) backup(ctx context.Context) (err error) {
 
 	bi.Bytes, err = io.Copy(sw, prr)
 	if err != nil {
+		// When another task on the errgroup fails, the errgroup cancels ctx with
+		// that error as the cause, and the reader may see the cancellation before
+		// the pipe error. Report the cause so the failure is not masked as
+		// "context canceled".
+		if cause := context.Cause(ctx); cause != nil && errors.Is(err, context.Canceled) {
+			return cause
+		}
 		return err
 	}
 
 	wg.Wait()
+
+	// The agent writes metadata last when it saves and replaces it when the
+	// copy-on-write swap moves a new generation in, so a metadata file that
+	// changed during the walk means the archive may mix index generations.
+	// Fail before Close so the upload is aborted; the next save event retries.
+	mfi, err := os.Stat(metadataPath)
+	if err != nil {
+		return errors.Wrap(err, "failed to stat metadata after backup walk")
+	}
+	if !os.SameFile(pmfi, mfi) || !pmfi.ModTime().Equal(mfi.ModTime()) || pmfi.Size() != mfi.Size() {
+		return errors.Errorf("index metadata %s changed during backup; the index was saved while it was archived", metadataPath)
+	}
+
+	// Closing the blob-storage writer is what finalises the upload (e.g. an S3
+	// multipart upload), so its error must be checked before any success hook runs.
+	swClosed = true
+	err = sw.Close()
+	if err != nil {
+		return err
+	}
 
 	bi.EndTime = time.Now()
 	for _, hook := range o.hooks {
@@ -543,4 +699,17 @@ func (o *observer) backup(ctx context.Context) (err error) {
 	log.Infof("finished to backup directory %s", o.dir)
 
 	return nil
+}
+
+// postStopCheckDivisor and maxPostStopCheckInterval shape postStopCheckInterval.
+const (
+	postStopCheckDivisor     = 5
+	maxPostStopCheckInterval = 2 * time.Second
+)
+
+// postStopCheckInterval returns the polling interval used while waiting for the backup metadata
+// after the agent stopped: a fifth of timeout, capped at 2s. It is clamped to at least 1ns because
+// time.NewTicker panics for a non-positive interval (timeout < 5ns would otherwise yield 0).
+func postStopCheckInterval(timeout time.Duration) time.Duration {
+	return max(min(timeout/postStopCheckDivisor, maxPostStopCheckInterval), time.Nanosecond)
 }

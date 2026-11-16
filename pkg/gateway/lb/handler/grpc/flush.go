@@ -18,7 +18,6 @@ import (
 	"context"
 	"fmt"
 	"strconv"
-	"sync/atomic"
 	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
@@ -31,6 +30,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/errhandler"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
+	"github.com/vdaas/vald/internal/sync/atomic"
 	"github.com/vdaas/vald/pkg/gateway/lb/service"
 )
 
@@ -41,13 +41,9 @@ func (s *server) Flush(
 	defer trace.End(span)
 
 	var (
-		stored      atomic.Uint32
-		uncommitted atomic.Uint32
-		indexing    atomic.Value
-		saving      atomic.Value
+		stored, uncommitted atomic.Uint32
+		indexing, saving    atomic.Bool
 	)
-	indexing.Store(false)
-	saving.Store(false)
 	now := time.Now().UnixNano()
 	err = s.gateway.BroadCast(ctx, service.WRITE, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) (err error) {
 		ctx, span := trace.StartSpan(ctx, apiName+"."+vald.FlushRPCName+"/"+target)
@@ -78,10 +74,10 @@ func (s *server) Flush(
 		stored.Add(cnt.Stored)
 		uncommitted.Add(cnt.Uncommitted)
 		if cnt.Indexing {
-			indexing.Store(cnt.Indexing)
+			indexing.Store(true)
 		}
 		if cnt.Saving {
-			saving.Store(cnt.Saving)
+			saving.Store(true)
 		}
 		return nil
 	})
@@ -97,8 +93,8 @@ func (s *server) Flush(
 	cnts = &payload.Info_Index_Count{
 		Stored:      stored.Load(),
 		Uncommitted: uncommitted.Load(),
-		Indexing:    indexing.Load().(bool),
-		Saving:      saving.Load().(bool),
+		Indexing:    indexing.Load(),
+		Saving:      saving.Load(),
 	}
 	if cnts.Stored > 0 || cnts.Uncommitted > 0 || cnts.Indexing || cnts.Saving {
 		err = errors.Errorf(
@@ -106,14 +102,7 @@ func (s *server) Flush(
 			cnts.Stored, cnts.Uncommitted, cnts.Indexing, cnts.Saving,
 		)
 		err = status.WrapWithInternal(vald.FlushRPCName+" API flush failed", err,
-			&errdetails.RequestInfo{
-				RequestId:   strconv.FormatInt(now, 10),
-				ServingData: errdetails.Serialize(req),
-			},
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.FlushRPCName,
-				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-			})
+			s.errDetails(ctx, vald.FlushRPCName, strconv.FormatInt(now, 10), req)...)
 		return errhandler.HandleError[payload.Info_Index_Count](span, codes.Internal, err)
 	}
 

@@ -99,13 +99,15 @@ func (v *version) Register(m metrics.Meter) (err error) {
 	if err != nil {
 		return err
 	}
+	// The key/values never change, so build the attribute set once.
+	attrs := make([]attribute.KeyValue, 0, len(v.kvs))
+	for key, val := range v.kvs {
+		attrs = append(attrs, attribute.String(key, val))
+	}
+	opt := api.WithAttributes(attrs...)
 	_, err = m.RegisterCallback(
 		func(_ context.Context, o api.Observer) error {
-			attrs := make([]attribute.KeyValue, 0, len(v.kvs))
-			for key, val := range v.kvs {
-				attrs = append(attrs, attribute.String(key, val))
-			}
-			o.ObserveInt64(info, 1, api.WithAttributes(attrs...))
+			o.ObserveInt64(info, 1, opt)
 			return nil
 		}, info,
 	)

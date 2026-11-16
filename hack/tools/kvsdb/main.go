@@ -42,9 +42,7 @@ func main() {
 	// value
 	m := make(map[string]uint32)
 	gob.Register(map[string]uint32{})
-	var f *os.File
-	defer f.Close()
-	f, err = file.Open(
+	f, err := file.Open(
 		file.Join(*path, *kvsFileName),
 		os.O_RDONLY|os.O_SYNC,
 		fs.ModePerm,
@@ -52,6 +50,11 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer func() {
+		if cerr := f.Close(); cerr != nil {
+			log.Error(cerr)
+		}
+	}()
 	if err = gob.NewDecoder(f).Decode(&m); err != nil {
 		log.Fatal(err)
 	}
@@ -59,9 +62,7 @@ func main() {
 	// timestamp
 	mt := make(map[string]int64)
 	gob.Register(map[string]int64{})
-	var ft *os.File
-	defer ft.Close()
-	ft, err = file.Open(
+	ft, err := file.Open(
 		file.Join(*path, *kvsTimestampFileName),
 		os.O_RDONLY|os.O_SYNC,
 		fs.ModePerm,
@@ -69,6 +70,11 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer func() {
+		if cerr := ft.Close(); cerr != nil {
+			log.Error(cerr)
+		}
+	}()
 	if err = gob.NewDecoder(ft).Decode(&mt); err != nil {
 		log.Fatal(err)
 	}

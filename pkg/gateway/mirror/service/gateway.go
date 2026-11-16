@@ -150,6 +150,13 @@ func (g *gateway) Do(
 		},
 	)
 	if err != nil {
+		// A request proxied from another Mirror gateway must only reach the own
+		// cluster's target. Falling back to the other mirrors would mask its
+		// result (e.g. NotFound needed by the origin to repair this cluster) with
+		// a peer's and could bounce the request between mirrors indefinitely.
+		if g.FromForwardedContext(ctx) != "" {
+			return nil, err
+		}
 		return g.client.GRPCClient().RoundRobin(fctx, func(ictx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (any, error) {
 			if strings.EqualFold(conn.Target(), target) {
 				return nil, errors.ErrTargetNotFound

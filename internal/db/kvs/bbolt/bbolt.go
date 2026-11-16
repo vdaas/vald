@@ -67,6 +67,9 @@ func New(file, bucket string, mode fs.FileMode, opts ...Option) (Bbolt, error) {
 		}
 		return nil
 	}); err != nil {
+		if cerr := db.Close(); cerr != nil {
+			err = errors.Join(err, cerr)
+		}
 		return nil, err
 	}
 

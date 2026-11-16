@@ -16,10 +16,13 @@ package config
 
 import (
 	"reflect"
+	"runtime"
+	"slices"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/servers/server"
+	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
@@ -1424,6 +1427,54 @@ func TestServer_Opts(t *testing.T) {
 				want: make([]server.Option, 31),
 			},
 		},
+		{
+			name: "return 9 server.Options including WithEnableRestart when Restart is true",
+			fields: fields{
+				Name:          "vald-agent-ngt",
+				Host:          "0.0.0.0",
+				Port:          uint16(8081),
+				Mode:          "REST",
+				ProbeWaitTime: "3s",
+				SocketOption:  &SocketOption{},
+				Restart:       true,
+			},
+			want: want{
+				want: make([]server.Option, 9),
+			},
+			checkFunc: func(w want, got []server.Option) error {
+				if len(got) != len(w.want) {
+					return errors.Errorf("got: %d options, want: %d", len(got), len(w.want))
+				}
+				if slices.ContainsFunc(got, isEnableRestartOption) {
+					return nil
+				}
+				return errors.New("WithEnableRestart is not included although Restart is true")
+			},
+		},
+		{
+			name: "return 8 server.Options without WithEnableRestart when Restart is false",
+			fields: fields{
+				Name:          "vald-agent-ngt",
+				Host:          "0.0.0.0",
+				Port:          uint16(8081),
+				Mode:          "REST",
+				ProbeWaitTime: "3s",
+				SocketOption:  &SocketOption{},
+				Restart:       false,
+			},
+			want: want{
+				want: make([]server.Option, 8),
+			},
+			checkFunc: func(w want, got []server.Option) error {
+				if len(got) != len(w.want) {
+					return errors.Errorf("got: %d options, want: %d", len(got), len(w.want))
+				}
+				if slices.ContainsFunc(got, isEnableRestartOption) {
+					return errors.New("WithEnableRestart is included although Restart is false")
+				}
+				return nil
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -1460,6 +1511,13 @@ func TestServer_Opts(t *testing.T) {
 			}
 		})
 	}
+}
+
+// isEnableRestartOption reports whether opt is the closure returned by server.WithEnableRestart.
+// The name is matched instead of the code pointer because inlining may copy the closure into the caller.
+func isEnableRestartOption(opt server.Option) bool {
+	f := runtime.FuncForPC(reflect.ValueOf(opt).Pointer())
+	return f != nil && strings.Contains(f.Name(), "WithEnableRestart.")
 }
 
 // NOT IMPLEMENTED BELOW

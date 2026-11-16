@@ -52,25 +52,25 @@ func (l *lz4Compressor) CompressVector(vector []float32) (b []byte, err error) {
 	}
 
 	buf := new(bytes.Buffer)
-	zw := l.lz4.NewWriterLevel(buf, l.compressionLevel)
-	defer func() {
-		cerr := zw.Close()
-		if cerr != nil {
-			b = nil
-			err = errors.Join(err, cerr)
-		}
-	}()
+	// pierrec/lz4 treats every non-zero level as high compression, so a non-positive level
+	// (the Helm default is -1) is mapped to 0, the fast compressor, as Writer does.
+	zw := l.lz4.NewWriterLevel(buf, max(l.compressionLevel, 0))
 
 	_, err = zw.Write(gob)
 	if err != nil {
-		return nil, err
+		return nil, errors.Join(err, zw.Close())
 	}
 
 	err = zw.Flush()
 	if err != nil {
-		return nil, err
+		return nil, errors.Join(err, zw.Close())
 	}
 
+	// Close writes the frame's end mark and checksum, so it must run before the
+	// buffer is returned; a deferred Close appended them after buf.Bytes() was taken.
+	if err = zw.Close(); err != nil {
+		return nil, err
+	}
 	return buf.Bytes(), nil
 }
 
@@ -101,10 +101,20 @@ func (l *lz4Compressor) Reader(src io.ReadCloser) (io.ReadCloser, error) {
 }
 
 // Writer returns io.WriteCloser implementation.
+// A positive compression level selects the slower high compression mode; any other level keeps the default fast mode.
+// pierrec/lz4 treats every non-zero level as high compression, so the non-positive levels
+// (the Helm default is -1) are not passed through to keep the streaming writer fast.
+// CompressVector follows the same rule; see WithLZ4CompressionLevel.
 func (l *lz4Compressor) Writer(dst io.WriteCloser) (io.WriteCloser, error) {
+	var w io.WriteCloser
+	if l.compressionLevel > 0 {
+		w = l.lz4.NewWriterLevel(dst, l.compressionLevel)
+	} else {
+		w = l.lz4.NewWriter(dst)
+	}
 	return &lz4Writer{
 		dst: dst,
-		w:   l.lz4.NewWriter(dst),
+		w:   w,
 	}, nil
 }
 

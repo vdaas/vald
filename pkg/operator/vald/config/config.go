@@ -446,6 +446,11 @@ func (o *Operator) Load() (*Config, error) {
 	if err := k8s.YAMLUnmarshal(raw, &obj); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal default vrs template")
 	}
+	// An empty or null document leaves obj nil, which the reconcile-time
+	// overlay merge (deepMergeMap) cannot write into.
+	if len(obj) == 0 {
+		return nil, errors.New("default vrs template is empty")
+	}
 	c.DefaultVrs.Us = &k8s.Unstructured{Object: obj}
 
 	return c, nil

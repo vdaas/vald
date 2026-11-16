@@ -1022,7 +1022,7 @@
                             },
                             "tcp_no_delay": {
                               "type": "boolean",
-                              "description": "server listen socket option for tcp_no_delay functionality"
+                              "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                             },
                             "tcp_quick_ack": {
                               "type": "boolean",
@@ -1255,7 +1255,7 @@
                             },
                             "tcp_no_delay": {
                               "type": "boolean",
-                              "description": "server listen socket option for tcp_no_delay functionality"
+                              "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                             },
                             "tcp_quick_ack": {
                               "type": "boolean",
@@ -1508,7 +1508,7 @@
                             },
                             "tcp_no_delay": {
                               "type": "boolean",
-                              "description": "server listen socket option for tcp_no_delay functionality"
+                              "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                             },
                             "tcp_quick_ack": {
                               "type": "boolean",
@@ -1749,7 +1749,7 @@
                             },
                             "tcp_no_delay": {
                               "type": "boolean",
-                              "description": "server listen socket option for tcp_no_delay functionality"
+                              "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                             },
                             "tcp_quick_ack": {
                               "type": "boolean",
@@ -1940,7 +1940,7 @@
                             },
                             "tcp_no_delay": {
                               "type": "boolean",
-                              "description": "server listen socket option for tcp_no_delay functionality"
+                              "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                             },
                             "tcp_quick_ack": {
                               "type": "boolean",
@@ -2282,7 +2282,7 @@
                             },
                             "tcp_no_delay": {
                               "type": "boolean",
-                              "description": "server listen socket option for tcp_no_delay functionality"
+                              "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                             },
                             "tcp_quick_ack": {
                               "type": "boolean",
@@ -2937,7 +2937,7 @@
                                 },
                                 "tcp_no_delay": {
                                   "type": "boolean",
-                                  "description": "server listen socket option for tcp_no_delay functionality"
+                                  "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                 },
                                 "tcp_quick_ack": {
                                   "type": "boolean",
@@ -3170,7 +3170,7 @@
                                 },
                                 "tcp_no_delay": {
                                   "type": "boolean",
-                                  "description": "server listen socket option for tcp_no_delay functionality"
+                                  "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                 },
                                 "tcp_quick_ack": {
                                   "type": "boolean",
@@ -3423,7 +3423,7 @@
                                 },
                                 "tcp_no_delay": {
                                   "type": "boolean",
-                                  "description": "server listen socket option for tcp_no_delay functionality"
+                                  "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                 },
                                 "tcp_quick_ack": {
                                   "type": "boolean",
@@ -3664,7 +3664,7 @@
                                 },
                                 "tcp_no_delay": {
                                   "type": "boolean",
-                                  "description": "server listen socket option for tcp_no_delay functionality"
+                                  "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                 },
                                 "tcp_quick_ack": {
                                   "type": "boolean",
@@ -3855,7 +3855,7 @@
                                 },
                                 "tcp_no_delay": {
                                   "type": "boolean",
-                                  "description": "server listen socket option for tcp_no_delay functionality"
+                                  "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                 },
                                 "tcp_quick_ack": {
                                   "type": "boolean",
@@ -4106,7 +4106,29 @@
                   }
                 },
                 "call_option": {
-                  "type": "object"
+                  "type": "object",
+                  "properties": {
+                    "content_subtype": {
+                      "type": "string",
+                      "description": "gRPC client call option content subtype"
+                    },
+                    "max_recv_msg_size": {
+                      "type": "integer",
+                      "description": "gRPC client call option max receive message size"
+                    },
+                    "max_retry_rpc_buffer_size": {
+                      "type": "integer",
+                      "description": "gRPC client call option max retry rpc buffer size"
+                    },
+                    "max_send_msg_size": {
+                      "type": "integer",
+                      "description": "gRPC client call option max send message size"
+                    },
+                    "wait_for_ready": {
+                      "type": "boolean",
+                      "description": "gRPC client call option wait for ready"
+                    }
+                  }
                 },
                 "circuit_breaker": {
                   "type": "object",
@@ -4161,9 +4183,6 @@
                       "description": "gRPC client connection pool size"
                     }
                   }
-                },
-                "content_subtype": {
-                  "type": "string"
                 },
                 "dial_option": {
                   "type": "object",
@@ -4328,7 +4347,7 @@
                             },
                             "tcp_no_delay": {
                               "type": "boolean",
-                              "description": "server listen socket option for tcp_no_delay functionality"
+                              "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                             },
                             "tcp_quick_ack": {
                               "type": "boolean",
@@ -4428,15 +4447,6 @@
                   "type": "string",
                   "description": "gRPC client health check duration"
                 },
-                "max_recv_msg_size": {
-                  "type": "integer"
-                },
-                "max_retry_rpc_buffer_size": {
-                  "type": "integer"
-                },
-                "max_send_msg_size": {
-                  "type": "integer"
-                },
                 "tls": {
                   "type": "object",
                   "properties": {
@@ -4490,9 +4500,6 @@
                     "path": "github.com/vdaas/vald/internal/config",
                     "name": "config"
                   }
-                },
-                "wait_for_ready": {
-                  "type": "boolean"
                 }
               }
             }
@@ -4894,7 +4901,7 @@
                             },
                             "tcp_no_delay": {
                               "type": "boolean",
-                              "description": "server listen socket option for tcp_no_delay functionality"
+                              "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                             },
                             "tcp_quick_ack": {
                               "type": "boolean",
@@ -5127,7 +5134,7 @@
                             },
                             "tcp_no_delay": {
                               "type": "boolean",
-                              "description": "server listen socket option for tcp_no_delay functionality"
+                              "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                             },
                             "tcp_quick_ack": {
                               "type": "boolean",
@@ -5380,7 +5387,7 @@
                             },
                             "tcp_no_delay": {
                               "type": "boolean",
-                              "description": "server listen socket option for tcp_no_delay functionality"
+                              "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                             },
                             "tcp_quick_ack": {
                               "type": "boolean",
@@ -5621,7 +5628,7 @@
                             },
                             "tcp_no_delay": {
                               "type": "boolean",
-                              "description": "server listen socket option for tcp_no_delay functionality"
+                              "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                             },
                             "tcp_quick_ack": {
                               "type": "boolean",
@@ -5812,7 +5819,7 @@
                             },
                             "tcp_no_delay": {
                               "type": "boolean",
-                              "description": "server listen socket option for tcp_no_delay functionality"
+                              "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                             },
                             "tcp_quick_ack": {
                               "type": "boolean",
@@ -6103,7 +6110,7 @@
                     },
                     "tcp_no_delay": {
                       "type": "boolean",
-                      "description": "server listen socket option for tcp_no_delay functionality"
+                      "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                     },
                     "tcp_quick_ack": {
                       "type": "boolean",
@@ -6782,7 +6789,7 @@
                             },
                             "tcp_no_delay": {
                               "type": "boolean",
-                              "description": "server listen socket option for tcp_no_delay functionality"
+                              "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                             },
                             "tcp_quick_ack": {
                               "type": "boolean",
@@ -7015,7 +7022,7 @@
                             },
                             "tcp_no_delay": {
                               "type": "boolean",
-                              "description": "server listen socket option for tcp_no_delay functionality"
+                              "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                             },
                             "tcp_quick_ack": {
                               "type": "boolean",
@@ -7268,7 +7275,7 @@
                             },
                             "tcp_no_delay": {
                               "type": "boolean",
-                              "description": "server listen socket option for tcp_no_delay functionality"
+                              "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                             },
                             "tcp_quick_ack": {
                               "type": "boolean",
@@ -7509,7 +7516,7 @@
                             },
                             "tcp_no_delay": {
                               "type": "boolean",
-                              "description": "server listen socket option for tcp_no_delay functionality"
+                              "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                             },
                             "tcp_quick_ack": {
                               "type": "boolean",
@@ -7700,7 +7707,7 @@
                             },
                             "tcp_no_delay": {
                               "type": "boolean",
-                              "description": "server listen socket option for tcp_no_delay functionality"
+                              "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                             },
                             "tcp_quick_ack": {
                               "type": "boolean",
@@ -8038,7 +8045,29 @@
                           }
                         },
                         "call_option": {
-                          "type": "object"
+                          "type": "object",
+                          "properties": {
+                            "content_subtype": {
+                              "type": "string",
+                              "description": "gRPC client call option content subtype"
+                            },
+                            "max_recv_msg_size": {
+                              "type": "integer",
+                              "description": "gRPC client call option max receive message size"
+                            },
+                            "max_retry_rpc_buffer_size": {
+                              "type": "integer",
+                              "description": "gRPC client call option max retry rpc buffer size"
+                            },
+                            "max_send_msg_size": {
+                              "type": "integer",
+                              "description": "gRPC client call option max send message size"
+                            },
+                            "wait_for_ready": {
+                              "type": "boolean",
+                              "description": "gRPC client call option wait for ready"
+                            }
+                          }
                         },
                         "circuit_breaker": {
                           "type": "object",
@@ -8093,9 +8122,6 @@
                               "description": "gRPC client connection pool size"
                             }
                           }
-                        },
-                        "content_subtype": {
-                          "type": "string"
                         },
                         "dial_option": {
                           "type": "object",
@@ -8263,7 +8289,7 @@
                                     },
                                     "tcp_no_delay": {
                                       "type": "boolean",
-                                      "description": "server listen socket option for tcp_no_delay functionality"
+                                      "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                     },
                                     "tcp_quick_ack": {
                                       "type": "boolean",
@@ -8363,15 +8389,6 @@
                           "type": "string",
                           "description": "gRPC client health check duration"
                         },
-                        "max_recv_msg_size": {
-                          "type": "integer"
-                        },
-                        "max_retry_rpc_buffer_size": {
-                          "type": "integer"
-                        },
-                        "max_send_msg_size": {
-                          "type": "integer"
-                        },
                         "tls": {
                           "type": "object",
                           "properties": {
@@ -8425,9 +8442,6 @@
                             "path": "github.com/vdaas/vald/internal/config",
                             "name": "config"
                           }
-                        },
-                        "wait_for_ready": {
-                          "type": "boolean"
                         }
                       }
                     },
@@ -8496,7 +8510,29 @@
                       }
                     },
                     "call_option": {
-                      "type": "object"
+                      "type": "object",
+                      "properties": {
+                        "content_subtype": {
+                          "type": "string",
+                          "description": "gRPC client call option content subtype"
+                        },
+                        "max_recv_msg_size": {
+                          "type": "integer",
+                          "description": "gRPC client call option max receive message size"
+                        },
+                        "max_retry_rpc_buffer_size": {
+                          "type": "integer",
+                          "description": "gRPC client call option max retry rpc buffer size"
+                        },
+                        "max_send_msg_size": {
+                          "type": "integer",
+                          "description": "gRPC client call option max send message size"
+                        },
+                        "wait_for_ready": {
+                          "type": "boolean",
+                          "description": "gRPC client call option wait for ready"
+                        }
+                      }
                     },
                     "circuit_breaker": {
                       "type": "object",
@@ -8551,9 +8587,6 @@
                           "description": "gRPC client connection pool size"
                         }
                       }
-                    },
-                    "content_subtype": {
-                      "type": "string"
                     },
                     "dial_option": {
                       "type": "object",
@@ -8718,7 +8751,7 @@
                                 },
                                 "tcp_no_delay": {
                                   "type": "boolean",
-                                  "description": "server listen socket option for tcp_no_delay functionality"
+                                  "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                 },
                                 "tcp_quick_ack": {
                                   "type": "boolean",
@@ -8818,15 +8851,6 @@
                       "type": "string",
                       "description": "gRPC client health check duration"
                     },
-                    "max_recv_msg_size": {
-                      "type": "integer"
-                    },
-                    "max_retry_rpc_buffer_size": {
-                      "type": "integer"
-                    },
-                    "max_send_msg_size": {
-                      "type": "integer"
-                    },
                     "tls": {
                       "type": "object",
                       "properties": {
@@ -8880,9 +8904,6 @@
                         "path": "github.com/vdaas/vald/internal/config",
                         "name": "config"
                       }
-                    },
-                    "wait_for_ready": {
-                      "type": "boolean"
                     }
                   }
                 },
@@ -8939,7 +8960,29 @@
                           }
                         },
                         "call_option": {
-                          "type": "object"
+                          "type": "object",
+                          "properties": {
+                            "content_subtype": {
+                              "type": "string",
+                              "description": "gRPC client call option content subtype"
+                            },
+                            "max_recv_msg_size": {
+                              "type": "integer",
+                              "description": "gRPC client call option max receive message size"
+                            },
+                            "max_retry_rpc_buffer_size": {
+                              "type": "integer",
+                              "description": "gRPC client call option max retry rpc buffer size"
+                            },
+                            "max_send_msg_size": {
+                              "type": "integer",
+                              "description": "gRPC client call option max send message size"
+                            },
+                            "wait_for_ready": {
+                              "type": "boolean",
+                              "description": "gRPC client call option wait for ready"
+                            }
+                          }
                         },
                         "circuit_breaker": {
                           "type": "object",
@@ -8994,9 +9037,6 @@
                               "description": "gRPC client connection pool size"
                             }
                           }
-                        },
-                        "content_subtype": {
-                          "type": "string"
                         },
                         "dial_option": {
                           "type": "object",
@@ -9164,7 +9204,7 @@
                                     },
                                     "tcp_no_delay": {
                                       "type": "boolean",
-                                      "description": "server listen socket option for tcp_no_delay functionality"
+                                      "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                     },
                                     "tcp_quick_ack": {
                                       "type": "boolean",
@@ -9264,15 +9304,6 @@
                           "type": "string",
                           "description": "gRPC client health check duration"
                         },
-                        "max_recv_msg_size": {
-                          "type": "integer"
-                        },
-                        "max_retry_rpc_buffer_size": {
-                          "type": "integer"
-                        },
-                        "max_send_msg_size": {
-                          "type": "integer"
-                        },
                         "tls": {
                           "type": "object",
                           "properties": {
@@ -9326,9 +9357,6 @@
                             "path": "github.com/vdaas/vald/internal/config",
                             "name": "config"
                           }
-                        },
-                        "wait_for_ready": {
-                          "type": "boolean"
                         }
                       }
                     },
@@ -9917,7 +9945,7 @@
                                 },
                                 "tcp_no_delay": {
                                   "type": "boolean",
-                                  "description": "server listen socket option for tcp_no_delay functionality"
+                                  "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                 },
                                 "tcp_quick_ack": {
                                   "type": "boolean",
@@ -10150,7 +10178,7 @@
                                 },
                                 "tcp_no_delay": {
                                   "type": "boolean",
-                                  "description": "server listen socket option for tcp_no_delay functionality"
+                                  "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                 },
                                 "tcp_quick_ack": {
                                   "type": "boolean",
@@ -10403,7 +10431,7 @@
                                 },
                                 "tcp_no_delay": {
                                   "type": "boolean",
-                                  "description": "server listen socket option for tcp_no_delay functionality"
+                                  "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                 },
                                 "tcp_quick_ack": {
                                   "type": "boolean",
@@ -10644,7 +10672,7 @@
                                 },
                                 "tcp_no_delay": {
                                   "type": "boolean",
-                                  "description": "server listen socket option for tcp_no_delay functionality"
+                                  "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                 },
                                 "tcp_quick_ack": {
                                   "type": "boolean",
@@ -10835,7 +10863,7 @@
                                 },
                                 "tcp_no_delay": {
                                   "type": "boolean",
-                                  "description": "server listen socket option for tcp_no_delay functionality"
+                                  "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                 },
                                 "tcp_quick_ack": {
                                   "type": "boolean",
@@ -11173,7 +11201,29 @@
                           }
                         },
                         "call_option": {
-                          "type": "object"
+                          "type": "object",
+                          "properties": {
+                            "content_subtype": {
+                              "type": "string",
+                              "description": "gRPC client call option content subtype"
+                            },
+                            "max_recv_msg_size": {
+                              "type": "integer",
+                              "description": "gRPC client call option max receive message size"
+                            },
+                            "max_retry_rpc_buffer_size": {
+                              "type": "integer",
+                              "description": "gRPC client call option max retry rpc buffer size"
+                            },
+                            "max_send_msg_size": {
+                              "type": "integer",
+                              "description": "gRPC client call option max send message size"
+                            },
+                            "wait_for_ready": {
+                              "type": "boolean",
+                              "description": "gRPC client call option wait for ready"
+                            }
+                          }
                         },
                         "circuit_breaker": {
                           "type": "object",
@@ -11228,9 +11278,6 @@
                               "description": "gRPC client connection pool size"
                             }
                           }
-                        },
-                        "content_subtype": {
-                          "type": "string"
                         },
                         "dial_option": {
                           "type": "object",
@@ -11398,7 +11445,7 @@
                                     },
                                     "tcp_no_delay": {
                                       "type": "boolean",
-                                      "description": "server listen socket option for tcp_no_delay functionality"
+                                      "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                     },
                                     "tcp_quick_ack": {
                                       "type": "boolean",
@@ -11498,15 +11545,6 @@
                           "type": "string",
                           "description": "gRPC client health check duration"
                         },
-                        "max_recv_msg_size": {
-                          "type": "integer"
-                        },
-                        "max_retry_rpc_buffer_size": {
-                          "type": "integer"
-                        },
-                        "max_send_msg_size": {
-                          "type": "integer"
-                        },
                         "tls": {
                           "type": "object",
                           "properties": {
@@ -11560,9 +11598,6 @@
                             "path": "github.com/vdaas/vald/internal/config",
                             "name": "config"
                           }
-                        },
-                        "wait_for_ready": {
-                          "type": "boolean"
                         }
                       }
                     },
@@ -11615,7 +11650,29 @@
                           }
                         },
                         "call_option": {
-                          "type": "object"
+                          "type": "object",
+                          "properties": {
+                            "content_subtype": {
+                              "type": "string",
+                              "description": "gRPC client call option content subtype"
+                            },
+                            "max_recv_msg_size": {
+                              "type": "integer",
+                              "description": "gRPC client call option max receive message size"
+                            },
+                            "max_retry_rpc_buffer_size": {
+                              "type": "integer",
+                              "description": "gRPC client call option max retry rpc buffer size"
+                            },
+                            "max_send_msg_size": {
+                              "type": "integer",
+                              "description": "gRPC client call option max send message size"
+                            },
+                            "wait_for_ready": {
+                              "type": "boolean",
+                              "description": "gRPC client call option wait for ready"
+                            }
+                          }
                         },
                         "circuit_breaker": {
                           "type": "object",
@@ -11670,9 +11727,6 @@
                               "description": "gRPC client connection pool size"
                             }
                           }
-                        },
-                        "content_subtype": {
-                          "type": "string"
                         },
                         "dial_option": {
                           "type": "object",
@@ -11840,7 +11894,7 @@
                                     },
                                     "tcp_no_delay": {
                                       "type": "boolean",
-                                      "description": "server listen socket option for tcp_no_delay functionality"
+                                      "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                     },
                                     "tcp_quick_ack": {
                                       "type": "boolean",
@@ -11940,15 +11994,6 @@
                           "type": "string",
                           "description": "gRPC client health check duration"
                         },
-                        "max_recv_msg_size": {
-                          "type": "integer"
-                        },
-                        "max_retry_rpc_buffer_size": {
-                          "type": "integer"
-                        },
-                        "max_send_msg_size": {
-                          "type": "integer"
-                        },
                         "tls": {
                           "type": "object",
                           "properties": {
@@ -12002,14 +12047,12 @@
                             "path": "github.com/vdaas/vald/internal/config",
                             "name": "config"
                           }
-                        },
-                        "wait_for_ready": {
-                          "type": "boolean"
                         }
                       }
                     },
                     "duration": {
-                      "type": "string"
+                      "type": "string",
+                      "description": "discoverer duration (polling faster than discoverer.discoverer.discovery_duration only re-fetches the same snapshot)"
                     },
                     "read_client": {
                       "type": "object",
@@ -12060,7 +12103,29 @@
                           }
                         },
                         "call_option": {
-                          "type": "object"
+                          "type": "object",
+                          "properties": {
+                            "content_subtype": {
+                              "type": "string",
+                              "description": "gRPC client call option content subtype"
+                            },
+                            "max_recv_msg_size": {
+                              "type": "integer",
+                              "description": "gRPC client call option max receive message size"
+                            },
+                            "max_retry_rpc_buffer_size": {
+                              "type": "integer",
+                              "description": "gRPC client call option max retry rpc buffer size"
+                            },
+                            "max_send_msg_size": {
+                              "type": "integer",
+                              "description": "gRPC client call option max send message size"
+                            },
+                            "wait_for_ready": {
+                              "type": "boolean",
+                              "description": "gRPC client call option wait for ready"
+                            }
+                          }
                         },
                         "circuit_breaker": {
                           "type": "object",
@@ -12115,9 +12180,6 @@
                               "description": "gRPC client connection pool size"
                             }
                           }
-                        },
-                        "content_subtype": {
-                          "type": "string"
                         },
                         "dial_option": {
                           "type": "object",
@@ -12285,7 +12347,7 @@
                                     },
                                     "tcp_no_delay": {
                                       "type": "boolean",
-                                      "description": "server listen socket option for tcp_no_delay functionality"
+                                      "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                     },
                                     "tcp_quick_ack": {
                                       "type": "boolean",
@@ -12385,15 +12447,6 @@
                           "type": "string",
                           "description": "gRPC client health check duration"
                         },
-                        "max_recv_msg_size": {
-                          "type": "integer"
-                        },
-                        "max_retry_rpc_buffer_size": {
-                          "type": "integer"
-                        },
-                        "max_send_msg_size": {
-                          "type": "integer"
-                        },
                         "tls": {
                           "type": "object",
                           "properties": {
@@ -12447,9 +12500,6 @@
                             "path": "github.com/vdaas/vald/internal/config",
                             "name": "config"
                           }
-                        },
-                        "wait_for_ready": {
-                          "type": "boolean"
                         }
                       }
                     }
@@ -12462,12 +12512,16 @@
                 },
                 "multi_operation_concurrency": {
                   "type": "integer",
-                  "description": "number of concurrency of multiXXX api's operation",
-                  "minimum": 2
+                  "description": "number of concurrency of multiXXX api's operation; 0 computes it automatically: min(GOMAXPROCS*10, ceil(agents*64/index_replica)) for writes and min(GOMAXPROCS*10, 64) for MultiSearch",
+                  "minimum": 0
                 },
                 "node_name": {
                   "type": "string",
                   "description": "node name"
+                },
+                "search_quorum_grace": {
+                  "type": "string",
+                  "description": "once agents - index_replica + 1 agents answered a search with results (at least one replica of every index replica set), wait at most this long for the rest before returning; empty disables the early termination"
                 }
               }
             },
@@ -13024,7 +13078,7 @@
                                 },
                                 "tcp_no_delay": {
                                   "type": "boolean",
-                                  "description": "server listen socket option for tcp_no_delay functionality"
+                                  "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                 },
                                 "tcp_quick_ack": {
                                   "type": "boolean",
@@ -13257,7 +13311,7 @@
                                 },
                                 "tcp_no_delay": {
                                   "type": "boolean",
-                                  "description": "server listen socket option for tcp_no_delay functionality"
+                                  "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                 },
                                 "tcp_quick_ack": {
                                   "type": "boolean",
@@ -13510,7 +13564,7 @@
                                 },
                                 "tcp_no_delay": {
                                   "type": "boolean",
-                                  "description": "server listen socket option for tcp_no_delay functionality"
+                                  "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                 },
                                 "tcp_quick_ack": {
                                   "type": "boolean",
@@ -13751,7 +13805,7 @@
                                 },
                                 "tcp_no_delay": {
                                   "type": "boolean",
-                                  "description": "server listen socket option for tcp_no_delay functionality"
+                                  "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                 },
                                 "tcp_quick_ack": {
                                   "type": "boolean",
@@ -13942,7 +13996,7 @@
                                 },
                                 "tcp_no_delay": {
                                   "type": "boolean",
-                                  "description": "server listen socket option for tcp_no_delay functionality"
+                                  "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                 },
                                 "tcp_quick_ack": {
                                   "type": "boolean",
@@ -14299,7 +14353,29 @@
                       }
                     },
                     "call_option": {
-                      "type": "object"
+                      "type": "object",
+                      "properties": {
+                        "content_subtype": {
+                          "type": "string",
+                          "description": "gRPC client call option content subtype"
+                        },
+                        "max_recv_msg_size": {
+                          "type": "integer",
+                          "description": "gRPC client call option max receive message size"
+                        },
+                        "max_retry_rpc_buffer_size": {
+                          "type": "integer",
+                          "description": "gRPC client call option max retry rpc buffer size"
+                        },
+                        "max_send_msg_size": {
+                          "type": "integer",
+                          "description": "gRPC client call option max send message size"
+                        },
+                        "wait_for_ready": {
+                          "type": "boolean",
+                          "description": "gRPC client call option wait for ready"
+                        }
+                      }
                     },
                     "circuit_breaker": {
                       "type": "object",
@@ -14354,9 +14430,6 @@
                           "description": "gRPC client connection pool size"
                         }
                       }
-                    },
-                    "content_subtype": {
-                      "type": "string"
                     },
                     "dial_option": {
                       "type": "object",
@@ -14521,7 +14594,7 @@
                                 },
                                 "tcp_no_delay": {
                                   "type": "boolean",
-                                  "description": "server listen socket option for tcp_no_delay functionality"
+                                  "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                 },
                                 "tcp_quick_ack": {
                                   "type": "boolean",
@@ -14621,15 +14694,6 @@
                       "type": "string",
                       "description": "gRPC client health check duration"
                     },
-                    "max_recv_msg_size": {
-                      "type": "integer"
-                    },
-                    "max_retry_rpc_buffer_size": {
-                      "type": "integer"
-                    },
-                    "max_send_msg_size": {
-                      "type": "integer"
-                    },
                     "tls": {
                       "type": "object",
                       "properties": {
@@ -14683,9 +14747,6 @@
                         "path": "github.com/vdaas/vald/internal/config",
                         "name": "config"
                       }
-                    },
-                    "wait_for_ready": {
-                      "type": "boolean"
                     }
                   }
                 },
@@ -14784,7 +14845,7 @@
                         },
                         "tcp_no_delay": {
                           "type": "boolean",
-                          "description": "server listen socket option for tcp_no_delay functionality"
+                          "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                         },
                         "tcp_quick_ack": {
                           "type": "boolean",
@@ -14938,6 +14999,7 @@
                 },
                 "tls": {
                   "type": "array",
+                  "description": "ingress tls config",
                   "items": {
                     "type": "object"
                   }
@@ -15420,7 +15482,7 @@
                                 },
                                 "tcp_no_delay": {
                                   "type": "boolean",
-                                  "description": "server listen socket option for tcp_no_delay functionality"
+                                  "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                 },
                                 "tcp_quick_ack": {
                                   "type": "boolean",
@@ -15653,7 +15715,7 @@
                                 },
                                 "tcp_no_delay": {
                                   "type": "boolean",
-                                  "description": "server listen socket option for tcp_no_delay functionality"
+                                  "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                 },
                                 "tcp_quick_ack": {
                                   "type": "boolean",
@@ -15906,7 +15968,7 @@
                                 },
                                 "tcp_no_delay": {
                                   "type": "boolean",
-                                  "description": "server listen socket option for tcp_no_delay functionality"
+                                  "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                 },
                                 "tcp_quick_ack": {
                                   "type": "boolean",
@@ -16147,7 +16209,7 @@
                                 },
                                 "tcp_no_delay": {
                                   "type": "boolean",
-                                  "description": "server listen socket option for tcp_no_delay functionality"
+                                  "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                 },
                                 "tcp_quick_ack": {
                                   "type": "boolean",
@@ -16338,7 +16400,7 @@
                                 },
                                 "tcp_no_delay": {
                                   "type": "boolean",
-                                  "description": "server listen socket option for tcp_no_delay functionality"
+                                  "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                 },
                                 "tcp_quick_ack": {
                                   "type": "boolean",
@@ -16733,7 +16795,29 @@
                           }
                         },
                         "call_option": {
-                          "type": "object"
+                          "type": "object",
+                          "properties": {
+                            "content_subtype": {
+                              "type": "string",
+                              "description": "gRPC client call option content subtype"
+                            },
+                            "max_recv_msg_size": {
+                              "type": "integer",
+                              "description": "gRPC client call option max receive message size"
+                            },
+                            "max_retry_rpc_buffer_size": {
+                              "type": "integer",
+                              "description": "gRPC client call option max retry rpc buffer size"
+                            },
+                            "max_send_msg_size": {
+                              "type": "integer",
+                              "description": "gRPC client call option max send message size"
+                            },
+                            "wait_for_ready": {
+                              "type": "boolean",
+                              "description": "gRPC client call option wait for ready"
+                            }
+                          }
                         },
                         "circuit_breaker": {
                           "type": "object",
@@ -16788,9 +16872,6 @@
                               "description": "gRPC client connection pool size"
                             }
                           }
-                        },
-                        "content_subtype": {
-                          "type": "string"
                         },
                         "dial_option": {
                           "type": "object",
@@ -16958,7 +17039,7 @@
                                     },
                                     "tcp_no_delay": {
                                       "type": "boolean",
-                                      "description": "server listen socket option for tcp_no_delay functionality"
+                                      "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                     },
                                     "tcp_quick_ack": {
                                       "type": "boolean",
@@ -17058,15 +17139,6 @@
                           "type": "string",
                           "description": "gRPC client health check duration"
                         },
-                        "max_recv_msg_size": {
-                          "type": "integer"
-                        },
-                        "max_retry_rpc_buffer_size": {
-                          "type": "integer"
-                        },
-                        "max_send_msg_size": {
-                          "type": "integer"
-                        },
                         "tls": {
                           "type": "object",
                           "properties": {
@@ -17120,9 +17192,6 @@
                             "path": "github.com/vdaas/vald/internal/config",
                             "name": "config"
                           }
-                        },
-                        "wait_for_ready": {
-                          "type": "boolean"
                         }
                       }
                     },
@@ -17175,7 +17244,29 @@
                           }
                         },
                         "call_option": {
-                          "type": "object"
+                          "type": "object",
+                          "properties": {
+                            "content_subtype": {
+                              "type": "string",
+                              "description": "gRPC client call option content subtype"
+                            },
+                            "max_recv_msg_size": {
+                              "type": "integer",
+                              "description": "gRPC client call option max receive message size"
+                            },
+                            "max_retry_rpc_buffer_size": {
+                              "type": "integer",
+                              "description": "gRPC client call option max retry rpc buffer size"
+                            },
+                            "max_send_msg_size": {
+                              "type": "integer",
+                              "description": "gRPC client call option max send message size"
+                            },
+                            "wait_for_ready": {
+                              "type": "boolean",
+                              "description": "gRPC client call option wait for ready"
+                            }
+                          }
                         },
                         "circuit_breaker": {
                           "type": "object",
@@ -17230,9 +17321,6 @@
                               "description": "gRPC client connection pool size"
                             }
                           }
-                        },
-                        "content_subtype": {
-                          "type": "string"
                         },
                         "dial_option": {
                           "type": "object",
@@ -17400,7 +17488,7 @@
                                     },
                                     "tcp_no_delay": {
                                       "type": "boolean",
-                                      "description": "server listen socket option for tcp_no_delay functionality"
+                                      "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                     },
                                     "tcp_quick_ack": {
                                       "type": "boolean",
@@ -17500,15 +17588,6 @@
                           "type": "string",
                           "description": "gRPC client health check duration"
                         },
-                        "max_recv_msg_size": {
-                          "type": "integer"
-                        },
-                        "max_retry_rpc_buffer_size": {
-                          "type": "integer"
-                        },
-                        "max_send_msg_size": {
-                          "type": "integer"
-                        },
                         "tls": {
                           "type": "object",
                           "properties": {
@@ -17562,9 +17641,6 @@
                             "path": "github.com/vdaas/vald/internal/config",
                             "name": "config"
                           }
-                        },
-                        "wait_for_ready": {
-                          "type": "boolean"
                         }
                       }
                     },
@@ -17639,7 +17715,29 @@
                       }
                     },
                     "call_option": {
-                      "type": "object"
+                      "type": "object",
+                      "properties": {
+                        "content_subtype": {
+                          "type": "string",
+                          "description": "gRPC client call option content subtype"
+                        },
+                        "max_recv_msg_size": {
+                          "type": "integer",
+                          "description": "gRPC client call option max receive message size"
+                        },
+                        "max_retry_rpc_buffer_size": {
+                          "type": "integer",
+                          "description": "gRPC client call option max retry rpc buffer size"
+                        },
+                        "max_send_msg_size": {
+                          "type": "integer",
+                          "description": "gRPC client call option max send message size"
+                        },
+                        "wait_for_ready": {
+                          "type": "boolean",
+                          "description": "gRPC client call option wait for ready"
+                        }
+                      }
                     },
                     "circuit_breaker": {
                       "type": "object",
@@ -17694,9 +17792,6 @@
                           "description": "gRPC client connection pool size"
                         }
                       }
-                    },
-                    "content_subtype": {
-                      "type": "string"
                     },
                     "dial_option": {
                       "type": "object",
@@ -17861,7 +17956,7 @@
                                 },
                                 "tcp_no_delay": {
                                   "type": "boolean",
-                                  "description": "server listen socket option for tcp_no_delay functionality"
+                                  "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                 },
                                 "tcp_quick_ack": {
                                   "type": "boolean",
@@ -17961,15 +18056,6 @@
                       "type": "string",
                       "description": "gRPC client health check duration"
                     },
-                    "max_recv_msg_size": {
-                      "type": "integer"
-                    },
-                    "max_retry_rpc_buffer_size": {
-                      "type": "integer"
-                    },
-                    "max_send_msg_size": {
-                      "type": "integer"
-                    },
                     "tls": {
                       "type": "object",
                       "properties": {
@@ -18023,9 +18109,6 @@
                         "path": "github.com/vdaas/vald/internal/config",
                         "name": "config"
                       }
-                    },
-                    "wait_for_ready": {
-                      "type": "boolean"
                     }
                   }
                 },
@@ -18413,7 +18496,7 @@
                                     },
                                     "tcp_no_delay": {
                                       "type": "boolean",
-                                      "description": "server listen socket option for tcp_no_delay functionality"
+                                      "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                     },
                                     "tcp_quick_ack": {
                                       "type": "boolean",
@@ -18646,7 +18729,7 @@
                                     },
                                     "tcp_no_delay": {
                                       "type": "boolean",
-                                      "description": "server listen socket option for tcp_no_delay functionality"
+                                      "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                     },
                                     "tcp_quick_ack": {
                                       "type": "boolean",
@@ -18899,7 +18982,7 @@
                                     },
                                     "tcp_no_delay": {
                                       "type": "boolean",
-                                      "description": "server listen socket option for tcp_no_delay functionality"
+                                      "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                     },
                                     "tcp_quick_ack": {
                                       "type": "boolean",
@@ -19140,7 +19223,7 @@
                                     },
                                     "tcp_no_delay": {
                                       "type": "boolean",
-                                      "description": "server listen socket option for tcp_no_delay functionality"
+                                      "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                     },
                                     "tcp_quick_ack": {
                                       "type": "boolean",
@@ -19331,7 +19414,7 @@
                                     },
                                     "tcp_no_delay": {
                                       "type": "boolean",
-                                      "description": "server listen socket option for tcp_no_delay functionality"
+                                      "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                     },
                                     "tcp_quick_ack": {
                                       "type": "boolean",
@@ -19600,7 +19683,29 @@
                           }
                         },
                         "call_option": {
-                          "type": "object"
+                          "type": "object",
+                          "properties": {
+                            "content_subtype": {
+                              "type": "string",
+                              "description": "gRPC client call option content subtype"
+                            },
+                            "max_recv_msg_size": {
+                              "type": "integer",
+                              "description": "gRPC client call option max receive message size"
+                            },
+                            "max_retry_rpc_buffer_size": {
+                              "type": "integer",
+                              "description": "gRPC client call option max retry rpc buffer size"
+                            },
+                            "max_send_msg_size": {
+                              "type": "integer",
+                              "description": "gRPC client call option max send message size"
+                            },
+                            "wait_for_ready": {
+                              "type": "boolean",
+                              "description": "gRPC client call option wait for ready"
+                            }
+                          }
                         },
                         "circuit_breaker": {
                           "type": "object",
@@ -19655,9 +19760,6 @@
                               "description": "gRPC client connection pool size"
                             }
                           }
-                        },
-                        "content_subtype": {
-                          "type": "string"
                         },
                         "dial_option": {
                           "type": "object",
@@ -19825,7 +19927,7 @@
                                     },
                                     "tcp_no_delay": {
                                       "type": "boolean",
-                                      "description": "server listen socket option for tcp_no_delay functionality"
+                                      "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                     },
                                     "tcp_quick_ack": {
                                       "type": "boolean",
@@ -19925,15 +20027,6 @@
                           "type": "string",
                           "description": "gRPC client health check duration"
                         },
-                        "max_recv_msg_size": {
-                          "type": "integer"
-                        },
-                        "max_retry_rpc_buffer_size": {
-                          "type": "integer"
-                        },
-                        "max_send_msg_size": {
-                          "type": "integer"
-                        },
                         "tls": {
                           "type": "object",
                           "properties": {
@@ -19987,9 +20080,6 @@
                             "path": "github.com/vdaas/vald/internal/config",
                             "name": "config"
                           }
-                        },
-                        "wait_for_ready": {
-                          "type": "boolean"
                         }
                       }
                     },
@@ -20042,7 +20132,29 @@
                           }
                         },
                         "call_option": {
-                          "type": "object"
+                          "type": "object",
+                          "properties": {
+                            "content_subtype": {
+                              "type": "string",
+                              "description": "gRPC client call option content subtype"
+                            },
+                            "max_recv_msg_size": {
+                              "type": "integer",
+                              "description": "gRPC client call option max receive message size"
+                            },
+                            "max_retry_rpc_buffer_size": {
+                              "type": "integer",
+                              "description": "gRPC client call option max retry rpc buffer size"
+                            },
+                            "max_send_msg_size": {
+                              "type": "integer",
+                              "description": "gRPC client call option max send message size"
+                            },
+                            "wait_for_ready": {
+                              "type": "boolean",
+                              "description": "gRPC client call option wait for ready"
+                            }
+                          }
                         },
                         "circuit_breaker": {
                           "type": "object",
@@ -20097,9 +20209,6 @@
                               "description": "gRPC client connection pool size"
                             }
                           }
-                        },
-                        "content_subtype": {
-                          "type": "string"
                         },
                         "dial_option": {
                           "type": "object",
@@ -20267,7 +20376,7 @@
                                     },
                                     "tcp_no_delay": {
                                       "type": "boolean",
-                                      "description": "server listen socket option for tcp_no_delay functionality"
+                                      "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                     },
                                     "tcp_quick_ack": {
                                       "type": "boolean",
@@ -20367,15 +20476,6 @@
                           "type": "string",
                           "description": "gRPC client health check duration"
                         },
-                        "max_recv_msg_size": {
-                          "type": "integer"
-                        },
-                        "max_retry_rpc_buffer_size": {
-                          "type": "integer"
-                        },
-                        "max_send_msg_size": {
-                          "type": "integer"
-                        },
                         "tls": {
                           "type": "object",
                           "properties": {
@@ -20429,9 +20529,6 @@
                             "path": "github.com/vdaas/vald/internal/config",
                             "name": "config"
                           }
-                        },
-                        "wait_for_ready": {
-                          "type": "boolean"
                         }
                       }
                     },
@@ -20833,7 +20930,7 @@
                                     },
                                     "tcp_no_delay": {
                                       "type": "boolean",
-                                      "description": "server listen socket option for tcp_no_delay functionality"
+                                      "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                     },
                                     "tcp_quick_ack": {
                                       "type": "boolean",
@@ -21066,7 +21163,7 @@
                                     },
                                     "tcp_no_delay": {
                                       "type": "boolean",
-                                      "description": "server listen socket option for tcp_no_delay functionality"
+                                      "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                     },
                                     "tcp_quick_ack": {
                                       "type": "boolean",
@@ -21319,7 +21416,7 @@
                                     },
                                     "tcp_no_delay": {
                                       "type": "boolean",
-                                      "description": "server listen socket option for tcp_no_delay functionality"
+                                      "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                     },
                                     "tcp_quick_ack": {
                                       "type": "boolean",
@@ -21560,7 +21657,7 @@
                                     },
                                     "tcp_no_delay": {
                                       "type": "boolean",
-                                      "description": "server listen socket option for tcp_no_delay functionality"
+                                      "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                     },
                                     "tcp_quick_ack": {
                                       "type": "boolean",
@@ -21751,7 +21848,7 @@
                                     },
                                     "tcp_no_delay": {
                                       "type": "boolean",
-                                      "description": "server listen socket option for tcp_no_delay functionality"
+                                      "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                     },
                                     "tcp_quick_ack": {
                                       "type": "boolean",
@@ -22018,7 +22115,29 @@
                           }
                         },
                         "call_option": {
-                          "type": "object"
+                          "type": "object",
+                          "properties": {
+                            "content_subtype": {
+                              "type": "string",
+                              "description": "gRPC client call option content subtype"
+                            },
+                            "max_recv_msg_size": {
+                              "type": "integer",
+                              "description": "gRPC client call option max receive message size"
+                            },
+                            "max_retry_rpc_buffer_size": {
+                              "type": "integer",
+                              "description": "gRPC client call option max retry rpc buffer size"
+                            },
+                            "max_send_msg_size": {
+                              "type": "integer",
+                              "description": "gRPC client call option max send message size"
+                            },
+                            "wait_for_ready": {
+                              "type": "boolean",
+                              "description": "gRPC client call option wait for ready"
+                            }
+                          }
                         },
                         "circuit_breaker": {
                           "type": "object",
@@ -22073,9 +22192,6 @@
                               "description": "gRPC client connection pool size"
                             }
                           }
-                        },
-                        "content_subtype": {
-                          "type": "string"
                         },
                         "dial_option": {
                           "type": "object",
@@ -22243,7 +22359,7 @@
                                     },
                                     "tcp_no_delay": {
                                       "type": "boolean",
-                                      "description": "server listen socket option for tcp_no_delay functionality"
+                                      "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                     },
                                     "tcp_quick_ack": {
                                       "type": "boolean",
@@ -22343,15 +22459,6 @@
                           "type": "string",
                           "description": "gRPC client health check duration"
                         },
-                        "max_recv_msg_size": {
-                          "type": "integer"
-                        },
-                        "max_retry_rpc_buffer_size": {
-                          "type": "integer"
-                        },
-                        "max_send_msg_size": {
-                          "type": "integer"
-                        },
                         "tls": {
                           "type": "object",
                           "properties": {
@@ -22405,9 +22512,6 @@
                             "path": "github.com/vdaas/vald/internal/config",
                             "name": "config"
                           }
-                        },
-                        "wait_for_ready": {
-                          "type": "boolean"
                         }
                       }
                     },
@@ -22460,7 +22564,29 @@
                           }
                         },
                         "call_option": {
-                          "type": "object"
+                          "type": "object",
+                          "properties": {
+                            "content_subtype": {
+                              "type": "string",
+                              "description": "gRPC client call option content subtype"
+                            },
+                            "max_recv_msg_size": {
+                              "type": "integer",
+                              "description": "gRPC client call option max receive message size"
+                            },
+                            "max_retry_rpc_buffer_size": {
+                              "type": "integer",
+                              "description": "gRPC client call option max retry rpc buffer size"
+                            },
+                            "max_send_msg_size": {
+                              "type": "integer",
+                              "description": "gRPC client call option max send message size"
+                            },
+                            "wait_for_ready": {
+                              "type": "boolean",
+                              "description": "gRPC client call option wait for ready"
+                            }
+                          }
                         },
                         "circuit_breaker": {
                           "type": "object",
@@ -22515,9 +22641,6 @@
                               "description": "gRPC client connection pool size"
                             }
                           }
-                        },
-                        "content_subtype": {
-                          "type": "string"
                         },
                         "dial_option": {
                           "type": "object",
@@ -22685,7 +22808,7 @@
                                     },
                                     "tcp_no_delay": {
                                       "type": "boolean",
-                                      "description": "server listen socket option for tcp_no_delay functionality"
+                                      "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                     },
                                     "tcp_quick_ack": {
                                       "type": "boolean",
@@ -22785,15 +22908,6 @@
                           "type": "string",
                           "description": "gRPC client health check duration"
                         },
-                        "max_recv_msg_size": {
-                          "type": "integer"
-                        },
-                        "max_retry_rpc_buffer_size": {
-                          "type": "integer"
-                        },
-                        "max_send_msg_size": {
-                          "type": "integer"
-                        },
                         "tls": {
                           "type": "object",
                           "properties": {
@@ -22847,9 +22961,6 @@
                             "path": "github.com/vdaas/vald/internal/config",
                             "name": "config"
                           }
-                        },
-                        "wait_for_ready": {
-                          "type": "boolean"
                         }
                       }
                     },
@@ -23255,7 +23366,7 @@
                                     },
                                     "tcp_no_delay": {
                                       "type": "boolean",
-                                      "description": "server listen socket option for tcp_no_delay functionality"
+                                      "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                     },
                                     "tcp_quick_ack": {
                                       "type": "boolean",
@@ -23488,7 +23599,7 @@
                                     },
                                     "tcp_no_delay": {
                                       "type": "boolean",
-                                      "description": "server listen socket option for tcp_no_delay functionality"
+                                      "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                     },
                                     "tcp_quick_ack": {
                                       "type": "boolean",
@@ -23741,7 +23852,7 @@
                                     },
                                     "tcp_no_delay": {
                                       "type": "boolean",
-                                      "description": "server listen socket option for tcp_no_delay functionality"
+                                      "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                     },
                                     "tcp_quick_ack": {
                                       "type": "boolean",
@@ -23982,7 +24093,7 @@
                                     },
                                     "tcp_no_delay": {
                                       "type": "boolean",
-                                      "description": "server listen socket option for tcp_no_delay functionality"
+                                      "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                     },
                                     "tcp_quick_ack": {
                                       "type": "boolean",
@@ -24173,7 +24284,7 @@
                                     },
                                     "tcp_no_delay": {
                                       "type": "boolean",
-                                      "description": "server listen socket option for tcp_no_delay functionality"
+                                      "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                     },
                                     "tcp_quick_ack": {
                                       "type": "boolean",
@@ -24430,7 +24541,29 @@
                           }
                         },
                         "call_option": {
-                          "type": "object"
+                          "type": "object",
+                          "properties": {
+                            "content_subtype": {
+                              "type": "string",
+                              "description": "gRPC client call option content subtype"
+                            },
+                            "max_recv_msg_size": {
+                              "type": "integer",
+                              "description": "gRPC client call option max receive message size"
+                            },
+                            "max_retry_rpc_buffer_size": {
+                              "type": "integer",
+                              "description": "gRPC client call option max retry rpc buffer size"
+                            },
+                            "max_send_msg_size": {
+                              "type": "integer",
+                              "description": "gRPC client call option max send message size"
+                            },
+                            "wait_for_ready": {
+                              "type": "boolean",
+                              "description": "gRPC client call option wait for ready"
+                            }
+                          }
                         },
                         "circuit_breaker": {
                           "type": "object",
@@ -24485,9 +24618,6 @@
                               "description": "gRPC client connection pool size"
                             }
                           }
-                        },
-                        "content_subtype": {
-                          "type": "string"
                         },
                         "dial_option": {
                           "type": "object",
@@ -24655,7 +24785,7 @@
                                     },
                                     "tcp_no_delay": {
                                       "type": "boolean",
-                                      "description": "server listen socket option for tcp_no_delay functionality"
+                                      "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                     },
                                     "tcp_quick_ack": {
                                       "type": "boolean",
@@ -24755,15 +24885,6 @@
                           "type": "string",
                           "description": "gRPC client health check duration"
                         },
-                        "max_recv_msg_size": {
-                          "type": "integer"
-                        },
-                        "max_retry_rpc_buffer_size": {
-                          "type": "integer"
-                        },
-                        "max_send_msg_size": {
-                          "type": "integer"
-                        },
                         "tls": {
                           "type": "object",
                           "properties": {
@@ -24817,9 +24938,6 @@
                             "path": "github.com/vdaas/vald/internal/config",
                             "name": "config"
                           }
-                        },
-                        "wait_for_ready": {
-                          "type": "boolean"
                         }
                       }
                     },
@@ -24872,7 +24990,29 @@
                           }
                         },
                         "call_option": {
-                          "type": "object"
+                          "type": "object",
+                          "properties": {
+                            "content_subtype": {
+                              "type": "string",
+                              "description": "gRPC client call option content subtype"
+                            },
+                            "max_recv_msg_size": {
+                              "type": "integer",
+                              "description": "gRPC client call option max receive message size"
+                            },
+                            "max_retry_rpc_buffer_size": {
+                              "type": "integer",
+                              "description": "gRPC client call option max retry rpc buffer size"
+                            },
+                            "max_send_msg_size": {
+                              "type": "integer",
+                              "description": "gRPC client call option max send message size"
+                            },
+                            "wait_for_ready": {
+                              "type": "boolean",
+                              "description": "gRPC client call option wait for ready"
+                            }
+                          }
                         },
                         "circuit_breaker": {
                           "type": "object",
@@ -24927,9 +25067,6 @@
                               "description": "gRPC client connection pool size"
                             }
                           }
-                        },
-                        "content_subtype": {
-                          "type": "string"
                         },
                         "dial_option": {
                           "type": "object",
@@ -25097,7 +25234,7 @@
                                     },
                                     "tcp_no_delay": {
                                       "type": "boolean",
-                                      "description": "server listen socket option for tcp_no_delay functionality"
+                                      "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                     },
                                     "tcp_quick_ack": {
                                       "type": "boolean",
@@ -25197,15 +25334,6 @@
                           "type": "string",
                           "description": "gRPC client health check duration"
                         },
-                        "max_recv_msg_size": {
-                          "type": "integer"
-                        },
-                        "max_retry_rpc_buffer_size": {
-                          "type": "integer"
-                        },
-                        "max_send_msg_size": {
-                          "type": "integer"
-                        },
                         "tls": {
                           "type": "object",
                           "properties": {
@@ -25259,9 +25387,6 @@
                             "path": "github.com/vdaas/vald/internal/config",
                             "name": "config"
                           }
-                        },
-                        "wait_for_ready": {
-                          "type": "boolean"
                         }
                       }
                     },
@@ -26066,7 +26191,7 @@
                                     },
                                     "tcp_no_delay": {
                                       "type": "boolean",
-                                      "description": "server listen socket option for tcp_no_delay functionality"
+                                      "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                     },
                                     "tcp_quick_ack": {
                                       "type": "boolean",
@@ -26299,7 +26424,7 @@
                                     },
                                     "tcp_no_delay": {
                                       "type": "boolean",
-                                      "description": "server listen socket option for tcp_no_delay functionality"
+                                      "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                     },
                                     "tcp_quick_ack": {
                                       "type": "boolean",
@@ -26552,7 +26677,7 @@
                                     },
                                     "tcp_no_delay": {
                                       "type": "boolean",
-                                      "description": "server listen socket option for tcp_no_delay functionality"
+                                      "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                     },
                                     "tcp_quick_ack": {
                                       "type": "boolean",
@@ -26793,7 +26918,7 @@
                                     },
                                     "tcp_no_delay": {
                                       "type": "boolean",
-                                      "description": "server listen socket option for tcp_no_delay functionality"
+                                      "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                     },
                                     "tcp_quick_ack": {
                                       "type": "boolean",
@@ -26984,7 +27109,7 @@
                                     },
                                     "tcp_no_delay": {
                                       "type": "boolean",
-                                      "description": "server listen socket option for tcp_no_delay functionality"
+                                      "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                     },
                                     "tcp_quick_ack": {
                                       "type": "boolean",
@@ -27601,7 +27726,7 @@
                                         },
                                         "tcp_no_delay": {
                                           "type": "boolean",
-                                          "description": "server listen socket option for tcp_no_delay functionality"
+                                          "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                         },
                                         "tcp_quick_ack": {
                                           "type": "boolean",
@@ -27834,7 +27959,7 @@
                                         },
                                         "tcp_no_delay": {
                                           "type": "boolean",
-                                          "description": "server listen socket option for tcp_no_delay functionality"
+                                          "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                         },
                                         "tcp_quick_ack": {
                                           "type": "boolean",
@@ -28087,7 +28212,7 @@
                                         },
                                         "tcp_no_delay": {
                                           "type": "boolean",
-                                          "description": "server listen socket option for tcp_no_delay functionality"
+                                          "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                         },
                                         "tcp_quick_ack": {
                                           "type": "boolean",
@@ -28328,7 +28453,7 @@
                                         },
                                         "tcp_no_delay": {
                                           "type": "boolean",
-                                          "description": "server listen socket option for tcp_no_delay functionality"
+                                          "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                         },
                                         "tcp_quick_ack": {
                                           "type": "boolean",
@@ -28519,7 +28644,7 @@
                                         },
                                         "tcp_no_delay": {
                                           "type": "boolean",
-                                          "description": "server listen socket option for tcp_no_delay functionality"
+                                          "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                         },
                                         "tcp_quick_ack": {
                                           "type": "boolean",
@@ -28805,7 +28930,29 @@
                           }
                         },
                         "call_option": {
-                          "type": "object"
+                          "type": "object",
+                          "properties": {
+                            "content_subtype": {
+                              "type": "string",
+                              "description": "gRPC client call option content subtype"
+                            },
+                            "max_recv_msg_size": {
+                              "type": "integer",
+                              "description": "gRPC client call option max receive message size"
+                            },
+                            "max_retry_rpc_buffer_size": {
+                              "type": "integer",
+                              "description": "gRPC client call option max retry rpc buffer size"
+                            },
+                            "max_send_msg_size": {
+                              "type": "integer",
+                              "description": "gRPC client call option max send message size"
+                            },
+                            "wait_for_ready": {
+                              "type": "boolean",
+                              "description": "gRPC client call option wait for ready"
+                            }
+                          }
                         },
                         "circuit_breaker": {
                           "type": "object",
@@ -28860,9 +29007,6 @@
                               "description": "gRPC client connection pool size"
                             }
                           }
-                        },
-                        "content_subtype": {
-                          "type": "string"
                         },
                         "dial_option": {
                           "type": "object",
@@ -29030,7 +29174,7 @@
                                     },
                                     "tcp_no_delay": {
                                       "type": "boolean",
-                                      "description": "server listen socket option for tcp_no_delay functionality"
+                                      "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                     },
                                     "tcp_quick_ack": {
                                       "type": "boolean",
@@ -29130,15 +29274,6 @@
                           "type": "string",
                           "description": "gRPC client health check duration"
                         },
-                        "max_recv_msg_size": {
-                          "type": "integer"
-                        },
-                        "max_retry_rpc_buffer_size": {
-                          "type": "integer"
-                        },
-                        "max_send_msg_size": {
-                          "type": "integer"
-                        },
                         "tls": {
                           "type": "object",
                           "properties": {
@@ -29192,9 +29327,6 @@
                             "path": "github.com/vdaas/vald/internal/config",
                             "name": "config"
                           }
-                        },
-                        "wait_for_ready": {
-                          "type": "boolean"
                         }
                       }
                     },
@@ -29247,7 +29379,29 @@
                           }
                         },
                         "call_option": {
-                          "type": "object"
+                          "type": "object",
+                          "properties": {
+                            "content_subtype": {
+                              "type": "string",
+                              "description": "gRPC client call option content subtype"
+                            },
+                            "max_recv_msg_size": {
+                              "type": "integer",
+                              "description": "gRPC client call option max receive message size"
+                            },
+                            "max_retry_rpc_buffer_size": {
+                              "type": "integer",
+                              "description": "gRPC client call option max retry rpc buffer size"
+                            },
+                            "max_send_msg_size": {
+                              "type": "integer",
+                              "description": "gRPC client call option max send message size"
+                            },
+                            "wait_for_ready": {
+                              "type": "boolean",
+                              "description": "gRPC client call option wait for ready"
+                            }
+                          }
                         },
                         "circuit_breaker": {
                           "type": "object",
@@ -29302,9 +29456,6 @@
                               "description": "gRPC client connection pool size"
                             }
                           }
-                        },
-                        "content_subtype": {
-                          "type": "string"
                         },
                         "dial_option": {
                           "type": "object",
@@ -29472,7 +29623,7 @@
                                     },
                                     "tcp_no_delay": {
                                       "type": "boolean",
-                                      "description": "server listen socket option for tcp_no_delay functionality"
+                                      "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                     },
                                     "tcp_quick_ack": {
                                       "type": "boolean",
@@ -29572,15 +29723,6 @@
                           "type": "string",
                           "description": "gRPC client health check duration"
                         },
-                        "max_recv_msg_size": {
-                          "type": "integer"
-                        },
-                        "max_retry_rpc_buffer_size": {
-                          "type": "integer"
-                        },
-                        "max_send_msg_size": {
-                          "type": "integer"
-                        },
                         "tls": {
                           "type": "object",
                           "properties": {
@@ -29634,9 +29776,6 @@
                             "path": "github.com/vdaas/vald/internal/config",
                             "name": "config"
                           }
-                        },
-                        "wait_for_ready": {
-                          "type": "boolean"
                         }
                       }
                     },
@@ -30038,7 +30177,7 @@
                                     },
                                     "tcp_no_delay": {
                                       "type": "boolean",
-                                      "description": "server listen socket option for tcp_no_delay functionality"
+                                      "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                     },
                                     "tcp_quick_ack": {
                                       "type": "boolean",
@@ -30271,7 +30410,7 @@
                                     },
                                     "tcp_no_delay": {
                                       "type": "boolean",
-                                      "description": "server listen socket option for tcp_no_delay functionality"
+                                      "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                     },
                                     "tcp_quick_ack": {
                                       "type": "boolean",
@@ -30524,7 +30663,7 @@
                                     },
                                     "tcp_no_delay": {
                                       "type": "boolean",
-                                      "description": "server listen socket option for tcp_no_delay functionality"
+                                      "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                     },
                                     "tcp_quick_ack": {
                                       "type": "boolean",
@@ -30765,7 +30904,7 @@
                                     },
                                     "tcp_no_delay": {
                                       "type": "boolean",
-                                      "description": "server listen socket option for tcp_no_delay functionality"
+                                      "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                     },
                                     "tcp_quick_ack": {
                                       "type": "boolean",
@@ -30956,7 +31095,7 @@
                                     },
                                     "tcp_no_delay": {
                                       "type": "boolean",
-                                      "description": "server listen socket option for tcp_no_delay functionality"
+                                      "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                     },
                                     "tcp_quick_ack": {
                                       "type": "boolean",
@@ -31307,7 +31446,7 @@
                                 },
                                 "tcp_no_delay": {
                                   "type": "boolean",
-                                  "description": "server listen socket option for tcp_no_delay functionality"
+                                  "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                 },
                                 "tcp_quick_ack": {
                                   "type": "boolean",
@@ -31540,7 +31679,7 @@
                                 },
                                 "tcp_no_delay": {
                                   "type": "boolean",
-                                  "description": "server listen socket option for tcp_no_delay functionality"
+                                  "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                 },
                                 "tcp_quick_ack": {
                                   "type": "boolean",
@@ -31793,7 +31932,7 @@
                                 },
                                 "tcp_no_delay": {
                                   "type": "boolean",
-                                  "description": "server listen socket option for tcp_no_delay functionality"
+                                  "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                 },
                                 "tcp_quick_ack": {
                                   "type": "boolean",
@@ -32034,7 +32173,7 @@
                                 },
                                 "tcp_no_delay": {
                                   "type": "boolean",
-                                  "description": "server listen socket option for tcp_no_delay functionality"
+                                  "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                 },
                                 "tcp_quick_ack": {
                                   "type": "boolean",
@@ -32225,7 +32364,7 @@
                                 },
                                 "tcp_no_delay": {
                                   "type": "boolean",
-                                  "description": "server listen socket option for tcp_no_delay functionality"
+                                  "description": "server listen socket option for tcp_no_delay functionality (no effect: TCP_NODELAY is set on every TCP socket unless tcp_cork is set)"
                                 },
                                 "tcp_quick_ack": {
                                   "type": "boolean",

@@ -22,7 +22,6 @@ import (
 	"net/http"
 	"path/filepath"
 	"regexp"
-	"sync/atomic"
 
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/log"
@@ -31,6 +30,7 @@ import (
 	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/atomic"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
@@ -64,7 +64,7 @@ var (
 	reHref   = regexp.MustCompile(PREFIX_HREF + BASE_REGEXP)
 )
 
-func getFiles(dir string) []string {
+func getFiles(dir string) ([]string, error) {
 	filePaths := []string{}
 	reIgnore := regexp.MustCompile(*ignorePath)
 	err := filepath.Walk(dir, func(path string, info fs.FileInfo, err error) error {
@@ -78,9 +78,9 @@ func getFiles(dir string) []string {
 		return nil
 	})
 	if err != nil {
-		log.Error(err.Error())
+		return nil, err
 	}
-	return filePaths
+	return filePaths, nil
 }
 
 func convertToURL(s, url string) string {
@@ -116,7 +116,7 @@ func isBlackList(url string, bList []string) bool {
 func exec(url string, cli *http.Client) int {
 	resp, err := cli.Get(url)
 	if err != nil {
-		log.Errorf(err.Error())
+		log.Error(err)
 		if resp != nil && resp.Body != nil {
 			resp.Body.Close()
 		}
@@ -127,6 +127,44 @@ func exec(url string, cli *http.Client) int {
 		return resp.StatusCode
 	}
 	return 200
+}
+
+// checkLink checks the link v written as k in the file and reports whether it is alive.
+// mu guards errLinks and exLinks, which are shared between the goroutines.
+func checkLink(
+	mu *sync.Mutex, errLinks, exLinks map[string]int, k, v string, cli *http.Client,
+) bool {
+	mu.Lock()
+	if _, ok := errLinks[k]; ok {
+		mu.Unlock()
+		return false
+	}
+	var code int
+	if strings.Contains(v, BASE_URL) {
+		mu.Unlock()
+		code = exec(v, cli)
+	} else {
+		c, ok := exLinks[v]
+		mu.Unlock()
+		if ok {
+			code = c
+		} else {
+			// Request outside the lock so external links are checked concurrently;
+			// a rare duplicate request for the same URL is harmless.
+			code = exec(v, cli)
+			mu.Lock()
+			exLinks[v] = code
+			mu.Unlock()
+		}
+	}
+	if code == http.StatusOK {
+		return true
+	}
+	log.Warnf("[%d] %s", code, v)
+	mu.Lock()
+	errLinks[k] = code
+	mu.Unlock()
+	return false
 }
 
 func main() {
@@ -140,7 +178,11 @@ func main() {
 		return
 	}
 	if info.IsDir() {
-		paths = getFiles(*path)
+		paths, err = getFiles(*path)
+		if err != nil {
+			log.Fatal(err.Error())
+			return
+		}
 	} else {
 		paths = []string{*path}
 	}
@@ -247,29 +289,9 @@ func main() {
 		for _, url := range urls {
 			eg.Go(func() error {
 				for k, v := range url {
-					mu.Lock()
-					if _, ok := r.errLinks[k]; ok {
-						atomic.AddInt32(&fail, 1)
-						mu.Unlock()
-						continue
-					}
-					var code int
-					if strings.Contains(v, BASE_URL) {
-						code = exec(v, cli)
-					} else {
-						if c, ok := exLinks[v]; ok {
-							code = c
-						} else {
-							code = exec(v, cli)
-							exLinks[v] = code
-						}
-						mu.Unlock()
-					}
-					if code == 200 {
+					if checkLink(&mu, r.errLinks, exLinks, k, v, cli) {
 						atomic.AddInt32(&success, 1)
 					} else {
-						log.Warnf("[%d] %s", code, v)
-						r.errLinks[k] = code
 						atomic.AddInt32(&fail, 1)
 					}
 				}

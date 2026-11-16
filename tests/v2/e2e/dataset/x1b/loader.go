@@ -119,9 +119,7 @@ func ParseBvecs(r io.Reader) ([][]uint8, error) {
 		if err != nil {
 			return nil, err
 		}
-		v := make([]uint8, dim)
-		copy(v, buf)
-		vecs = append(vecs, v)
+		vecs = append(vecs, buf) // readPayload allocates a fresh buffer per vector
 	}
 }
 

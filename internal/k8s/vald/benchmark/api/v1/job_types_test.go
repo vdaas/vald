@@ -17,7 +17,6 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/internal/config"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const (
@@ -27,11 +26,9 @@ const (
 
 func newValdBenchmarkJobFixture() *ValdBenchmarkJob {
 	return &ValdBenchmarkJob{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "job-fixture",
-			Namespace: "default",
-			Labels:    map[string]string{"app": testJobAppLabelValue},
-		},
+		Name:      "job-fixture",
+		Namespace: "default",
+		Labels:    map[string]string{"app": testJobAppLabelValue},
 		Spec: BenchmarkJobSpec{
 			JobType: "search",
 			Target:  &BenchmarkTarget{Host: "vald-lb-gateway", Port: 8081},

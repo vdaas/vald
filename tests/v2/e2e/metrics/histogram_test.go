@@ -58,6 +58,12 @@ func TestNewHistogram(t *testing.T) {
 	}
 }
 
+func TestNewHistogram_InvalidOption(t *testing.T) {
+	if _, err := NewHistogram(WithHistogramNumShards(0)); err == nil {
+		t.Error("expected an error for non-positive shard count, got nil")
+	}
+}
+
 func TestHistogram_Record_And_Snapshot(t *testing.T) {
 	type args struct {
 		opts    []HistogramOption

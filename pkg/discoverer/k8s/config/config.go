@@ -15,7 +15,10 @@
 // Package config stores all server application settings for k8s discoverer
 package config
 
-import "github.com/vdaas/vald/internal/config"
+import (
+	"github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/errors"
+)
 
 type GlobalConfig = config.GlobalConfig
 
@@ -46,21 +49,29 @@ func NewConfig(path string) (cfg *Data, err error) {
 	if cfg != nil {
 		cfg.Bind()
 	} else {
-		cfg = new(Data)
+		return nil, errors.ErrInvalidConfig
 	}
 
 	if cfg.Server != nil {
 		cfg.Server = cfg.Server.Bind()
+	} else {
+		return nil, errors.ErrInvalidConfig
 	}
 
 	if cfg.Observability != nil {
 		cfg.Observability = cfg.Observability.Bind()
+	} else {
+		cfg.Observability = new(config.Observability).Bind()
 	}
 
 	if cfg.Discoverer != nil {
+		// Discoverer.Bind only binds an existing Net, and the usecase calls Net.Opts unconditionally.
+		if cfg.Discoverer.Net == nil {
+			cfg.Discoverer.Net = new(config.Net)
+		}
 		cfg.Discoverer = cfg.Discoverer.Bind()
 	} else {
-		cfg.Discoverer = new(config.Discoverer).Bind()
+		return nil, errors.ErrInvalidConfig
 	}
 	return cfg, nil
 }

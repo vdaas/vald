@@ -31,6 +31,7 @@ type (
 	Closer      = io.Closer
 	ReadCloser  = io.ReadCloser
 	WriteCloser = io.WriteCloser
+	PipeReader  = io.PipeReader
 )
 
 var (
@@ -96,17 +97,20 @@ func (r *ctxReader) Read(p []byte) (n int, err error) {
 }
 
 func (r *ctxReader) Close() error {
+	// Always close the underlying reader, even when the context is done, so that
+	// pipes/fds/goroutines held by it are released.
+	var err error
+	if c, ok := r.r.(io.Closer); ok {
+		err = c.Close()
+	}
+
 	select {
 	case <-r.ctx.Done():
-		return r.ctx.Err()
+		return errors.Join(r.ctx.Err(), err)
 	default:
 	}
 
-	if c, ok := r.r.(io.Closer); ok {
-		return c.Close()
-	}
-
-	return nil
+	return err
 }
 
 type ctxWriter struct {
@@ -154,17 +158,20 @@ func (w *ctxWriter) Write(p []byte) (n int, err error) {
 }
 
 func (w *ctxWriter) Close() error {
+	// Always close the underlying writer, even when the context is done, so that
+	// pipes/fds/goroutines held by it are released.
+	var err error
+	if c, ok := w.w.(Closer); ok {
+		err = c.Close()
+	}
+
 	select {
 	case <-w.ctx.Done():
-		return w.ctx.Err()
+		return errors.Join(w.ctx.Err(), err)
 	default:
 	}
 
-	if c, ok := w.w.(Closer); ok {
-		return c.Close()
-	}
-
-	return nil
+	return err
 }
 
 type eofReader struct{}

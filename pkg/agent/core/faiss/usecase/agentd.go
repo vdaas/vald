@@ -20,6 +20,7 @@ import (
 	agent "github.com/vdaas/vald/apis/grpc/v1/agent/core"
 	vald "github.com/vdaas/vald/apis/grpc/v1/vald"
 	iconf "github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/observability"
 	faissmetrics "github.com/vdaas/vald/internal/observability/metrics/agent/core/faiss"
@@ -67,7 +68,6 @@ func New(cfg *config.Data) (r runner.Interface, err error) {
 
 	g, err := handler.New(
 		handler.WithFaiss(faiss),
-		handler.WithStreamConcurrency(cfg.Server.GetGRPCStreamConcurrency()),
 	)
 	if err != nil {
 		return nil, err
@@ -177,15 +177,16 @@ func (r *run) PreStop(ctx context.Context) error {
 	return nil
 }
 
-func (r *run) Stop(ctx context.Context) error {
+func (r *run) Stop(ctx context.Context) (err error) {
+	// Shut the server down first so spans and metrics of the requests it drains
+	// are still exported before observability is stopped.
+	err = r.server.Shutdown(ctx)
 	if r.observability != nil {
-		r.observability.Stop(ctx)
+		err = errors.Join(err, r.observability.Stop(ctx))
 	}
-
-	return r.server.Shutdown(ctx)
+	return err
 }
 
 func (r *run) PostStop(ctx context.Context) error {
-	r.faiss.Close(ctx)
-	return nil
+	return r.faiss.Close(ctx)
 }

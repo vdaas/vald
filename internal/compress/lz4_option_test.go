@@ -136,13 +136,34 @@ func TestWithLZ4CompressionLevel(t *testing.T) {
 			},
 		},
 		{
-			name: "return error when level is more than 1.",
+			name: "set success when level is 0.",
+			args: args{
+				level: 0,
+			},
+			want: want{
+				obj: new(T),
+			},
+		},
+		{
+			name: "set success when level is 1.",
 			args: args{
 				level: 1,
 			},
 			want: want{
-				obj: new(T),
-				err: errors.ErrInvalidCompressionLevel(1),
+				obj: &T{
+					compressionLevel: 1,
+				},
+			},
+		},
+		{
+			name: "set success when level is 9.",
+			args: args{
+				level: 9,
+			},
+			want: want{
+				obj: &T{
+					compressionLevel: 9,
+				},
 			},
 		},
 	}

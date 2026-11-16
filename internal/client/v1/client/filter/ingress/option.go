@@ -14,7 +14,10 @@
 
 package ingress
 
-import "github.com/vdaas/vald/internal/net/grpc"
+import (
+	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/timeutil"
+)
 
 type Option func(*client) error
 
@@ -38,6 +41,19 @@ func WithClient(cl grpc.Client) Option {
 	return func(c *client) error {
 		if cl != nil {
 			c.c = cl
+		}
+		return nil
+	}
+}
+
+// WithIdleTimeout sets how long a request-derived filter target may stay
+// connected without an in-flight user. The gateway passes the filter client's
+// dial_option.idle_timeout; an empty, invalid or non-positive value keeps
+// defaultIdleTimeout.
+func WithIdleTimeout(dur string) Option {
+	return func(c *client) error {
+		if d := timeutil.ParseWithDefault(dur, 0); d > 0 {
+			c.idle = d
 		}
 		return nil
 	}

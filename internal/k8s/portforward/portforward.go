@@ -124,6 +124,11 @@ func New(opts ...Option) (Forwarder, error) {
 	if len(pf.addresses) == 0 {
 		return nil, errors.ErrPortForwardAddressNotFound
 	}
+	// Normalize a private copy once: WithAddress keeps the caller's slice, and
+	// normalizing it in place on every reconnect would reorder the caller's
+	// data and, because slices.Compact zeroes the removed tail, leave "" in
+	// pf.addresses for the next session when duplicates were given.
+	pf.addresses = normalize(slices.Clone(pf.addresses))
 	if len(pf.ports) == 0 {
 		return nil, errors.ErrPortForwardPortPairNotFound
 	}
@@ -257,7 +262,9 @@ func (pf *portForward) Start(ctx context.Context) (<-chan error, error) {
 		}
 		select {
 		case <-ctx.Done():
-			return pf.ech, ctx.Err()
+			// report why the daemon context ended (e.g. a failed endpoints
+			// watch cancels the errgroup with its error), not just Canceled.
+			return pf.ech, context.Cause(ctx)
 		case <-ticker.C:
 		}
 	}
@@ -420,7 +427,6 @@ func portforwardExtended(
 		return cancel, nil, errors.ErrPortForwardPortPairNotFound
 	}
 	portPairs = normalize(portPairs)
-	addresses = normalize(addresses)
 
 	// Create a channel to signal when the port forwarder is ready.
 	readyChan := make(chan struct{})
@@ -460,8 +466,22 @@ func portforwardExtended(
 	}))
 
 	// Wait until the port forwarder signals readiness or context cancellation.
+	// ForwardPorts can fail (e.g. the local port is in use) without closing
+	// readyChan; it then reports on ech and cancels ctx, so check ech for the cause.
 	select {
+	case err := <-ech:
+		if err == nil {
+			err = errors.New("port forwarder exited before it became ready")
+		}
+		return cancel, ech, err
 	case <-ctx.Done():
+		select {
+		case err := <-ech:
+			if err != nil {
+				return cancel, ech, err
+			}
+		default:
+		}
 		return cancel, ech, ctx.Err()
 	case <-readyChan:
 		log.Debugf("port forwarder ready for pod %s on %v", podName, portPairs)

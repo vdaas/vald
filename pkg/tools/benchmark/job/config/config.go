@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 
 	"github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s/client"
 	"github.com/vdaas/vald/internal/k8s/resource"
 	v1 "github.com/vdaas/vald/internal/k8s/vald/benchmark/api/v1"
@@ -71,9 +72,10 @@ func NewConfig(ctx context.Context, path string) (cfg *Data, err error) {
 	if err != nil {
 		return nil, err
 	}
-	if cfg != nil {
-		cfg.Bind()
+	if cfg == nil {
+		return nil, errors.ErrInvalidConfig
 	}
+	cfg.Bind()
 
 	if cfg.Server != nil {
 		cfg.Server = cfg.Server.Bind()

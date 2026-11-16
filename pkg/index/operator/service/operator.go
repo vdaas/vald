@@ -149,9 +149,20 @@ func (o *operator) Start(ctx context.Context) (<-chan error, error) {
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
-			case err := <-dech:
+			case err, ok := <-dech:
+				if !ok {
+					// the controller closed its error stream; a closed channel
+					// is always ready, so stop selecting it or this loop
+					// busy-spins until ctx ends.
+					dech = nil
+					continue
+				}
 				if err != nil {
-					ech <- err
+					select {
+					case ech <- err:
+					case <-ctx.Done():
+						return ctx.Err()
+					}
 				}
 			}
 		}
@@ -300,13 +311,22 @@ func (o *operator) ensureJobConcurrency(
 		return createSkipped, fmt.Errorf("listing jobs: %w", err)
 	}
 
-	// Drop only jobs that have actually finished (a terminal Succeeded/Failed
-	// count) from the concurrency/dedup accounting. A just-created rotation Job
-	// also has Active==0 until the Job controller schedules its pod, so keying
-	// solely on Active==0 would treat that brand-new Job as finished and let a
-	// second reconcile in the propagation window create a duplicate.
+	// Drop only jobs that have actually finished from the concurrency/dedup
+	// accounting: a terminal Complete/Failed condition, or Active==0 with
+	// Succeeded>0 (rotation Jobs run a single completion). The Failed counter
+	// is not terminal: a retrying Job (restartPolicy OnFailure) has Active==0
+	// with Failed>0 while the Job controller waits out its pod-recreation
+	// backoff, and a just-created Job has every counter at zero. Keying on
+	// those would let a reconcile in either window create a duplicate
+	// rotation Job for the same replica.
 	jobList.Items = slices.DeleteFunc(jobList.Items, func(job k8s.Job) bool {
-		return job.Status.Active == 0 && (job.Status.Succeeded > 0 || job.Status.Failed > 0)
+		if job.Status.Active == 0 && job.Status.Succeeded > 0 {
+			return true
+		}
+		return slices.ContainsFunc(job.Status.Conditions, func(c k8s.JobCondition) bool {
+			return (c.Type == k8s.JobComplete || c.Type == k8s.JobFailed) &&
+				c.Status == k8s.CoreConditionTrue
+		})
 	})
 
 	if len(jobList.Items) >= int(o.rotationJobConcurrency) {

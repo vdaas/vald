@@ -136,7 +136,7 @@ func (s *server) CreateAndSaveIndex(
 			code = codes.Internal
 		}
 		log.Error(err)
-		errhandler.RecordSpanError(span, code, err)
+		return errhandler.HandleError[payload.Empty](span, code, err)
 	}
 	return res, nil
 }

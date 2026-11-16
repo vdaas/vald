@@ -21,7 +21,6 @@ import (
 	"runtime"
 
 	"github.com/vdaas/vald/internal/strings"
-	"github.com/vdaas/vald/internal/sync"
 )
 
 var (
@@ -91,7 +90,7 @@ var (
 	// When the input error is not nil, it will return the error based on the input error.
 	Wrap = func(err error, msg string) error {
 		if err != nil {
-			if msg != "" && err.Error() != msg && !Is(err, New(msg)) {
+			if msg != "" && !Is(err, New(msg)) {
 				return Errorf("%s: %w", msg, err)
 			}
 			return err
@@ -101,13 +100,17 @@ var (
 
 	// Wrapf represents a function to generate an error that is used by input error, format, and args.
 	// When all of the input is nil, it will return a new error based on format and args even these are nil.
-	// When the input error is not nil, it will return an error based on the input error.
+	// When the input error is not nil, it will return the input error wrapped with the formatted message,
+	// or the input error itself when format is empty.
 	Wrapf = func(err error, format string, args ...any) error {
 		if err != nil {
-			if format != "" && len(args) != 0 {
-				return Wrap(err, fmt.Sprintf(format, args...))
+			if format == "" {
+				return err
 			}
-			return err
+			if len(args) == 0 {
+				return Wrap(err, format)
+			}
+			return Wrap(err, fmt.Sprintf(format, args...))
 		}
 		return Errorf(format, args...)
 	}
@@ -190,6 +193,13 @@ func IsNot(err error, targets ...error) (same bool) {
 
 func is(err, target error) (same bool) {
 	targetComparable := reflect.TypeOf(target).Comparable()
+	// target.Error() is computed lazily (only once the identity check has
+	// failed, as before) and then reused for every layer; err.Error() is
+	// computed once per layer. Error() may rebuild the whole message.
+	var (
+		tmsg   string
+		hasMsg bool
+	)
 	for {
 		// Only the pointer/value == comparison must be gated on comparability
 		// (comparing an uncomparable target panics); the message comparisons
@@ -199,9 +209,14 @@ func is(err, target error) (same bool) {
 		// layer (it did at the innermost layer only), an inconsistency with
 		// how a comparable target of the same message resolves.
 		//nolint:errorlint // is() is the Is primitive itself; the == identity check on a comparable target is intentional (mirrors the terminal fallbacks below and stdlib errors.Is).
-		if (targetComparable && err == target) ||
-			err.Error() == target.Error() ||
-			strings.EqualFold(err.Error(), target.Error()) {
+		if targetComparable && err == target {
+			return true
+		}
+		emsg := err.Error()
+		if !hasMsg {
+			tmsg, hasMsg = target.Error(), true
+		}
+		if emsg == tmsg || strings.EqualFold(emsg, tmsg) {
 			return true
 		}
 
@@ -217,18 +232,18 @@ func is(err, target error) (same bool) {
 				return false
 			}
 		case interface{ Unwrap() []error }:
-			for _, err = range x.Unwrap() {
-				if is(err, target) {
+			for _, e := range x.Unwrap() {
+				if e != nil && is(e, target) {
 					return true
 				}
 			}
-			return targetComparable && err == target ||
-				err.Error() == target.Error() ||
-				strings.EqualFold(err.Error(), target.Error())
+			// err itself was already compared at the top of the loop and every
+			// non-nil child has just been checked recursively.
+			return false
 		default:
 			return targetComparable && err == target ||
-				err.Error() == target.Error() ||
-				strings.EqualFold(err.Error(), target.Error())
+				emsg == tmsg ||
+				strings.EqualFold(emsg, tmsg)
 		}
 	}
 }
@@ -267,7 +282,9 @@ func Join(errs ...error) error {
 	case 2:
 		switch {
 		case errs[0] != nil && errs[1] != nil:
-			if errs[0] == errs[1] || is(errs[0], errs[1]) {
+			// is() already short-circuits on identity, but only when the type
+			// is comparable; a raw == here panics for uncomparable error types.
+			if is(errs[0], errs[1]) {
 				return errs[0]
 			}
 			var es []error
@@ -323,8 +340,12 @@ func Join(errs ...error) error {
 		}
 	}
 	e.errs = RemoveDuplicates(append(e.errs, errs...))
-	if len(e.errs) == 0 {
+	switch len(e.errs) {
+	case 0:
 		return nil
+	case 1:
+		// A single remaining error is returned as is, like the 1- and 2-argument cases.
+		return e.errs[0]
 	}
 	return e
 }
@@ -342,7 +363,6 @@ func RemoveDuplicates(errs []error) []error {
 	// treated as duplicates depended on the argument count rather than the errors
 	// themselves. The exact-string map below is the consistent rule.
 	seen := make(map[string]bool, len(errs))
-	defer clear(seen)
 	var idx uint64
 	for _, err := range errs {
 		if err != nil {
@@ -361,12 +381,6 @@ type joinError struct {
 	errs []error
 }
 
-var sbPool = sync.Pool{
-	New: func() any {
-		return new(strings.Builder)
-	},
-}
-
 func (e *joinError) Error() (str string) {
 	switch len(e.errs) {
 	case 0:
@@ -374,14 +388,9 @@ func (e *joinError) Error() (str string) {
 	case 1:
 		return e.errs[0].Error()
 	}
-	sb, ok := sbPool.Get().(*strings.Builder)
-	if !ok {
-		sb = new(strings.Builder)
-	}
-	defer func() {
-		sb.Reset()
-		sbPool.Put(sb)
-	}()
+	// A pooled Builder cannot keep its buffer (Reset drops it and String aliases
+	// it), so a local Builder is as cheap and simpler.
+	var sb strings.Builder
 	sb.Grow(len(e.errs) * 16)
 	for i, err := range e.errs {
 		if i > 0 {

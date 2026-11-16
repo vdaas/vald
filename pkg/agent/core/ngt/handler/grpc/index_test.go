@@ -1904,6 +1904,29 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 				},
 			}
 		}(),
+		func() test {
+			return test{
+				// the service error used to be logged and dropped, returning an empty success.
+				name: "Decision Table Testing case 4.1: fail to create and save index on read replica",
+				args: args{
+					c: &payload.Control_CreateIndexRequest{
+						PoolSize: 1,
+					},
+				},
+				fields: fields{
+					srvOpts: defaultSrvOpts,
+					svcCfg:  defaultSvcCfg,
+					svcOpts: []service.Option{
+						service.WithEnableInMemoryMode(false),
+						service.WithIsReadReplica(true),
+					},
+					indexPath: mkdirTemp(),
+				},
+				want: want{
+					errCode: codes.Internal,
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
@@ -2317,13 +2340,24 @@ func Test_server_IndexInfo(t *testing.T) {
 				if _, err := insertAndCreateIndex(s, ctx, insertCnt, false); err != nil {
 					t.Fatal(err)
 				}
+				// The background CreateIndex may outlive the test body: ctx is canceled
+				// when the test ends, and CreateIndex then returns Canceled. Report from a
+				// Cleanup instead of the goroutine, since t.Error after the test has
+				// completed panics, and accept only that cancellation.
+				done := make(chan error, 1)
 				go func() {
-					if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
+					_, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
 						PoolSize: uint32(insertCnt),
-					}); err != nil {
-						t.Error(err)
-					}
+					})
+					done <- err
 				}()
+				t.Cleanup(func() {
+					if err := <-done; err != nil {
+						if st, ok := status.FromError(err); !ok || st.Code() != codes.Canceled {
+							t.Error(err)
+						}
+					}
+				})
 			},
 			want: want{
 				wantRes: &payload.Info_Index_Count{

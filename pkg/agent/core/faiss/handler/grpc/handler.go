@@ -24,7 +24,6 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
-	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/pkg/agent/core/faiss/service"
 )
 
@@ -36,11 +35,9 @@ type Server interface {
 type server struct {
 	agent.UnimplementedAgentServer
 	vald.UnimplementedValdServer
-	faiss             service.Faiss
-	eg                errgroup.Group
-	name              string
-	ip                string
-	streamConcurrency int
+	faiss service.Faiss
+	name  string
+	ip    string
 }
 
 const (
@@ -57,8 +54,6 @@ func (s *server) resourceInfo(resourceType string) *errdetails.ResourceInfo {
 		ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 	}
 }
-
-var errFaiss = new(errors.FaissError)
 
 func New(opts ...Option) (Server, error) {
 	s := new(server)
@@ -96,9 +91,9 @@ func (s *server) newLocations(uuids ...string) (locs *payload.Object_Locations) 
 }
 
 func (s *server) newLocation(uuid string) *payload.Object_Location {
-	locs := s.newLocations(uuid)
-	if locs != nil && locs.GetLocations() != nil && len(locs.GetLocations()) > 0 {
-		return locs.Locations[0]
+	return &payload.Object_Location{
+		Name: s.name,
+		Uuid: uuid,
+		Ips:  []string{s.ip},
 	}
-	return nil
 }

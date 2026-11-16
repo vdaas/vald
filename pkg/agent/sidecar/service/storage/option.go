@@ -96,6 +96,7 @@ func WithCloudStorageOpts(opts ...cloudstorage.Option) Option {
 	return func(b *bs) error {
 		if b.cloudStorageOpts == nil {
 			b.cloudStorageOpts = opts
+			return nil
 		}
 
 		b.cloudStorageOpts = append(b.cloudStorageOpts, opts...)
@@ -108,6 +109,7 @@ func WithCloudStorageURLOpenerOpts(opts ...urlopener.Option) Option {
 	return func(b *bs) error {
 		if b.cloudStorageURLOpenerOpts == nil {
 			b.cloudStorageURLOpenerOpts = opts
+			return nil
 		}
 
 		b.cloudStorageURLOpenerOpts = append(b.cloudStorageURLOpenerOpts, opts...)

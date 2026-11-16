@@ -21,7 +21,7 @@ kind/install: $(BINDIR)/kind
 $(BINDIR)/kind: $(BINDIR)/docker
 	mkdir -p $(BINDIR)
 	$(eval DARCH := $(subst aarch64,arm64,$(ARCH)))
-	curl -fsSL https://github.com/kubernetes-sigs/kind/releases/download/v$(KIND_VERSION)/kind-$(OS)-$(subst x86_64,amd64,$(shell echo $(DARCH) | tr '[:upper:]' '[:lower:]')) -o $(BINDIR)/kind
+	$(CURL) https://github.com/kubernetes-sigs/kind/releases/download/v$(KIND_VERSION)/kind-$(OS)-$(subst x86_64,amd64,$(shell echo $(DARCH) | tr '[:upper:]' '[:lower:]')) -o $(BINDIR)/kind
 	chmod a+x $(BINDIR)/kind
 
 .PHONY: kind/start
@@ -85,7 +85,7 @@ kind/vs/start:
 	kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/$(SNAPSHOTTER_VERSION)/deploy/kubernetes/snapshot-controller/setup-snapshot-controller.yaml
 
 	mkdir -p $(TEMP_DIR)/csi-driver-hostpath \
-	&& curl -fsSL https://github.com/kubernetes-csi/csi-driver-host-path/archive/refs/tags/$(CSI_DRIVER_HOST_PATH_VERSION).tar.gz | tar zxf - -C $(TEMP_DIR)/csi-driver-hostpath --strip-components 1 \
+	&& $(CURL) https://github.com/kubernetes-csi/csi-driver-host-path/archive/refs/tags/$(CSI_DRIVER_HOST_PATH_VERSION).tar.gz | tar zxf - -C $(TEMP_DIR)/csi-driver-hostpath --strip-components 1 \
 	&& cd $(TEMP_DIR)/csi-driver-hostpath \
 	&& deploy/kubernetes-latest/deploy.sh \
 	&& kubectl apply -f examples/csi-storageclass.yaml \

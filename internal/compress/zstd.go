@@ -130,8 +130,12 @@ func (z *zstdReader) Read(p []byte) (n int, err error) {
 	return z.r.Read(p)
 }
 
-// Close closes the reader.
+// Close closes the reader. The zstd decoder runs background goroutines that
+// only stop when the decoder itself is closed.
 func (z *zstdReader) Close() error {
+	if d, ok := z.r.(interface{ Close() }); ok {
+		d.Close()
+	}
 	return z.src.Close()
 }
 

@@ -582,7 +582,11 @@ func (mm *memMetrics) Register(m metrics.Meter) error {
 		mInfo = append(mInfo, metrics...)
 	}
 
-	instruments := make([]api.Int64Observable, 0, len(mInfo))
+	// Observe by name: the callback re-reads the metric list, which can be shorter
+	// (a failed /proc read) or differently shaped than at registration, so pairing
+	// instruments with values by position could panic or mislabel values.
+	instruments := make(map[string]api.Int64Observable, len(mInfo))
+	oinsts := make([]api.Observable, 0, len(mInfo))
 	for _, info := range mInfo {
 		instrument, err := m.Int64ObservableGauge(
 			info.Name,
@@ -590,12 +594,9 @@ func (mm *memMetrics) Register(m metrics.Meter) error {
 			metrics.WithUnit(info.Unit),
 		)
 		if err == nil {
-			instruments = append(instruments, instrument)
+			instruments[info.Name] = instrument
+			oinsts = append(oinsts, instrument)
 		}
-	}
-	oinsts := make([]api.Observable, 0, len(instruments))
-	for _, instrument := range instruments {
-		oinsts = append(oinsts, instrument)
 	}
 	_, err := m.RegisterCallback(
 		func(_ context.Context, o api.Observer) error {
@@ -604,8 +605,10 @@ func (mm *memMetrics) Register(m metrics.Meter) error {
 				metrics = append(metrics, m...)
 			}
 
-			for i, instrument := range instruments {
-				o.ObserveInt64(instrument, metrics[i].Value())
+			for _, mi := range metrics {
+				if instrument, ok := instruments[mi.Name]; ok {
+					o.ObserveInt64(instrument, mi.Value())
+				}
 			}
 			return nil
 		},

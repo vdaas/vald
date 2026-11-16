@@ -385,6 +385,30 @@ func TestWithExpireCheckDuration(t *testing.T) {
 	}
 }
 
+func TestWithExpireCheckDuration_NonPositive(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name string
+		dur  time.Duration
+		want time.Duration
+	}{
+		{name: "zero keeps previous value", dur: 0, want: 7 * time.Second},
+		{name: "negative keeps previous value", dur: -time.Second, want: 7 * time.Second},
+		{name: "positive is applied", dur: 2 * time.Second, want: 2 * time.Second},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			c := new(cache[any])
+			c.expireCheckDur = 7 * time.Second
+			WithExpireCheckDuration[any](tt.dur)(c)
+			if c.expireCheckDur != tt.want {
+				t.Errorf("expireCheckDur = %v, want %v", c.expireCheckDur, tt.want)
+			}
+		})
+	}
+}
+
 // NOT IMPLEMENTED BELOW
 //
 // func Test_defaultOptions(t *testing.T) {

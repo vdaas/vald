@@ -42,7 +42,7 @@ runs:
           echo "files=${ignore_file}" >> "${GITHUB_OUTPUT}"
         fi
     - name: Run vulnerability scanner (table)
-      uses: aquasecurity/trivy-action@2736533278103862a861f4a35ebac3e97854d956
+      uses: aquasecurity/trivy-action@master
       with:
         image-ref: ${{ inputs.image_ref }}
         format: "table"
@@ -52,7 +52,7 @@ runs:
         ignore-unfixed: true
         timeout: 30m
     - name: Run vulnerability scanner (sarif)
-      uses: aquasecurity/trivy-action@2736533278103862a861f4a35ebac3e97854d956
+      uses: aquasecurity/trivy-action@master
       with:
         image-ref: ${{ inputs.image_ref }}
         format: "sarif"
@@ -63,6 +63,6 @@ runs:
         exit-code: 0
         timeout: 30m
     - name: Upload Trivy scan results to Security tab
-      uses: github/codeql-action/upload-sarif@ff2f1c621b7f889edc0d3c761ac2e6a3f8cdb0dd # v4.37.7
+      uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
       with:
         sarif_file: "trivy-results.sarif"

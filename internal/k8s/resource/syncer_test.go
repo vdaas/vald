@@ -31,6 +31,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	kclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
 const (
@@ -51,12 +52,10 @@ func newSchemeForSyncerTests(t *testing.T) *runtime.Scheme {
 
 func newSyncOwner() *appsv1.Deployment {
 	return &appsv1.Deployment{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:       "owner",
-			Namespace:  testNamespaceDefault,
-			UID:        types.UID("owner-uid"),
-			Generation: 7,
-		},
+		Name:       "owner",
+		Namespace:  testNamespaceDefault,
+		UID:        types.UID("owner-uid"),
+		Generation: 7,
 	}
 }
 
@@ -78,7 +77,7 @@ func listConfigMaps(c k8s.Client) func(ctx context.Context) ([]Object, error) {
 }
 
 func TestSyncKey_IncludesGVK(t *testing.T) {
-	cm := &corev1.ConfigMap{ObjectMeta: metav1.ObjectMeta{Name: "n", Namespace: "ns"}}
+	cm := &corev1.ConfigMap{Name: "n", Namespace: "ns"}
 	cm.SetGroupVersionKind(corev1.SchemeGroupVersion.WithKind("ConfigMap"))
 
 	got := syncKey(cm)
@@ -100,7 +99,7 @@ func TestSyncer_Sync_ExistingError(t *testing.T) {
 	c := fake.NewClientBuilder().WithScheme(scheme).Build()
 	s := NewSyncer(c, scheme, "")
 
-	cm := &corev1.ConfigMap{ObjectMeta: metav1.ObjectMeta{Name: testNameAlpha, Namespace: testNamespaceDefault}}
+	cm := &corev1.ConfigMap{Name: testNameAlpha, Namespace: testNamespaceDefault}
 	cm.SetGroupVersionKind(corev1.SchemeGroupVersion.WithKind("ConfigMap"))
 
 	_, err := s.Sync(context.Background(), newSyncOwner(), []Object{cm},
@@ -115,7 +114,7 @@ func TestSyncer_Sync_CreatesObjectsWithOwnerAndLabels(t *testing.T) {
 	s := NewSyncer(c, scheme, "")
 	owner := newSyncOwner()
 
-	cm := &corev1.ConfigMap{ObjectMeta: metav1.ObjectMeta{Name: testNameAlpha, Namespace: testNamespaceDefault}}
+	cm := &corev1.ConfigMap{Name: testNameAlpha, Namespace: testNamespaceDefault}
 	cm.SetGroupVersionKind(corev1.SchemeGroupVersion.WithKind("ConfigMap"))
 
 	res, err := s.Sync(context.Background(), owner, []Object{cm}, listConfigMaps(c))
@@ -135,18 +134,16 @@ func TestSyncer_Sync_PrunesOrphans(t *testing.T) {
 	owner := newSyncOwner()
 
 	orphan := &corev1.ConfigMap{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      testNameOrphan,
-			Namespace: testNamespaceDefault,
-			OwnerReferences: []metav1.OwnerReference{
-				{
-					APIVersion:         appsv1.SchemeGroupVersion.String(),
-					Kind:               testKindDeployment,
-					Name:               owner.Name,
-					UID:                owner.UID,
-					Controller:         new(true),
-					BlockOwnerDeletion: new(true),
-				},
+		Name:      testNameOrphan,
+		Namespace: testNamespaceDefault,
+		OwnerReferences: []metav1.OwnerReference{
+			{
+				APIVersion:         appsv1.SchemeGroupVersion.String(),
+				Kind:               testKindDeployment,
+				Name:               owner.Name,
+				UID:                owner.UID,
+				Controller:         new(true),
+				BlockOwnerDeletion: new(true),
 			},
 		},
 	}
@@ -155,7 +152,7 @@ func TestSyncer_Sync_PrunesOrphans(t *testing.T) {
 	c := fake.NewClientBuilder().WithScheme(scheme).WithObjects(orphan).Build()
 	s := NewSyncer(c, scheme, "")
 
-	keep := &corev1.ConfigMap{ObjectMeta: metav1.ObjectMeta{Name: testNameKeep, Namespace: testNamespaceDefault}}
+	keep := &corev1.ConfigMap{Name: testNameKeep, Namespace: testNamespaceDefault}
 	keep.SetGroupVersionKind(corev1.SchemeGroupVersion.WithKind("ConfigMap"))
 
 	res, err := s.Sync(context.Background(), owner, []Object{keep}, listConfigMaps(c))
@@ -175,18 +172,16 @@ func TestSyncer_Sync_NilExistingSkipsPrune(t *testing.T) {
 	owner := newSyncOwner()
 
 	orphan := &corev1.ConfigMap{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      testNameOrphan,
-			Namespace: testNamespaceDefault,
-			OwnerReferences: []metav1.OwnerReference{
-				{
-					APIVersion:         appsv1.SchemeGroupVersion.String(),
-					Kind:               testKindDeployment,
-					Name:               owner.Name,
-					UID:                owner.UID,
-					Controller:         new(true),
-					BlockOwnerDeletion: new(true),
-				},
+		Name:      testNameOrphan,
+		Namespace: testNamespaceDefault,
+		OwnerReferences: []metav1.OwnerReference{
+			{
+				APIVersion:         appsv1.SchemeGroupVersion.String(),
+				Kind:               testKindDeployment,
+				Name:               owner.Name,
+				UID:                owner.UID,
+				Controller:         new(true),
+				BlockOwnerDeletion: new(true),
 			},
 		},
 	}
@@ -195,7 +190,7 @@ func TestSyncer_Sync_NilExistingSkipsPrune(t *testing.T) {
 	c := fake.NewClientBuilder().WithScheme(scheme).WithObjects(orphan).Build()
 	s := NewSyncer(c, scheme, "")
 
-	keep := &corev1.ConfigMap{ObjectMeta: metav1.ObjectMeta{Name: testNameKeep, Namespace: testNamespaceDefault}}
+	keep := &corev1.ConfigMap{Name: testNameKeep, Namespace: testNamespaceDefault}
 	keep.SetGroupVersionKind(corev1.SchemeGroupVersion.WithKind("ConfigMap"))
 
 	_, err := s.Sync(context.Background(), owner, []Object{keep}, nil)
@@ -210,12 +205,10 @@ func TestSyncer_Sync_UpdatesExistingObject(t *testing.T) {
 	owner := newSyncOwner()
 
 	existing := &corev1.ConfigMap{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      testNameAlpha,
-			Namespace: testNamespaceDefault,
-			Labels:    map[string]string{"managed-generation": "3"},
-		},
-		Data: map[string]string{testDataKey: "stale"},
+		Name:      testNameAlpha,
+		Namespace: testNamespaceDefault,
+		Labels:    map[string]string{"managed-generation": "3"},
+		Data:      map[string]string{testDataKey: "stale"},
 	}
 	existing.SetGroupVersionKind(corev1.SchemeGroupVersion.WithKind("ConfigMap"))
 
@@ -223,8 +216,8 @@ func TestSyncer_Sync_UpdatesExistingObject(t *testing.T) {
 	s := NewSyncer(c, scheme, "")
 
 	desired := &corev1.ConfigMap{
-		ObjectMeta: metav1.ObjectMeta{Name: testNameAlpha, Namespace: testNamespaceDefault},
-		Data:       map[string]string{testDataKey: testFreshValue},
+		Name: testNameAlpha, Namespace: testNamespaceDefault,
+		Data: map[string]string{testDataKey: testFreshValue},
 	}
 	desired.SetGroupVersionKind(corev1.SchemeGroupVersion.WithKind("ConfigMap"))
 
@@ -239,6 +232,54 @@ func TestSyncer_Sync_UpdatesExistingObject(t *testing.T) {
 	assert.Equal(t, "7", got.GetLabels()["managed-generation"], "generation label must follow the owner generation")
 	assert.Len(t, got.GetOwnerReferences(), 1)
 	assert.Equal(t, types.UID("owner-uid"), got.GetOwnerReferences()[0].UID)
+}
+
+func TestSyncer_Sync_RefusesObjectOwnedByAnotherController(t *testing.T) {
+	scheme := newSchemeForSyncerTests(t)
+	owner := newSyncOwner()
+
+	otherRef := metav1.OwnerReference{
+		APIVersion:         appsv1.SchemeGroupVersion.String(),
+		Kind:               testKindDeployment,
+		Name:               "other-owner",
+		UID:                types.UID("other-uid"),
+		Controller:         new(true),
+		BlockOwnerDeletion: new(true),
+	}
+	existing := &corev1.ConfigMap{
+		Name:            testNameAlpha,
+		Namespace:       testNamespaceDefault,
+		OwnerReferences: []metav1.OwnerReference{otherRef},
+		Data:            map[string]string{testDataKey: "other-owned"},
+	}
+	existing.SetGroupVersionKind(corev1.SchemeGroupVersion.WithKind("ConfigMap"))
+
+	c := fake.NewClientBuilder().WithScheme(scheme).WithObjects(existing).Build()
+	s := NewSyncer(c, scheme, "")
+
+	desired := &corev1.ConfigMap{
+		Name: testNameAlpha, Namespace: testNamespaceDefault,
+		Data: map[string]string{testDataKey: testFreshValue},
+	}
+	desired.SetGroupVersionKind(corev1.SchemeGroupVersion.WithKind("ConfigMap"))
+	other := &corev1.ConfigMap{
+		Name: "beta", Namespace: testNamespaceDefault,
+		Data: map[string]string{testDataKey: testFreshValue},
+	}
+	other.SetGroupVersionKind(corev1.SchemeGroupVersion.WithKind("ConfigMap"))
+
+	res, err := s.Sync(context.Background(), owner, []Object{desired, other}, listConfigMaps(c))
+	var aoe *controllerutil.AlreadyOwnedError
+	assert.True(t, errors.As(err, &aoe), "an object controlled by another owner must not be adopted, got %v", err)
+	assert.Equal(t, OperationResultCreated, res["/v1/ConfigMap/default/beta"],
+		"a conflict on one object must not block the others")
+
+	got := &corev1.ConfigMap{}
+	assert.NoError(t, c.Get(context.Background(), kclient.ObjectKey{Name: testNameAlpha, Namespace: testNamespaceDefault}, got))
+	assert.Equal(t, "other-owned", got.Data[testDataKey], "live object must not be overwritten")
+	if assert.Len(t, got.GetOwnerReferences(), 1) {
+		assert.Equal(t, types.UID("other-uid"), got.GetOwnerReferences()[0].UID)
+	}
 }
 
 func TestSyncer_Sync_UpdatesExistingUnstructured(t *testing.T) {
@@ -383,18 +424,16 @@ func TestSyncer_Prune_EmptyGVKFailSafe(t *testing.T) {
 			owner := newSyncOwner()
 
 			orphan := &corev1.ConfigMap{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      testNameOrphan,
-					Namespace: testNamespaceDefault,
-					OwnerReferences: []metav1.OwnerReference{
-						{
-							APIVersion:         appsv1.SchemeGroupVersion.String(),
-							Kind:               testKindDeployment,
-							Name:               owner.Name,
-							UID:                owner.UID,
-							Controller:         new(true),
-							BlockOwnerDeletion: new(true),
-						},
+				Name:      testNameOrphan,
+				Namespace: testNamespaceDefault,
+				OwnerReferences: []metav1.OwnerReference{
+					{
+						APIVersion:         appsv1.SchemeGroupVersion.String(),
+						Kind:               testKindDeployment,
+						Name:               owner.Name,
+						UID:                owner.UID,
+						Controller:         new(true),
+						BlockOwnerDeletion: new(true),
 					},
 				},
 			}
@@ -402,7 +441,7 @@ func TestSyncer_Prune_EmptyGVKFailSafe(t *testing.T) {
 			c := fake.NewClientBuilder().WithScheme(scheme).WithObjects(orphan).Build()
 			s := NewSyncer(c, scheme, "")
 
-			keep := &corev1.ConfigMap{ObjectMeta: metav1.ObjectMeta{Name: testNameKeep, Namespace: testNamespaceDefault}}
+			keep := &corev1.ConfigMap{Name: testNameKeep, Namespace: testNamespaceDefault}
 			keep.SetGroupVersionKind(corev1.SchemeGroupVersion.WithKind("ConfigMap"))
 
 			// existing mirrors a caller whose GVK restoration either failed
@@ -453,18 +492,16 @@ func TestSyncer_Sync_EmptyDesiredPrunesOwned(t *testing.T) {
 	owner := newSyncOwner()
 
 	orphan := &corev1.ConfigMap{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      testNameOrphan,
-			Namespace: testNamespaceDefault,
-			OwnerReferences: []metav1.OwnerReference{
-				{
-					APIVersion:         appsv1.SchemeGroupVersion.String(),
-					Kind:               testKindDeployment,
-					Name:               owner.Name,
-					UID:                owner.UID,
-					Controller:         new(true),
-					BlockOwnerDeletion: new(true),
-				},
+		Name:      testNameOrphan,
+		Namespace: testNamespaceDefault,
+		OwnerReferences: []metav1.OwnerReference{
+			{
+				APIVersion:         appsv1.SchemeGroupVersion.String(),
+				Kind:               testKindDeployment,
+				Name:               owner.Name,
+				UID:                owner.UID,
+				Controller:         new(true),
+				BlockOwnerDeletion: new(true),
 			},
 		},
 	}

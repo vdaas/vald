@@ -19,6 +19,9 @@ on:
     paths-ignore:
       - "apis/docs/v1/docs.md"
       - "CHANGELOG.md"
+defaults:
+  run:
+    shell: bash
 jobs:
   dump-contexts-to-log:
     timeout-minutes: 30
@@ -81,13 +84,23 @@ jobs:
           language: en-US
           disabled_rules: "DOUBLE_PUNCTUATION,WORD_CONTAINS_UNDERSCORE,ARROWS,CURRENCY,DASH_RULE,EN_QUOTES,UPPERCASE_SENTENCE_START,LC_AFTER_PERIOD"
           disabled_categories: "TYPOS,TYPOGRAPHY,STYLE"
+  detect-ci-container:
+    permissions:
+      contents: read
+    uses: ./.github/workflows/_detect-ci-container.yaml
   textlint:
     timeout-minutes: 30
     permissions:
       contents: read
       pull-requests: write
     name: runner / textlint
-    runs-on: ubuntu-slim
+    runs-on: ubuntu-latest
+    needs: [detect-ci-container]
+    container:
+      image: ghcr.io/vdaas/vald/vald-dev-container:${{ needs.detect-ci-container.outputs.TAG }}
+      credentials:
+        username: ${{ secrets.PACKAGE_USER }}
+        password: ${{ secrets.PACKAGE_TOKEN }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -96,25 +109,24 @@ jobs:
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - uses: oven-sh/setup-bun@635640504f6d7197d3bb29876a652f671028dc97 # main
-        with:
-          bun-version: latest
+      # bun and reviewdog ship in the CI container; only the textlint packages are added here.
       - name: Install textlint
         run: |
-          make reviewdog/install
           make textlint/ci/install
       - name: Run lint for files && Report to GitHub
         env:
           REVIEWDOG_GITHUB_API_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         run: |
-          make CSPELL_EXTRA_OPTIONS="--no-summary --no-progress" files/cspell | \
+          # cspell and textlint exit non-zero on a finding anywhere in the repository; reviewdog
+          # reports the ones in the diff, so the producer status must not fail the pipeline.
+          { make CSPELL_EXTRA_OPTIONS="--no-summary --no-progress" files/cspell || true; } | \
           reviewdog \
             -efm='%f:%l:%c - %m' \
             -name="file name cspell" \
             -diff="git diff ${{ github.event.pull_request.base.ref }}" \
             -reporter=github-pr-review \
             -level=error
-          make TEXTLINT_EXTRA_OPTIONS="-f checkstyle" files/textlint | \
+          { make TEXTLINT_EXTRA_OPTIONS="-f checkstyle" files/textlint || true; } | \
           reviewdog \
             -f=checkstyle \
             -name="file name textlint" \
@@ -125,14 +137,14 @@ jobs:
         env:
           REVIEWDOG_GITHUB_API_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         run: |
-          make CSPELL_EXTRA_OPTIONS="--no-summary --no-progress" docs/cspell | \
+          { make CSPELL_EXTRA_OPTIONS="--no-summary --no-progress" docs/cspell || true; } | \
           reviewdog \
             -efm='%f:%l:%c - %m' \
             -name="documents cspell" \
             -diff="git diff ${{ github.event.pull_request.base.ref }}" \
             -reporter=github-pr-review \
             -level=error
-          make TEXTLINT_EXTRA_OPTIONS="-f checkstyle" docs/textlint | \
+          { make TEXTLINT_EXTRA_OPTIONS="-f checkstyle" docs/textlint || true; } | \
           reviewdog \
             -f=checkstyle \
             -name="documents testlint" \

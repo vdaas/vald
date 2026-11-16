@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/test/comparator"
 	"github.com/vdaas/vald/internal/test/goleak"
@@ -896,6 +897,133 @@ func Test_queue_Len(t *testing.T) {
 				tt.Errorf("error = %v", err)
 			}
 		})
+	}
+}
+
+// waitClosed waits until ech is closed within 5 seconds, draining any values.
+func waitClosed(ech <-chan error) bool {
+	timer := time.NewTimer(5 * time.Second)
+	defer timer.Stop()
+	for {
+		select {
+		case _, ok := <-ech:
+			if !ok {
+				return true
+			}
+		case <-timer.C:
+			return false
+		}
+	}
+}
+
+// TestQueue_Start_notRunningAfterStop checks that the running flag is false once the queue loop has exited.
+// The flag must be set before the loop goroutine starts, otherwise its deferred Store(false) may run first.
+func TestQueue_Start_notRunningAfterStop(t *testing.T) {
+	t.Parallel()
+	for i := range 100 {
+		q, err := NewQueue()
+		if err != nil {
+			t.Fatal(err)
+		}
+		// the ctx is cancelled before Start so that the loop goroutine may exit before Start returns.
+		ctx, cancel := context.WithCancel(t.Context())
+		cancel()
+		ech, err := q.Start(ctx)
+		if err != nil {
+			t.Fatalf("iter %d: Start returned error: %v", i, err)
+		}
+		if !waitClosed(ech) {
+			t.Fatalf("iter %d: queue did not stop in time", i)
+		}
+		if q.(*queue).isRunning() {
+			t.Fatalf("iter %d: queue is reported as running after it stopped", i)
+		}
+	}
+}
+
+// TestQueue_Push_afterStop checks that inCh is not closed when the queue stops,
+// because a concurrent Push would panic with "send on closed channel".
+func TestQueue_Push_afterStop(t *testing.T) {
+	t.Parallel()
+	q, err := NewQueue()
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx, cancel := context.WithCancel(t.Context())
+	ech, err := q.Start(ctx)
+	if err != nil {
+		cancel()
+		t.Fatal(err)
+	}
+	cancel()
+	if !waitClosed(ech) {
+		t.Fatal("queue did not stop in time")
+	}
+
+	select {
+	case _, ok := <-q.(*queue).inCh:
+		t.Errorf("inCh must stay open and empty after stop, but receive returned ok=%t", ok)
+	default:
+	}
+
+	err = q.Push(t.Context(), func(context.Context) error { return nil })
+	if !errors.Is(err, errors.ErrQueueIsNotRunning) {
+		t.Errorf("Push after stop: got %v, want %v", err, errors.ErrQueueIsNotRunning)
+	}
+
+	job, err := q.Pop(t.Context())
+	if job != nil || !errors.Is(err, errors.ErrQueueIsNotRunning) {
+		t.Errorf("Pop after stop: got (%p, %v), want (nil, %v)", job, err, errors.ErrQueueIsNotRunning)
+	}
+}
+
+// TestQueue_Push_concurrentStop checks that Push racing with the queue stop never panics.
+func TestQueue_Push_concurrentStop(t *testing.T) {
+	t.Parallel()
+	const pushers = 8
+	for i := range 100 {
+		q, err := NewQueue()
+		if err != nil {
+			t.Fatal(err)
+		}
+		ctx, cancel := context.WithCancel(t.Context())
+		ech, err := q.Start(ctx)
+		if err != nil {
+			cancel()
+			t.Fatalf("iter %d: Start returned error: %v", i, err)
+		}
+
+		// Push is bounded by its own context so that a Push blocked on a full buffer is always released.
+		pctx, pcancel := context.WithTimeout(t.Context(), 5*time.Second)
+		var wg sync.WaitGroup
+		for range pushers {
+			wg.Go(func() {
+				for {
+					if err := q.Push(pctx, func(context.Context) error { return nil }); err != nil {
+						return
+					}
+				}
+			})
+		}
+		time.Sleep(time.Millisecond)
+		cancel()
+		stopped := waitClosed(ech)
+		// a Push that was blocked on a full buffer when the queue stopped is released by its own context.
+		pcancel()
+
+		done := make(chan struct{})
+		go func() {
+			wg.Wait()
+			close(done)
+		}()
+		select {
+		case <-done:
+		case <-time.After(10 * time.Second):
+			t.Fatalf("iter %d: pushers did not return", i)
+		}
+		if !stopped {
+			t.Fatalf("iter %d: queue did not stop in time", i)
+		}
 	}
 }
 

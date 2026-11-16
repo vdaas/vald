@@ -13,6 +13,65 @@
 // limitations under the License.
 package grpc
 
+import (
+	"testing"
+	"time"
+)
+
+func TestWithSearchQuorumGrace(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name string
+		dur  string
+		want time.Duration
+	}{
+		{name: "empty keeps it disabled", dur: ""},
+		{name: "invalid keeps it disabled", dur: "soon"},
+		{name: "zero keeps it disabled", dur: "0s"},
+		{name: "negative keeps it disabled", dur: "-10ms"},
+		{name: "positive enables it", dur: "10ms", want: 10 * time.Millisecond},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			s := new(server)
+			WithSearchQuorumGrace(tc.dur)(s)
+			if s.searchQuorumGrace != tc.want {
+				t.Errorf("searchQuorumGrace = %v, want %v", s.searchQuorumGrace, tc.want)
+			}
+		})
+	}
+}
+
+// A configured concurrency of 1 is valid and must not be dropped in favor of the default.
+func Test_WithConcurrencyOptions(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name string
+		c    int
+		want int
+	}{
+		{name: "one is accepted", c: 1, want: 1},
+		{name: "positive is accepted", c: 8, want: 8},
+		{name: "zero keeps the current value", c: 0, want: 5},
+		{name: "negative keeps the current value", c: -1, want: 5},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			s := &server{streamConcurrency: 5, multiConcurrency: 5}
+			WithStreamConcurrency(test.c)(s)
+			WithMultiConcurrency(test.c)(s)
+			if s.streamConcurrency != test.want {
+				t.Errorf("streamConcurrency = %d, want %d", s.streamConcurrency, test.want)
+			}
+			if s.multiConcurrency != test.want {
+				t.Errorf("multiConcurrency = %d, want %d", s.multiConcurrency, test.want)
+			}
+		})
+	}
+}
+
 // NOT IMPLEMENTED BELOW
 //
 // func TestWithIP(t *testing.T) {

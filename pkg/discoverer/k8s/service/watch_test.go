@@ -106,11 +106,10 @@ func TestDebugLogged(t *testing.T) {
 func TestDiscovererPodEntries(t *testing.T) {
 	t.Parallel()
 
-	t.Run("groups pods into distinct pointer entries and raises maxPods", func(t *testing.T) {
+	t.Run("groups pods into distinct pointer entries", func(t *testing.T) {
 		t.Parallel()
 
 		d := &discoverer{namespace: "default"}
-		d.maxPods.Store(1)
 		list := &k8s.PodList{Items: []k8s.Pod{
 			newRunningPod("agent-0", "vald-agent"),
 			newRunningPod("agent-1", "vald-agent"),
@@ -132,25 +131,18 @@ func TestDiscovererPodEntries(t *testing.T) {
 		if agents == gateways {
 			t.Error("entries share a single pointer")
 		}
-		if d.maxPods.Load() != 2 {
-			t.Errorf("maxPods = %d, want 2", d.maxPods.Load())
-		}
 	})
 
-	t.Run("keeps maxPods when every group is smaller", func(t *testing.T) {
+	t.Run("single group", func(t *testing.T) {
 		t.Parallel()
 
 		d := &discoverer{}
-		d.maxPods.Store(5)
 		list := &k8s.PodList{Items: []k8s.Pod{
 			newRunningPod("agent-0", "vald-agent"),
 		}}
 
 		if got := d.podEntries(list); len(got) != 1 {
 			t.Fatalf("podEntries() groups = %d, want 1", len(got))
-		}
-		if d.maxPods.Load() != 5 {
-			t.Errorf("maxPods = %d, want 5", d.maxPods.Load())
 		}
 	})
 }

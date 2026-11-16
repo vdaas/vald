@@ -55,6 +55,9 @@ var (
 		return Errorf("incompatible dimension size detected\trequested: %d,\tconfigured: %d", current, expected)
 	}
 
+	// ErrNaNOrInfVector represents an error that the vector contains NaN or +-Inf value.
+	ErrNaNOrInfVector = New("vector contains NaN or Inf value")
+
 	// ErrUnsupportedObjectType represents an error that the object type is unsupported.
 	ErrUnsupportedObjectType = New("unsupported ObjectType")
 

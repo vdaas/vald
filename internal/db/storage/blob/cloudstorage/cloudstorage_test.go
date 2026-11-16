@@ -13,6 +13,157 @@
 // limitations under the License.
 package cloudstorage
 
+import (
+	"context"
+	"net/url"
+	"testing"
+
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/io"
+	"gocloud.dev/blob"
+	"gocloud.dev/blob/gcsblob"
+	"gocloud.dev/blob/memblob"
+	"gocloud.dev/gcerrors"
+)
+
+func Test_client_Open_invalidOptions(t *testing.T) {
+	t.Parallel()
+	u, err := url.Parse("gs://bucket")
+	if err != nil {
+		t.Fatalf("url.Parse() error = %v", err)
+	}
+	tests := []struct {
+		client *client
+		name   string
+	}{
+		{name: "nil url (cloud_storage.url is empty)", client: &client{urlOpener: new(gcsblob.URLOpener)}},
+		{name: "nil urlOpener", client: &client{url: u}},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			err := tc.client.Open(t.Context())
+			var target *errors.ErrInvalidOption
+			if !errors.As(err, &target) {
+				t.Fatalf("Open() error = %v, want *errors.ErrInvalidOption", err)
+			}
+			if tc.client.bucket != nil {
+				t.Errorf("bucket = %v, want nil", tc.client.bucket)
+			}
+		})
+	}
+}
+
+func Test_client_Reader_errorContract(t *testing.T) {
+	t.Parallel()
+
+	const key = "backup"
+
+	tests := []struct {
+		setup   func(*testing.T) *client
+		wantErr func(error) bool
+		name    string
+		wantEOF bool
+	}{
+		{
+			name: "bucket not opened returns ErrBucketNotOpened",
+			setup: func(*testing.T) *client {
+				return new(client)
+			},
+			wantErr: func(err error) bool {
+				return errors.Is(err, errors.ErrBucketNotOpened)
+			},
+		},
+		{
+			name: "NotFound returns an empty reader and no error",
+			setup: func(t *testing.T) *client {
+				t.Helper()
+				b := memblob.OpenBucket(nil)
+				t.Cleanup(func() {
+					if err := b.Close(); err != nil {
+						t.Errorf("failed to close bucket: %v", err)
+					}
+				})
+				return &client{bucket: b}
+			},
+			wantEOF: true,
+		},
+		{
+			name: "non-NotFound error returns an error and an untyped nil reader",
+			setup: func(t *testing.T) *client {
+				t.Helper()
+				b := memblob.OpenBucket(nil)
+				// NewReader on a closed bucket fails with FailedPrecondition.
+				if err := b.Close(); err != nil {
+					t.Fatalf("failed to close bucket: %v", err)
+				}
+				return &client{bucket: b}
+			},
+			wantErr: func(err error) bool {
+				return gcerrors.Code(err) == gcerrors.FailedPrecondition
+			},
+		},
+		{
+			name: "existing key returns its content",
+			setup: func(t *testing.T) *client {
+				t.Helper()
+				b := memblob.OpenBucket(nil)
+				t.Cleanup(func() {
+					if err := b.Close(); err != nil {
+						t.Errorf("failed to close bucket: %v", err)
+					}
+				})
+				if err := b.WriteAll(t.Context(), key, []byte("data"), nil); err != nil {
+					t.Fatalf("failed to write blob: %v", err)
+				}
+				return &client{bucket: b, readerOpts: new(blob.ReaderOptions)}
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			c := tc.setup(t)
+
+			rc, err := c.Reader(context.Background(), key)
+			if tc.wantErr != nil {
+				if err == nil || !tc.wantErr(err) {
+					t.Fatalf("unexpected error: %v", err)
+				}
+				// compare against the untyped nil: a typed nil *blob.Reader
+				// stored in the interface must not leak out.
+				if rc != nil {
+					t.Fatalf("reader must be an untyped nil on error, got %#v", rc)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if rc == nil {
+				t.Fatal("reader must not be nil on success")
+			}
+			defer func() {
+				if cerr := rc.Close(); cerr != nil {
+					t.Errorf("failed to close reader: %v", cerr)
+				}
+			}()
+			got, err := io.ReadAll(rc)
+			if err != nil {
+				t.Fatalf("failed to read: %v", err)
+			}
+			want := "data"
+			if tc.wantEOF {
+				want = ""
+			}
+			if string(got) != want {
+				t.Errorf("content = %q, want %q", got, want)
+			}
+		})
+	}
+}
+
 // NOT IMPLEMENTED BELOW
 //
 // func TestNew(t *testing.T) {

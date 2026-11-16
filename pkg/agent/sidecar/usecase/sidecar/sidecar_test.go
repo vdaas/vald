@@ -14,6 +14,41 @@
 
 package sidecar
 
+import (
+	"testing"
+
+	iconf "github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/pkg/agent/sidecar/config"
+)
+
+// TestNew_observabilityPreStart verifies that the metrics hook handed to the observability
+// component is non-nil: PreStart registers every metric, so a nil hook would panic.
+func TestNew_observabilityPreStart(t *testing.T) {
+	t.Parallel()
+
+	// AgentSidecar.Bind only binds Client and BlobStorage when they are already non-nil
+	// (nil ones become unbound zero values), and New dereferences Client.Net/Transport and
+	// BlobStorage.S3/CloudStorage.
+	cfg := &config.Data{
+		Server:        new(iconf.Servers).Bind(),
+		Observability: &iconf.Observability{Enabled: true},
+		AgentSidecar: &iconf.AgentSidecar{
+			WatchDir:    t.TempDir(),
+			Client:      new(iconf.Client),
+			BlobStorage: new(iconf.Blob),
+		},
+	}
+	cfg.AgentSidecar = cfg.AgentSidecar.Bind()
+
+	r, err := New(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := r.PreStart(t.Context()); err != nil {
+		t.Fatal(err)
+	}
+}
+
 // NOT IMPLEMENTED BELOW
 //
 // func TestNew(t *testing.T) {

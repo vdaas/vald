@@ -67,5 +67,10 @@ func New(path string) (cfg *Data, err error) {
 	} else {
 		return nil, errors.ErrInvalidConfig
 	}
+
+	// IndexCreation.Bind leaves a missing discoverer nil, and the usecase dereferences it unconditionally.
+	if cfg.Creation.Discoverer == nil {
+		return nil, errors.ErrInvalidConfig
+	}
 	return cfg, nil
 }

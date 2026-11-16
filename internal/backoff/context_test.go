@@ -13,6 +13,48 @@
 // limitations under the License.
 package backoff
 
+import (
+	"context"
+	"testing"
+)
+
+func TestWithQuietErrorLog(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		ctx  func() context.Context
+		name string
+		want bool
+	}{
+		{
+			name: "unmarked context is not quiet",
+			ctx:  context.Background,
+			want: false,
+		},
+		{
+			name: "marked context is quiet",
+			ctx:  func() context.Context { return WithQuietErrorLog(context.Background()) },
+			want: true,
+		},
+		{
+			name: "derived contexts keep the flag",
+			ctx: func() context.Context {
+				ctx, cancel := context.WithCancel(WithQuietErrorLog(context.Background()))
+				t.Cleanup(cancel)
+				return WithBackoffName(ctx, "derived")
+			},
+			want: true,
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			if got := isQuietErrorLog(tc.ctx()); got != tc.want {
+				t.Errorf("isQuietErrorLog() = %v, want %v", got, tc.want)
+			}
+		})
+	}
+}
+
 // NOT IMPLEMENTED BELOW
 //
 // func TestWithBackoffName(t *testing.T) {

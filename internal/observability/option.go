@@ -14,28 +14,11 @@
 package observability
 
 import (
-	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/observability/exporter"
 	"github.com/vdaas/vald/internal/observability/metrics"
-	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
 type Option func(*observability) error
-
-var defaultOpts = []Option{
-	WithErrGroup(errgroup.Get()),
-}
-
-// WithErrGroup returns an option that sets the errgroup.
-func WithErrGroup(eg errgroup.Group) Option {
-	return func(o *observability) error {
-		if eg == nil {
-			return errors.NewErrInvalidOption("errgroup", eg)
-		}
-		o.eg = eg
-		return nil
-	}
-}
 
 // WithMetrics returns an option that sets the metrics.
 func WithMetrics(ms ...metrics.Metric) Option {

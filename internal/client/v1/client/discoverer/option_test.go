@@ -15,6 +15,40 @@
 // Package discoverer
 package discoverer
 
+import (
+	"testing"
+	"time"
+)
+
+// time.NewTicker panics for a non-positive interval, so the option must never store one.
+// An empty string parses to 0, which is what an unset config value looks like.
+func TestWithDiscoverDuration_NonPositive(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name string
+		dur  string
+		want time.Duration
+	}{
+		{name: "empty falls back to 1s", dur: "", want: time.Second},
+		{name: "zero falls back to 1s", dur: "0s", want: time.Second},
+		{name: "negative falls back to 1s", dur: "-1s", want: time.Second},
+		{name: "invalid falls back to 1s", dur: "invalid", want: time.Second},
+		{name: "positive is kept", dur: "3s", want: 3 * time.Second},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			c := new(client)
+			if err := WithDiscoverDuration(tt.dur)(c); err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if c.dscDur != tt.want {
+				t.Errorf("dscDur = %v, want %v", c.dscDur, tt.want)
+			}
+		})
+	}
+}
+
 // NOT IMPLEMENTED BELOW
 //
 // func TestWithOnDiscoverFunc(t *testing.T) {

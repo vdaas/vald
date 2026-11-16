@@ -19,6 +19,7 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/v1/discoverer"
 	iconf "github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
@@ -191,11 +192,14 @@ func (*run) PreStop(context.Context) error {
 	return nil
 }
 
-func (r *run) Stop(ctx context.Context) error {
+func (r *run) Stop(ctx context.Context) (err error) {
+	// Shut the server down first so spans and metrics of the requests it drains
+	// are still exported before observability is stopped.
+	err = r.server.Shutdown(ctx)
 	if r.observability != nil {
-		r.observability.Stop(ctx)
+		err = errors.Join(err, r.observability.Stop(ctx))
 	}
-	return r.server.Shutdown(ctx)
+	return err
 }
 
 func (*run) PostStop(context.Context) error {

@@ -41,6 +41,10 @@ func WithBackupDuration(dur string) Option {
 		if err != nil {
 			return nil
 		}
+		if d <= 0 {
+			// time.NewTicker panics for non-positive intervals
+			return nil
+		}
 		o.checkDuration = d
 		return nil
 	}
@@ -53,6 +57,10 @@ func WithPostStopTimeout(dur string) Option {
 		}
 		d, err := timeutil.Parse(dur)
 		if err != nil {
+			return nil
+		}
+		if d <= 0 {
+			// the stop-wait ticker interval is derived from this value
 			return nil
 		}
 		o.postStopTimeout = d
@@ -113,11 +121,7 @@ func WithHooks(hooks ...Hook) Option {
 			return nil
 		}
 
-		if o.hooks != nil {
-			o.hooks = append(o.hooks, hooks...)
-		}
-
-		o.hooks = hooks
+		o.hooks = append(o.hooks, hooks...)
 
 		return nil
 	}

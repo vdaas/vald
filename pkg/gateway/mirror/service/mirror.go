@@ -139,8 +139,16 @@ func (m *mirr) Start(ctx context.Context) <-chan error { // skipcq: GO-R1005
 					case <-ctx.Done():
 						return errors.Join(ctx.Err(), err)
 					case ech <- err:
-						break
 					}
+					// Without targets there is nothing to register; broadcasting an
+					// empty list only makes every peer log an error.
+					continue
+				}
+
+				// Without connected peers DoMulti fails with ErrTargetNotFound on
+				// every tick; peers are connected via discovery's Connect instead.
+				if len(m.connectedOtherMirrorAddrs(ctx)) == 0 {
+					continue
 				}
 
 				resTgts, err := m.registers(ctx, &payload.Mirror_Targets{Targets: tgt})
@@ -205,7 +213,7 @@ func (m *mirr) registers(
 				)
 				attrs = trace.StatusCodeCancelled(err.Error())
 			case errors.Is(err, context.DeadlineExceeded):
-				err = status.WrapWithCanceled(
+				err = status.WrapWithDeadlineExceeded(
 					mirror.RegisterRPCName+" API deadline exceeded", err,
 				)
 				attrs = trace.StatusCodeDeadlineExceeded(err.Error())
@@ -262,7 +270,7 @@ func (m *mirr) registers(
 				mu.Lock()
 				if !exists[addr] {
 					exists[addr] = true
-					resTgts = append(resTgts, res.GetTargets()...)
+					resTgts = append(resTgts, tgt)
 				}
 				mu.Unlock()
 			}
@@ -314,6 +322,7 @@ func (m *mirr) Connect(ctx context.Context, targets ...*payload.Mirror_Target) e
 	if len(targets) == 0 {
 		return errors.ErrTargetNotFound
 	}
+	var errs error
 	for _, target := range targets {
 		// addr: host:port. Pre-existing behavior: callers pass targets sourced
 		// either from the MirrorTarget CRD spec or, via registers(), from a peer
@@ -326,14 +335,17 @@ func (m *mirr) Connect(ctx context.Context, targets ...*payload.Mirror_Target) e
 				m.gateway.GRPCClient().SetDisableResolveDNSAddr(addr, true)
 				_, err := m.gateway.GRPCClient().Connect(ctx, addr)
 				if err != nil {
+					// Keep connecting the remaining targets: one unreachable peer must
+					// not prevent connecting to the others (e.g. the Register caller).
 					m.addrs.Delete(addr)
-					return err
+					errs = errors.Join(errs, err)
+					continue
 				}
 			}
 			m.addrs.Store(addr, struct{}{})
 		}
 	}
-	return nil
+	return errs
 }
 
 // Disconnect terminates gRPC connections to the specified Mirror targets.

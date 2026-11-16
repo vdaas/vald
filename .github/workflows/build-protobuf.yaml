@@ -27,6 +27,9 @@ on:
     paths:
       - "apis/proto/**"
       - "versions/GO_VERSION"
+defaults:
+  run:
+    shell: bash
 jobs:
   dump-contexts-to-log:
     timeout-minutes: 30

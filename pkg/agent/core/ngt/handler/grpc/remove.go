@@ -135,12 +135,22 @@ func (s *server) MultiRemove(
 	_, span := trace.StartSpan(ctx, apiName+"/"+vald.MultiRemoveRPCName)
 	defer trace.End(span)
 	uuids := make([]string, 0, len(reqs.GetRequests()))
-	for _, req := range reqs.GetRequests() {
+	var ts int64
+	for i, req := range reqs.GetRequests() {
+		// first request's timestamp like MultiInsert; Config only, like Remove.
+		if i == 0 {
+			ts = req.GetConfig().GetTimestamp()
+		}
 		uuids = append(uuids, req.GetId().GetId())
 	}
-	err = s.ngt.DeleteMultiple(uuids...)
+	if ts != 0 {
+		err = s.ngt.DeleteMultipleWithTime(uuids, ts)
+	} else {
+		err = s.ngt.DeleteMultiple(uuids...)
+	}
 	if err != nil {
 		var attrs []attribute.KeyValue
+		isErr := errMatcher(err)
 		if errors.Is(err, errors.ErrFlushingIsInProgress) {
 			err = status.WrapWithAborted("MultiRemove API aborted to process remove request due to flushing indices is in progress", err,
 				&errdetails.RequestInfo{
@@ -153,7 +163,7 @@ func (s *server) MultiRemove(
 		} else if notFoundIDs := func() []string {
 			aids := make([]string, 0, len(uuids))
 			for _, id := range uuids {
-				if errors.Is(err, errors.ErrObjectIDNotFound(id)) {
+				if isErr(errors.ErrObjectIDNotFound(id)) {
 					aids = append(aids, id)
 				}
 			}
@@ -207,6 +217,7 @@ func (s *server) RemoveByTimestamp(
 	defer trace.End(span)
 
 	var mu, emu sync.Mutex
+	var errList []error
 	locs = new(payload.Object_Locations)
 
 	timestampOpFn := timestampOpsFunc(req.GetTimestamps())
@@ -221,7 +232,7 @@ func (s *server) RemoveByTimestamp(
 		})
 		if err != nil {
 			emu.Lock()
-			errs = errors.Join(errs, err)
+			errList = append(errList, err)
 			emu.Unlock()
 		}
 		if res != nil {
@@ -231,6 +242,7 @@ func (s *server) RemoveByTimestamp(
 		}
 		return true
 	})
+	errs = errors.Join(errList...)
 	if errs != nil {
 		st, _ := status.FromError(errs)
 		log.Error(errs)

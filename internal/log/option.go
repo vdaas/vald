@@ -15,26 +15,14 @@ package log
 
 import (
 	"github.com/vdaas/vald/internal/log/format"
-	"github.com/vdaas/vald/internal/log/glg"
 	"github.com/vdaas/vald/internal/log/level"
 	logger "github.com/vdaas/vald/internal/log/logger"
-	"github.com/vdaas/vald/internal/log/retry"
 )
 
 type Option func(*option)
 
 var defaultOptions = []Option{
 	WithLevel(level.DEBUG.String()),
-	WithLogger(
-		glg.New(
-			glg.WithRetry(
-				retry.New(
-					retry.WithError(Error),
-					retry.WithWarn(Warn),
-				),
-			),
-		),
-	),
 }
 
 type option struct {

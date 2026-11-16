@@ -111,11 +111,6 @@ func WithWatcherOnReconcileFunc[V any](
 	}
 }
 
-// WatcherOptionErrorPolicy decides how NewListWatcher reacts to an option
-// application error: abort reports whether construction must stop and reason
-// carries the error to return in that case.
-type WatcherOptionErrorPolicy func(err error, opt any) (abort bool, reason error)
-
 // SkipNonCriticalOptionError wraps the error with the failing option's
 // identity and aborts only on an errors.ErrCriticalOption; any other option
 // error is logged as a warning and construction continues (the unified policy
@@ -150,18 +145,15 @@ const staticListOpts = 3
 // convert and hands the result to the OnReconcile callback as a map keyed by
 // object name. It consolidates the boilerplate previously copied across the
 // benchmark job/scenario and mirror target watcher packages: option
-// application under the given error policy, scheme registration, namespace
+// application under SkipNonCriticalOptionError, scheme registration, namespace
 // scoping and label selection.
 func NewListWatcher[T any, PT WatchedObject[T], V any](
-	addToScheme func(s *k8s.Scheme) error,
-	convert func(obj PT) V,
-	policy WatcherOptionErrorPolicy,
-	opts ...WatcherOption[V],
+	addToScheme func(s *k8s.Scheme) error, convert func(obj PT) V, opts ...WatcherOption[V],
 ) (k8s.ResourceController, error) {
 	c := new(WatcherConfig[V])
 	for _, opt := range opts {
 		if err := opt(c); err != nil {
-			if abort, reason := policy(err, opt); abort {
+			if abort, reason := SkipNonCriticalOptionError(err, opt); abort {
 				return nil, reason
 			}
 		}

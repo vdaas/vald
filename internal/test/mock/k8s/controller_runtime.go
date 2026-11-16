@@ -16,7 +16,9 @@ package k8s
 import (
 	"context"
 
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -42,7 +44,18 @@ type ClientMock struct {
 	CreateFunc      func(context.Context, client.Object, ...client.CreateOption) error
 	DeleteFunc      func(context.Context, client.Object, ...client.DeleteOption) error
 	DeleteAllOfFunc func(context.Context, client.Object, ...client.DeleteAllOfOption) error
+	ListFunc        func(context.Context, client.ObjectList, ...client.ListOption) error
 	SchemeFunc      func() *runtime.Scheme
+}
+
+// List calls ListFunc, or leaves list empty and succeeds when ListFunc is unset.
+func (cm *ClientMock) List(
+	ctx context.Context, list client.ObjectList, opts ...client.ListOption,
+) error {
+	if cm.ListFunc == nil {
+		return nil
+	}
+	return cm.ListFunc(ctx, list, opts...)
 }
 
 func (cm *ClientMock) Status() client.SubResourceWriter {
@@ -99,6 +112,43 @@ func (*ManagerMock) GetConfig() *rest.Config {
 	return &rest.Config{}
 }
 
+// listManagerMock adds the scheme and field indexer that a list reconciler's
+// NewReconciler registers into, on top of ManagerMock's client and config.
+type listManagerMock struct {
+	ManagerMock
+
+	scheme *runtime.Scheme
+}
+
+func (m *listManagerMock) GetScheme() *runtime.Scheme {
+	return m.scheme
+}
+
+func (*listManagerMock) GetFieldIndexer() client.FieldIndexer {
+	return noopFieldIndexer{}
+}
+
+// noopFieldIndexer accepts every index registration without doing anything.
+type noopFieldIndexer struct{}
+
+func (noopFieldIndexer) IndexField(
+	context.Context, client.Object, string, client.IndexerFunc,
+) error {
+	return nil
+}
+
+// NewListManagerMock returns a manager mock serving c as its client, with a
+// fresh scheme and a no-op field indexer, so that tests outside internal/ can
+// run a list reconciler's NewReconciler and Reconcile against a fake client.
+func NewListManagerMock(c client.Client) manager.Manager {
+	return &listManagerMock{
+		GetClientFunc: func() client.Client {
+			return c
+		},
+		scheme: runtime.NewScheme(),
+	}
+}
+
 // NewDefaultManagerMock returns default empty mock object.
 func NewDefaultManagerMock() manager.Manager {
 	return &ManagerMock{
@@ -126,4 +176,64 @@ func NewDefaultManagerMock() manager.Manager {
 			}
 		},
 	}
+}
+
+// NewHookManagerMock returns a manager mock whose client routes Create, Get
+// and Status().Update to the given hooks, so that tests outside internal/ can
+// inject failures without naming controller-runtime option types. A nil hook
+// behaves like the corresponding NewDefaultManagerMock operation (success);
+// Delete and DeleteAllOf always succeed.
+func NewHookManagerMock(
+	create func(context.Context, client.Object) error,
+	get func(context.Context, client.ObjectKey, client.Object) error,
+	statusUpdate func(context.Context, client.Object) error,
+) manager.Manager {
+	return &ManagerMock{
+		GetClientFunc: func() client.Client {
+			return &ClientMock{
+				StatusFunc: func() client.SubResourceWriter {
+					return &SubResourceWriterMock{
+						UpdateFunc: func(ctx context.Context, obj client.Object, _ ...client.SubResourceUpdateOption) error {
+							if statusUpdate == nil {
+								return nil
+							}
+							return statusUpdate(ctx, obj)
+						},
+					}
+				},
+				GetFunc: func(ctx context.Context, key client.ObjectKey, obj client.Object, _ ...client.GetOption) error {
+					if get == nil {
+						return nil
+					}
+					return get(ctx, key, obj)
+				},
+				CreateFunc: func(ctx context.Context, obj client.Object, _ ...client.CreateOption) error {
+					if create == nil {
+						return nil
+					}
+					return create(ctx, obj)
+				},
+				DeleteFunc: func(_ context.Context, _ client.Object, _ ...client.DeleteOption) error {
+					return nil
+				},
+				DeleteAllOfFunc: func(_ context.Context, _ client.Object, _ ...client.DeleteAllOfOption) error {
+					return nil
+				},
+			}
+		},
+	}
+}
+
+// NewAlreadyExistsError returns the Kubernetes AlreadyExists API error that a
+// client's Create returns for an existing batch Job of the given name, so that
+// tests outside internal/ can simulate it without importing apimachinery.
+func NewAlreadyExistsError(name string) error {
+	return apierrors.NewAlreadyExists(schema.GroupResource{Group: "batch", Resource: "jobs"}, name)
+}
+
+// NewNotFoundError returns the Kubernetes NotFound API error for a resource of
+// the given name, so that tests outside internal/ can simulate it without
+// importing apimachinery.
+func NewNotFoundError(name string) error {
+	return apierrors.NewNotFound(schema.GroupResource{Group: "vald.vdaas.org", Resource: "valdbenchmarkjobs"}, name)
 }

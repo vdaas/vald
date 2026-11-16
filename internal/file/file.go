@@ -37,9 +37,20 @@ const (
 	sep = string(os.PathSeparator)
 )
 
+// rename is os.Rename; a variable so tests can inject rename failures into doMoveDir.
+//
+//nolint:gochecknoglobals // test seam for rename fault injection; only tests reassign it
+var rename = os.Rename
+
+// unixNanoNow is fastime.UnixNanoNow; a variable so tests can force doMoveDir's
+// tmp name to collide with an existing path.
+//
+//nolint:gochecknoglobals // test seam for tmp name collisions; only tests reassign it
+var unixNanoNow = fastime.UnixNanoNow
+
 // Open opens the file with the given path, flag and permission.
-// If the folder does not exists, create the folder.
-// If the file does not exist, create the file.
+// When flg contains O_CREATE or O_APPEND and the file does not exist,
+// the parent folder and the file are created.
 func Open(path string, flg int, perm fs.FileMode) (file *os.File, err error) {
 	if path == "" {
 		return nil, errors.ErrPathNotSpecified
@@ -51,7 +62,9 @@ func Open(path string, flg int, perm fs.FileMode) (file *os.File, err error) {
 			file = nil
 		}
 	}()
-	if ffi, err := os.Stat(path); err != nil {
+	// The parent directory is created only when the caller asks for the file to be created,
+	// so that read-only opens do not have side effects on the file system.
+	if _, err = os.Stat(path); err != nil && flg&(os.O_CREATE|os.O_APPEND) != 0 {
 		dir := filepath.Dir(path)
 		fi, err := os.Stat(dir)
 		if err != nil {
@@ -62,23 +75,10 @@ func Open(path string, flg int, perm fs.FileMode) (file *os.File, err error) {
 				return nil, err
 			}
 		}
-
-		if flg&(os.O_CREATE|os.O_APPEND) > 0 {
-			file, err = os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_EXCL|os.O_TRUNC, perm)
-			if err != nil {
-				log.Debug(errors.ErrFailedToCreateFile(err, path, ffi))
-			}
-			if file != nil {
-				err = file.Close()
-				if err != nil {
-					fi, ferr := file.Stat()
-					if ferr == nil && fi != nil {
-						err = errors.ErrFailedToCloseFile(err, path, fi)
-					}
-					log.Debug(err)
-				}
-			}
-		}
+		// O_APPEND has always created a missing file, so keep that behavior by adding O_CREATE
+		// to the flags of the single OpenFile call below instead of pre-creating the file with
+		// O_EXCL, which made the second open fail with EEXIST whenever the caller passed O_EXCL.
+		flg |= os.O_CREATE
 	}
 
 	file, err = os.OpenFile(path, flg, perm)
@@ -104,16 +104,35 @@ func doMoveDir(ctx context.Context, src, dst string, rollback bool) (err error) 
 		return errors.ErrDirectoryNotFound(err, src, fi)
 	}
 
-	err = os.Rename(src, dst)
+	err = rename(src, dst)
 	if err != nil {
 		log.Debug(errors.ErrFailedToRenameDir(err, src, dst, nil, nil))
-		var tmpPath string
+		var (
+			tmpPath string
+			// keepTmp is set when the rollback failed: tmpPath then holds the only
+			// copy of the previous dst and must not be removed.
+			keepTmp bool
+		)
 		exits, fi, err := ExistsWithDetail(dst)
 		if exits && fi.IsDir() && err == nil {
-			tmpPath = Join(filepath.Dir(dst), "tmp-"+strconv.FormatInt(fastime.UnixNanoNow(), 10))
-			_ = os.RemoveAll(tmpPath)
-			err = os.Rename(dst, tmpPath)
-			defer os.RemoveAll(tmpPath)
+			// The nanos come from fastime, refreshed only every few ms, so a nested
+			// rollback can compute the same name as the tmp dir it is restoring (its
+			// src). Never pre-clean an existing name; pick one that does not exist.
+			base := Join(filepath.Dir(dst), "tmp-"+strconv.FormatInt(unixNanoNow(), 10))
+			tmpPath = base
+			for i := 1; Exists(tmpPath); i++ {
+				tmpPath = base + "-" + strconv.Itoa(i)
+			}
+			err = rename(dst, tmpPath)
+			defer func() {
+				if keepTmp {
+					log.Warnf("keeping temporary path %s for manual recovery of %s", tmpPath, dst)
+					return
+				}
+				if rerr := os.RemoveAll(tmpPath); rerr != nil {
+					log.Warnf("failed to remove temporary path %s: %v", tmpPath, rerr)
+				}
+			}()
 			if err != nil {
 				log.Debugf("err: %v\t now trying to move file with I/O copy and Remove old index", errors.ErrFailedToRenameDir(err, dst, tmpPath, fi, nil))
 				err := CopyDir(ctx, dst, tmpPath)
@@ -126,7 +145,9 @@ func doMoveDir(ctx context.Context, src, dst string, rollback bool) (err error) 
 				if err != nil && Exists(dst) {
 					err = errors.ErrFailedToRemoveDir(err, dst, nil)
 					if rollback {
-						err = errors.Join(doMoveDir(ctx, tmpPath, dst, false), errors.Wrapf(err, "trying to recover temporary file %s to rollback previous operation", tmpPath))
+						rerr := doMoveDir(ctx, tmpPath, dst, false)
+						keepTmp = rerr != nil
+						err = errors.Join(rerr, errors.Wrapf(err, "trying to recover temporary file %s to rollback previous operation", tmpPath))
 					}
 					log.Warn(err)
 					return err
@@ -136,14 +157,38 @@ func doMoveDir(ctx context.Context, src, dst string, rollback bool) (err error) 
 		}
 		exits, fi, err = ExistsWithDetail(src)
 		if exits && fi != nil && fi.IsDir() && err == nil {
-			err = os.Rename(src, dst)
+			err = rename(src, dst)
 			if err != nil {
 				log.Debugf("err: %v\t now trying to move file with I/O copy and Remove old index", errors.ErrFailedToRenameDir(err, src, dst, fi, nil))
-				err := CopyDir(ctx, src, dst)
+				// Copy into a sibling staging dir on dst's filesystem and rename it
+				// into place, so dst never appears partially copied. The name is
+				// derived from dst (callers moving to the same dst are serialized), so
+				// the pre-clean below also removes a stage left behind by an attempt
+				// killed mid-copy. A failed pre-clean aborts the move, since leftover
+				// files would otherwise be merged into dst.
+				stage := Join(filepath.Dir(dst), "tmp-copy-"+filepath.Base(dst))
+				err = os.RemoveAll(stage)
+				// Create the stage first so an empty src still moves (CopyDir creates
+				// nothing for it and the rename below would fail).
+				if err == nil {
+					err = os.MkdirAll(stage, fi.Mode().Perm())
+				}
+				if err == nil {
+					err = CopyDir(ctx, src, stage)
+				}
 				if err != nil {
-					err = errors.ErrFailedToCopyDir(err, src, dst, fi, nil)
+					err = errors.ErrFailedToCopyDir(err, src, stage, fi, nil)
+				} else if err = rename(stage, dst); err != nil {
+					err = errors.ErrFailedToRenameDir(err, stage, dst, nil, nil)
+				}
+				if err != nil {
+					if rerr := os.RemoveAll(stage); rerr != nil {
+						log.Warnf("failed to remove staging path %s: %v", stage, rerr)
+					}
 					if rollback {
-						err = errors.Join(doMoveDir(ctx, tmpPath, dst, false), errors.Wrapf(err, "trying to recover temporary file %s to rollback previous operation", tmpPath))
+						rerr := doMoveDir(ctx, tmpPath, dst, false)
+						keepTmp = rerr != nil
+						err = errors.Join(rerr, errors.Wrapf(err, "trying to recover temporary file %s to rollback previous operation", tmpPath))
 					}
 					log.Warn(err)
 					return err
@@ -177,28 +222,55 @@ func CopyDir(ctx context.Context, src, dst string) (err error) {
 	}
 	eg, _ := errgroup.New(ctx)
 	err = filepath.WalkDir(src, func(childPath string, info fs.DirEntry, err error) error {
-		if childPath == src || childPath == dst || strings.HasPrefix(childPath, dst) {
-			return nil
-		}
+		// Check err first: WalkDir reports a failure to stat or read src itself on the
+		// src path, and info is nil when the Lstat of the path failed.
 		if err != nil {
-			fi, ierr := info.Info()
-			if ierr != nil {
-				err = errors.Join(err, ierr)
+			var fi fs.FileInfo
+			if info != nil {
+				var ierr error
+				fi, ierr = info.Info()
+				if ierr != nil {
+					err = errors.Join(err, ierr)
+				}
 			}
 			err = errors.ErrFailedToWalkDir(err, src, childPath, nil, fi)
 			log.Warn(err)
 			return err
 		}
-		dstPath := Join(dst, filepath.Base(childPath))
+		if childPath == src {
+			return nil
+		}
+		// Skip dst (when it is inside src) and its subtree, but not siblings that only
+		// share its name as a prefix (src/origin2 when dst is src/origin).
+		if childPath == dst {
+			if info.IsDir() {
+				return fs.SkipDir
+			}
+			return nil
+		}
+		if strings.HasPrefix(childPath, dst+string(filepath.Separator)) {
+			return nil
+		}
+		// Keep the path relative to src (Base would flatten src/a/x and src/b/x onto
+		// dst/x) and the source permissions (DirEntry.Type carries no permission bits).
+		rel, err := filepath.Rel(src, childPath)
+		if err != nil {
+			return err
+		}
+		fi, err := info.Info()
+		if err != nil {
+			return err
+		}
+		dstPath := Join(dst, rel)
 		if info.IsDir() {
-			err = MkdirAll(dstPath, info.Type())
+			err = MkdirAll(dstPath, fi.Mode().Perm())
 			if err != nil {
 				log.Warn(errors.ErrFailedToMkdir(err, dstPath, nil))
 			}
 			return nil
 		}
 		eg.Go(safety.RecoverFunc(func() (err error) {
-			_, err = CopyFileWithPerm(ctx, childPath, dstPath, info.Type())
+			_, err = CopyFileWithPerm(ctx, childPath, dstPath, fi.Mode().Perm())
 			return err
 		}))
 		return nil
@@ -228,7 +300,7 @@ func CopyFileWithPerm(ctx context.Context, src, dst string, perm fs.FileMode) (n
 
 	exist, fi, err := ExistsWithDetail(src)
 	switch {
-	case !exist, fi == nil, fi.Size() == 0, fi.IsDir():
+	case !exist, fi == nil, fi.IsDir():
 		return 0, errors.Join(err, errors.ErrFileNotFound(src))
 	case err != nil && (!errors.Is(err, fs.ErrExist) || errors.Is(err, fs.ErrNotExist)):
 		return 0, errors.Join(errors.ErrFileNotFound(src), err)
@@ -263,19 +335,13 @@ func CopyFileWithPerm(ctx context.Context, src, dst string, perm fs.FileMode) (n
 func WriteFile(
 	ctx context.Context, target string, r io.Reader, perm fs.FileMode,
 ) (n int64, err error) {
-	return writeFileWithContext(ctx, target, r, os.O_CREATE|os.O_WRONLY|os.O_SYNC, perm)
+	return writeFileWithContext(ctx, target, r, os.O_CREATE|os.O_WRONLY, perm)
 }
 
 func OverWriteFile(
 	ctx context.Context, target string, r io.Reader, perm fs.FileMode,
 ) (n int64, err error) {
-	return writeFileWithContext(ctx, target, r, os.O_CREATE|os.O_TRUNC|os.O_WRONLY|os.O_SYNC, perm)
-}
-
-func AppendFile(
-	ctx context.Context, target string, r io.Reader, perm fs.FileMode,
-) (n int64, err error) {
-	return writeFileWithContext(ctx, target, r, os.O_CREATE|os.O_APPEND|os.O_RDWR|os.O_SYNC, perm)
+	return writeFileWithContext(ctx, target, r, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, perm)
 }
 
 func writeFileWithContext(
@@ -291,8 +357,6 @@ func writeFileWithContext(
 		err = errors.ErrFileAlreadyExists(target)
 	case err != nil && !errors.Is(err, fs.ErrNotExist), err != nil && errors.Is(err, fs.ErrExist):
 		err = errors.Join(errors.ErrFileAlreadyExists(target), err)
-	case err != nil:
-		log.Warn(err)
 	}
 
 	// open flag is not O_TRUNC or O_APPEND this function returns AlreadyExists error
@@ -301,7 +365,16 @@ func writeFileWithContext(
 		return 0, err
 	}
 
-	f, err := Open(target, flg, fs.ModePerm)
+	// Create a missing parent with directory permissions here: Open would create it
+	// with perm, and a file mode such as 0o640 makes a directory untraversable.
+	if dir := filepath.Dir(target); !Exists(dir) {
+		if err = MkdirAll(dir, fs.ModePerm); err != nil {
+			err = errors.ErrFailedToOpenFile(errors.ErrFailedToMkdir(err, dir, nil), target, flg, perm)
+			return 0, err
+		}
+	}
+
+	f, err := Open(target, flg, perm)
 	if err != nil || f == nil {
 		err = errors.ErrFailedToOpenFile(err, target, flg, perm)
 		return 0, err
@@ -414,19 +487,17 @@ func ExistsWithDetail(path string) (e bool, fi fs.FileInfo, err error) {
 // MkdirAll creates directory like mkdir -p.
 func MkdirAll(path string, perm fs.FileMode) (err error) {
 	var (
-		exist      bool
-		fi         fs.FileInfo
-		merr, rerr error
+		exist bool
+		fi    fs.FileInfo
+		merr  error
 	)
 	exist, fi, err = ExistsWithDetail(path)
 	if exist {
 		if err == nil && fi != nil && fi.IsDir() {
 			return nil
 		}
-		rerr = os.RemoveAll(path)
-		if rerr != nil {
-			err = errors.Join(err, rerr)
-		}
+		// never delete whatever already exists at the path: it may be user data (e.g. an index file).
+		return errors.ErrFailedToMkdir(fs.ErrExist, path, fi)
 	}
 	if err != nil {
 		err = errors.ErrDirectoryNotFound(err, path, fi)
@@ -438,10 +509,6 @@ func MkdirAll(path string, perm fs.FileMode) (err error) {
 	err = errors.Join(merr, err)
 	if err != nil {
 		if errors.Is(err, fs.ErrPermission) {
-			rerr = os.RemoveAll(path)
-			if rerr != nil {
-				err = errors.Join(err, errors.ErrFailedToRemoveDir(rerr, path, fi))
-			}
 			merr = os.MkdirAll(path, fs.ModePerm)
 			if merr != nil {
 				err = errors.Join(err, errors.ErrFailedToMkdir(merr, path, fi))
@@ -508,7 +575,7 @@ func ListInDir(path string) ([]string, error) {
 }
 
 // DeleteDir recursively deletes each file or directory based on the path specified as an argument.
-func DeleteDir(ctx context.Context, path string) (err error) {
+func DeleteDir(_ context.Context, path string) (err error) {
 	exists, _, err := ExistsWithDetail(path)
 	if err != nil {
 		return err
@@ -517,36 +584,12 @@ func DeleteDir(ctx context.Context, path string) (err error) {
 		log.Debugf("path %s does not exist, so deleting the directory is not executed.", path)
 		return nil
 	}
-	err = os.Remove(path)
-	if err == nil {
-		return nil
+	// RemoveAll deletes children before their parents; removing every entry
+	// concurrently made a parent's Remove race its children and fail with ENOTEMPTY.
+	if err = os.RemoveAll(path); err != nil {
+		return errors.ErrFailedToRemoveDir(err, path, nil)
 	}
-	eg, _ := errgroup.New(ctx)
-
-	path, err = filepath.Abs(path)
-	if err != nil {
-		return err
-	}
-	err = filepath.WalkDir(path, func(childPath string, info fs.DirEntry, err error) error {
-		if err != nil {
-			fi, ierr := info.Info()
-			if ierr != nil {
-				err = errors.Wrap(err, ierr.Error())
-			}
-			err = errors.ErrFailedToWalkDir(err, path, childPath, nil, fi)
-			log.Warn(err)
-			return err
-		}
-		eg.Go(safety.RecoverFunc(func() (err error) {
-			err = os.Remove(childPath)
-			return err
-		}))
-		return nil
-	})
-	if err != nil {
-		return errors.Wrap(eg.Wait(), err.Error())
-	}
-	return eg.Wait()
+	return nil
 }
 
 func Join(paths ...string) (path string) {

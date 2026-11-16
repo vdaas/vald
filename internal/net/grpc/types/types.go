@@ -14,15 +14,7 @@
 
 package types
 
-import (
-	"github.com/vdaas/vald/internal/net/grpc/proto"
-	"google.golang.org/protobuf/types/known/anypb"
-)
+import "google.golang.org/protobuf/types/known/anypb"
 
 // Any is a type alias of anypb.Any representing a serialized protocol buffer message.
 type Any = anypb.Any
-
-// UnmarshalAny unmarshal protocol buffer message to any.
-func UnmarshalAny(a *Any, m proto.Message) error {
-	return a.UnmarshalTo(m)
-}

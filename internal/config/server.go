@@ -206,16 +206,21 @@ func (s *Servers) Bind() *Servers {
 
 	sus := make([]string, 0, len(s.StartUpStrategy))
 	for _, ss := range s.StartUpStrategy {
-		if _, ok := check[ss]; ok {
-			sus = append(sus, GetActualValue(ss))
+		// check holds bound server names, so bind the entry before looking it up.
+		if ss = GetActualValue(ss); ss != "" {
+			if _, ok := check[ss]; ok {
+				sus = append(sus, ss)
+			}
 		}
 	}
 	s.StartUpStrategy = sus
 
 	sds := make([]string, 0, len(s.ShutdownStrategy))
 	for _, ss := range s.ShutdownStrategy {
-		if _, ok := check[ss]; ok {
-			sds = append(sds, GetActualValue(ss))
+		if ss = GetActualValue(ss); ss != "" {
+			if _, ok := check[ss]; ok {
+				sds = append(sds, ss)
+			}
 		}
 	}
 	s.ShutdownStrategy = sds
@@ -252,9 +257,7 @@ func (h *HTTP) Bind() *HTTP {
 	if h.HTTP2 == nil {
 		h.HTTP2 = new(HTTP2)
 	}
-	if h.HTTP2 != nil {
-		h.HTTP2.Bind()
-	}
+	h.HTTP2.Bind()
 	return h
 }
 
@@ -265,9 +268,7 @@ func (g *GRPC) Bind() *GRPC {
 	if g.Keepalive == nil {
 		g.Keepalive = new(GRPCKeepalive)
 	}
-	if g.Keepalive != nil {
-		g.Keepalive.Bind()
-	}
+	g.Keepalive.Bind()
 	return g
 }
 
@@ -325,6 +326,11 @@ func (s *Server) Opts() []server.Option {
 
 	if s.SocketOption != nil {
 		opts = append(opts, server.WithSocketFlag(s.SocketOption.ToSocketFlag()))
+	}
+
+	// restart is disabled by server's default options.
+	if s.Restart {
+		opts = append(opts, server.WithEnableRestart())
 	}
 
 	switch mode := server.Mode(s.Mode); mode {

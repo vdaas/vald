@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+set -euo pipefail
 TMPDIR=`mktemp -d`
 
 if git diff HEAD^ --name-only | grep ".go$" > /dev/null; then

@@ -41,21 +41,6 @@ const (
 
 	CompleteBenchmarkJobCount            = "benchmark_operator_complete_benchmark_job"
 	CompleteBenchmarkJobCountDescription = "Benchmark Operator complete benchmark job count"
-
-	// appliedJobCount            = "benchmark_operator_applied_job"
-	// appliedJobCountDescription = "Benchmark Operator applied job count".
-
-	// runningJobCount            = "benchmark_operator_running_job"
-	// runningJobCountDescription = "Benchmark Operator running job count".
-
-	// completeJobCount            = "benchmark_operator_complete_job"
-	// completeJobCountDescription = "Benchmark Operator complete job count".
-)
-
-const (
-	applied  = "applied"
-	running  = "running"
-	complete = "complete"
 )
 
 type operatorMetrics struct {
@@ -130,7 +115,7 @@ func (om *operatorMetrics) View() ([]metrics.View, error) {
 
 // TODO: implement here.
 func (om *operatorMetrics) Register(m metrics.Meter) error {
-	appliedScenarioCount, err := m.Int64ObservableCounter(
+	appliedScenarioCount, err := m.Int64ObservableGauge(
 		AppliedScenarioCount,
 		metrics.WithDescription(AppliedScenarioCountDescription),
 		metrics.WithUnit(metrics.Dimensionless),
@@ -138,7 +123,7 @@ func (om *operatorMetrics) Register(m metrics.Meter) error {
 	if err != nil {
 		return err
 	}
-	runningScenarioCount, err := m.Int64ObservableCounter(
+	runningScenarioCount, err := m.Int64ObservableGauge(
 		RunningScenarioCount,
 		metrics.WithDescription(RunningScenarioCountDescription),
 		metrics.WithUnit(metrics.Dimensionless),
@@ -146,7 +131,7 @@ func (om *operatorMetrics) Register(m metrics.Meter) error {
 	if err != nil {
 		return err
 	}
-	completeScenarioCount, err := m.Int64ObservableCounter(
+	completeScenarioCount, err := m.Int64ObservableGauge(
 		CompleteScenarioCount,
 		metrics.WithDescription(CompleteScenarioCountDescription),
 		metrics.WithUnit(metrics.Dimensionless),
@@ -155,7 +140,7 @@ func (om *operatorMetrics) Register(m metrics.Meter) error {
 		return err
 	}
 
-	appliedBenchJobCount, err := m.Int64ObservableCounter(
+	appliedBenchJobCount, err := m.Int64ObservableGauge(
 		AppliedBenchmarkJobCount,
 		metrics.WithDescription(AppliedBenchmarkJobCountDescription),
 		metrics.WithUnit(metrics.Dimensionless),
@@ -163,7 +148,7 @@ func (om *operatorMetrics) Register(m metrics.Meter) error {
 	if err != nil {
 		return err
 	}
-	runningBenchJobCount, err := m.Int64ObservableCounter(
+	runningBenchJobCount, err := m.Int64ObservableGauge(
 		RunningBenchmarkJobCount,
 		metrics.WithDescription(RunningBenchmarkJobCountDescription),
 		metrics.WithUnit(metrics.Dimensionless),
@@ -171,7 +156,7 @@ func (om *operatorMetrics) Register(m metrics.Meter) error {
 	if err != nil {
 		return err
 	}
-	completeBenchJobCount, err := m.Int64ObservableCounter(
+	completeBenchJobCount, err := m.Int64ObservableGauge(
 		CompleteBenchmarkJobCount,
 		metrics.WithDescription(CompleteBenchmarkJobCountDescription),
 		metrics.WithUnit(metrics.Dimensionless),
@@ -180,68 +165,35 @@ func (om *operatorMetrics) Register(m metrics.Meter) error {
 		return err
 	}
 
-	// appliedJobCount, err := m.Int64ObservableCounter(
-	// 	appliedJobCount,
-	// 	metrics.WithDescription(appliedJobCountDescription),
-	// 	metrics.WithUnit(metrics.Dimensionless),
-	// )
-	// if err != nil {
-	// 	return err
-	// }
-	// runningJobCount, err := m.Int64ObservableCounter(
-	// 	runningJobCount,
-	// 	metrics.WithDescription(runningJobCountDescription),
-	// 	metrics.WithUnit(metrics.Dimensionless),
-	// )
-	// if err != nil {
-	// 	return err
-	// }
-	// completeJobCount, err := m.Int64ObservableCounter(
-	// 	completeBenchmarkJobCount,
-	// 	metrics.WithDescription(completeScenarioCountDescription),
-	// 	metrics.WithUnit(metrics.Dimensionless),
-	// )
-	// if err != nil {
-	// 	return err
-	// }
-
 	_, err = m.RegisterCallback(
 		func(_ context.Context, o api.Observer) error {
 			// scenario status
-			sst := map[string]int64{
-				applied:  0,
-				running:  0,
-				complete: 0,
-			}
+			var sApplied, sRunning, sComplete int64
 			for k, v := range om.op.GetScenarioStatus() {
-				sst[applied] += v
+				sApplied += v
 				if k == v1.BenchmarkScenarioCompleted {
-					sst[complete] += v
+					sComplete += v
 				} else {
-					sst[running] += v
+					sRunning += v
 				}
 			}
-			o.ObserveInt64(appliedScenarioCount, sst[applied])
-			o.ObserveInt64(runningScenarioCount, sst[running])
-			o.ObserveInt64(completeScenarioCount, sst[complete])
+			o.ObserveInt64(appliedScenarioCount, sApplied)
+			o.ObserveInt64(runningScenarioCount, sRunning)
+			o.ObserveInt64(completeScenarioCount, sComplete)
 
 			// benchmark job status
-			bst := map[string]int64{
-				applied:  0,
-				running:  0,
-				complete: 0,
-			}
+			var bApplied, bRunning, bComplete int64
 			for k, v := range om.op.GetBenchmarkJobStatus() {
-				bst[applied] += v
+				bApplied += v
 				if k == v1.BenchmarkJobCompleted {
-					bst[complete] += v
+					bComplete += v
 				} else {
-					bst[running] += v
+					bRunning += v
 				}
 			}
-			o.ObserveInt64(appliedBenchJobCount, bst[applied])
-			o.ObserveInt64(runningBenchJobCount, bst[running])
-			o.ObserveInt64(completeBenchJobCount, bst[complete])
+			o.ObserveInt64(appliedBenchJobCount, bApplied)
+			o.ObserveInt64(runningBenchJobCount, bRunning)
+			o.ObserveInt64(completeBenchJobCount, bComplete)
 			return nil
 		},
 		appliedScenarioCount,
@@ -250,9 +202,6 @@ func (om *operatorMetrics) Register(m metrics.Meter) error {
 		appliedBenchJobCount,
 		runningBenchJobCount,
 		completeBenchJobCount,
-		// appliedJobCount,
-		// runningJobCount,
-		// completeJobCount,
 	)
 	return err
 }

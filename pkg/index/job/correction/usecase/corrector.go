@@ -189,9 +189,8 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 			log.Info("finding my pid to kill myself")
 			p, perr := os.FindProcess(os.Getpid())
 			if perr != nil {
-				// using Fatal to avoid this process to be zombie
-				// skipcq: RVV-A0003
-				log.Fatalf("failed to find my pid to kill %v", perr)
+				// FindProcess never fails on unix; log instead of Fatal so the job is not killed from a non-main path.
+				log.Errorf("failed to find my pid to kill %v", perr)
 				return
 			}
 
@@ -219,13 +218,15 @@ func (r *run) PreStop(ctx context.Context) error {
 }
 
 func (r *run) Stop(ctx context.Context) (errs error) {
-	if r.observability != nil {
-		if err := r.observability.Stop(ctx); err != nil {
+	// Shut the server down first so spans and metrics of the requests it drains
+	// are still exported before observability is stopped.
+	if r.server != nil {
+		if err := r.server.Shutdown(ctx); err != nil {
 			errs = errors.Join(errs, err)
 		}
 	}
-	if r.server != nil {
-		if err := r.server.Shutdown(ctx); err != nil {
+	if r.observability != nil {
+		if err := r.observability.Stop(ctx); err != nil {
 			errs = errors.Join(errs, err)
 		}
 	}
