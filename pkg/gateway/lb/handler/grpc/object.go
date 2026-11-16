@@ -70,19 +70,14 @@ func (s *server) handleObjectBroadCastError(
 			code = st.Code()
 			msg = st.Message()
 		}
-		switch code {
-		case codes.NotFound,
-			codes.Canceled,
-			codes.DeadlineExceeded,
-			codes.InvalidArgument,
-			codes.OK,
-			codes.Unimplemented:
-			if ok {
-				attrs = trace.FromGRPCStatus(code, msg)
-				break
-			}
-			fallthrough
-		default:
+		if ok && st != nil && (code == codes.NotFound ||
+			code == codes.Canceled ||
+			code == codes.DeadlineExceeded ||
+			code == codes.InvalidArgument ||
+			code == codes.OK ||
+			code == codes.Unimplemented) {
+			attrs = trace.FromGRPCStatus(code, msg)
+		} else {
 			st, msg, err = status.ParseError(err, codes.NotFound, "error "+rpcName+" API meta "+uuid+"'s uuid not found",
 				&errdetails.RequestInfo{
 					RequestId:   uuid,
@@ -199,11 +194,8 @@ func (s *server) Exists(
 	ctx context.Context, meta *payload.Object_ID,
 ) (id *payload.Object_ID, err error) {
 	ctx = grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.ObjectRPCServiceName+"/"+vald.ExistsRPCName)
-	var span trace.Span
-	if trace.Enabled() {
-		ctx, span = trace.StartSpan(ctx, apiName+"/"+vald.ExistsRPCName)
-		defer trace.End(span)
-	}
+	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.ExistsRPCName)
+	defer trace.End(span)
 	uuid := meta.GetId()
 	id, err = s.exists(ctx, uuid)
 	if err == nil {
@@ -288,11 +280,8 @@ func (s *server) GetObject(
 	ctx context.Context, req *payload.Object_VectorRequest,
 ) (vec *payload.Object_Vector, err error) {
 	ctx = grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.ObjectRPCServiceName+"/"+vald.GetObjectRPCName)
-	var span trace.Span
-	if trace.Enabled() {
-		ctx, span = trace.StartSpan(ctx, apiName+"/"+vald.GetObjectRPCName)
-		defer trace.End(span)
-	}
+	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.GetObjectRPCName)
+	defer trace.End(span)
 	uuid := req.GetId().GetId()
 	vec, err = s.getObject(ctx, uuid)
 	if err == nil {
@@ -458,11 +447,8 @@ func (s *server) GetTimestamp(
 	ctx context.Context, req *payload.Object_TimestampRequest,
 ) (ts *payload.Object_Timestamp, err error) {
 	ctx = grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.ObjectRPCServiceName+"/"+vald.GetTimestampRPCName)
-	var span trace.Span
-	if trace.Enabled() {
-		ctx, span = trace.StartSpan(ctx, apiName+"/"+vald.GetTimestampRPCName)
-		defer trace.End(span)
-	}
+	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.GetTimestampRPCName)
+	defer trace.End(span)
 	uuid := req.GetId().GetId()
 	treq := &payload.Object_TimestampRequest{
 		Id: &payload.Object_ID{
