@@ -38,8 +38,11 @@ import (
 func (s *server) Search(
 	ctx context.Context, req *payload.Search_Request,
 ) (res *payload.Search_Response, err error) {
-	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.SearchRPCName), apiName+"/"+vald.SearchRPCName)
-	defer trace.End(span)
+	var span trace.Span
+	if trace.Enabled() {
+		ctx, span = trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.SearchRPCName), apiName+"/"+vald.SearchRPCName)
+		defer trace.End(span)
+	}
 	vl := len(req.GetVector())
 	if vl < algorithm.MinimumVectorDimensionSize {
 		err = errors.ErrInvalidDimensionSize(vl, 0)
@@ -80,8 +83,11 @@ func (s *server) Search(
 func (s *server) SearchByID(
 	ctx context.Context, req *payload.Search_IDRequest,
 ) (res *payload.Search_Response, err error) {
-	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.SearchByIDRPCName), apiName+"/"+vald.SearchByIDRPCName)
-	defer trace.End(span)
+	var span trace.Span
+	if trace.Enabled() {
+		ctx, span = trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.SearchByIDRPCName), apiName+"/"+vald.SearchByIDRPCName)
+		defer trace.End(span)
+	}
 	uuid := req.GetId()
 	if len(uuid) == 0 {
 		err = errors.ErrInvalidMetaDataConfig
@@ -231,6 +237,8 @@ func (s *server) doSearch(
 
 func selectAggregator(algo payload.Search_AggregationAlgorithm, num, fnum, replica int) Aggregator {
 	switch algo {
+	case payload.Search_ConcurrentQueue:
+		return newStd(num, fnum, replica)
 	case payload.Search_SortSlice:
 		return newSlice(num, fnum, replica)
 	case payload.Search_SortPoolSlice:

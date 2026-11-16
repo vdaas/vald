@@ -58,6 +58,16 @@ const (
 
 type gateway struct {
 	client discoverer.Client
+	vcs    sync.Map[*grpc.ClientConn, vald.Client]
+}
+
+func (g *gateway) getValdClient(conn *grpc.ClientConn) vald.Client {
+	if c, ok := g.vcs.Load(conn); ok {
+		return c
+	}
+	c := vc.NewFromConn(conn)
+	actual, _ := g.vcs.LoadOrStore(conn, c)
+	return actual
 }
 
 func NewGateway(opts ...Option) (gw Gateway, err error) {
@@ -121,7 +131,7 @@ func (g *gateway) BroadCast(
 		case <-ictx.Done():
 			return nil
 		default:
-			err = f(ictx, addr, vc.NewFromConn(conn), copts...)
+			err = f(ictx, addr, g.getValdClient(conn), copts...)
 			mu.Lock()
 			ran[addr] = struct{}{}
 			if err != nil {
@@ -185,14 +195,21 @@ func (g *gateway) DoMulti(
 	} else {
 		limit = uint32(num)
 	}
+	if limit == 0 && len(addrs) > 0 {
+		return nil
+	}
+	targets := addrs
+	if len(addrs) > int(limit) {
+		targets = addrs[:limit]
+	}
 	var visited sync.Map[string, any]
-	err = g.client.GetClient().OrderedRange(sctx, addrs, func(ictx context.Context,
+	err = g.client.GetClient().OrderedRangeConcurrent(sctx, targets, int(limit), func(ictx context.Context,
 		addr string,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (err error) {
 		if atomic.LoadUint32(&cur) < limit {
-			err = f(ictx, addr, vc.NewFromConn(conn), copts...)
+			err = f(ictx, addr, g.getValdClient(conn), copts...)
 			if err != nil {
 				return err
 			}
@@ -201,7 +218,7 @@ func (g *gateway) DoMulti(
 		}
 		return nil
 	})
-	if err != nil || cur < limit {
+	if err != nil || atomic.LoadUint32(&cur) < limit {
 		err = g.client.GetClient().OrderedRange(sctx, addrs, func(ictx context.Context,
 			addr string,
 			conn *grpc.ClientConn,
@@ -210,11 +227,12 @@ func (g *gateway) DoMulti(
 			if atomic.LoadUint32(&cur) < limit {
 				_, ok := visited.Load(addr)
 				if !ok {
-					err = f(ictx, addr, vc.NewFromConn(conn), copts...)
+					err = f(ictx, addr, g.getValdClient(conn), copts...)
 					if err != nil {
 						return err
 					}
 					atomic.AddUint32(&cur, 1)
+					visited.Store(addr, struct{}{})
 				}
 			}
 			return nil

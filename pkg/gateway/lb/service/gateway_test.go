@@ -27,6 +27,8 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/atomic"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
 // rangeClient models gRPCClient.RangeConcurrent: f runs per target, up to
@@ -39,6 +41,44 @@ type rangeClient struct {
 	onRange  func()
 	addrs    []string
 	attempts int
+}
+
+func (c *rangeClient) OrderedRange(
+	ctx context.Context,
+	orders []string,
+	f func(ctx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error,
+) error {
+	if len(orders) == 0 {
+		return errors.ErrGRPCClientConnNotFound("*")
+	}
+	for _, addr := range orders {
+		if err := f(ctx, addr, nil); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (c *rangeClient) OrderedRangeConcurrent(
+	ctx context.Context,
+	orders []string,
+	concurrency int,
+	f func(ctx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error,
+) error {
+	if len(orders) == 0 {
+		return errors.ErrGRPCClientConnNotFound("*")
+	}
+	eg, egctx := errgroup.New(ctx)
+	if concurrency > 0 {
+		eg.SetLimit(concurrency)
+	}
+	for _, addr := range orders {
+		a := addr
+		eg.Go(func() error {
+			return f(egctx, a, nil)
+		})
+	}
+	return eg.Wait()
 }
 
 func (c *rangeClient) RangeConcurrent(
@@ -320,416 +360,431 @@ func Test_gateway_BroadCast_agentListChangesDuringBroadcast(t *testing.T) {
 
 // NOT IMPLEMENTED BELOW
 //
-// func TestNewGateway(t *testing.T) {
-// 	type args struct {
-// 		opts []Option
-// 	}
-// 	type want struct {
-// 		wantGw Gateway
-// 		err    error
-// 	}
-// 	type test struct {
-// 		name       string
-// 		args       args
-// 		want       want
-// 		checkFunc  func(want, Gateway, error) error
-// 		beforeFunc func(*testing.T, args)
-// 		afterFunc  func(*testing.T, args)
-// 	}
-// 	defaultCheckFunc := func(w want, gotGw Gateway, err error) error {
-// 		if !errors.Is(err, w.err) {
-// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-// 		}
-// 		if !reflect.DeepEqual(gotGw, w.wantGw) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotGw, w.wantGw)
-// 		}
-// 		return nil
-// 	}
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       args: args {
-// 		           opts:nil,
-// 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
+//	func TestNewGateway(t *testing.T) {
+//		type args struct {
+//			opts []Option
+//		}
+//		type want struct {
+//			wantGw Gateway
+//			err    error
+//		}
+//		type test struct {
+//			name       string
+//			args       args
+//			want       want
+//			checkFunc  func(want, Gateway, error) error
+//			beforeFunc func(*testing.T, args)
+//			afterFunc  func(*testing.T, args)
+//		}
+//		defaultCheckFunc := func(w want, gotGw Gateway, err error) error {
+//			if !errors.Is(err, w.err) {
+//				return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+//			}
+//			if !reflect.DeepEqual(gotGw, w.wantGw) {
+//				return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotGw, w.wantGw)
+//			}
+//			return nil
+//		}
+//		tests := []test{
+//			// TODO test cases
+//			/*
+//			   {
+//			       name: "test_case_1",
+//			       args: args {
+//			           opts:nil,
+//			       },
+//			       want: want{},
+//			       checkFunc: defaultCheckFunc,
+//			       beforeFunc: func(t *testing.T, args args) {
+//			           t.Helper()
+//			       },
+//			       afterFunc: func(t *testing.T, args args) {
+//			           t.Helper()
+//			       },
+//			   },
+//			*/
 //
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           args: args {
-// 		           opts:nil,
-// 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
+//			// TODO test cases
+//			/*
+//			   func() test {
+//			       return test {
+//			           name: "test_case_2",
+//			           args: args {
+//			           opts:nil,
+//			           },
+//			           want: want{},
+//			           checkFunc: defaultCheckFunc,
+//			           beforeFunc: func(t *testing.T, args args) {
+//			               t.Helper()
+//			           },
+//			           afterFunc: func(t *testing.T, args args) {
+//			               t.Helper()
+//			           },
+//			       }
+//			   }(),
+//			*/
+//		}
 //
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt, test.args)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt, test.args)
-// 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
+//		for _, tc := range tests {
+//			test := tc
+//			t.Run(test.name, func(tt *testing.T) {
+//				tt.Parallel()
+//				defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+//				if test.beforeFunc != nil {
+//					test.beforeFunc(tt, test.args)
+//				}
+//				if test.afterFunc != nil {
+//					defer test.afterFunc(tt, test.args)
+//				}
+//				checkFunc := test.checkFunc
+//				if test.checkFunc == nil {
+//					checkFunc = defaultCheckFunc
+//				}
 //
-// 			gotGw, err := NewGateway(test.args.opts...)
-// 			if err := checkFunc(test.want, gotGw, err); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
-// 		})
-// 	}
-// }
+//				gotGw, err := NewGateway(test.args.opts...)
+//				if err := checkFunc(test.want, gotGw, err); err != nil {
+//					tt.Errorf("error = %v", err)
+//				}
+//			})
+//		}
+//	}
 //
-// func Test_gateway_Start(t *testing.T) {
-// 	type args struct {
-// 		ctx context.Context
-// 	}
-// 	type fields struct {
-// 		client discoverer.Client
-// 		eg     errgroup.Group
-// 	}
-// 	type want struct {
-// 		want <-chan error
-// 		err  error
-// 	}
-// 	type test struct {
-// 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
-// 		checkFunc  func(want, <-chan error, error) error
-// 		beforeFunc func(*testing.T, args)
-// 		afterFunc  func(*testing.T, args)
-// 	}
-// 	defaultCheckFunc := func(w want, got <-chan error, err error) error {
-// 		if !errors.Is(err, w.err) {
-// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-// 		}
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-// 		}
-// 		return nil
-// 	}
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       args: args {
-// 		           ctx:nil,
-// 		       },
-// 		       fields: fields {
-// 		           client:nil,
-// 		           eg:nil,
-// 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
+//	func Test_gateway_Start(t *testing.T) {
+//		type args struct {
+//			ctx context.Context
+//		}
+//		type fields struct {
+//			client discoverer.Client
+//			eg     errgroup.Group
+//		}
+//		type want struct {
+//			want <-chan error
+//			err  error
+//		}
+//		type test struct {
+//			name       string
+//			args       args
+//			fields     fields
+//			want       want
+//			checkFunc  func(want, <-chan error, error) error
+//			beforeFunc func(*testing.T, args)
+//			afterFunc  func(*testing.T, args)
+//		}
+//		defaultCheckFunc := func(w want, got <-chan error, err error) error {
+//			if !errors.Is(err, w.err) {
+//				return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+//			}
+//			if !reflect.DeepEqual(got, w.want) {
+//				return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+//			}
+//			return nil
+//		}
+//		tests := []test{
+//			// TODO test cases
+//			/*
+//			   {
+//			       name: "test_case_1",
+//			       args: args {
+//			           ctx:nil,
+//			       },
+//			       fields: fields {
+//			           client:nil,
+//			           eg:nil,
+//			       },
+//			       want: want{},
+//			       checkFunc: defaultCheckFunc,
+//			       beforeFunc: func(t *testing.T, args args) {
+//			           t.Helper()
+//			       },
+//			       afterFunc: func(t *testing.T, args args) {
+//			           t.Helper()
+//			       },
+//			   },
+//			*/
 //
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           args: args {
-// 		           ctx:nil,
-// 		           },
-// 		           fields: fields {
-// 		           client:nil,
-// 		           eg:nil,
-// 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
+//			// TODO test cases
+//			/*
+//			   func() test {
+//			       return test {
+//			           name: "test_case_2",
+//			           args: args {
+//			           ctx:nil,
+//			           },
+//			           fields: fields {
+//			           client:nil,
+//			           eg:nil,
+//			           },
+//			           want: want{},
+//			           checkFunc: defaultCheckFunc,
+//			           beforeFunc: func(t *testing.T, args args) {
+//			               t.Helper()
+//			           },
+//			           afterFunc: func(t *testing.T, args args) {
+//			               t.Helper()
+//			           },
+//			       }
+//			   }(),
+//			*/
+//		}
 //
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt, test.args)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt, test.args)
-// 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
-// 			g := &gateway{
-// 				client: test.fields.client,
-// 				eg:     test.fields.eg,
-// 			}
+//		for _, tc := range tests {
+//			test := tc
+//			t.Run(test.name, func(tt *testing.T) {
+//				tt.Parallel()
+//				defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+//				if test.beforeFunc != nil {
+//					test.beforeFunc(tt, test.args)
+//				}
+//				if test.afterFunc != nil {
+//					defer test.afterFunc(tt, test.args)
+//				}
+//				checkFunc := test.checkFunc
+//				if test.checkFunc == nil {
+//					checkFunc = defaultCheckFunc
+//				}
+//				g := &gateway{
+//					client: test.fields.client,
+//					eg:     test.fields.eg,
+//				}
 //
-// 			got, err := g.Start(test.args.ctx)
-// 			if err := checkFunc(test.want, got, err); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
-// 		})
-// 	}
-// }
+//				got, err := g.Start(test.args.ctx)
+//				if err := checkFunc(test.want, got, err); err != nil {
+//					tt.Errorf("error = %v", err)
+//				}
+//			})
+//		}
+//	}
 //
-// func Test_gateway_BroadCast(t *testing.T) {
-// 	type args struct {
-// 		ctx  context.Context
-// 		kind BroadCastKind
-// 		f    func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error
-// 	}
-// 	type fields struct {
-// 		client discoverer.Client
-// 		eg     errgroup.Group
-// 	}
-// 	type want struct {
-// 		err error
-// 	}
-// 	type test struct {
-// 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
-// 		checkFunc  func(want, error) error
-// 		beforeFunc func(*testing.T, args)
-// 		afterFunc  func(*testing.T, args)
-// 	}
-// 	defaultCheckFunc := func(w want, err error) error {
-// 		if !errors.Is(err, w.err) {
-// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-// 		}
-// 		return nil
-// 	}
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       args: args {
-// 		           ctx:nil,
-// 		           kind:nil,
-// 		           f:nil,
-// 		       },
-// 		       fields: fields {
-// 		           client:nil,
-// 		           eg:nil,
-// 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
+//	func Test_gateway_BroadCast(t *testing.T) {
+//		type args struct {
+//			ctx  context.Context
+//			kind BroadCastKind
+//			f    func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error
+//		}
+//		type fields struct {
+//			client discoverer.Client
+//			eg     errgroup.Group
+//		}
+//		type want struct {
+//			err error
+//		}
+//		type test struct {
+//			name       string
+//			args       args
+//			fields     fields
+//			want       want
+//			checkFunc  func(want, error) error
+//			beforeFunc func(*testing.T, args)
+//			afterFunc  func(*testing.T, args)
+//		}
+//		defaultCheckFunc := func(w want, err error) error {
+//			if !errors.Is(err, w.err) {
+//				return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+//			}
+//			return nil
+//		}
+//		tests := []test{
+//			// TODO test cases
+//			/*
+//			   {
+//			       name: "test_case_1",
+//			       args: args {
+//			           ctx:nil,
+//			           kind:nil,
+//			           f:nil,
+//			       },
+//			       fields: fields {
+//			           client:nil,
+//			           eg:nil,
+//			       },
+//			       want: want{},
+//			       checkFunc: defaultCheckFunc,
+//			       beforeFunc: func(t *testing.T, args args) {
+//			           t.Helper()
+//			       },
+//			       afterFunc: func(t *testing.T, args args) {
+//			           t.Helper()
+//			       },
+//			   },
+//			*/
 //
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           args: args {
-// 		           ctx:nil,
-// 		           kind:nil,
-// 		           f:nil,
-// 		           },
-// 		           fields: fields {
-// 		           client:nil,
-// 		           eg:nil,
-// 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
+//			// TODO test cases
+//			/*
+//			   func() test {
+//			       return test {
+//			           name: "test_case_2",
+//			           args: args {
+//			           ctx:nil,
+//			           kind:nil,
+//			           f:nil,
+//			           },
+//			           fields: fields {
+//			           client:nil,
+//			           eg:nil,
+//			           },
+//			           want: want{},
+//			           checkFunc: defaultCheckFunc,
+//			           beforeFunc: func(t *testing.T, args args) {
+//			               t.Helper()
+//			           },
+//			           afterFunc: func(t *testing.T, args args) {
+//			               t.Helper()
+//			           },
+//			       }
+//			   }(),
+//			*/
+//		}
 //
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt, test.args)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt, test.args)
-// 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
-// 			g := &gateway{
-// 				client: test.fields.client,
-// 				eg:     test.fields.eg,
-// 			}
+//		for _, tc := range tests {
+//			test := tc
+//			t.Run(test.name, func(tt *testing.T) {
+//				tt.Parallel()
+//				defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+//				if test.beforeFunc != nil {
+//					test.beforeFunc(tt, test.args)
+//				}
+//				if test.afterFunc != nil {
+//					defer test.afterFunc(tt, test.args)
+//				}
+//				checkFunc := test.checkFunc
+//				if test.checkFunc == nil {
+//					checkFunc = defaultCheckFunc
+//				}
+//				g := &gateway{
+//					client: test.fields.client,
+//					eg:     test.fields.eg,
+//				}
 //
-// 			err := g.BroadCast(test.args.ctx, test.args.kind, test.args.f)
-// 			if err := checkFunc(test.want, err); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
-// 		})
-// 	}
-// }
-//
-// func Test_gateway_DoMulti(t *testing.T) {
-// 	type args struct {
-// 		ctx context.Context
-// 		num int
-// 		f   func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error
-// 	}
-// 	type fields struct {
-// 		client discoverer.Client
-// 		eg     errgroup.Group
-// 	}
-// 	type want struct {
-// 		err error
-// 	}
-// 	type test struct {
-// 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
-// 		checkFunc  func(want, error) error
-// 		beforeFunc func(*testing.T, args)
-// 		afterFunc  func(*testing.T, args)
-// 	}
-// 	defaultCheckFunc := func(w want, err error) error {
-// 		if !errors.Is(err, w.err) {
-// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-// 		}
-// 		return nil
-// 	}
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       args: args {
-// 		           ctx:nil,
-// 		           num:0,
-// 		           f:nil,
-// 		       },
-// 		       fields: fields {
-// 		           client:nil,
-// 		           eg:nil,
-// 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
-//
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           args: args {
-// 		           ctx:nil,
-// 		           num:0,
-// 		           f:nil,
-// 		           },
-// 		           fields: fields {
-// 		           client:nil,
-// 		           eg:nil,
-// 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
-//
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt, test.args)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt, test.args)
-// 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
-// 			g := &gateway{
-// 				client: test.fields.client,
-// 				eg:     test.fields.eg,
-// 			}
-//
-// 			err := g.DoMulti(test.args.ctx, test.args.num, test.args.f)
-// 			if err := checkFunc(test.want, err); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
-// 		})
-// 	}
-// }
+//				err := g.BroadCast(test.args.ctx, test.args.kind, test.args.f)
+//				if err := checkFunc(test.want, err); err != nil {
+//					tt.Errorf("error = %v", err)
+//				}
+//			})
+//		}
+//	}
+func Test_gateway_DoMulti(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name      string
+		num       int
+		addrs     []string
+		f         func(visited *sync.Map[string, int]) func(context.Context, string, vald.Client, ...grpc.CallOption) error
+		wantCalls map[string]int
+		wantErr   error
+	}{
+		{
+			name:  "concurrent pass 1 with 3 replicas out of 5 agents succeeds",
+			num:   3,
+			addrs: []string{"a", "b", "c", "d", "e"},
+			f: func(visited *sync.Map[string, int]) func(context.Context, string, vald.Client, ...grpc.CallOption) error {
+				return func(_ context.Context, target string, _ vald.Client, _ ...grpc.CallOption) error {
+					v, _ := visited.LoadOrStore(target, 0)
+					visited.Store(target, v+1)
+					return nil
+				}
+			},
+			wantCalls: map[string]int{
+				"a": 1,
+				"b": 1,
+				"c": 1,
+			},
+		},
+		{
+			name:  "second pass retries failed target to satisfy replica",
+			num:   2,
+			addrs: []string{"a", "b", "c"},
+			f: func(visited *sync.Map[string, int]) func(context.Context, string, vald.Client, ...grpc.CallOption) error {
+				var aCount atomic.Int32
+				return func(_ context.Context, target string, _ vald.Client, _ ...grpc.CallOption) error {
+					if target == "a" && aCount.Add(1) == 1 {
+						return errors.New("agent a temporary error")
+					}
+					v, _ := visited.LoadOrStore(target, 0)
+					visited.Store(target, v+1)
+					return nil
+				}
+			},
+			wantCalls: map[string]int{
+				"b": 1,
+				"a": 1,
+			},
+		},
+		{
+			name:  "empty addrs returns ErrGRPCClientConnNotFound",
+			num:   2,
+			addrs: []string{},
+			f: func(visited *sync.Map[string, int]) func(context.Context, string, vald.Client, ...grpc.CallOption) error {
+				return func(_ context.Context, _ string, _ vald.Client, _ ...grpc.CallOption) error {
+					return nil
+				}
+			},
+			wantErr: errors.ErrGRPCClientConnNotFound("*"),
+		},
+		{
+			name:  "num is 0 returns nil with 0 calls",
+			num:   0,
+			addrs: []string{"a", "b"},
+			f: func(visited *sync.Map[string, int]) func(context.Context, string, vald.Client, ...grpc.CallOption) error {
+				return func(_ context.Context, target string, _ vald.Client, _ ...grpc.CallOption) error {
+					v, _ := visited.LoadOrStore(target, 0)
+					visited.Store(target, v+1)
+					return nil
+				}
+			},
+			wantCalls: map[string]int{},
+		},
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			ctx := tt.Context()
+			var visited sync.Map[string, int]
+			rc := &rangeClient{addrs: test.addrs}
+			rd := &rangeDiscoverer{c: rc, addrs: test.addrs}
+			g := &gateway{client: rd}
+
+			err := g.DoMulti(ctx, test.num, test.f(&visited))
+			if test.wantErr != nil {
+				if !errors.Is(err, test.wantErr) {
+					tt.Fatalf("err = %v, want %v", err, test.wantErr)
+				}
+				return
+			}
+			if err != nil {
+				tt.Fatalf("unexpected error = %v", err)
+			}
+			for target, wantCount := range test.wantCalls {
+				val, ok := visited.Load(target)
+				if !ok || val != wantCount {
+					tt.Errorf("target %s called %d times, want %d", target, val, wantCount)
+				}
+			}
+			visited.Range(func(key string, val int) bool {
+				if _, ok := test.wantCalls[key]; !ok {
+					tt.Errorf("unexpected target %s called %d times", key, val)
+				}
+				return true
+			})
+		})
+	}
+}
+
+func Test_gateway_getValdClient_caching(t *testing.T) {
+	t.Parallel()
+	g := new(gateway)
+	conn := new(grpc.ClientConn)
+	c1 := g.getValdClient(conn)
+	c2 := g.getValdClient(conn)
+	if c1 == nil || c2 == nil {
+		t.Fatal("expected non-nil client")
+	}
+	if c1 != c2 {
+		t.Errorf("expected cached client instance to be reused, got %p != %p", c1, c2)
+	}
+}
+
 //
 // func Test_gateway_GetAgentCount(t *testing.T) {
 // 	type args struct {

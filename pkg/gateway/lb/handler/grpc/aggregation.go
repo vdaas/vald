@@ -36,7 +36,6 @@ import (
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/atomic"
-	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/pkg/gateway/lb/service"
 )
 
@@ -73,6 +72,28 @@ func cmpDist(l, r *DistPayload) int {
 	return cmp.Compare(l.distance, r.distance)
 }
 
+func cmpDistVal(l, r DistPayload) int {
+	return cmp.Compare(l.distance, r.distance)
+}
+
+var (
+	aggrFailedPool = sync.Pool{
+		New: func() any {
+			return make(map[string]codes.Code, 8)
+		},
+	}
+	aggrReachedPool = sync.Pool{
+		New: func() any {
+			return make(map[string]struct{}, 8)
+		},
+	}
+	aggrSeenPool = sync.Pool{
+		New: func() any {
+			return make(map[string]struct{}, 64)
+		},
+	}
+)
+
 func (s *server) aggregationSearch(
 	ctx context.Context,
 	rpc string, // agent RPC name f calls, used as the metrics label
@@ -83,8 +104,11 @@ func (s *server) aggregationSearch(
 		fcfg *payload.Search_Config, // Forwarding Config to Agent
 		vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error),
 ) (res *payload.Search_Response, attrs []attribute.KeyValue, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "aggregationSearch"), apiName+"/aggregationSearch")
-	defer trace.End(span)
+	var span trace.Span
+	if trace.Enabled() {
+		ctx, span = trace.StartSpan(grpc.WrapGRPCMethod(ctx, "aggregationSearch"), apiName+"/aggregationSearch")
+		defer trace.End(span)
+	}
 
 	if bcfg == nil {
 		return nil, nil, errors.ErrInvalidSearchConfig("bcfg is nil in aggregationSearch")
@@ -112,25 +136,37 @@ func (s *server) aggregationSearch(
 	// ran for.
 	var (
 		fmu     sync.Mutex
-		failed  = make(map[string]codes.Code)
-		reached = make(map[string]struct{})
+		failed  map[string]codes.Code
+		reached = aggrReachedPool.Get().(map[string]struct{})
 	)
+	defer func() {
+		if failed != nil {
+			clear(failed)
+			aggrFailedPool.Put(failed)
+		}
+		clear(reached)
+		aggrReachedPool.Put(reached)
+	}()
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	aggr.Start(ctx)
-	// bctx scopes only the broadcast, so the quorum early termination below stops
-	// the remaining agent calls while the aggregator keeps every result it got.
-	bctx, bcancel := context.WithCancelCause(ctx)
-	defer bcancel(nil)
 	quorum := s.searchQuorum(agents)
 	var (
+		bctx     = ctx
+		bcancel  context.CancelCauseFunc
 		answered atomic.Int64
 		qtimer   atomic.Pointer[time.Timer]
 	)
-	defer func() {
-		if t := qtimer.Load(); t != nil {
-			t.Stop()
-		}
-	}()
+	if quorum > 0 {
+		// bctx scopes only the broadcast, so the quorum early termination below stops
+		// the remaining agent calls while the aggregator keeps every result it got.
+		bctx, bcancel = context.WithCancelCause(ctx)
+		defer bcancel(nil)
+		defer func() {
+			if t := qtimer.Load(); t != nil {
+				t.Stop()
+			}
+		}()
+	}
 	// Per-agent failures are tolerated and summarized once per request below, so
 	// the client must not log every failed agent/attempt at Warn/Error.
 	// Replicas cover a failed agent, so an overloaded one (ResourceExhausted) is not
@@ -139,16 +175,23 @@ func (s *server) aggregationSearch(
 		var agentErr error // error of the last agent call, nil when it answered
 		defer func() {
 			fmu.Lock()
-			defer fmu.Unlock()
 			reached[target] = struct{}{}
 			if code, ok := searchAgentFailure(target, agentErr); ok {
+				if failed == nil {
+					failed = aggrFailedPool.Get().(map[string]codes.Code)
+				}
 				failed[target] = code
-				return
+			} else if failed != nil {
+				delete(failed, target)
 			}
-			delete(failed, target)
+			fmu.Unlock()
 		}()
-		sctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/aggregationSearch/"+target)
-		defer trace.End(sspan)
+		sctx := ctx
+		var sspan trace.Span
+		if trace.Enabled() {
+			sctx, sspan = trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/aggregationSearch/"+target)
+			defer trace.End(sspan)
+		}
 		r, err := f(sctx, fcfg, vc, copts...)
 		if err != nil {
 			agentErr = err
@@ -183,7 +226,7 @@ func (s *server) aggregationSearch(
 		}
 		return nil
 	})
-	quorumReached := errors.Is(context.Cause(bctx), errSearchQuorumReached)
+	quorumReached := quorum > 0 && errors.Is(context.Cause(bctx), errSearchQuorumReached)
 	if quorumReached && errors.Is(err, context.Canceled) {
 		// the agents still running were canceled on purpose, not failed
 		err = nil
@@ -334,9 +377,7 @@ func (s *server) searchQuorum(agents int) int {
 // separately by handleSearchBroadCastError.
 func searchAgentFailure(target string, err error) (codes.Code, bool) {
 	if err == nil ||
-		errors.IsAny(err, context.Canceled, context.DeadlineExceeded) ||
-		errors.Is(err, errors.ErrRPCCallFailed(target, context.Canceled)) ||
-		errors.Is(err, errors.ErrRPCCallFailed(target, context.DeadlineExceeded)) {
+		errors.IsAny(err, context.Canceled, context.DeadlineExceeded) {
 		return codes.OK, false
 	}
 	st, ok := status.FromError(err)
@@ -407,17 +448,17 @@ func logPartialSearch(rpc string, failures, replica int, bcErr, reqErr error) {
 // vald standard algorithm.
 type valdStdAggr struct {
 	// maxDist holds the math.Float64bits of the current distance bound. newStd
-	// initializes it, after that only the Start goroutine stores it; Send reads it
-	// concurrently.
+	// initializes it; Send updates it atomically under mu and reads it lock-free
+	// on entry to prune responses whose closest candidate already exceeds the bound.
 	maxDist atomic.Uint64
-	eg      errgroup.Group
-	dch     chan DistPayload
-	cancel  context.CancelFunc
+	dch     chan DistPayload // kept nil (zero cap) for struct layout compatibility
+	seen    map[string]struct{}
 	result  []*payload.Object_Distance
-	wg      sync.WaitGroup
+	mu      sync.Mutex
 	num     int
 	fnum    int
 	closed  atomic.Bool
+	filled  atomic.Bool
 }
 
 // handleSearchBroadCastError classifies a per-target BroadCast search RPC error:
@@ -431,8 +472,7 @@ type valdStdAggr struct {
 // handling in aggregationSearch.
 func handleSearchBroadCastError(sspan trace.Span, target string, err error) error {
 	switch {
-	case errors.Is(err, context.Canceled),
-		errors.Is(err, errors.ErrRPCCallFailed(target, context.Canceled)):
+	case errors.Is(err, context.Canceled):
 		if sspan != nil {
 			sspan.RecordError(err)
 			sspan.SetAttributes(trace.StatusCodeCancelled(
@@ -442,8 +482,7 @@ func handleSearchBroadCastError(sspan trace.Span, target string, err error) erro
 			sspan.SetStatus(trace.StatusError, err.Error())
 		}
 		return nil
-	case errors.Is(err, context.DeadlineExceeded),
-		errors.Is(err, errors.ErrRPCCallFailed(target, context.DeadlineExceeded)):
+	case errors.Is(err, context.DeadlineExceeded):
 		if sspan != nil {
 			sspan.RecordError(err)
 			sspan.SetAttributes(trace.StatusCodeDeadlineExceeded(
@@ -496,109 +535,95 @@ func preallocLen(n int) int {
 }
 
 // newStd returns a valdStdAggr configured for the standard aggregation algorithm.
-// It sets the top-k size (`num`), the forwarding top-k size (`fnum`), and allocates its buffers:
-// the dch channel is sized by num*replica and the result slice by num+1 (by num*replica when num is
-// not positive), both capped at maxAggrPrealloc.
-// The returned Aggregator is initialized (including its error group) and ready to Start and receive results.
+// It sets the top-k size (`num`), the forwarding top-k size (`fnum`), and preallocates
+// the result slice by num+1 (by num*replica when num is not positive), capped at maxAggrPrealloc.
 func newStd(num, fnum, replica int) Aggregator {
-	// dch absorbs a burst from every agent, so it keeps the num*replica hint.
-	hint := preallocLen(num * replica)
-	// result never holds more than num entries (+1 before the trim in add), so
-	// sizing it by every agent's answer only wasted memory. seen keeps the dch
-	// hint: it records every distinct ID that reaches add, which exceeds num.
-	rhint := hint
+	rhint := preallocLen(num * replica)
 	if num > 0 {
 		rhint = preallocLen(num + 1)
 	}
 	vsa := &valdStdAggr{
 		num:    num,
 		fnum:   fnum,
-		dch:    make(chan DistPayload, hint),
 		result: make([]*payload.Object_Distance, 0, rhint),
-		eg:     errgroup.Get(),
 	}
 	vsa.maxDist.Store(math.Float64bits(math.MaxFloat64))
-	vsa.closed.Store(false)
 	return vsa
 }
 
-func (v *valdStdAggr) Start(ctx context.Context) {
-	ctx, v.cancel = context.WithCancel(ctx)
-	// seen de-duplicates result IDs (replicas return the same IDs). It is only
-	// touched by add, which runs solely on the goroutine started below, so a
-	// plain map suffices. The first-dequeued entry of an ID wins, whether or not
-	// it is kept.
-	seen := make(map[string]struct{}, cap(v.dch))
-	add := func(distance float64, dist *payload.Object_Distance) {
-		if _, ok := seen[dist.GetId()]; ok {
-			return
-		}
-		seen[dist.GetId()] = struct{}{}
-		rl := len(v.result) // result length
-		fmax := math.Float64frombits(v.maxDist.Load())
-		if rl >= v.num && distance >= fmax {
-			return
-		}
-		// stable insertion point: after every element whose distance <= distance.
-		i := rl
-		for i > 0 && distance < float64(v.result[i-1].GetDistance()) {
-			i--
-		}
-		v.result = slices.Insert(v.result, i, dist)
-		rl = len(v.result)
-		if rl > v.num && v.num != 0 {
-			v.result = v.result[:v.num]
-			rl = len(v.result)
-		}
-		if distEnd := float64(v.result[rl-1].GetDistance()); rl >= v.num &&
-			distEnd < fmax {
-			v.maxDist.Store(math.Float64bits(distEnd))
-		}
-	}
-	v.wg.Add(1)
-	v.eg.Go(func() error {
-		defer v.wg.Done()
-		for {
-			select {
-			case <-ctx.Done():
-				// Do NOT close(v.dch): concurrent Send goroutines fanned out by
-				// BroadCast may be between their v.closed check and their send,
-				// and a send on a closed channel panics. That panic is a
-				// runtime.Error which safety.RecoverFunc re-panics, crashing the
-				// gateway. Instead flag closed (future Sends return early) and
-				// drain what is already buffered without blocking; in-flight
-				// Sends observe ctx.Done() via their own select and stop.
-				v.closed.Store(true)
-				for {
-					select {
-					case dist := <-v.dch:
-						add(dist.distance, dist.raw)
-					default:
-						return nil
-					}
-				}
-			case dist := <-v.dch:
-				add(dist.distance, dist.raw)
-			}
-		}
-	})
-}
+func (v *valdStdAggr) Start(_ context.Context) {}
 
 func (v *valdStdAggr) Send(ctx context.Context, data *payload.Search_Response) {
+	if v.closed.Load() || ctx.Err() != nil {
+		return
+	}
 	result := data.GetResults()
-	if len(result) > v.fnum {
+	if v.fnum > 0 && len(result) > v.fnum {
 		result = result[:v.fnum]
 	}
+	if len(result) == 0 {
+		return
+	}
+	if rankable(result[0]) && float64(result[0].GetDistance()) >= math.Float64frombits(v.maxDist.Load()) {
+		return
+	}
+
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	if v.closed.Load() {
+		return
+	}
+	if v.seen == nil {
+		v.seen = aggrSeenPool.Get().(map[string]struct{})
+	}
+	fmax := math.Float64frombits(v.maxDist.Load())
 	for _, dist := range result {
-		if rankable(dist) {
-			fdist := float64(dist.GetDistance())
-			if fdist >= math.Float64frombits(v.maxDist.Load()) || v.closed.Load() {
-				return
+		if !rankable(dist) {
+			continue
+		}
+		distance := float64(dist.GetDistance())
+		if distance >= fmax {
+			break
+		}
+		id := dist.GetId()
+		if _, ok := v.seen[id]; ok {
+			continue
+		}
+		v.seen[id] = struct{}{}
+		rl := len(v.result)
+		var i int
+		if rl == 0 || distance >= float64(v.result[rl-1].GetDistance()) {
+			i = rl
+		} else {
+			i, _ = slices.BinarySearchFunc(v.result, distance, func(elem *payload.Object_Distance, target float64) int {
+				if float64(elem.GetDistance()) <= target {
+					return -1
+				}
+				return 1
+			})
+		}
+		if v.num != 0 && rl >= v.num {
+			if i < v.num {
+				copy(v.result[i+1:v.num], v.result[i:v.num-1])
+				v.result[i] = dist
+				if distEnd := float64(v.result[v.num-1].GetDistance()); distEnd < fmax {
+					fmax = distEnd
+					v.maxDist.Store(math.Float64bits(distEnd))
+				}
 			}
-			select {
-			case <-ctx.Done():
-				return
-			case v.dch <- DistPayload{raw: dist, distance: fdist}:
+			continue
+		}
+		v.result = append(v.result, nil)
+		if i < rl {
+			copy(v.result[i+1:], v.result[i:rl])
+		}
+		v.result[i] = dist
+		rl++
+		if v.num != 0 && rl >= v.num {
+			v.filled.Store(true)
+			if distEnd := float64(v.result[rl-1].GetDistance()); distEnd < fmax {
+				fmax = distEnd
+				v.maxDist.Store(math.Float64bits(distEnd))
 			}
 		}
 	}
@@ -606,13 +631,20 @@ func (v *valdStdAggr) Send(ctx context.Context, data *payload.Search_Response) {
 
 func (v *valdStdAggr) Result() *payload.Search_Response {
 	v.closed.Store(true)
-	v.cancel()
-	v.wg.Wait()
-	if len(v.result) > v.num {
-		v.result = v.result[:v.num]
+	v.mu.Lock()
+	if v.seen != nil {
+		clear(v.seen)
+		aggrSeenPool.Put(v.seen)
+		v.seen = nil
+	}
+	res := v.result
+	v.result = nil
+	v.mu.Unlock()
+	if v.num != 0 && len(res) > v.num {
+		res = res[:v.num]
 	}
 	return &payload.Search_Response{
-		Results: v.result,
+		Results: res,
 	}
 }
 
@@ -670,7 +702,7 @@ func (v *valdPairingHeapAggr) Send(ctx context.Context, data *payload.Search_Res
 }
 
 func (v *valdPairingHeapAggr) Result() *payload.Search_Response {
-	for !v.ph.IsEmpty() && len(v.result) <= v.num {
+	for !v.ph.IsEmpty() && (v.num == 0 || len(v.result) <= v.num) {
 		var minDist *DistPayload
 		minDist, v.ph = v.ph.ExtractMin()
 		if minDist != nil {
@@ -679,7 +711,7 @@ func (v *valdPairingHeapAggr) Result() *payload.Search_Response {
 			break
 		}
 	}
-	if len(v.result) > v.num {
+	if v.num != 0 && len(v.result) > v.num {
 		v.result = v.result[:v.num]
 	}
 	return &payload.Search_Response{
@@ -734,7 +766,7 @@ func (v *valdSliceAggr) Send(ctx context.Context, data *payload.Search_Response)
 func (v *valdSliceAggr) Result() (res *payload.Search_Response) {
 	v.result = dedupSortByID(v.result)
 
-	if len(v.result) > v.num {
+	if v.num != 0 && len(v.result) > v.num {
 		v.result = v.result[:v.num]
 	}
 	res = &payload.Search_Response{
@@ -762,7 +794,7 @@ func (v *valdSliceAggr) GetFnum() int {
 
 // plane sort.
 type valdPoolSliceAggr struct {
-	result []*DistPayload
+	result []DistPayload
 	num    int
 	fnum   int
 	mu     sync.Mutex
@@ -771,7 +803,7 @@ type valdPoolSliceAggr struct {
 var (
 	poolDist = sync.Pool{
 		New: func() any {
-			return make([]*DistPayload, 0, poolLen.Load())
+			return make([]DistPayload, 0, poolLen.Load())
 		},
 	}
 	poolLen atomic.Uint64
@@ -785,40 +817,45 @@ func newPoolSlice(num, fnum, replica int) Aggregator {
 	return &valdPoolSliceAggr{
 		num:    num,
 		fnum:   fnum,
-		result: poolDist.Get().([]*DistPayload),
+		result: poolDist.Get().([]DistPayload),
 	}
 }
 
 func (*valdPoolSliceAggr) Start(_ context.Context) {}
 
 func (v *valdPoolSliceAggr) Send(ctx context.Context, data *payload.Search_Response) {
-	dps := collectDistPayloads(ctx, data, v.fnum)
-	if len(dps) == 0 {
+	result := data.GetResults()
+	if v.fnum > 0 && len(result) > v.fnum {
+		result = result[:v.fnum]
+	}
+	if len(result) == 0 || ctx.Err() != nil {
 		return
 	}
 	v.mu.Lock()
-	for i := range dps {
-		v.result = append(v.result, &dps[i])
+	for _, dist := range result {
+		if !rankable(dist) {
+			continue
+		}
+		v.result = append(v.result, DistPayload{raw: dist, distance: float64(dist.GetDistance())})
 	}
 	v.mu.Unlock()
 }
 
 func (v *valdPoolSliceAggr) Result() (res *payload.Search_Response) {
-	v.result = dedupSortByID(v.result)
+	v.result = dedupSortByIDValues(v.result)
 
 	top := v.result
-	if len(top) > v.num {
+	if v.num != 0 && len(top) > v.num {
 		top = top[:v.num]
 	}
 	res = &payload.Search_Response{
 		Results: make([]*payload.Object_Distance, 0, len(top)),
 	}
 	for _, r := range top {
-		res.Results = append(res.GetResults(), r.raw)
+		res.Results = append(res.Results, r.raw)
 	}
 	// do not let the pool retain the DistPayloads (and the responses they point to).
 	clear(v.result)
-	// skipcq: SCC-SA6002
 	poolDist.Put(v.result[:0])
 	return res
 }
@@ -845,7 +882,7 @@ func collectDistPayloads(
 	ctx context.Context, data *payload.Search_Response, fnum int,
 ) []DistPayload {
 	result := data.GetResults()
-	if len(result) > fnum {
+	if fnum > 0 && len(result) > fnum {
 		result = result[:fnum]
 	}
 	dps := make([]DistPayload, 0, len(result))
@@ -861,6 +898,22 @@ func collectDistPayloads(
 		dps = append(dps, DistPayload{raw: dist, distance: float64(dist.GetDistance())})
 	}
 	return dps
+}
+
+func dedupSortByIDValues(x []DistPayload) []DistPayload {
+	seen := aggrSeenPool.Get().(map[string]struct{})
+	out := x[:0]
+	for _, p := range x {
+		if _, ok := seen[p.raw.GetId()]; !ok {
+			seen[p.raw.GetId()] = struct{}{}
+			out = append(out, p)
+		}
+	}
+	clear(seen)
+	aggrSeenPool.Put(seen)
+	clear(x[len(out):])
+	slices.SortStableFunc(out, cmpDistVal)
+	return out
 }
 
 // dedupSortByID keeps the first-arrived entry of each ID (as the std and
