@@ -44,7 +44,7 @@ Violating these rules results in immediate CI failure.
 ### ✅ MANDATORY PATTERNS (Always Do This)
 
 1. **Use `internal/` Libraries Wherever Possible:** Do not use standard `log`, `errors`, `sync`, or `strings`. Use `github.com/vdaas/vald/internal/**` instead.
-2. **Atomic Commits:** Separate "Refactoring", "Feature", "Bugfix" and "SecurityFix" into clean, squashable commits.
+2. **Atomic Commits:** Separate "Refactoring", "Feature", "Bugfix" and "SecurityFix" into clean, squashable commits. GitHub commits must be signed: use the GraphQL `createCommitOnBranch` API for GitHub-generated signatures and confirm `verification.verified == true` before reporting completion. The Git database create-commit API alone does not sign commits.
 3. **Regenerate Code:** If you modify `.proto` files, you **MUST** run `make proto/all`. If you modify Helm values.yaml you have to check internal/config and related option.go for Helm changes.
 4. **Table-Driven Tests:** Use table-driven tests for Go unit tests.
 5. **Handle gRPC Errors:** Use the gRPC Richer Error Model (`google.rpc.Status` + `errdetails`) for all error responses.
@@ -165,7 +165,7 @@ from every call site.
 
 ### GitHub Actions
 
-- **Security:** Pin actions to specific versions/SHAs (no `@latest`). Set `permissions` to the least privilege.
+- **Security:** Pin external actions to full commit SHAs with a version comment (no mutable tag references). Set `permissions` to the least privilege.
 
 ---
 
