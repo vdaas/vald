@@ -17,6 +17,7 @@ package trace
 import (
 	"context"
 
+	"github.com/vdaas/vald/internal/sync/atomic"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -26,23 +27,29 @@ const (
 )
 
 var (
-	enabled bool
+	enabled atomic.Bool
 
 	FromContext = trace.SpanFromContext
 )
 
 type Span = trace.Span
 
+// Enable turns span recording on. The OTLP exporter calls it once its tracer
+// provider is registered, so tracing stays a no-op until one is configured.
+func Enable() {
+	enabled.Store(true)
+}
+
 // Enabled reports whether spans are recorded, so hot paths can skip building
 // span names that StartSpan would discard.
 func Enabled() bool {
-	return enabled
+	return enabled.Load()
 }
 
 func StartSpan(
 	ctx context.Context, name string, opts ...trace.SpanStartOption,
 ) (context.Context, Span) {
-	if !enabled {
+	if !enabled.Load() {
 		return ctx, nil
 	}
 

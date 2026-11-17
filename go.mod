@@ -4,7 +4,7 @@ go 1.27.4
 
 replace (
 	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go => buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.12-20260825204119-511051f7f437.2
-	cloud.google.com/go/storage => cloud.google.com/go/storage v1.70.0
+	cloud.google.com/go/storage => cloud.google.com/go/storage v1.71.0
 	code.cloudfoundry.org/bytefmt => code.cloudfoundry.org/bytefmt v0.98.0
 	github.com/akrylysov/pogreb => github.com/akrylysov/pogreb v0.10.2
 	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.55.8
@@ -72,7 +72,7 @@ replace (
 	k8s.io/cli-runtime => k8s.io/cli-runtime v0.37.2
 	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20260821135717-be32def86098
 	k8s.io/metrics => k8s.io/metrics v0.37.2
-	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.25.2
+	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.25.3
 	sigs.k8s.io/yaml => sigs.k8s.io/yaml v1.6.0
 )
 
@@ -133,8 +133,8 @@ require (
 	golang.org/x/time v0.16.0
 	golang.org/x/tools v0.52.0
 	gonum.org/v1/hdf5 v0.0.0-00010101000000-000000000000
-	google.golang.org/genproto/googleapis/api v0.0.0-20261104224025-d1e00e9f33ab
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20261104224025-d1e00e9f33ab
+	google.golang.org/genproto/googleapis/api v0.0.0-20261110000943-09e21b237f2c
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20261110000943-09e21b237f2c
 	google.golang.org/grpc v1.85.0
 	google.golang.org/protobuf v1.36.12
 	gopkg.in/yaml.v2 v2.4.0
@@ -235,7 +235,7 @@ require (
 	golang.org/x/term v0.48.0 // indirect
 	golang.org/x/xerrors v0.0.0-20240903120638-7835f813f4da // indirect
 	gomodules.xyz/jsonpatch/v2 v2.5.0 // indirect
-	google.golang.org/api v0.314.0 // indirect
+	google.golang.org/api v0.315.0 // indirect
 	google.golang.org/genproto v0.0.0-20261110000943-09e21b237f2c // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.13.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect

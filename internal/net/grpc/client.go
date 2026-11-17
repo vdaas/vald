@@ -18,6 +18,7 @@ import (
 	"context"
 	"maps"
 	"math"
+	"runtime"
 	"slices"
 	"time"
 
@@ -173,6 +174,190 @@ type gRPCClient struct {
 	enablePoolRebalance bool
 	// enablePoolMetrics enables healthy connection count metrics of connection pools.
 	enablePoolMetrics bool
+	// wp reuses warm goroutines for fan-out RPCs to avoid per-request goroutine creation and stack growth.
+	wp fanOutPool
+}
+
+type connTarget struct {
+	addr string
+	p    pool.Conn
+}
+
+type fanOutTask struct {
+	g       *gRPCClient
+	ctx     context.Context
+	cancel  context.CancelCauseFunc
+	wg      *sync.WaitGroup
+	addr    string
+	p       pool.Conn
+	prefix  string
+	f       func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error
+	ordered bool
+}
+
+var fanOutTaskPool = sync.Pool{
+	New: func() any {
+		return &fanOutTask{}
+	},
+}
+
+func (t *fanOutTask) run(ctx context.Context) {
+	if t.ordered {
+		p, ok := t.g.conns.Load(t.addr)
+		if !ok || p == nil {
+			t.g.crl.Store(t.addr, true)
+			log.Warnf("gRPCClient.OrderedRangeConcurrent operation failed, gRPC connection pool for %s is invalid,\terror: %v", t.addr, errors.ErrGRPCClientConnNotFound(t.addr))
+			return
+		}
+		t.p = p
+	}
+	ssctx, sspan := startAddrSpan(ctx, t.prefix, t.addr)
+	err := t.g.doVoid(ssctx, t.p, t.addr, t.f)
+	if err != nil {
+		if sspan != nil {
+			recordSpanError(sspan, err)
+		}
+		if t.cancel != nil && errors.IsAny(err, context.Canceled, context.DeadlineExceeded) {
+			t.cancel(err)
+		}
+	}
+	if sspan != nil {
+		sspan.End()
+	}
+}
+
+type fanOutPool struct {
+	once    sync.Once
+	ch      chan *fanOutTask
+	stopCh  chan struct{}
+	workers atomic.Int32
+	closed  atomic.Bool
+}
+
+const (
+	fanOutQueueSize  = 256
+	fanOutIdleWindow = 30 * time.Second
+)
+
+func (p *fanOutPool) init() {
+	p.once.Do(func() {
+		p.ch = make(chan *fanOutTask, fanOutQueueSize)
+		p.stopCh = make(chan struct{})
+	})
+}
+
+func (p *fanOutPool) maxWorkers() int {
+	return max(64, runtime.GOMAXPROCS(0)*8)
+}
+
+func (p *fanOutPool) runTask(ctx context.Context, t *fanOutTask) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Errorf("recovered from panic in grpc fanOutPool: %v", r)
+		}
+		wg := t.wg
+		t.g = nil
+		t.ctx = nil
+		t.cancel = nil
+		t.wg = nil
+		t.p = nil
+		t.f = nil
+		fanOutTaskPool.Put(t)
+		wg.Done()
+	}()
+	t.run(ctx)
+}
+
+func (p *fanOutPool) drain() {
+	for {
+		select {
+		case t := <-p.ch:
+			p.runTask(t.ctx, t) //nolint:contextcheck // task context is carried across the worker pool channel
+		default:
+			return
+		}
+	}
+}
+
+func (p *fanOutPool) spawnWorker(ctx context.Context, eg errgroup.Group, initial *fanOutTask) {
+	p.workers.Add(1)
+	eg.Go(func() error {
+		exited := false
+		defer func() {
+			if !exited {
+				p.workers.Add(-1)
+			}
+		}()
+		if initial != nil {
+			p.runTask(ctx, initial)
+		}
+		timer := time.NewTimer(fanOutIdleWindow)
+		defer timer.Stop()
+		for {
+			select {
+			case <-p.stopCh:
+				p.drain()
+				return nil
+			case t := <-p.ch:
+				p.runTask(t.ctx, t) //nolint:contextcheck // task context is carried across the worker pool channel
+				if !timer.Stop() {
+					select {
+					case <-timer.C:
+					default:
+					}
+				}
+				timer.Reset(fanOutIdleWindow)
+			case <-timer.C:
+				p.workers.Add(-1)
+				// Re-check p.ch after decrementing workers so a task queued just before exit is never stranded.
+				select {
+				case t := <-p.ch:
+					p.workers.Add(1)
+					p.runTask(t.ctx, t) //nolint:contextcheck // task context is carried across the worker pool channel
+					timer.Reset(fanOutIdleWindow)
+				default:
+					exited = true
+					return nil
+				}
+			}
+		}
+	})
+}
+
+func (p *fanOutPool) submit(ctx context.Context, t *fanOutTask) {
+	p.init()
+	eg := t.g.eg
+	if p.closed.Load() {
+		eg.Go(func() error {
+			p.runTask(ctx, t)
+			return nil
+		})
+		return
+	}
+	maxW := p.maxWorkers()
+	select {
+	case p.ch <- t:
+		if w := int(p.workers.Load()); w == 0 || (len(p.ch) > w && w < maxW) {
+			p.spawnWorker(ctx, eg, nil)
+		}
+	default:
+		if int(p.workers.Load()) < maxW {
+			p.spawnWorker(ctx, eg, t)
+		} else {
+			eg.Go(func() error {
+				p.runTask(ctx, t)
+				return nil
+			})
+		}
+	}
+}
+
+func (p *fanOutPool) close() {
+	if p.closed.Swap(true) {
+		return
+	}
+	p.init()
+	close(p.stopCh)
 }
 
 const (
@@ -570,11 +755,85 @@ func (g *gRPCClient) RangeConcurrent(
 	if concurrency == 1 {
 		return g.Range(sctx, f)
 	}
-	eg, egctx := errgroup.New(sctx)
-	if concurrency > 1 {
-		eg.SetLimit(concurrency)
-	}
+	var targetBuf [16]connTarget
+	targets := targetBuf[:0]
 	err = g.rangeConns("RangeConcurrent", func(addr string, p pool.Conn) bool {
+		targets = append(targets, connTarget{addr: addr, p: p})
+		return true
+	})
+	if err != nil {
+		recordSpanError(span, err)
+		return err
+	}
+	if len(targets) == 1 {
+		t := targets[0]
+		func() {
+			defer func() {
+				if r := recover(); r != nil {
+					log.Errorf("recovered from panic in grpc RangeConcurrent: %v", r)
+				}
+			}()
+			ssctx, sspan := startAddrSpan(sctx, apiName+"/Client.RangeConcurrent/", t.addr)
+			derr := g.doVoid(ssctx, t.p, t.addr, f)
+			if sspan != nil {
+				if derr != nil {
+					recordSpanError(sspan, derr)
+				}
+				sspan.End()
+			}
+		}()
+		return nil
+	}
+	if concurrency <= 0 || concurrency >= len(targets) {
+		fctx, cancel := context.WithCancelCause(sctx)
+		defer cancel(nil)
+		var wg sync.WaitGroup
+		last := len(targets) - 1
+		wg.Add(last)
+		for i := range last {
+			ct := targets[i]
+			ft, ok := fanOutTaskPool.Get().(*fanOutTask)
+			if !ok || ft == nil {
+				ft = &fanOutTask{}
+			}
+			ft.g = g
+			ft.ctx = fctx
+			ft.cancel = cancel
+			ft.wg = &wg
+			ft.addr = ct.addr
+			ft.p = ct.p
+			ft.prefix = apiName + "/Client.RangeConcurrent/"
+			ft.f = f
+			ft.ordered = false
+			g.wp.submit(fctx, ft)
+		}
+		lt := targets[last]
+		func() {
+			defer func() {
+				if r := recover(); r != nil {
+					log.Errorf("recovered from panic in grpc RangeConcurrent: %v", r)
+				}
+			}()
+			ssctx, sspan := startAddrSpan(fctx, apiName+"/Client.RangeConcurrent/", lt.addr)
+			if derr := g.doVoid(ssctx, lt.p, lt.addr, f); derr != nil {
+				if sspan != nil {
+					recordSpanError(sspan, derr)
+				}
+				if errors.IsAny(derr, context.Canceled, context.DeadlineExceeded) {
+					cancel(derr)
+				}
+			}
+			if sspan != nil {
+				sspan.End()
+			}
+		}()
+		wg.Wait()
+		return nil
+	}
+	eg, egctx := errgroup.New(sctx)
+	eg.SetLimit(concurrency)
+	for _, t := range targets {
+		addr, p := t.addr, t.p
 		eg.Go(safety.RecoverFunc(func() (err error) {
 			ssctx, sspan := startAddrSpan(egctx, apiName+"/Client.RangeConcurrent/", addr)
 			defer func() {
@@ -597,9 +856,8 @@ func (g *gRPCClient) RangeConcurrent(
 			}
 			return nil
 		}))
-		return true
-	})
-	err = errors.Join(err, eg.Wait())
+	}
+	err = eg.Wait()
 	if err != nil {
 		recordSpanError(span, err)
 		if errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) {
@@ -688,10 +946,55 @@ func (g *gRPCClient) OrderedRangeConcurrent(
 	if concurrency == 1 {
 		return g.OrderedRange(sctx, orders, f)
 	}
-	eg, egctx := errgroup.New(sctx)
-	if concurrency > 1 {
-		eg.SetLimit(concurrency)
+	if concurrency <= 0 || concurrency >= len(orders) {
+		runOrder := func(addr string) {
+			defer func() {
+				if r := recover(); r != nil {
+					log.Errorf("recovered from panic in grpc OrderedRangeConcurrent: %v", r)
+				}
+			}()
+			p, ok := g.conns.Load(addr)
+			if !ok || p == nil {
+				g.crl.Store(addr, true)
+				log.Warnf("gRPCClient.OrderedRangeConcurrent operation failed, gRPC connection pool for %s is invalid,\terror: %v", addr, errors.ErrGRPCClientConnNotFound(addr))
+				return
+			}
+			ssctx, sspan := startAddrSpan(sctx, apiName+"/Client.OrderedRangeConcurrent/", addr)
+			derr := g.doVoid(ssctx, p, addr, f)
+			if sspan != nil {
+				recordSpanError(sspan, derr)
+				sspan.End()
+			}
+		}
+		if len(orders) == 1 {
+			runOrder(orders[0])
+			return nil
+		}
+		var wg sync.WaitGroup
+		last := len(orders) - 1
+		wg.Add(last)
+		for i := range last {
+			ft, ok := fanOutTaskPool.Get().(*fanOutTask)
+			if !ok || ft == nil {
+				ft = &fanOutTask{}
+			}
+			ft.g = g
+			ft.ctx = sctx
+			ft.cancel = nil
+			ft.wg = &wg
+			ft.addr = orders[i]
+			ft.p = nil
+			ft.prefix = apiName + "/Client.OrderedRangeConcurrent/"
+			ft.f = f
+			ft.ordered = true
+			g.wp.submit(sctx, ft)
+		}
+		runOrder(orders[last])
+		wg.Wait()
+		return nil
 	}
+	eg, egctx := errgroup.New(sctx)
+	eg.SetLimit(concurrency)
 	for _, order := range orders {
 		addr := order
 		eg.Go(safety.RecoverFunc(func() (err error) {
@@ -851,42 +1154,160 @@ func (g *gRPCClient) executeRPC(
 	}
 
 	if err != nil {
-		// not-retryable errors
-		if errors.IsAny(err,
-			context.Canceled,
-			context.DeadlineExceeded,
-			errors.ErrCircuitBreakerOpenState,
-			errors.ErrGRPCClientNotFound,
-			errors.ErrGRPCClientConnNotFound("*"),
-		) || (p.IsIPConn() && errors.Is(err, errors.ErrGRPCClientConnNotFound(addr))) {
-			return nil, false, err
-		}
-		st, ok := status.FromError(err)
-		if !ok || st == nil {
-			// Canceled/DeadlineExceeded were already returned above.
-			return nil, p.IsHealthy(ctx), err
-		}
-		if isQuietErrorLog(ctx) {
-			log.Debug(err)
-		} else {
-			status.Log(st.Code(), err)
-		}
-		switch st.Code() {
-		case codes.ResourceExhausted:
-			if isNoResourceExhaustedRetry(ctx) {
-				return nil, false, err
-			}
-			return nil, p.IsHealthy(ctx), err
-		// retryable errors
-		case codes.Internal,
-			codes.Unavailable:
-			return nil, p.IsHealthy(ctx), err
-		}
-		// not-retryable errors
-		return nil, false, err
+		return g.handleExecuteErr(ctx, p, addr, err)
 	}
 	// success
 	return res, false, nil
+}
+
+type rpcCall struct {
+	g        *gRPCClient
+	p        pool.Conn
+	addr     string
+	boName   string
+	f        func(ctx context.Context, conn *ClientConn, copts ...CallOption) (any, error)
+	fVoid    func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error
+	ret      bool
+	execFn   func(context.Context) (any, bool, error)
+	execCBFn func(context.Context) (any, error)
+}
+
+func (rc *rpcCall) callRPC(ctx context.Context) (any, bool, error) {
+	if rc.fVoid != nil {
+		conn, ok := rc.p.Get(ctx)
+		if !ok || conn == nil {
+			return rc.g.handleExecuteErr(ctx, rc.p, rc.addr, errors.ErrGRPCClientConnNotFound(rc.addr))
+		}
+		if err := rc.fVoid(ctx, rc.addr, conn); err != nil {
+			return rc.g.handleExecuteErr(ctx, rc.p, rc.addr, err)
+		}
+		return nil, false, nil
+	}
+	return rc.g.executeRPC(ctx, rc.p, rc.addr, rc.f)
+}
+
+func (rc *rpcCall) exec(ictx context.Context) (r any, ret bool, err error) {
+	rc.ret = false
+	if rc.boName != "" && rc.g.useBreaker(rc.addr, rc.p) {
+		r, err = rc.g.cb.Do(ictx, rc.boName, rc.execCBFn)
+		return r, rc.ret, err
+	}
+	return rc.callRPC(ictx)
+}
+
+func (rc *rpcCall) execCB(ictx context.Context) (any, error) {
+	r, ret, err := rc.callRPC(ictx)
+	rc.ret = ret
+	if err != nil && !ret {
+		return r, errors.NewErrCircuitBreakerIgnorable(err)
+	}
+	return r, err
+}
+
+func (g *gRPCClient) handleExecuteErr(
+	ctx context.Context, p pool.Conn, addr string, err error,
+) (any, bool, error) {
+	if errors.IsAny(err,
+		context.Canceled,
+		context.DeadlineExceeded,
+		errors.ErrCircuitBreakerOpenState,
+		errors.ErrGRPCClientNotFound,
+		errors.ErrGRPCClientConnNotFound("*"),
+	) || (p.IsIPConn() && errors.Is(err, errors.ErrGRPCClientConnNotFound(addr))) {
+		return nil, false, err
+	}
+	st, ok := status.FromError(err)
+	if !ok || st == nil {
+		return nil, p.IsHealthy(ctx), err
+	}
+	if isQuietErrorLog(ctx) {
+		log.Debug(err)
+	} else {
+		status.Log(st.Code(), err)
+	}
+	code := st.Code()
+	if code == codes.ResourceExhausted && isNoResourceExhaustedRetry(ctx) {
+		return nil, false, err
+	}
+	if code == codes.ResourceExhausted || code == codes.Internal || code == codes.Unavailable {
+		return nil, p.IsHealthy(ctx), err
+	}
+	return nil, false, err
+}
+
+func (g *gRPCClient) doVoid(
+	ctx context.Context,
+	p pool.Conn,
+	addr string,
+	f func(ctx context.Context, addr string, conn *ClientConn, copts ...CallOption) error,
+) error {
+	if p == nil {
+		g.crl.Store(addr, true)
+		err := errors.ErrGRPCClientConnNotFound(addr)
+		log.Warnf("gRPCClient.do operation failed, gRPC connection pool for %s is invalid,\terror: %v", addr, err)
+		return err
+	}
+	sctx, span := startAddrSpan(ctx, apiName+"/Client.do/", addr)
+	if span != nil {
+		defer span.End()
+	}
+	boName := breakerName(sctx, addr)
+	rc := getRPCCall()
+	rc.g = g
+	rc.p = p
+	rc.addr = addr
+	rc.boName = boName
+	rc.f = nil
+	rc.fVoid = f
+	rc.ret = false
+	var err error
+	if g.bo != nil {
+		_, err = g.bo.Do(sctx, rc.execFn)
+	} else {
+		_, _, err = rc.exec(sctx)
+	}
+	rc.g = nil
+	rc.p = nil
+	rc.fVoid = nil
+	rpcCallPool.Put(rc)
+	if err != nil {
+		return errors.ErrRPCCallFailed(addr, err)
+	}
+	return nil
+}
+
+// breakerName returns the circuit breaker key: the per-RPC gRPC method suffixed by addr.
+func breakerName(ctx context.Context, addr string) string {
+	m := FromGRPCMethod(ctx)
+	switch {
+	case m == "":
+		return addr
+	case strings.HasSuffix(m, addr):
+		return m
+	default:
+		return m + "/" + addr
+	}
+}
+
+func newRPCCall() *rpcCall {
+	rc := &rpcCall{}
+	rc.execFn = rc.exec
+	rc.execCBFn = rc.execCB
+	return rc
+}
+
+func getRPCCall() *rpcCall {
+	rc, ok := rpcCallPool.Get().(*rpcCall)
+	if !ok || rc == nil {
+		return newRPCCall()
+	}
+	return rc
+}
+
+var rpcCallPool = sync.Pool{
+	New: func() any {
+		return newRPCCall()
+	},
 }
 
 // do is an internal method that handles the execution of a function on a connection,
@@ -904,38 +1325,28 @@ func (g *gRPCClient) do(
 		log.Warnf("gRPCClient.do operation failed, gRPC connection pool for %s is invalid,\terror: %v", addr, err)
 		return nil, err
 	}
-	sctx := ctx
-	var span trace.Span
-	sctx, span = startAddrSpan(ctx, apiName+"/Client.do/", addr)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	sctx = WrapGRPCMethod(sctx, addr)
-	boName := FromGRPCMethod(sctx)
-	// exec applies the circuit breaker with or without backoff, as RoundRobin does.
-	exec := func(ictx context.Context) (r any, ret bool, err error) {
-		if boName != "" && g.useBreaker(addr, p) {
-			r, err = g.cb.Do(ictx, boName, func(ictx context.Context) (any, error) {
-				r, ret, err = g.executeRPC(ictx, p, addr, f)
-				if err != nil && !ret {
-					return r, errors.NewErrCircuitBreakerIgnorable(err)
-				}
-				return r, err
-			})
-			return r, ret, err
-		}
-		return g.executeRPC(ictx, p, addr, f)
+	sctx, span := startAddrSpan(ctx, apiName+"/Client.do/", addr)
+	if span != nil {
+		defer span.End()
 	}
+	boName := breakerName(sctx, addr)
+	rc := getRPCCall()
+	rc.g = g
+	rc.p = p
+	rc.addr = addr
+	rc.boName = boName
+	rc.f = f
+	rc.fVoid = nil
+	rc.ret = false
 	if g.bo != nil {
-		if boName != "" {
-			sctx = backoff.WithBackoffName(sctx, boName)
-		}
-		data, err = g.bo.Do(sctx, exec)
+		data, err = g.bo.Do(sctx, rc.execFn)
 	} else {
-		data, _, err = exec(sctx)
+		data, _, err = rc.exec(sctx)
 	}
+	rc.g = nil
+	rc.p = nil
+	rc.f = nil
+	rpcCallPool.Put(rc)
 	if err != nil {
 		return nil, errors.ErrRPCCallFailed(addr, err)
 	}
@@ -1209,6 +1620,7 @@ func (g *gRPCClient) ConnectedAddrs(_ context.Context) (addrs []string) {
 
 // Close gracefully closes all connections and stops the connection monitor.
 func (g *gRPCClient) Close(ctx context.Context) (err error) {
+	g.wp.close()
 	g.monitorMu.Lock()
 	stop := g.stopMonitor
 	g.monitorMu.Unlock()

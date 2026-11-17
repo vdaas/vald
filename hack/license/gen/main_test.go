@@ -194,3 +194,65 @@ func TestGenerateReturnsScanError(t *testing.T) {
 		t.Errorf("expected no content on error, got %q", got)
 	}
 }
+
+func TestReadAndRewrite_IgnoresBinaryFiles(t *testing.T) {
+	t.Parallel()
+
+	binaryFiles := []string{
+		"profile.gz",
+		"profile.pb.gz",
+		"profile.pb",
+	}
+
+	content := []byte{0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00}
+	dir := t.TempDir()
+
+	for _, fname := range binaryFiles {
+		path := filepath.Join(dir, fname)
+		if err := os.WriteFile(path, content, 0o644); err != nil {
+			t.Fatal(err)
+		}
+		if err := readAndRewrite(path); err != nil {
+			t.Errorf("readAndRewrite(%s) failed: %v", fname, err)
+		}
+		got, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if string(got) != string(content) {
+			t.Errorf("readAndRewrite modified binary file %s", fname)
+		}
+	}
+}
+
+func TestDirwalk_SkipsPprofAndBinaryFiles(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	pprofDir := filepath.Join(dir, "pprof", "baseline")
+	if err := os.MkdirAll(pprofDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(pprofDir, "cpu.pb.gz"), []byte("binary"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "test.pb.gz"), []byte("binary"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "valid.go"), []byte("package main\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	paths, err := dirwalk(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, p := range paths {
+		if strings.Contains(p, "pprof") {
+			t.Errorf("dirwalk returned path in pprof dir: %s", p)
+		}
+		if strings.HasSuffix(p, ".gz") || strings.HasSuffix(p, ".pb") {
+			t.Errorf("dirwalk returned binary file: %s", p)
+		}
+	}
+}

@@ -29,8 +29,8 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/errhandler"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
-	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/atomic"
 	"github.com/vdaas/vald/pkg/gateway/lb/service"
 )
 
@@ -51,36 +51,49 @@ func (s *server) handleObjectBroadCastError(
 		code  codes.Code
 	)
 	switch {
-	case errors.Is(err, context.Canceled),
-		errors.Is(err, errors.ErrRPCCallFailed(target, context.Canceled)):
+	case errors.Is(err, context.Canceled):
 		attrs = trace.StatusCodeCancelled(
 			errdetails.ValdGRPCResourceTypePrefix +
 				"/vald.v1." + rpcName + ".BroadCast/" +
 				target + " canceled: " + err.Error())
 		code = codes.Canceled
-	case errors.Is(err, context.DeadlineExceeded),
-		errors.Is(err, errors.ErrRPCCallFailed(target, context.DeadlineExceeded)):
+	case errors.Is(err, context.DeadlineExceeded):
 		attrs = trace.StatusCodeDeadlineExceeded(
 			errdetails.ValdGRPCResourceTypePrefix +
 				"/vald.v1." + rpcName + ".BroadCast/" +
 				target + " deadline_exceeded: " + err.Error())
 		code = codes.DeadlineExceeded
 	default:
-		st, msg, err = status.ParseError(err, codes.NotFound, "error "+rpcName+" API meta "+uuid+"'s uuid not found",
-			&errdetails.RequestInfo{
-				RequestId:   uuid,
-				ServingData: errdetails.Serialize(servingData),
-			},
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + rpcName,
-				ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
-			})
-		if st != nil {
+		var ok bool
+		st, ok = status.FromError(err)
+		if ok && st != nil {
 			code = st.Code()
-		} else {
-			code = codes.NotFound
+			msg = st.Message()
 		}
-		attrs = trace.FromGRPCStatus(code, msg)
+		if ok && st != nil && (code == codes.NotFound ||
+			code == codes.Canceled ||
+			code == codes.DeadlineExceeded ||
+			code == codes.InvalidArgument ||
+			code == codes.OK ||
+			code == codes.Unimplemented) {
+			attrs = trace.FromGRPCStatus(code, msg)
+		} else {
+			st, msg, err = status.ParseError(err, codes.NotFound, "error "+rpcName+" API meta "+uuid+"'s uuid not found",
+				&errdetails.RequestInfo{
+					RequestId:   uuid,
+					ServingData: errdetails.Serialize(servingData),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + rpcName,
+					ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
+				})
+			if st != nil {
+				code = st.Code()
+			} else {
+				code = codes.NotFound
+			}
+			attrs = trace.FromGRPCStatus(code, msg)
+		}
 	}
 	errhandler.RecordSpanAttrs(sspan, attrs, err)
 	if err != nil && st != nil &&
@@ -95,6 +108,8 @@ func (s *server) handleObjectBroadCastError(
 	return nil
 }
 
+var errBroadcastFirstDone = errors.New("broadcastFirst done")
+
 // broadcastFirst broadcasts call to every READ target and returns the first
 // result accepted by hit, canceling the remaining targets once it arrives. name
 // labels the per-target spans (apiName/<name>/BroadCast/<target>). call must
@@ -108,71 +123,46 @@ func broadcastFirst[T any](
 	hit func(T) bool,
 	call func(ctx context.Context, sspan trace.Span, target string, vc vald.Client, copts ...grpc.CallOption) (T, error),
 ) (res T, ok bool, err error) {
-	rch := make(chan T, 1)
-	ech := make(chan error, 1)
-	doneErr := errors.New("done " + name)
-	ctx, cancel := context.WithCancelCause(ctx)
+	bctx, cancel := context.WithCancelCause(ctx)
 	defer cancel(nil)
-	s.eg.Go(safety.RecoverFunc(func() error {
-		defer close(rch)
-		defer close(ech)
-		var once sync.Once
-		ech <- s.gateway.BroadCast(ctx, service.READ, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
-			sctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+name+"/BroadCast/"+target)
+	var (
+		hitVal T
+		hasHit atomic.Bool
+	)
+	err = s.gateway.BroadCast(bctx, service.READ, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
+		sctx := ctx
+		var sspan trace.Span
+		if trace.Enabled() {
+			sctx, sspan = trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+name+"/BroadCast/"+target)
 			defer trace.End(sspan)
-			r, cerr := call(sctx, sspan, target, vc, copts...)
-			if cerr != nil {
-				return cerr
-			}
-			if hit(r) {
-				once.Do(func() {
-					rch <- r
-					cancel(doneErr)
-				})
-			}
-			return nil
-		})
+		}
+		r, cerr := call(sctx, sspan, target, vc, copts...)
+		if cerr != nil {
+			return cerr
+		}
+		if hit(r) && !hasHit.Swap(true) {
+			hitVal = r
+			cancel(errBroadcastFirstDone)
+		}
 		return nil
-	}))
-	select {
-	case <-ctx.Done():
+	})
+	if hasHit.Load() {
+		return hitVal, true, nil
+	}
+	if err == nil {
 		err = ctx.Err()
-		if errors.Is(err, context.Canceled) && errors.Is(context.Cause(ctx), doneErr) {
-			select {
-			case res = <-rch:
-				err = nil
-			default:
-			}
-		}
-	case r, received := <-rch:
-		if received {
-			res = r
-		} else {
-			// rch was closed without a hit: the broadcast result is already
-			// buffered in ech, so report it instead of a blanket NotFound.
-			err = <-ech
-		}
-	case err = <-ech:
-		// The hit is buffered in rch before BroadCast returns, so prefer it over
-		// the (nil or canceled) broadcast result.
-		select {
-		case r := <-rch:
-			if hit(r) {
-				res, err = r, nil
-			}
-		default:
-		}
 	}
-	if err != nil || !hit(res) {
-		var zero T
-		return zero, false, err
-	}
-	return res, true, nil
+	var zero T
+	return zero, false, err
 }
 
 func (s *server) exists(ctx context.Context, uuid string) (id *payload.Object_ID, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "exists"), apiName+"/"+vald.ExistsRPCName+"/exists")
-	defer trace.End(span)
+	ctx = grpc.WrapGRPCMethod(ctx, "exists")
+	var span trace.Span
+	if trace.Enabled() {
+		ctx, span = trace.StartSpan(ctx, apiName+"/"+vald.ExistsRPCName+"/exists")
+		defer trace.End(span)
+	}
 
 	if len(uuid) == 0 {
 		err = errors.ErrInvalidUUID(uuid)
@@ -203,7 +193,8 @@ func (s *server) exists(ctx context.Context, uuid string) (id *payload.Object_ID
 func (s *server) Exists(
 	ctx context.Context, meta *payload.Object_ID,
 ) (id *payload.Object_ID, err error) {
-	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.ObjectRPCServiceName+"/"+vald.ExistsRPCName), apiName+"/"+vald.ExistsRPCName)
+	ctx = grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.ObjectRPCServiceName+"/"+vald.ExistsRPCName)
+	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.ExistsRPCName)
 	defer trace.End(span)
 	uuid := meta.GetId()
 	id, err = s.exists(ctx, uuid)
@@ -288,7 +279,8 @@ func (s *server) getObject(
 func (s *server) GetObject(
 	ctx context.Context, req *payload.Object_VectorRequest,
 ) (vec *payload.Object_Vector, err error) {
-	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.ObjectRPCServiceName+"/"+vald.GetObjectRPCName), apiName+"/"+vald.GetObjectRPCName)
+	ctx = grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.ObjectRPCServiceName+"/"+vald.GetObjectRPCName)
+	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.GetObjectRPCName)
 	defer trace.End(span)
 	uuid := req.GetId().GetId()
 	vec, err = s.getObject(ctx, uuid)
@@ -454,7 +446,8 @@ func (s *server) StreamListObject(
 func (s *server) GetTimestamp(
 	ctx context.Context, req *payload.Object_TimestampRequest,
 ) (ts *payload.Object_Timestamp, err error) {
-	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.ObjectRPCServiceName+"/"+vald.GetTimestampRPCName), apiName+"/"+vald.GetTimestampRPCName)
+	ctx = grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.ObjectRPCServiceName+"/"+vald.GetTimestampRPCName)
+	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.GetTimestampRPCName)
 	defer trace.End(span)
 	uuid := req.GetId().GetId()
 	treq := &payload.Object_TimestampRequest{

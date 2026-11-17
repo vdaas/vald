@@ -153,6 +153,24 @@ func (s *server) LinearSearch(
 				})
 			log.Warn(err)
 			attrs = trace.StatusCodeInvalidArgument(err.Error())
+		case errors.Is(err, context.Canceled):
+			err = status.WrapWithCanceled("LinearSearch API canceled to process search request", err,
+				&errdetails.RequestInfo{
+					RequestId:   req.GetConfig().GetRequestId(),
+					ServingData: errdetails.Serialize(req),
+				},
+				s.resourceInfo(ngtResourceType+"/ngt.LinearSearch"))
+			log.Debug(err)
+			attrs = trace.StatusCodeCancelled(err.Error())
+		case errors.Is(err, context.DeadlineExceeded):
+			err = status.WrapWithDeadlineExceeded("LinearSearch API deadline exceeded to process search request", err,
+				&errdetails.RequestInfo{
+					RequestId:   req.GetConfig().GetRequestId(),
+					ServingData: errdetails.Serialize(req),
+				},
+				s.resourceInfo(ngtResourceType+"/ngt.LinearSearch"))
+			log.Debug(err)
+			attrs = trace.StatusCodeDeadlineExceeded(err.Error())
 		default:
 			err = status.WrapWithInternal("LinearSearch API failed to process search request", err,
 				&errdetails.RequestInfo{
@@ -273,6 +291,24 @@ func (s *server) LinearSearchByID(
 				})
 			log.Warn(err)
 			attrs = trace.StatusCodeFailedPrecondition(err.Error())
+		case errors.Is(err, context.Canceled):
+			err = status.WrapWithCanceled("LinearSearch API canceled to process search request", err,
+				&errdetails.RequestInfo{
+					RequestId:   req.GetConfig().GetRequestId(),
+					ServingData: errdetails.Serialize(req),
+				},
+				s.resourceInfo(ngtResourceType+"/ngt.LinearSearch"))
+			log.Debug(err)
+			attrs = trace.StatusCodeCancelled(err.Error())
+		case errors.Is(err, context.DeadlineExceeded):
+			err = status.WrapWithDeadlineExceeded("LinearSearch API deadline exceeded to process search request", err,
+				&errdetails.RequestInfo{
+					RequestId:   req.GetConfig().GetRequestId(),
+					ServingData: errdetails.Serialize(req),
+				},
+				s.resourceInfo(ngtResourceType+"/ngt.LinearSearch"))
+			log.Debug(err)
+			attrs = trace.StatusCodeDeadlineExceeded(err.Error())
 		default:
 			err = status.WrapWithInternal("LinearSearchByID API failed to process search request", err,
 				&errdetails.RequestInfo{

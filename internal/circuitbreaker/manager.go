@@ -68,27 +68,6 @@ func New(opts ...Option) (CircuitBreaker, error) {
 func (bm *breakerManager) Do(
 	ctx context.Context, key string, fn func(ctx context.Context) (any, error),
 ) (val any, err error) {
-	var (
-		st State
-		br *breaker
-	)
-	defer func() {
-		// EvictAddr ran while this call was in flight: do not re-create the
-		// counters of the evicted key.
-		if br != nil {
-			if cur, ok := bm.m.Load(key); !ok || cur != br {
-				return
-			}
-		}
-		c, ok := metrics.Load(key)
-		if !ok {
-			c, _ = metrics.LoadOrStore(key, new(stateCounts))
-		}
-		if int(st) < len(c) {
-			c[st].Add(1)
-		}
-	}()
-
 	// Pre-loading to prevent a lot of object generation.
 	br, ok := bm.m.Load(key)
 	if !ok {
@@ -97,10 +76,16 @@ func (bm *breakerManager) Do(
 		if err != nil {
 			return nil, err
 		}
+		c, _ := metrics.LoadOrStore(key, new(stateCounts))
+		nb.counts = c
 		br, _ = bm.m.LoadOrStore(key, nb)
 	}
 
+	var st State
 	val, st, err = br.do(ctx, fn)
+	if !br.evicted.Load() && br.counts != nil && int(st) < len(br.counts) {
+		br.counts[st].Add(1)
+	}
 	if err != nil {
 		switch st {
 		case StateClosed:
@@ -132,8 +117,11 @@ func (bm *breakerManager) EvictAddr(addr string) {
 	targets := func(key string) bool {
 		return key == addr || strings.HasSuffix(key, suffix)
 	}
-	bm.m.Range(func(key string, _ *breaker) bool {
+	bm.m.Range(func(key string, br *breaker) bool {
 		if targets(key) {
+			if br != nil {
+				br.evicted.Store(true)
+			}
 			bm.m.Delete(key)
 		}
 		return true

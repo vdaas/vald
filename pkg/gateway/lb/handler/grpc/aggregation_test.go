@@ -164,6 +164,47 @@ func TestAggregators_DistanceOrdering(t *testing.T) {
 	}
 }
 
+func TestAggregators_UnboundedSearch(t *testing.T) {
+	t.Parallel()
+	resp := newDistResponse(
+		dist32("id-1", 0.1),
+		dist32("id-2", 0.2),
+		dist32("id-3", 0.3),
+	)
+	tests := []struct {
+		name  string
+		newFn func(num, fnum, replica int) Aggregator
+	}{
+		{
+			name:  "slice with num=0 retains all results",
+			newFn: newSlice,
+		},
+		{
+			name:  "pool slice with num=0 retains all results",
+			newFn: newPoolSlice,
+		},
+		{
+			name:  "pairing heap with num=0 retains all results",
+			newFn: newPairingHeap,
+		},
+	}
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			ctx, cancel := context.WithTimeout(tt.Context(), 10*time.Second)
+			defer cancel()
+			aggr := test.newFn(0, 0, 1)
+			aggr.Start(ctx)
+			aggr.Send(ctx, resp)
+			res := aggr.Result().GetResults()
+			if len(res) != 3 {
+				tt.Errorf("got %d results, want 3 when num == 0", len(res))
+			}
+		})
+	}
+}
+
 // TestAggregators_NaNDistanceSkipped pins the NaN policy: NaN-distance results
 // are skipped (not ranked, not returned), the other results are unaffected and
 // nothing panics (big.NewFloat(NaN) used to).
@@ -236,7 +277,7 @@ func TestSliceAggregators_SendAllocsPerResponse(t *testing.T) {
 			v.result = make([]*DistPayload, 0, n)
 			reset = func() { v.result = v.result[:0] }
 		case *valdPoolSliceAggr:
-			v.result = make([]*DistPayload, 0, n)
+			v.result = make([]DistPayload, 0, n)
 			reset = func() { v.result = v.result[:0] }
 		default:
 			t.Fatalf("%s: unexpected aggregator %T", name, aggr)

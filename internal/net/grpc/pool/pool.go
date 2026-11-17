@@ -378,10 +378,10 @@ func slotAt(slots []atomic.Pointer[poolConn], idx uint64) (ridx uint64, pc *pool
 // loadFrom reads idx from the caller's slots snapshot and falls back to the
 // current slots only when the snapshot was empty.
 func (p *pool) loadFrom(slots []atomic.Pointer[poolConn], idx uint64) (ridx uint64, pc *poolConn) {
-	if len(slots) == 0 {
-		return p.load(idx)
+	if int(idx) < len(slots) {
+		return idx, slots[idx].Load()
 	}
-	return slotAt(slots, idx)
+	return p.load(idx)
 }
 
 // casStore atomically replaces the connection at idx of slots only if the slot

@@ -175,7 +175,7 @@ type SearchQuery struct {
 	K               uint32                              `yaml:"k,omitempty"         json:"k,omitempty"`
 	Radius          float32                             `yaml:"radius,omitempty"    json:"radius,omitempty"`
 	Epsilon         float32                             `yaml:"epsilon,omitempty"   json:"epsilon,omitempty"`
-	AlgorithmString string                              `yaml:"algorithm,omitempty" json:"algorithm_string,omitempty"`
+	AlgorithmString string                              `yaml:"algorithm,omitempty" json:"algorithm,omitempty"`
 	MinNum          uint32                              `yaml:"min_num,omitempty"   json:"min_num,omitempty"`
 	Ratio           float32                             `yaml:"ratio,omitempty"     json:"ratio,omitempty"`
 	Nprobe          uint32                              `yaml:"nprobe,omitempty"    json:"nprobe,omitempty"`
