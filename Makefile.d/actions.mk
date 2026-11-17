@@ -29,3 +29,8 @@ list/actions:
 ## update github actions version
 update/actions:
 	$(call update-github-actions, $(ACTIONS_LIST))
+
+.PHONY: test/actions
+## test GitHub Actions SHA resolution without network access
+test/actions:
+	@python3 $(ROOTDIR)/hack/make/test_actions.py

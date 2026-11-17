@@ -174,11 +174,22 @@ export GITHUB_ACTION_PIN_SCRIPT = \
 	if [ "$$ACTION" = "cirrus-actions/rebase" ]; then \
 		REF=$$VERSION; \
 	elif echo $$VERSION | grep -qE '^[0-9]'; then \
-		REF=v$${VERSION%%.*}; \
+		REF=v$$VERSION; \
 	else \
 		REF=$$VERSION; \
 	fi; \
-	echo "s%$$ACTION@.*%$$ACTION@$$REF%g"
+	REPO_NAME=$$(echo "$$ACTION" | cut -d'/' -f1-2); \
+	REMOTE_REFS=$$(git ls-remote "https://github.com/$$REPO_NAME.git" "refs/tags/$$REF" "refs/tags/$$REF^{}" "refs/heads/$$REF"); \
+	SHA=$$(printf '%s\n' "$$REMOTE_REFS" | awk -v ref="$$REF" '\
+		$$2 == "refs/tags/" ref { tag = $$1 } \
+		$$2 == "refs/tags/" ref "^{}" { peeled = $$1 } \
+		$$2 == "refs/heads/" ref { branch = $$1 } \
+		END { if (peeled != "") print peeled; else if (tag != "") print tag; else print branch }'); \
+	if ! printf '%s\n' "$$SHA" | grep -qE '^[0-9a-f]{40}$$'; then \
+		echo "Unable to resolve $$ACTION@$$REF to a commit SHA" >&2; \
+		exit 1; \
+	fi; \
+	echo "s%$$ACTION@.*%$$ACTION@$$SHA \# $$REF%g"
 
 # Versions are fetched in parallel, but every workflow file is rewritten by a
 # single sed run: concurrent `sed -i` on the same file loses updates.
