@@ -14,6 +14,7 @@
 package safety
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
@@ -31,7 +32,10 @@ var goleakIgnoreOptions = []goleak.Option{
 
 func TestMain(m *testing.M) {
 	log.Init(log.WithLoggerType(logger.NOP.String()))
-	info.Init("")
+	if err := info.Init(""); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
 	os.Exit(m.Run())
 }
 

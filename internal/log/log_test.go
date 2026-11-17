@@ -89,6 +89,38 @@ func TestInit(t *testing.T) {
 				},
 			}
 		}(),
+
+		func() test {
+			ml := new(mock.Logger)
+			var prev logger.Interface
+			return test{
+				name: "initialize success and use the logger given by WithLogger",
+				args: args{
+					opts: []Option{
+						WithLogger(ml),
+						WithLevel(level.FATAL.String()),
+					},
+				},
+				want: want{
+					l: ml,
+				},
+				checkFunc: func(w want, got logger.Interface) error {
+					if got != w.l {
+						return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.l)
+					}
+					return nil
+				},
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
+					prev = l
+					once = sync.Once{}
+				},
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
+					l = prev
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {

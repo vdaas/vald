@@ -21,6 +21,8 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net/grpc/codes"
+	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
@@ -43,7 +45,9 @@ func (j *job) search(ctx context.Context, ech chan error) error {
 			return 0
 		}(),
 	}
-	sres := make([]*payload.Search_Response, j.dataset.Indexes)
+	// Range is inclusive on both ends; every iteration owns the slot iter-Range.Start.
+	n := j.dataset.Range.End - j.dataset.Range.Start + 1
+	sres := make([]*payload.Search_Response, max(n, 0))
 	eg, egctx := errgroup.New(ctx)
 	eg.SetLimit(j.concurrencyLimit)
 	for i := j.dataset.Range.Start; i <= j.dataset.Range.End; i++ {
@@ -79,10 +83,10 @@ func (j *job) search(ctx context.Context, ech chan error) error {
 					log.Errorf("[benchmark job] err: %s", err.Error())
 				}
 			}
+			if j.searchConfig.EnableLinearSearch {
+				sres[iter-j.dataset.Range.Start] = annSearchResult(res, err)
+			}
 			if res != nil {
-				if j.searchConfig.EnableLinearSearch {
-					sres[iter-j.dataset.Range.Start] = res
-				}
 				log.Debugf("[benchmark job] Finish search: iter = %d, len = %d", iter, len(res.Results))
 			} else {
 				log.Debugf("[benchmark job] Finish search: iter = %d, res = %v", iter, res)
@@ -96,7 +100,10 @@ func (j *job) search(ctx context.Context, ech chan error) error {
 		return err
 	}
 	if j.searchConfig.EnableLinearSearch {
-		lres := make([]*payload.Search_Response, j.dataset.Indexes)
+		// The first Wait cancels the group context, so the linear phase needs a fresh group.
+		eg, egctx = errgroup.New(ctx)
+		eg.SetLimit(j.concurrencyLimit)
+		lres := make([]*payload.Search_Response, max(n, 0))
 		for i := j.dataset.Range.Start; i <= j.dataset.Range.End; i++ {
 			iter := i
 			eg.Go(func() error {
@@ -131,7 +138,7 @@ func (j *job) search(ctx context.Context, ech chan error) error {
 					}
 				}
 				if res != nil {
-					lres[idx-j.dataset.Range.Start] = res
+					lres[iter-j.dataset.Range.Start] = res
 				}
 				log.Debugf("[benchmark job] Finish linear search: iter = %d", iter)
 				return nil
@@ -142,15 +149,28 @@ func (j *job) search(ctx context.Context, ech chan error) error {
 			log.Warnf("[benchmark job] linear search error is detected: err = %s", err.Error())
 			return err
 		}
-		recall := make([]float64, j.dataset.Indexes)
-		cnt := float64(0)
-		for i := 0; i < j.dataset.Indexes; i++ {
-			recall[i] = calcRecall(lres[i], sres[i])
-			log.Info("[branch job] search recall: ", recall[i])
-			cnt += recall[i]
+		total, measured, failed := meanRecall(lres, sres)
+		if failed > 0 {
+			log.Warnf("[benchmark job] %d of %d queries have no search or linear search result and are excluded from the total search recall", failed, len(sres))
 		}
-		log.Info("[benchmark job] Total search recall: ", (cnt / float64(len(vecs))))
+		if measured > 0 {
+			log.Info("[benchmark job] Total search recall: ", total)
+		}
 	}
 	log.Info("[benchmark job] Finish benchmarking search")
 	return nil
+}
+
+// annSearchResult is the ANN search result a query contributes to the total
+// search recall. Vald reports an empty ANN result as codes.NotFound without a
+// response; that query found nothing, so it is scored as recall 0 through an
+// empty response. Any other error leaves it nil and the query is excluded as
+// failed.
+func annSearchResult(res *payload.Search_Response, err error) *payload.Search_Response {
+	if res == nil && err != nil {
+		if st, ok := status.FromError(err); ok && st.Code() == codes.NotFound {
+			return &payload.Search_Response{}
+		}
+	}
+	return res
 }

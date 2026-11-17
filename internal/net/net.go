@@ -90,6 +90,9 @@ var (
 
 	// IPv4 is an alias of net.IPv4.
 	IPv4 = net.IPv4
+
+	// ErrClosed is an alias of net.ErrClosed.
+	ErrClosed = net.ErrClosed
 )
 
 // NetworkTypeFromString returns the corresponding network type from string.
@@ -172,12 +175,36 @@ func IsUDP(network string) bool {
 		rip == UDP6
 }
 
-// IsTCP returns if the network type is the tcp or tcp4 or tcp6.
-func IsTCP(network string) bool {
-	rip := NetworkTypeFromString(network)
-	return rip == TCP ||
-		rip == TCP4 ||
-		rip == TCP6
+// IsIPLiteral reports whether addr is an IPv4 or IPv6 address literal.
+// It supports plain IPs ("192.168.1.1", "::1"), bracketed IPv6 ("[::1]"),
+// and host:port combinations ("192.168.1.1:8080", "[::1]:8080").
+// It returns false for hostnames ("localhost", "example.com") even if they resolve to IPs.
+func IsIPLiteral(addr string) bool {
+	if len(addr) == 0 {
+		return false
+	}
+	if ip, err := netip.ParseAddr(addr); err == nil && ip.IsValid() {
+		return true
+	}
+	if len(addr) > 2 && addr[0] == '[' && addr[len(addr)-1] == ']' {
+		if ip, err := netip.ParseAddr(addr[1 : len(addr)-1]); err == nil && ip.IsValid() {
+			return true
+		}
+	}
+	if h, _, err := net.SplitHostPort(addr); err == nil {
+		if ip, err := netip.ParseAddr(h); err == nil && ip.IsValid() {
+			return true
+		}
+	}
+	return false
+}
+
+func isMissingPortErr(err error) bool {
+	if err == nil {
+		return false
+	}
+	var aerr *net.AddrError
+	return errors.As(err, &aerr) && aerr.Err == "missing port in address"
 }
 
 // Parse takes a network address string in various formats, such as hostname,
@@ -203,7 +230,7 @@ func Parse(
 ) (host string, port uint16, isLocal, isIPv4, isIPv6 bool, err error) {
 	// 1. Split host and port.
 	host, port, err = SplitHostPort(addr)
-	if err != nil && !errors.Is(err, errors.Errorf("address %s: missing port in address", addr)) {
+	if err != nil && !isMissingPortErr(err) {
 		log.Warnf("failed to parse addr %s\terror: %v", addr, err)
 	}
 	if host == "" {
@@ -278,6 +305,10 @@ func SplitHostPort(hostport string) (host string, port uint16, err error) {
 	if err != nil {
 		if host == "" {
 			host = hostport
+			// "[2001:db8::1]" has no port; drop the brackets like the "[host]:port" form does.
+			if len(host) > 2 && host[0] == '[' && host[len(host)-1] == ']' {
+				host = host[1 : len(host)-1]
+			}
 		}
 		port = defaultPort
 	}
@@ -296,8 +327,20 @@ func SplitHostPort(hostport string) (host string, port uint16, err error) {
 	return host, port, err
 }
 
+// maxScanConcurrency bounds the number of simultaneous dials issued by ScanPorts.
+// Each dial holds a file descriptor and the typical RLIMIT_NOFILE soft limit is 1024
+// (half of which is used), so more workers gain nothing; this also keeps the worker
+// count modest when the soft limit is RLIM_INFINITY.
+const maxScanConcurrency = 512
+
+// scanFDShareDivisor caps ScanPorts at 1/scanFDShareDivisor of the RLIMIT_NOFILE
+// soft limit, leaving the rest for the process's other file descriptors.
+const scanFDShareDivisor = 2
+
 // ScanPorts scans the given range of port numbers from the host (inclusively),
 // and return the list of ports that can be connected through TCP, or any error occurred.
+// If ctx is cancelled or its deadline expires, it returns nil ports and ctx.Err()
+// (partial results are discarded) so that it is distinguishable from ErrNoPortAvailable.
 func ScanPorts(ctx context.Context, start, end uint16, host string) (ports []uint16, err error) {
 	if start > end {
 		start, end = end, start
@@ -308,7 +351,16 @@ func ScanPorts(ctx context.Context, start, end uint16, host string) (ports []uin
 		return nil, err
 	}
 
-	concurrency := int(rl.Max) / 2
+	// Use the soft limit (rl.Cur), not the hard limit (rl.Max): exceeding the soft
+	// limit makes dials fail with EMFILE, which would be misreported as closed ports.
+	// Compute in uint64 (RLIM_INFINITY overflows int), never ask for more workers than
+	// ports to scan or maxScanConcurrency, and never fewer than one (a zero limit
+	// blocks forever).
+	concurrency := min(int(end-start)+1, maxScanConcurrency)
+	if lim := rl.Cur / scanFDShareDivisor; lim < uint64(concurrency) { //nolint:gosec // concurrency is in [1, maxScanConcurrency]
+		concurrency = int(lim) //nolint:gosec // lim < concurrency <= maxScanConcurrency
+	}
+	concurrency = max(concurrency, 1)
 
 	log.Debugf("starting to scan available ports from %d to %d, concurrency %d", start, end, concurrency)
 
@@ -318,16 +370,22 @@ func ScanPorts(ctx context.Context, start, end uint16, host string) (ports []uin
 	var mu sync.Mutex
 
 	var der net.Dialer
-	for i := start; i >= start && i <= end; i++ {
-		port := i
+	// Iterate with an int so that end == math.MaxUint16 does not wrap around.
+	for i := int(start); i <= int(end); i++ {
+		port := uint16(i) //nolint:gosec // i is within [start, end]
 		eg.Go(safety.RecoverFunc(func() error {
 			select {
 			case <-egctx.Done():
 				return egctx.Err()
 			default:
 				addr := JoinHostPort(host, port)
-				conn, err := der.DialContext(ctx, TCP.String(), addr)
-				if err != nil {
+				conn, derr := der.DialContext(egctx, TCP.String(), addr)
+				if derr != nil {
+					// A refused/unreachable port is simply not open, but a
+					// cancelled scan must surface the cancellation.
+					if cerr := egctx.Err(); cerr != nil {
+						return cerr
+					}
 					return nil
 				}
 
@@ -335,8 +393,8 @@ func ScanPorts(ctx context.Context, start, end uint16, host string) (ports []uin
 				ports = append(ports, port)
 				mu.Unlock()
 
-				if err = conn.Close(); err != nil {
-					log.Warnf("failed to close scan connection for %s, error: %v", addr, err)
+				if cerr := conn.Close(); cerr != nil {
+					log.Warnf("failed to close scan connection for %s, error: %v", addr, cerr)
 				}
 				return nil
 			}
@@ -344,6 +402,12 @@ func ScanPorts(ctx context.Context, start, end uint16, host string) (ports []uin
 	}
 
 	if err = eg.Wait(); err != nil {
+		return nil, err
+	}
+	// Vald's errgroup drops context.Canceled/DeadlineExceeded from Wait, so a cancelled
+	// scan would look like a completed one. Surface it explicitly, without partial
+	// ports, so that callers can tell a cancellation from "no port available".
+	if err = ctx.Err(); err != nil {
 		return nil, err
 	}
 

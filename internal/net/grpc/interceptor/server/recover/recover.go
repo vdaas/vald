@@ -16,11 +16,17 @@ package recover
 
 import (
 	"context"
+	"runtime"
+	"runtime/debug"
 
+	"github.com/vdaas/vald/internal/conv"
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/info"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
-	"github.com/vdaas/vald/internal/safety"
 )
 
+// Interceptor returns a unary server interceptor with zero-alloc open-coded recover.
 func Interceptor() grpc.UnaryServerInterceptor {
 	return func(
 		ctx context.Context,
@@ -28,23 +34,56 @@ func Interceptor() grpc.UnaryServerInterceptor {
 		info *grpc.UnaryServerInfo,
 		handler grpc.UnaryHandler,
 	) (resp any, err error) {
-		err = safety.RecoverWithoutPanicFunc(func() (err error) {
-			resp, err = handler(ctx, req)
-			return err
-		})()
-		return resp, err
+		defer func() {
+			if r := recover(); r != nil {
+				err = handlePanic(r, err)
+			}
+		}()
+		return handler(ctx, req)
 	}
 }
 
+// StreamInterceptor returns a stream server interceptor with zero-alloc open-coded recover.
 func StreamInterceptor() grpc.StreamServerInterceptor {
 	return func(
 		srv any,
 		ss grpc.ServerStream,
 		info *grpc.StreamServerInfo,
 		handler grpc.StreamHandler,
-	) error {
-		return safety.RecoverWithoutPanicFunc(func() (err error) {
-			return handler(srv, ss)
-		})()
+	) (err error) {
+		defer func() {
+			if r := recover(); r != nil {
+				err = handlePanic(r, err)
+			}
+		}()
+		return handler(srv, ss)
 	}
+}
+
+func handlePanic(r any, origErr error) error {
+	ds := debug.Stack()
+	infoStr := info.Get().String() + "\r\n" + conv.Btoa(ds)
+	log.Warnf("gRPC server panic recovered: %#v\ninfo:\n%s", r, infoStr)
+
+	var err error
+	switch x := r.(type) {
+	case runtime.Error:
+		err = errors.ErrRuntimeError(origErr, x)
+	case *string:
+		if x != nil {
+			err = errors.ErrPanicString(origErr, *x)
+		} else {
+			err = errors.ErrPanicRecovered(origErr, x)
+		}
+	case string:
+		err = errors.ErrPanicString(origErr, x)
+	case error:
+		err = errors.Join(origErr, x)
+	default:
+		err = errors.ErrPanicRecovered(origErr, x)
+	}
+	if err != nil {
+		log.Errorf("gRPC server panic recovered error:\t%v\ninfo:\n%s\nrecovered:\t%#v", err, infoStr, r)
+	}
+	return err
 }

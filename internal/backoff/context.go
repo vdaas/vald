@@ -47,3 +47,20 @@ func isRunning(ctx context.Context) (context.Context, bool) {
 	}
 	return context.WithValue(ctx, backoffRunningContextKey, backoffRunningContextValue), false
 }
+
+// backoffQuietErrLogContextKey marks a context whose per-attempt error log is
+// demoted to Debug.
+const backoffQuietErrLogContextKey contextKey = "backoff_quiet_error_log"
+
+// WithQuietErrorLog returns a copy of ctx whose per-attempt retryable errors
+// Do logs at Debug instead of Error, for fan-out callers that aggregate and
+// report the failures themselves.
+func WithQuietErrorLog(ctx context.Context) context.Context {
+	return context.WithValue(ctx, backoffQuietErrLogContextKey, true)
+}
+
+// isQuietErrorLog reports whether ctx was marked by WithQuietErrorLog.
+func isQuietErrorLog(ctx context.Context) bool {
+	quiet, ok := ctx.Value(backoffQuietErrLogContextKey).(bool)
+	return ok && quiet
+}

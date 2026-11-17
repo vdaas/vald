@@ -41,6 +41,10 @@ func (s *server) Insert(
 		vec.GetId(), req, len(vec.GetVector()), s.faiss.GetDimensionSize()); err != nil {
 		return nil, err
 	}
+	if err = s.validateVectorValue(span, vald.InsertRPCName, faissResourceType+"/faiss.Insert",
+		vec.GetId(), req, vec.GetVector()); err != nil {
+		return nil, err
+	}
 
 	err = s.faiss.InsertWithTime(vec.GetId(), vec.GetVector(), req.GetConfig().GetTimestamp())
 	if err != nil {

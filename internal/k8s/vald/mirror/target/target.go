@@ -56,7 +56,6 @@ func New(opts ...Option) (MirrorTargetWatcher, error) {
 				Phase:      m.Status.Phase,
 			}
 		},
-		vald.SkipNonCriticalOptionError,
 		opts...,
 	)
 }

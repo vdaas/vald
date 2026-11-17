@@ -20,6 +20,9 @@ on:
       - "main"
 env:
   BACKPORT_LABEL_PREFIX: "actions/backport/"
+defaults:
+  run:
+    shell: bash
 jobs:
   dump-contexts-to-log:
     timeout-minutes: 30

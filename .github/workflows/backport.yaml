@@ -24,6 +24,9 @@ env:
   TARGET_LABEL_NAME_PREFIX: "actions/backport/"
   BACKPORT_BRANCH_NAME_PREFIX: "backport"
   FETCHED_GITHUB_INFO_PATH: /tmp/github_info.json
+defaults:
+  run:
+    shell: bash
 jobs:
   dump-contexts-to-log:
     timeout-minutes: 30

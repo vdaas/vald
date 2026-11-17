@@ -46,14 +46,6 @@ func (s *server) Remove(
 
 	id := req.GetId()
 	uuid := id.GetId()
-	reqInfo := &errdetails.RequestInfo{
-		RequestId:   uuid,
-		ServingData: errdetails.Serialize(req),
-	}
-	resInfo := &errdetails.ResourceInfo{
-		ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.RemoveRPCName,
-		ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-	}
 	if !req.GetConfig().GetSkipStrictExistCheck() {
 		_, err := s.exists(ctx, uuid)
 		if err != nil {
@@ -63,29 +55,29 @@ func (s *server) Remove(
 				err = status.WrapWithInvalidArgument(
 					vald.ExistsRPCName+" API for "+vald.RemoveRPCName+" API invalid argument for uuid \""+uuid+"\" detected",
 					err,
-					reqInfo,
-					resInfo,
-					&errdetails.BadRequest{
-						FieldViolations: []*errdetails.BadRequestFieldViolation{
-							{
-								Field:       "uuid",
-								Description: err.Error(),
+					append(s.errDetails(ctx, vald.RemoveRPCName, uuid, req),
+						&errdetails.BadRequest{
+							FieldViolations: []*errdetails.BadRequestFieldViolation{
+								{
+									Field:       uuidField,
+									Description: err.Error(),
+								},
 							},
 						},
-					},
+					)...,
 				)
 				attrs = trace.StatusCodeInvalidArgument(err.Error())
 			case errors.Is(err, errors.ErrObjectIDNotFound(uuid)):
-				err = status.WrapWithNotFound(vald.ExistsRPCName+" API for "+vald.RemoveRPCName+" API id "+uuid+"'s data not found", err, reqInfo, resInfo)
+				err = status.WrapWithNotFound(vald.ExistsRPCName+" API for "+vald.RemoveRPCName+" API id "+uuid+"'s data not found", err, s.errDetails(ctx, vald.RemoveRPCName, uuid, req)...)
 				attrs = trace.StatusCodeNotFound(err.Error())
 			case errors.Is(err, errors.ErrGRPCClientConnNotFound("*")):
-				err = status.WrapWithInternal(vald.ExistsRPCName+" API for "+vald.RemoveRPCName+" API connection not found", err, reqInfo, resInfo)
+				err = status.WrapWithInternal(vald.ExistsRPCName+" API for "+vald.RemoveRPCName+" API connection not found", err, s.errDetails(ctx, vald.RemoveRPCName, uuid, req)...)
 				attrs = trace.StatusCodeInternal(err.Error())
 			case errors.Is(err, context.Canceled):
-				err = status.WrapWithCanceled(vald.ExistsRPCName+" API for "+vald.RemoveRPCName+" API canceled", err, reqInfo, resInfo)
+				err = status.WrapWithCanceled(vald.ExistsRPCName+" API for "+vald.RemoveRPCName+" API canceled", err, s.errDetails(ctx, vald.RemoveRPCName, uuid, req)...)
 				attrs = trace.StatusCodeCancelled(err.Error())
 			case errors.Is(err, context.DeadlineExceeded):
-				err = status.WrapWithDeadlineExceeded(vald.ExistsRPCName+" API for "+vald.RemoveRPCName+" API deadline exceeded", err, reqInfo, resInfo)
+				err = status.WrapWithDeadlineExceeded(vald.ExistsRPCName+" API for "+vald.RemoveRPCName+" API deadline exceeded", err, s.errDetails(ctx, vald.RemoveRPCName, uuid, req)...)
 				attrs = trace.StatusCodeDeadlineExceeded(err.Error())
 			default:
 				st, _ := status.FromError(err)
@@ -98,52 +90,25 @@ func (s *server) Remove(
 				return nil, err
 			}
 		}
-		if req.GetConfig() != nil {
-			req.GetConfig().SkipStrictExistCheck = true
-		} else {
-			req.Config = &payload.Remove_Config{SkipStrictExistCheck: true}
+	}
+	// The caller's request is read by others while this runs (MultiRemove serializes the
+	// whole MultiRequest while sibling Removes are in flight), so never write to it:
+	// forward a new request that skips the agents' exist check (done above) and is timestamped.
+	freq := req
+	if cfg := req.GetConfig(); cfg == nil || !cfg.GetSkipStrictExistCheck() || cfg.GetTimestamp() == 0 {
+		ts := cfg.GetTimestamp()
+		if ts == 0 {
+			ts = time.Now().UnixNano()
+		}
+		freq = &payload.Remove_Request{
+			Id: id,
+			Config: &payload.Remove_Config{
+				SkipStrictExistCheck: true,
+				Timestamp:            ts,
+			},
 		}
 	}
-	if req.GetConfig().GetTimestamp() == 0 {
-		now := time.Now().UnixNano()
-		if req.GetConfig() == nil {
-			req.Config = &payload.Remove_Config{
-				Timestamp: now,
-			}
-		} else {
-			req.GetConfig().Timestamp = now
-		}
-	}
-	var mu sync.Mutex
-	locs = &payload.Object_Location{
-		Uuid: id.GetId(),
-		Ips:  make([]string, 0, s.replica),
-	}
-	ls := make([]string, 0, s.replica)
-	err = s.gateway.BroadCast(ctx, service.WRITE, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) (err error) {
-		ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+vald.RemoveRPCName+"/"+target)
-		defer trace.End(span)
-		loc, err := vc.Remove(ctx, req, copts...)
-		if err != nil {
-			st, msg, err := status.ParseError(err, codes.Internal,
-				"failed to parse "+vald.RemoveRPCName+" gRPC error response", reqInfo, resInfo)
-			if span != nil {
-				span.RecordError(err)
-				span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
-				span.SetStatus(trace.StatusError, err.Error())
-			}
-			if err != nil && st.Code() != codes.NotFound {
-				log.Error(err)
-				return err
-			}
-			return nil
-		}
-		mu.Lock()
-		locs.Ips = append(locs.GetIps(), loc.GetIps()...)
-		ls = append(ls, loc.GetName())
-		mu.Unlock()
-		return nil
-	})
+	locs, _, _, err = s.broadcastRemove(ctx, uuid, req, freq)
 	if err != nil {
 		st, _ := status.FromError(err)
 		errhandler.RecordSpanStatus(span, st, err)
@@ -151,12 +116,70 @@ func (s *server) Remove(
 	}
 	if len(locs.Ips) <= 0 {
 		err = errors.ErrIndexNotFound
-		err = status.WrapWithNotFound(vald.RemoveRPCName+" API remove target not found", err, reqInfo, resInfo)
+		err = status.WrapWithNotFound(vald.RemoveRPCName+" API remove target not found", err, s.errDetails(ctx, vald.RemoveRPCName, uuid, req)...)
 		return errhandler.HandleError[payload.Object_Location](span, codes.NotFound, err)
 	}
+	return locs, nil
+}
+
+// broadcastRemove sends freq to every agent and returns the removed locations
+// (named after the sorted agent names), the number of agents that removed uuid,
+// each failed agent's latest error by target, and BroadCast's error, which joins those failures
+// (an agent that does not hold uuid is not a failure). req is the caller's
+// request, used for the error details.
+func (s *server) broadcastRemove(
+	ctx context.Context, uuid string, req, freq *payload.Remove_Request,
+) (locs *payload.Object_Location, removed int, failed map[string]error, err error) {
+	var mu sync.Mutex
+	// the client backoff may call f again for a target: keep its latest outcome.
+	failedTargets := make(map[string]error)
+	locs = &payload.Object_Location{
+		Uuid: freq.GetId().GetId(),
+		Ips:  make([]string, 0, s.replica),
+	}
+	ls := make([]string, 0, s.replica)
+	err = s.gateway.BroadCast(ctx, service.WRITE, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) (err error) {
+		ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+vald.RemoveRPCName+"/"+target)
+		defer trace.End(span)
+		loc, err := vc.Remove(ctx, freq, copts...)
+		if err != nil {
+			// ParseError never attaches details to a NotFound status, and an agent that
+			// does not hold the object is tolerated below, so skip building them for it.
+			var details []any
+			if pst, ok := status.FromError(err); !ok || pst.Code() != codes.NotFound {
+				details = s.errDetails(ctx, vald.RemoveRPCName, uuid, req)
+			}
+			st, msg, err := status.ParseError(err, codes.Internal,
+				"failed to parse "+vald.RemoveRPCName+" gRPC error response", details...)
+			if span != nil {
+				span.RecordError(err)
+				span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+				span.SetStatus(trace.StatusError, err.Error())
+			}
+			if err != nil && st.Code() != codes.NotFound {
+				log.Error(err)
+				mu.Lock()
+				failedTargets[target] = err
+				mu.Unlock()
+				return err
+			}
+			mu.Lock()
+			delete(failedTargets, target)
+			mu.Unlock()
+			return nil
+		}
+		mu.Lock()
+		delete(failedTargets, target)
+		locs.Ips = append(locs.GetIps(), loc.GetIps()...)
+		ls = append(ls, loc.GetName())
+		mu.Unlock()
+		return nil
+	})
+	mu.Lock()
+	defer mu.Unlock()
 	slices.Sort(ls)
 	locs.Name = strings.Join(ls, ",")
-	return locs, nil
+	return locs, len(ls), failedTargets, err
 }
 
 func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) (err error) {
@@ -196,14 +219,22 @@ func (s *server) MultiRemove(
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.RemoveRPCServiceName+"/"+vald.MultiRemoveRPCName), apiName+"/"+vald.MultiRemoveRPCName)
 	defer trace.End(span)
 	var (
-		emu sync.Mutex
-		lmu sync.Mutex
+		errList []error
+		emu     sync.Mutex
+		lmu     sync.Mutex
 	)
 	eg, ectx := errgroup.New(ctx)
-	eg.SetLimit(s.multiConcurrency)
+	eg.SetLimit(s.multiLimit(ctx, false))
 	locs = &payload.Object_Locations{
 		Locations: make([]*payload.Object_Location, len(reqs.GetRequests())),
 	}
+	// The invalid-argument details are identical for every invalid request of
+	// the batch, so serialize the whole batch and resolve Addrs once, lazily.
+	var (
+		detailsBuilt bool
+		servingData  string
+		resourceName string
+	)
 	for i, r := range reqs.GetRequests() {
 		if r != nil && r.GetId().GetId() != "" {
 			idx := i
@@ -216,11 +247,7 @@ func (s *server) MultiRemove(
 					st, _ := status.FromError(err)
 					errhandler.RecordSpanStatus(sspan, st, err)
 					emu.Lock()
-					if errs == nil {
-						errs = err
-					} else {
-						errs = errors.Join(errs, err)
-					}
+					errList = append(errList, err)
 					emu.Unlock()
 				} else if res != nil && res.GetUuid() == req.GetId().GetId() && res.GetIps() != nil {
 					lmu.Lock()
@@ -231,43 +258,38 @@ func (s *server) MultiRemove(
 			}))
 		} else {
 			err := errors.ErrInvalidUUID(r.GetId().GetId())
+			if !detailsBuilt {
+				servingData = errdetails.Serialize(reqs)
+				resourceName = fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx))
+				detailsBuilt = true
+			}
 			err = status.WrapWithInvalidArgument(vald.MultiRemoveRPCName+" API invalid vector argument", err,
 				&errdetails.RequestInfo{
 					RequestId:   r.GetId().GetId(),
-					ServingData: errdetails.Serialize(reqs),
+					ServingData: servingData,
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.MultiRemoveRPCName,
-					ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
+					ResourceName: resourceName,
 				},
 				&errdetails.BadRequest{
 					FieldViolations: []*errdetails.BadRequestFieldViolation{
 						{
-							Field:       "uuid",
+							Field:       uuidField,
 							Description: err.Error(),
 						},
 					},
 				}, info.Get())
 			emu.Lock()
-			if errs == nil {
-				errs = err
-			} else {
-				errs = errors.Join(errs, err)
-			}
+			errList = append(errList, err)
 			emu.Unlock()
 
 		}
 	}
-	err := eg.Wait()
-	if err != nil {
-		emu.Lock()
-		if errs == nil {
-			errs = err
-		} else {
-			errs = errors.Join(errs, err)
-		}
-		emu.Unlock()
+	if err := eg.Wait(); err != nil {
+		errList = append(errList, err)
 	}
+	errs = errors.Join(errList...)
 
 	if errs != nil {
 		st, _ := status.FromError(errs)
@@ -359,7 +381,7 @@ func (s *server) RemoveByTimestamp(
 		errhandler.RecordSpanStatus(span, st, err)
 		return nil, err
 	}
-	if locs == nil || len(locs.GetLocations()) == 0 {
+	if len(locs.GetLocations()) == 0 {
 		err = status.WrapWithNotFound(
 			vald.RemoveByTimestampRPCName+" API remove target not found", errors.ErrIndexNotFound,
 			&errdetails.RequestInfo{

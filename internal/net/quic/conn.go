@@ -19,6 +19,7 @@ import (
 
 	quic "github.com/quic-go/quic-go"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/tls"
 )
@@ -62,9 +63,16 @@ func DialContext(ctx context.Context, addr string, tcfg *tls.Config) (net.Conn, 
 func (q *qconn) dialQuicContext(
 	ctx context.Context, addr string, tcfg *tls.Config,
 ) (net.Conn, error) {
-	conn, ok := q.connectionCache.Load(addr)
-	if ok {
-		return NewConn(ctx, conn)
+	// Reuse a cached connection only while it is alive: a closed one (idle
+	// timeout, peer restart) would otherwise fail every later dial to addr.
+	if conn, ok := q.connectionCache.Load(addr); ok {
+		if conn.Context().Err() == nil {
+			// A NewConn failure here usually comes from the caller's ctx, so keep the
+			// shared connection cached; if it closed concurrently instead, the next
+			// dial sees Context().Err() and evicts it.
+			return NewConn(ctx, conn)
+		}
+		q.connectionCache.CompareAndDelete(addr, conn)
 	}
 	conn, err := quic.DialAddr(ctx, addr, tcfg, &quic.Config{
 		/*
@@ -151,17 +159,13 @@ func (q *qconn) dialQuicContext(
 	if err != nil {
 		return nil, err
 	}
-	q.connectionCache.Store(addr, conn)
-	return NewConn(ctx, conn)
-}
-
-func (q *qconn) Close() (err error) {
-	q.connectionCache.Range(func(addr string, conn *quic.Conn) bool {
-		e := conn.CloseWithError(0, addr)
-		if e != nil {
-			err = errors.Wrap(err, e.Error())
+	// Another dial may have cached a connection meanwhile; keep that one and
+	// close ours so its UDP socket does not leak.
+	if cached, loaded := q.connectionCache.LoadOrStore(addr, conn); loaded {
+		if cerr := conn.CloseWithError(0, "duplicate connection"); cerr != nil {
+			log.Warn(cerr)
 		}
-		return true
-	})
-	return nil
+		conn = cached
+	}
+	return NewConn(ctx, conn)
 }

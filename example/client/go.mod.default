@@ -1,11 +1,12 @@
 module github.com/vdaas/vald/example/client
 
-go 1.27.2
+go 1.27.4
 
 replace (
 	github.com/kpango/fuid => github.com/kpango/fuid upgrade
 	github.com/kpango/glg => github.com/kpango/glg upgrade
 	github.com/vdaas/vald-client-go => github.com/vdaas/vald-client-go upgrade
+	golang.org/x/net => golang.org/x/net upgrade
 	gonum.org/v1/hdf5 => gonum.org/v1/hdf5 upgrade
 	google.golang.org/grpc => google.golang.org/grpc upgrade
 )

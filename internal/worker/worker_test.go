@@ -1264,4 +1264,304 @@ func Test_worker_Dispatch(t *testing.T) {
 	}
 }
 
+// TestWorker_Start_notRunningAfterStop checks that the running flag is false once the worker has stopped.
+// The flag must be set before the aggregator goroutine starts, otherwise its deferred Store(false) may run first.
+func TestWorker_Start_notRunningAfterStop(t *testing.T) {
+	t.Parallel()
+	for i := range 100 {
+		w, err := New()
+		if err != nil {
+			t.Fatal(err)
+		}
+		// the ctx is cancelled before Start so that the aggregator goroutine may exit before Start returns.
+		ctx, cancel := context.WithCancel(t.Context())
+		cancel()
+		ech, err := w.Start(ctx)
+		if err != nil {
+			t.Fatalf("iter %d: Start returned error: %v", i, err)
+		}
+		if !waitClosed(ech) {
+			t.Fatalf("iter %d: worker did not stop in time", i)
+		}
+		if w.IsRunning() {
+			t.Fatalf("iter %d: worker is reported as running after it stopped", i)
+		}
+	}
+}
+
+// TestWorker_startJobLoop_noLeakWhenErrorChNotRead checks that the job loop terminates on ctx cancel
+// even if nobody reads the error channel, i.e. errors are not sent with a bare blocking send.
+func TestWorker_startJobLoop_noLeakWhenErrorChNotRead(t *testing.T) {
+	t.Parallel()
+	for i := range 50 {
+		eg, _ := errgroup.New(t.Context())
+		w, err := New(WithLimitation(1), WithErrGroup(eg))
+		if err != nil {
+			t.Fatal(err)
+		}
+		ctx, cancel := context.WithCancel(t.Context())
+		if _, err := w.(*worker).queue.Start(ctx); err != nil {
+			cancel()
+			t.Fatalf("iter %d: queue Start returned error: %v", i, err)
+		}
+		// the returned channel is intentionally never read until the check has finished.
+		wech := w.(*worker).startJobLoop(ctx)
+		time.Sleep(time.Millisecond)
+		cancel()
+
+		var werr error
+		done := make(chan struct{})
+		go func() {
+			werr = eg.Wait()
+			close(done)
+		}()
+		select {
+		case <-done:
+			if werr != nil && !errors.Is(werr, context.Canceled) {
+				t.Errorf("iter %d: unexpected error from errgroup: %v", i, werr)
+			}
+		case <-time.After(5 * time.Second):
+			// release the blocked sender so that the goroutine does not outlive the test.
+			go func() {
+				for range wech {
+				}
+			}()
+			t.Fatalf("iter %d: job loop did not stop after ctx cancel while the error channel was not read", i)
+		}
+	}
+}
+
+// newJobLoopWorker returns a worker whose queue is replaced by a mock that pops with pop,
+// and a fresh errgroup that tracks every goroutine the worker starts.
+func newJobLoopWorker(
+	t *testing.T, limit int, pop func(context.Context) (JobFunc, error),
+) (*worker, errgroup.Group) {
+	t.Helper()
+	eg, _ := errgroup.New(t.Context())
+	w, err := New(WithLimitation(limit), WithErrGroup(eg))
+	if err != nil {
+		t.Fatal(err)
+	}
+	wk, ok := w.(*worker)
+	if !ok {
+		t.Fatalf("unexpected worker type %T", w)
+	}
+	wk.queue = &QueueMock{PopFunc: pop}
+	return wk, eg
+}
+
+// waitGroupDone returns a channel that is closed when eg.Wait returns.
+// The Wait error is reported through the returned func after the channel is closed.
+func waitGroupDone(eg errgroup.Group) (<-chan struct{}, func() error) {
+	var werr error
+	done := make(chan struct{})
+	go func() {
+		werr = eg.Wait()
+		close(done)
+	}()
+	return done, func() error { return werr }
+}
+
+// TestWorker_startJobLoop_noLeakWhenJobErrorNotRead checks that a failing job does not block forever on the
+// error channel after the ctx passed to Start is cancelled and nobody reads the channel.
+func TestWorker_startJobLoop_noLeakWhenJobErrorNotRead(t *testing.T) {
+	t.Parallel()
+	errJob := errors.New("job failed")
+	for i := range 50 {
+		var calls atomic.Int64
+		reached := make(chan struct{})
+		w, eg := newJobLoopWorker(t, 1, func(context.Context) (JobFunc, error) {
+			if calls.Add(1) == 2 {
+				close(reached)
+			}
+			return func(context.Context) error { return errJob }, nil
+		})
+		ctx, cancel := context.WithCancel(t.Context())
+		wech := w.startJobLoop(ctx)
+		done, werr := waitGroupDone(eg)
+
+		// the first failing job fills the unread error channel (capacity 1); a job error does not stop the loop,
+		// so it pops a second job whose error send has no reader and blocks while ctx is alive.
+		// Wait for that (or for the loop to stop), then cancel ctx: the loop must stop even if the second send is blocked.
+		select {
+		case <-reached:
+		case <-done:
+		case <-time.After(5 * time.Second):
+			cancel()
+			t.Fatalf("iter %d: job loop neither progressed nor stopped", i)
+		}
+		cancel()
+
+		select {
+		case <-done:
+			if err := werr(); err != nil && !errors.Is(err, context.Canceled) && !errors.Is(err, errJob) {
+				t.Errorf("iter %d: unexpected error from errgroup: %v", i, err)
+			}
+		case <-time.After(5 * time.Second):
+			// release the blocked sender so that the goroutine does not outlive the test.
+			go func() {
+				for range wech {
+				}
+			}()
+			t.Fatalf("iter %d: job loop did not stop after ctx cancel while the error channel was not read", i)
+		}
+	}
+}
+
+// TestWorker_startJobLoop_deliversAllJobErrors checks that every job error reaches the error channel
+// while the ctx passed to Start is alive.
+func TestWorker_startJobLoop_deliversAllJobErrors(t *testing.T) {
+	t.Parallel()
+	const jobs = 3
+	jobErrs := make([]error, jobs)
+	for i := range jobErrs {
+		jobErrs[i] = errors.Errorf("job error %d", i)
+	}
+	for i := range 50 {
+		var popped, ready atomic.Int64
+		gate := make(chan struct{})
+		w, eg := newJobLoopWorker(t, jobs, func(ctx context.Context) (JobFunc, error) {
+			n := int(popped.Add(1)) - 1
+			if n >= jobs {
+				<-ctx.Done()
+				return nil, ctx.Err()
+			}
+			return func(jctx context.Context) error {
+				// all jobs fail at the same time, after every job is running.
+				if ready.Add(1) == jobs {
+					close(gate)
+				}
+				select {
+				case <-gate:
+				case <-jctx.Done():
+				}
+				return jobErrs[n]
+			}, nil
+		})
+		ctx, cancel := context.WithCancel(t.Context())
+		wech := w.startJobLoop(ctx)
+		done, _ := waitGroupDone(eg)
+
+		got := make(map[int]struct{}, jobs)
+		timeout := time.After(5 * time.Second)
+	collect:
+		for len(got) < jobs {
+			select {
+			case err, ok := <-wech:
+				if !ok {
+					break collect
+				}
+				for j, want := range jobErrs {
+					if errors.Is(err, want) {
+						got[j] = struct{}{}
+					}
+				}
+			case <-timeout:
+				break collect
+			}
+		}
+		cancel()
+		if len(got) != jobs {
+			t.Errorf("iter %d: got %d distinct job errors, want %d", i, len(got), jobs)
+		}
+		select {
+		case <-done:
+		case <-time.After(5 * time.Second):
+			go func() {
+				for range wech {
+				}
+			}()
+			t.Fatalf("iter %d: job loop did not stop after ctx cancel", i)
+		}
+	}
+}
+
 // NOT IMPLEMENTED BELOW
+
+// TestWorker_Start_keepsRunningAfterJobError checks that a failing job is reported on the error channel
+// but does not stop the worker: the next job still runs with a live ctx, the error channel stays open and
+// the worker is reported as running until the ctx passed to Start is cancelled.
+// Before the fix the first job error cancelled the job loop's errgroup ctx, so the loop stopped (closing the
+// error channel) or ran the next job with an already cancelled ctx.
+func TestWorker_Start_keepsRunningAfterJobError(t *testing.T) {
+	t.Parallel()
+	errJob := errors.New("job failed")
+	for i := range 50 {
+		var popped atomic.Int64
+		ran := make(chan error, 1)
+		w, eg := newJobLoopWorker(t, 1, func(ctx context.Context) (JobFunc, error) {
+			switch popped.Add(1) {
+			case 1:
+				return func(context.Context) error { return errJob }, nil
+			case 2:
+				return func(jctx context.Context) error {
+					ran <- jctx.Err()
+					return nil
+				}, nil
+			}
+			<-ctx.Done()
+			return nil, ctx.Err()
+		})
+		qech := make(chan error)
+		w.queue.(*QueueMock).StartFunc = func(context.Context) (<-chan error, error) {
+			return qech, nil
+		}
+		ctx, cancel := context.WithCancel(t.Context())
+		ech, err := w.Start(ctx)
+		if err != nil {
+			cancel()
+			t.Fatalf("iter %d: Start returned error: %v", i, err)
+		}
+		done, _ := waitGroupDone(eg)
+		fail := func(format string, args ...any) {
+			cancel()
+			select {
+			case <-done:
+			case <-time.After(5 * time.Second):
+			}
+			t.Fatalf(format, args...)
+		}
+
+		select {
+		case err, ok := <-ech:
+			if !ok {
+				fail("iter %d: error channel closed before the job error was reported", i)
+			}
+			if !errors.Is(err, errJob) {
+				fail("iter %d: got error %v, want %v", i, err, errJob)
+			}
+		case <-time.After(5 * time.Second):
+			fail("iter %d: job error was not reported", i)
+		}
+
+		select {
+		case jerr := <-ran:
+			if jerr != nil {
+				fail("iter %d: next job ran with a done ctx: %v", i, jerr)
+			}
+		case err, ok := <-ech:
+			if !ok {
+				fail("iter %d: error channel closed after a job error; the worker stopped", i)
+			}
+			fail("iter %d: unexpected error on the error channel: %v", i, err)
+		case <-time.After(5 * time.Second):
+			fail("iter %d: next job did not run after a job error", i)
+		}
+		if !w.IsRunning() {
+			fail("iter %d: worker is not reported as running after a job error", i)
+		}
+
+		cancel()
+		if !waitClosed(ech) {
+			t.Fatalf("iter %d: error channel was not closed after ctx cancel", i)
+		}
+		select {
+		case <-done:
+		case <-time.After(5 * time.Second):
+			t.Fatalf("iter %d: worker goroutines did not stop after ctx cancel", i)
+		}
+		if w.IsRunning() {
+			t.Fatalf("iter %d: worker is reported as running after ctx cancel", i)
+		}
+	}
+}

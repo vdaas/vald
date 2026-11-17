@@ -57,6 +57,8 @@ func New(cfg *config.Data) (_ runner.Interface, err error) {
 
 	exporter, err := service.New(
 		service.WithStreamListConcurrency(cfg.Exporter.Concurrency),
+		service.WithKVSSyncInterval(cfg.Exporter.KVSBackgroundSyncInterval),
+		service.WithKVSCompactionInterval(cfg.Exporter.KVSBackgroundCompactionInterval),
 		service.WithIndexPath(cfg.Exporter.IndexPath),
 		service.WithGateway(gateway),
 	)
@@ -118,9 +120,8 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 		defer func() {
 			p, err := os.FindProcess(os.Getpid())
 			if err != nil {
-				// using Fatal to avoid this process to be zombie
-				// skipcq: RVV-A0003
-				log.Fatalf("failed to find my pid to kill %v", err)
+				// FindProcess never fails on unix; log instead of Fatal so the job is not killed from a non-main path.
+				log.Errorf("failed to find my pid to kill %v", err)
 				return
 			}
 			log.Info("sending SIGTERM to myself to stop this job")
@@ -160,13 +161,15 @@ func (r *run) PreStop(ctx context.Context) error {
 
 // Stop is a method used to stop an operation in the run.
 func (r *run) Stop(ctx context.Context) (errs error) {
-	if r.observability != nil {
-		if err := r.observability.Stop(ctx); err != nil {
+	// Shut the server down first so spans and metrics of the requests it drains
+	// are still exported before observability is stopped.
+	if r.server != nil {
+		if err := r.server.Shutdown(ctx); err != nil {
 			errs = errors.Join(errs, err)
 		}
 	}
-	if r.server != nil {
-		if err := r.server.Shutdown(ctx); err != nil {
+	if r.observability != nil {
+		if err := r.observability.Stop(ctx); err != nil {
 			errs = errors.Join(errs, err)
 		}
 	}

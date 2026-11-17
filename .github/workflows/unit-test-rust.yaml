@@ -27,6 +27,9 @@ on:
     paths:
       - ".github/workflows/unit-test-rust.yaml"
       - "rust/**"
+defaults:
+  run:
+    shell: bash
 jobs:
   dump-contexts-to-log:
     timeout-minutes: 30

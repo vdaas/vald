@@ -469,3 +469,24 @@ func Test_encode(t *testing.T) {
 // 		})
 // 	}
 // }
+
+func TestF32stos(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name    string
+		fs      []float32
+		wantLen int
+	}{
+		{name: "nil slice returns empty string", fs: nil, wantLen: 0},
+		{name: "empty slice returns empty string", fs: []float32{}, wantLen: 0},
+		{name: "float32 slice is converted to 4 bytes per element", fs: []float32{1, 2}, wantLen: 8},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			if got := F32stos(test.fs); len(got) != test.wantLen {
+				tt.Errorf("len(F32stos(%v)) = %d, want %d", test.fs, len(got), test.wantLen)
+			}
+		})
+	}
+}

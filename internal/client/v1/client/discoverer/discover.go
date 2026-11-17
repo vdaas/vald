@@ -20,7 +20,6 @@ import (
 	"context"
 	"reflect"
 	"slices"
-	"sync/atomic"
 	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/discoverer"
@@ -30,7 +29,7 @@ import (
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/safety"
-	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/atomic"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
@@ -229,7 +228,9 @@ func (c *client) GetReadClient() grpc.Client {
 
 func (c *client) connect(ctx context.Context, addr string) (err error) {
 	if c.autoconn && c.client != nil {
-		_, err = c.client.Connect(ctx, addr, c.client.GetDialOption()...)
+		// Connect already applies the client dial options; passing GetDialOption again
+		// would apply every option twice.
+		_, err = c.client.Connect(ctx, addr)
 		if err != nil {
 			return err
 		}
@@ -350,13 +351,20 @@ func (c *client) discoverNodes(ctx context.Context) (nodes *payload.Info_Nodes, 
 	if err != nil {
 		return nil, err
 	}
-	slices.SortFunc(nodes.Nodes, func(left, right *payload.Info_Node) int {
-		if left.GetMemory() == nil || right.GetMemory() == nil {
-			return 0 // Default comparison value; adjust as needed.
-		}
-		return cmp.Compare(left.GetMemory().GetUsage(), right.GetMemory().GetUsage())
-	})
+	slices.SortFunc(nodes.Nodes, compareNodeMemory)
 	return nodes, nil
+}
+
+// compareNodeMemory orders nodes by memory usage. The getters are nil-safe, so
+// a node without Memory sorts as usage 0 (as the discoverer server does);
+// returning 0 for nil instead would break the strict weak ordering SortFunc needs.
+func compareNodeMemory(left, right *payload.Info_Node) int {
+	return cmp.Compare(left.GetMemory().GetUsage(), right.GetMemory().GetUsage())
+}
+
+// comparePodMemory is compareNodeMemory for pods.
+func comparePodMemory(left, right *payload.Info_Pod) int {
+	return cmp.Compare(left.GetMemory().GetUsage(), right.GetMemory().GetUsage())
 }
 
 func (c *client) discoverAddrs(
@@ -374,12 +382,7 @@ func (c *client) discoverAddrs(
 			if l > maxPodLen {
 				maxPodLen = l
 			}
-			slices.SortFunc(nodes.Nodes[i].Pods.Pods, func(left, right *payload.Info_Pod) int {
-				if left.GetMemory() == nil || right.GetMemory() == nil {
-					return 0 // Default comparison value; adjust as needed.
-				}
-				return cmp.Compare(left.GetMemory().GetUsage(), right.GetMemory().GetUsage())
-			})
+			slices.SortFunc(nodes.Nodes[i].Pods.Pods, comparePodMemory)
 		}
 	}
 	addrs = make([]string, 0, podLength)
@@ -414,18 +417,18 @@ func (c *client) disconnectOldAddrs(
 	if !c.autoconn {
 		return nil
 	}
-	var cur sync.Map[string, any]
+	// cur and stale are fully built before any goroutine reads them.
+	cur := make(map[string]struct{}, len(connectedAddrs))
 	for _, addr := range connectedAddrs {
-		cur.Store(addr, struct{}{})
+		cur[addr] = struct{}{}
 	}
-
+	stale := make(map[string]struct{}, len(oldAddrs))
 	for _, old := range oldAddrs {
-		_, ok := cur.Load(old)
-		if !ok {
+		if _, ok := cur[old]; !ok {
+			stale[old] = struct{}{}
 			c.eg.Go(safety.RecoverFunc(func() error {
-				err = c.disconnect(ctx, old)
-				if err != nil {
-					log.Error(err)
+				if derr := c.disconnect(ctx, old); derr != nil {
+					log.Error(derr)
 				}
 				return nil
 			}))
@@ -437,8 +440,11 @@ func (c *client) disconnectOldAddrs(
 			_ *grpc.ClientConn,
 			_ ...grpc.CallOption,
 		) (err error) {
-			_, ok := cur.Load(addr)
-			if !ok {
+			// Old addresses are already being disconnected above; only sweep
+			// pooled connections that neither list knows about.
+			_, ok := cur[addr]
+			_, ok2 := stale[addr]
+			if !ok && !ok2 {
 				err = c.disconnect(ctx, addr)
 				if err != nil {
 					return err

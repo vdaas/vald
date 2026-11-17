@@ -54,7 +54,7 @@ func NewObjectReconciler[T any, PT resource.Objectable[T]](
 	opts ...ObjectOption,
 ) k8s.ResourceController {
 	r := &objectReconciler[T, PT]{
-		objectCore:  objectCore{baseReconciler: baseReconciler{name: name}},
+		name:        name,
 		onReconcile: onReconcile,
 	}
 	for _, opt := range opts {

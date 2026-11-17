@@ -83,6 +83,8 @@ FaissStruct* faiss_create_index_ivfpq(
         return NULL;
     }
     faiss::IndexIVFPQ *index = new faiss::IndexIVFPQ(quantizer, d, nlist, m, nbits_per_idx);
+    // the index deletes the quantizer, as an index loaded by faiss::read_index does.
+    index->own_fields = true;
     //index->verbose = true;
     st = new FaissStruct{
       static_cast<FaissQuantizer>(quantizer),
@@ -109,6 +111,8 @@ FaissStruct* faiss_create_index_binaryivf(
     faiss::IndexBinaryFlat *quantizer;
     quantizer = new faiss::IndexBinaryFlat(d);
     faiss::IndexBinaryIVF *index = new faiss::IndexBinaryIVF(quantizer, d, nlist);
+    // the index deletes the quantizer, as an index loaded by faiss::read_index_binary does.
+    index->own_fields = true;
     //index->verbose = true;
     st = new FaissStruct{
       static_cast<FaissQuantizer>(quantizer),
@@ -378,7 +382,7 @@ int faiss_add_binaryivf(
   }
 
   fflush(stdout);
-  return (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->ntotal;
+  return (static_cast<faiss::IndexBinaryIVF*>(st->faiss_index))->ntotal;
 }
 
 bool faiss_search(
@@ -422,8 +426,10 @@ bool faiss_search_ivfpq(
   try {
     //printf("is_trained: %d\n", (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->is_trained);
     //printf("ntotal: %ld\n", (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->ntotal);
-    (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->nprobe = nprobe;
-    (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->search(nq, xq, k, D, I);
+    // nprobe is passed per call: searches run concurrently, so the shared index must not be written.
+    faiss::SearchParametersIVF params;
+    params.nprobe = nprobe;
+    (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->search(nq, xq, k, D, I, &params);
     //printf("I=\n");
     //for(int i = 0; i < nq; i++) {
     //    for(int j = 0; j < k; j++) {
@@ -462,8 +468,10 @@ bool faiss_search_binaryivf(
 
   int32_t* tmpD = new int32_t[nq*k];
   try {
-    (static_cast<faiss::IndexBinaryIVF*>(st->faiss_index))->nprobe = nprobe;
-    (static_cast<faiss::IndexBinaryIVF*>(st->faiss_index))->search(nq, xq, k, tmpD, I);
+    // nprobe is passed per call: searches run concurrently, so the shared index must not be written.
+    faiss::SearchParametersIVF params;
+    params.nprobe = nprobe;
+    (static_cast<faiss::IndexBinaryIVF*>(st->faiss_index))->search(nq, xq, k, tmpD, I, &params);
   } catch(std::exception &err) {
     delete[] tmpD;
     std::stringstream ss;
@@ -547,11 +555,27 @@ int faiss_remove_binaryivf(
   return (static_cast<faiss::IndexBinaryIVF*>(st->faiss_index))->ntotal;
 }
 
-void faiss_free(FaissStruct* st) {
+void faiss_free(FaissStruct* st, const int method_type) {
   //printf(__FUNCTION__);
   //printf("\n");
   //fflush(stdout);
 
-  free(st);
-  return;
+  if (st == NULL) {
+    return;
+  }
+  // faiss_quantizer is not deleted here: the index owns it (own_fields = true).
+  switch (method_type) {
+    case IVFPQ:
+      delete static_cast<faiss::Index*>(st->faiss_index);
+      break;
+    case BINARYIVF:
+      delete static_cast<faiss::IndexBinary*>(st->faiss_index);
+      break;
+    default:
+      std::stringstream ss;
+      ss << "Capi : " << __FUNCTION__ << "() : Error: no method type.";
+      std::cerr << ss.str() << std::endl;
+      break;
+  }
+  delete st;
 }

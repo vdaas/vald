@@ -26,6 +26,9 @@ on:
       - labeled
     paths:
       - "charts/**"
+defaults:
+  run:
+    shell: bash
 jobs:
   dump-contexts-to-log:
     timeout-minutes: 30

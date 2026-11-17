@@ -261,7 +261,7 @@ func (g *GRPCClient) Opts() ([]grpc.Option, error) {
 
 	if g.Backoff != nil &&
 		g.Backoff.InitialDuration != "" &&
-		g.Backoff.RetryCount > 2 {
+		g.Backoff.RetryCount > 0 {
 		opts = append(opts,
 			grpc.WithBackoff(
 				backoff.New(g.Backoff.Opts()...),
@@ -271,13 +271,7 @@ func (g *GRPCClient) Opts() ([]grpc.Option, error) {
 
 	if g.CircuitBreaker != nil {
 		cb, err := circuitbreaker.New(
-			circuitbreaker.WithBreakerOpts(
-				circuitbreaker.WithClosedErrorRate(g.CircuitBreaker.ClosedErrorRate),
-				circuitbreaker.WithHalfOpenErrorRate(g.CircuitBreaker.HalfOpenErrorRate),
-				circuitbreaker.WithMinSamples(g.CircuitBreaker.MinSamples),
-				circuitbreaker.WithOpenTimeout(g.CircuitBreaker.OpenTimeout),
-				circuitbreaker.WithClosedRefreshTimeout(g.CircuitBreaker.ClosedRefreshTimeout),
-			),
+			circuitbreaker.WithBreakerOpts(g.CircuitBreaker.breakerOpts()...),
 		)
 		if err != nil {
 			return nil, err
@@ -314,10 +308,20 @@ func (g *GRPCClient) Opts() ([]grpc.Option, error) {
 			grpc.WithSharedWriteBuffer(g.DialOption.SharedWriteBuffer),
 			grpc.WithUserAgent(g.DialOption.UserAgent),
 			grpc.WithWriteBufferSize(g.DialOption.WriteBufferSize),
+			grpc.WithBackoffBaseDelay(g.DialOption.BackoffBaseDelay),
+			grpc.WithMinConnectTimeout(g.DialOption.MinimumConnectionTimeout),
 		)
+		// 0 means unset: passing it through would zero the reconnect backoff growth/jitter instead of keeping the defaults.
+		if g.DialOption.BackoffMultiplier > 0 {
+			opts = append(opts, grpc.WithBackoffMultiplier(g.DialOption.BackoffMultiplier))
+		}
+		if g.DialOption.BackoffJitter > 0 {
+			opts = append(opts, grpc.WithBackoffJitter(g.DialOption.BackoffJitter))
+		}
 
-		if g.DialOption.Net != nil && g.DialOption.Net.Dialer != nil &&
-			g.DialOption.Net.Dialer.Timeout != "" {
+		// An empty dialer timeout means no timeout (net.WithDialerTimeout ignores
+		// it), so it must not drop the whole net block as it used to.
+		if g.DialOption.Net != nil {
 			if g.DialOption.Net.TLS != nil && g.DialOption.Net.TLS.Enabled {
 				opts = append(opts,
 					grpc.WithInsecure(false),
@@ -349,6 +353,10 @@ func (g *GRPCClient) Opts() ([]grpc.Option, error) {
 				),
 			)
 		}
+	} else if g.TLS != nil && !g.TLS.Enabled {
+		// Bind can only mark DialOption.Insecure when a dial_option block exists.
+		// Without it no transport credentials are set and grpc-go refuses every dial.
+		opts = append(opts, grpc.WithInsecure(true))
 	}
 
 	if g.TLS != nil && g.TLS.Enabled {

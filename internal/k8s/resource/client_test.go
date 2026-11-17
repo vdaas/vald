@@ -22,7 +22,6 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
@@ -50,8 +49,8 @@ func newConfigMapClient(
 
 func newConfigMap(name, namespace string, data map[string]string) *corev1.ConfigMap {
 	return &corev1.ConfigMap{
-		ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: namespace},
-		Data:       data,
+		Name: name, Namespace: namespace,
+		Data: data,
 	}
 }
 

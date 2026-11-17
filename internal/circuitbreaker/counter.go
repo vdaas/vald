@@ -13,7 +13,7 @@
 // limitations under the License.
 package circuitbreaker
 
-import "sync/atomic"
+import "github.com/vdaas/vald/internal/sync/atomic"
 
 type Counter interface {
 	Total() int64

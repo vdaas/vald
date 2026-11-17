@@ -325,6 +325,13 @@ func WithExportIndexInfoDuration(dur string) Option {
 			return err
 		}
 
+		if d <= 0 {
+			// time.NewTicker panics for non-positive intervals; keep the default
+			// instead of failing so that configs which never start the export
+			// ticker (e.g. dcd or read replica) keep starting as before.
+			return nil
+		}
+
 		n.exportIndexInfoDuration = d
 
 		return nil

@@ -13,6 +13,97 @@
 // limitations under the License.
 package usecase
 
+import (
+	"context"
+	"testing"
+
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/pkg/agent/core/faiss/service"
+)
+
+type closeStub struct {
+	service.Faiss
+	err error
+}
+
+func (s *closeStub) Close(context.Context) error { return s.err }
+
+type obsStub struct{ err error }
+
+func (*obsStub) PreStart(context.Context) error { return nil }
+
+func (*obsStub) Start(context.Context) <-chan error { return nil }
+
+func (s *obsStub) Stop(context.Context) error { return s.err }
+
+type srvStub struct{ err error }
+
+func (*srvStub) ListenAndServe(context.Context) <-chan error { return nil }
+
+func (s *srvStub) Shutdown(context.Context) error { return s.err }
+
+func TestRun_PostStop(t *testing.T) {
+	t.Parallel()
+
+	closeErr := errors.New("close failed")
+	tests := []struct {
+		err  error
+		name string
+	}{
+		{name: "propagates the Close error", err: closeErr},
+		{name: "returns nil when Close succeeds"},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			r := &run{faiss: &closeStub{err: tc.err}}
+			if got := r.PostStop(t.Context()); !errors.Is(got, tc.err) {
+				t.Errorf("PostStop() = %v, want %v", got, tc.err)
+			}
+		})
+	}
+}
+
+func TestRun_Stop(t *testing.T) {
+	t.Parallel()
+
+	obsErr := errors.New("observability stop failed")
+	srvErr := errors.New("shutdown failed")
+	tests := []struct {
+		name    string
+		obs     *obsStub
+		srvErr  error
+		wantErr []error
+	}{
+		{name: "propagates the observability Stop error", obs: &obsStub{err: obsErr}, wantErr: []error{obsErr}},
+		{name: "propagates the server Shutdown error", obs: &obsStub{}, srvErr: srvErr, wantErr: []error{srvErr}},
+		{name: "joins both errors", obs: &obsStub{err: obsErr}, srvErr: srvErr, wantErr: []error{obsErr, srvErr}},
+		{name: "returns the server error without observability", srvErr: srvErr, wantErr: []error{srvErr}},
+		{name: "returns nil on success", obs: &obsStub{}},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			r := &run{server: &srvStub{err: tc.srvErr}}
+			if tc.obs != nil {
+				r.observability = tc.obs
+			}
+			got := r.Stop(t.Context())
+			if len(tc.wantErr) == 0 {
+				if got != nil {
+					t.Fatalf("Stop() = %v, want nil", got)
+				}
+				return
+			}
+			for _, want := range tc.wantErr {
+				if !errors.Is(got, want) {
+					t.Errorf("Stop() = %v, want it to wrap %v", got, want)
+				}
+			}
+		})
+	}
+}
+
 // NOT IMPLEMENTED BELOW
 //
 // func TestNew(t *testing.T) {

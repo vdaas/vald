@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
+	"github.com/vdaas/vald/internal/sync/atomic"
 )
 
 func TestGetVector(t *testing.T) {
@@ -2070,3 +2071,318 @@ func TestGetVector(t *testing.T) {
 // 		})
 // 	}
 // }
+
+// RangePopInsert/RangePopDelete used to pop by key after calling f, dropping an entry
+// that was pushed for the same uuid while f ran (e.g. the insert half of an Update during
+// CreateIndex). Only the entry that was handed to f may be removed.
+func TestRangePop_keepsEntryPushedDuringCallback(t *testing.T) {
+	t.Parallel()
+	const uuid = "uuid"
+	t.Run("insert", func(t *testing.T) {
+		t.Parallel()
+		q, err := New()
+		require.NoError(t, err)
+		require.NoError(t, q.PushInsert(uuid, []float32{1}, 1))
+		q.RangePopInsert(t.Context(), 10, func(id string, _ []float32, _ int64) bool {
+			require.NoError(t, q.PushInsert(id, []float32{2}, 5))
+			return true
+		})
+		vec, ts, ok := q.GetVector(uuid)
+		require.True(t, ok)
+		require.Equal(t, []float32{2}, vec)
+		require.Equal(t, int64(5), ts)
+		require.Equal(t, 1, q.IVQLen())
+	})
+	t.Run("delete keeps newer insert", func(t *testing.T) {
+		t.Parallel()
+		q, err := New()
+		require.NoError(t, err)
+		require.NoError(t, q.PushDelete(uuid, 1))
+		q.RangePopDelete(t.Context(), 10, func(id string, _ int64) bool {
+			require.NoError(t, q.PushDelete(id, 5))
+			require.NoError(t, q.PushInsert(id, []float32{3}, 6))
+			return true
+		})
+		// f removed uuid, which satisfies the delete at ts 5, so no stale delete may
+		// survive to remove the insert at ts 6 on the next CreateIndex.
+		require.Equal(t, 0, q.DVQLen())
+		vec, its, ok := q.GetVector(uuid)
+		require.True(t, ok)
+		require.Equal(t, []float32{3}, vec)
+		require.Equal(t, int64(6), its)
+		require.Equal(t, 1, q.IVQLen())
+	})
+	t.Run("delete cancels insert older than the newest delete", func(t *testing.T) {
+		t.Parallel()
+		q, err := New()
+		require.NoError(t, err)
+		require.NoError(t, q.PushDelete(uuid, 1))
+		q.RangePopDelete(t.Context(), 10, func(id string, _ int64) bool {
+			require.NoError(t, q.PushInsert(id, []float32{3}, 3))
+			require.NoError(t, q.PushDelete(id, 5))
+			return true
+		})
+		require.Equal(t, 0, q.DVQLen())
+		_, _, ok := q.GetVector(uuid)
+		require.False(t, ok, "insert at ts 3 is older than the delete at ts 5")
+		require.Equal(t, 0, q.IVQLen())
+	})
+}
+
+// A delete that f skipped (the indexed object is newer) satisfies nothing else: it must pop
+// only the entry handed to f, keep a delete pushed while f ran, and cancel no insert.
+func TestRangePopDelete_skippedDelete(t *testing.T) {
+	t.Parallel()
+	const uuid = "uuid"
+	tests := []struct {
+		push    func(t *testing.T, q Queue)
+		name    string
+		wantDVQ int
+		wantDTS int64
+	}{
+		{
+			name: "pops the skipped entry",
+			push: func(*testing.T, Queue) {},
+		},
+		{
+			name: "keeps a newer delete pushed during f",
+			push: func(t *testing.T, q Queue) {
+				t.Helper()
+				require.NoError(t, q.PushDelete(uuid, 5))
+			},
+			wantDVQ: 1,
+			wantDTS: 5,
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			q, err := New()
+			require.NoError(t, err)
+			require.NoError(t, q.PushInsert(uuid, []float32{1}, 1))
+			require.NoError(t, q.PushDelete(uuid, 2))
+			var got []int64
+			q.RangePopDelete(t.Context(), 10, func(id string, ts int64) bool {
+				require.Equal(t, uuid, id)
+				got = append(got, ts)
+				tc.push(t, q)
+				return false
+			})
+			require.Equal(t, []int64{2}, got, "f must receive the delete timestamp")
+			require.Equal(t, tc.wantDVQ, q.DVQLen())
+			dts, ok := q.DVExists(uuid)
+			require.Equal(t, tc.wantDVQ == 1, ok)
+			require.Equal(t, tc.wantDTS, dts)
+			vec, its, ok := q.PopInsert(uuid)
+			require.True(t, ok, "a skipped delete must not cancel the insert")
+			require.Equal(t, []float32{1}, vec)
+			require.Equal(t, int64(1), its)
+		})
+	}
+}
+
+// An Update (delete at t, insert at t+1) pushed after RangePopDelete took its snapshot
+// used to have its insert applied by RangePopInsert while its delete stayed queued, so the
+// next CreateIndex removed the updated object. The insert must wait for the delete.
+func TestRangePopInsert_waitsForPendingDelete(t *testing.T) {
+	t.Parallel()
+	const (
+		uuid  = "uuid"
+		other = "other"
+		now   = 10
+	)
+	tests := []struct {
+		name string
+		dts  int64
+		its  int64
+		// insertQueued reports whether the insert is still queued after the first run.
+		insertQueued bool
+	}{
+		{name: "update pushed after the delete snapshot waits", dts: 2, its: 3, insertQueued: true},
+		{name: "equal timestamps wait", dts: 3, its: 3, insertQueued: true},
+		{name: "newer delete still cancels the insert", dts: 5, its: 3},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			q, err := New()
+			require.NoError(t, err)
+			require.NoError(t, q.PushDelete(other, 1))
+			// f runs after the Range snapshot, so these pushes are not in it.
+			q.RangePopDelete(t.Context(), now, func(string, int64) bool {
+				require.NoError(t, q.PushDelete(uuid, tc.dts))
+				require.NoError(t, q.PushInsert(uuid, []float32{1}, tc.its))
+				return true
+			})
+			dts, ok := q.PopDelete(other)
+			require.False(t, ok, "other's delete must have been popped, got %d", dts)
+
+			var applied []string
+			q.RangePopInsert(t.Context(), now, func(id string, _ []float32, _ int64) bool {
+				applied = append(applied, id)
+				return true
+			})
+			require.Empty(t, applied)
+			if tc.insertQueued {
+				require.Equal(t, 1, q.IVQLen())
+			} else {
+				require.Equal(t, 0, q.IVQLen())
+			}
+			require.Equal(t, 1, q.DVQLen())
+
+			// The next run applies the delete first and then the insert.
+			var order []string
+			q.RangePopDelete(t.Context(), now, func(id string, _ int64) bool {
+				order = append(order, "delete:"+id)
+				return true
+			})
+			q.RangePopInsert(t.Context(), now, func(id string, _ []float32, ts int64) bool {
+				order = append(order, "insert:"+id)
+				require.Equal(t, tc.its, ts)
+				return true
+			})
+			want := []string{"delete:" + uuid}
+			if tc.insertQueued {
+				want = append(want, "insert:"+uuid)
+			}
+			require.Equal(t, want, order)
+			require.Equal(t, 0, q.IVQLen())
+			require.Equal(t, 0, q.DVQLen())
+		})
+	}
+}
+
+// Concurrent pushes for one uuid used to race between LoadOrStore and Store, so an
+// older timestamp could overwrite a newer one.
+func TestPushInsert_concurrentKeepsNewest(t *testing.T) {
+	t.Parallel()
+	q, err := New()
+	require.NoError(t, err)
+	const (
+		uuid    = "uuid"
+		writers = 64
+	)
+	start := make(chan struct{})
+	done := make(chan struct{}, writers)
+	for i := range writers {
+		go func() {
+			defer func() { done <- struct{}{} }()
+			<-start
+			if err := q.PushInsert(uuid, []float32{float32(i)}, int64(i+1)); err != nil {
+				t.Error(err)
+			}
+		}()
+	}
+	close(start)
+	for range writers {
+		<-done
+	}
+	_, ts, ok := q.GetVector(uuid)
+	require.True(t, ok)
+	require.Equal(t, int64(writers), ts)
+	require.Equal(t, 1, q.IVQLen())
+}
+
+// push used to publish an entry before counting it, so a concurrent pop could
+// decrement the counter first and wrap it below zero (IVQLen/DVQLen < 0, and a
+// makeslice panic in RangePop*). The counter must stay non-negative under any
+// interleaving and match the queue at quiescence; a push onto an existing key must
+// leave it unchanged.
+func TestPush_counterNeverUnderflows(t *testing.T) {
+	t.Parallel()
+	t.Run("existing key keeps the count", func(t *testing.T) {
+		t.Parallel()
+		q, err := New()
+		require.NoError(t, err)
+		require.NoError(t, q.PushInsert("uuid", []float32{1}, 2))
+		require.NoError(t, q.PushInsert("uuid", []float32{2}, 1)) // older: ignored
+		require.NoError(t, q.PushInsert("uuid", []float32{3}, 3)) // newer: replaces
+		require.Equal(t, 1, q.IVQLen())
+		vec, ts, ok := q.GetVector("uuid")
+		require.True(t, ok)
+		require.Equal(t, []float32{3}, vec)
+		require.Equal(t, int64(3), ts)
+		require.NoError(t, q.PushDelete("uuid", 2))
+		require.NoError(t, q.PushDelete("uuid", 1))
+		require.NoError(t, q.PushDelete("uuid", 4))
+		require.Equal(t, 1, q.DVQLen())
+		_, _, ok = q.PopInsert("uuid")
+		require.True(t, ok)
+		_, ok = q.PopDelete("uuid")
+		require.True(t, ok)
+		require.Equal(t, 0, q.IVQLen())
+		require.Equal(t, 0, q.DVQLen())
+	})
+	t.Run("concurrent push and pop", func(t *testing.T) {
+		t.Parallel()
+		qi, err := New()
+		require.NoError(t, err)
+		q, ok := qi.(*vqueue)
+		require.True(t, ok)
+		const (
+			workers = 8
+			iters   = 2000
+		)
+		uuids := []string{"a", "b", "c", "d"}
+		var negative atomic.Bool
+		check := func() {
+			if q.IVQLen() < 0 || q.DVQLen() < 0 {
+				negative.Store(true)
+			}
+		}
+		start := make(chan struct{})
+		done := make(chan struct{}, 2*workers)
+		for w := range workers {
+			go func() {
+				defer func() { done <- struct{}{} }()
+				<-start
+				for i := range iters {
+					id := uuids[(w+i)%len(uuids)]
+					ts := int64(w*iters + i + 1)
+					if err := q.PushInsert(id, []float32{1}, ts); err != nil {
+						t.Error(err)
+						return
+					}
+					if err := q.PushDelete(id, ts); err != nil {
+						t.Error(err)
+						return
+					}
+					check()
+				}
+			}()
+			go func() {
+				defer func() { done <- struct{}{} }()
+				<-start
+				for i := range iters {
+					id := uuids[(w+i)%len(uuids)]
+					q.PopInsert(id)
+					check()
+					q.PopDelete(id)
+					check()
+				}
+			}()
+		}
+		close(start)
+		timeout := time.NewTimer(time.Minute)
+		defer timeout.Stop()
+		for range 2 * workers {
+			select {
+			case <-done:
+			case <-timeout.C:
+				t.Fatal("workers did not finish")
+			}
+		}
+		require.False(t, negative.Load(), "queue length went below zero")
+		var ic, dc int
+		for _, id := range uuids {
+			if _, _, ok := q.loadIVQ(id); ok {
+				ic++
+			}
+			if _, ok := q.loadDVQ(id); ok {
+				dc++
+			}
+		}
+		require.Equal(t, ic, q.IVQLen())
+		require.Equal(t, dc, q.DVQLen())
+	})
+}

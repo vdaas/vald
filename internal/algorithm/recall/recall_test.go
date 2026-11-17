@@ -31,6 +31,7 @@ func TestCalc_Ints(t *testing.T) {
 		{name: "got beyond effectiveK ignored", got: []int{9, 8, 1}, truth: []int{1, 2}, k: 2, want: 0},
 		{name: "empty truth", got: []int{1}, truth: nil, k: 3, want: 0},
 		{name: "k zero", got: []int{1}, truth: []int{1}, k: 0, want: 0},
+		{name: "duplicate got IDs counted once", got: []int{1, 1, 1}, truth: []int{1, 2, 3}, k: 3, want: 1.0 / 3.0},
 		{name: "short truth caps denominator", got: []int{1, 2, 3}, truth: []int{1}, k: 10, want: 1},
 	} {
 		t.Run(tc.name, func(tt *testing.T) {

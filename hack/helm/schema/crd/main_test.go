@@ -14,6 +14,101 @@
 
 package main
 
+import (
+	"bufio"
+	"io"
+	"io/fs"
+	stdos "os"
+	"path/filepath"
+	"testing"
+	"time"
+
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/os"
+	"github.com/vdaas/vald/internal/strings"
+)
+
+// captureStdout runs fn while the process stdout is redirected, and returns what fn printed.
+// Tests using it must not run in parallel.
+func captureStdout(t *testing.T, fn func() error) (string, error) {
+	t.Helper()
+	r, w, err := os.Pipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	type result struct {
+		err error
+		out string
+	}
+	done := make(chan result, 1)
+	go func() {
+		b, rerr := io.ReadAll(r)
+		done <- result{out: string(b), err: rerr}
+	}()
+	orig := stdos.Stdout
+	stdos.Stdout = w
+	ferr := fn()
+	stdos.Stdout = orig
+	if err := w.Close(); err != nil {
+		t.Fatal(err)
+	}
+	select {
+	case res := <-done:
+		if res.err != nil {
+			t.Fatal(res.err)
+		}
+		return res.out, ferr
+	case <-time.After(10 * time.Second):
+		t.Fatal("reading captured stdout timed out")
+	}
+	return "", ferr
+}
+
+const brokenAnnotationValues = `# @schema {"name": "a", "type": "string"}
+a: x
+# @schema {"name": "b", "type": "string"
+b: y
+# @schema {"name": "c", "type": "string"}
+c: z
+`
+
+func TestGenSchemaSkipsBrokenAnnotation(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "values.yaml")
+	if err := os.WriteFile(path, []byte(brokenAnnotationValues), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	out, err := captureStdout(t, func() error { return genSchema(path, 0) })
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(out, "a:") || !strings.Contains(out, "c:") || strings.Contains(out, `"":`) {
+		t.Errorf("expected only the properties a and c, got %s", out)
+	}
+}
+
+func TestGenSchemaDoesNotCreateInput(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "missing.yaml")
+	if err := genSchema(path, 0); err == nil {
+		t.Error("expected an error for a missing file")
+	}
+	if _, err := os.Stat(path); !errors.Is(err, fs.ErrNotExist) {
+		t.Errorf("the input file must not be created, stat error: %v", err)
+	}
+}
+
+func TestGenSchemaReportsScanError(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "values.yaml")
+	// a line longer than bufio.MaxScanTokenSize makes the scanner fail.
+	content := "# @schema {\"name\": \"a\", \"type\": \"string\"}\na: x\nb: " + strings.Repeat("y", 128*1024) + "\n"
+	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	_, err := captureStdout(t, func() error { return genSchema(path, 0) })
+	if !errors.Is(err, bufio.ErrTooLong) {
+		t.Errorf("expected %v, got %v", bufio.ErrTooLong, err)
+	}
+}
+
 // NOT IMPLEMENTED BELOW
 //
 // func Test_main(t *testing.T) {

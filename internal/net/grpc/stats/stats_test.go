@@ -891,6 +891,99 @@ func Test_readCgroupV2Metrics(t *testing.T) {
 	}
 }
 
+func Test_readCgroupV1Metrics_cpuUsage(t *testing.T) {
+	// t.Parallel() // mutates package-level cgroupBasePath
+	// cpuAcctDir is the cgroup v1 cpu controller directory readCgroupV1Metrics reads.
+	const (
+		cpuAcctDir = "cpu,cpuacct"
+		malformed  = "not-a-number"
+	)
+	type cpuFile struct {
+		dir  string
+		data string
+	}
+	type test struct {
+		name     string
+		cpuFiles []cpuFile
+		wantErr  bool
+		wantCPU  uint64
+	}
+	tests := []test{
+		{
+			name: "returns parse error when the only readable cpuacct.usage is malformed",
+			cpuFiles: []cpuFile{
+				{dir: cpuAcctDir, data: malformed},
+			},
+			wantErr: true,
+		},
+		{
+			name: "returns parse error when every cpuacct.usage is malformed",
+			cpuFiles: []cpuFile{
+				{dir: "cpuacct", data: malformed},
+				{dir: cpuAcctDir, data: malformed},
+			},
+			wantErr: true,
+		},
+		{
+			name: "falls back to the second path when the first is malformed",
+			cpuFiles: []cpuFile{
+				{dir: "cpuacct", data: malformed},
+				{dir: cpuAcctDir, data: "42\n"},
+			},
+			wantCPU: 42,
+		},
+		{
+			name:    "returns read error when no cpuacct.usage exists",
+			wantErr: true,
+		},
+	}
+
+	origCgroupBasePath := cgroupBasePath
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tmpDir := tt.TempDir()
+			cgroupBasePath = tmpDir
+			defer func() { cgroupBasePath = origCgroupBasePath }()
+
+			write := func(dir, name, data string) {
+				tt.Helper()
+				if err := os.MkdirAll(filepath.Join(tmpDir, dir), 0o755); err != nil {
+					tt.Fatalf("mkdir %s: %v", dir, err)
+				}
+				if err := os.WriteFile(filepath.Join(tmpDir, dir, name), []byte(data), 0o644); err != nil {
+					tt.Fatalf("write %s/%s: %v", dir, name, err)
+				}
+			}
+			write("memory", "memory.usage_in_bytes", "1024")
+			write("memory", "memory.limit_in_bytes", "2048")
+			for _, f := range test.cpuFiles {
+				write(f.dir, "cpuacct.usage", f.data)
+			}
+
+			metrics, err := readCgroupV1Metrics()
+			if test.wantErr {
+				if err == nil {
+					tt.Fatalf("want error, got nil (metrics=%+v)", metrics)
+				}
+				if metrics != nil {
+					tt.Errorf("want nil metrics on error, got %+v", metrics)
+				}
+				return
+			}
+			if err != nil {
+				tt.Fatalf("unexpected error: %v", err)
+			}
+			if metrics == nil {
+				tt.Fatal("metrics should not be nil")
+			}
+			if metrics.CPUUsageNano != test.wantCPU {
+				tt.Errorf("CPUUsageNano: got %d, want %d", metrics.CPUUsageNano, test.wantCPU)
+			}
+		})
+	}
+}
+
 // NOT IMPLEMENTED BELOW
 //
 // func Test_readCgroupV1Metrics(t *testing.T) {

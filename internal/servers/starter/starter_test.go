@@ -14,8 +14,10 @@
 package starter
 
 import (
+	"context"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errors"
@@ -24,6 +26,12 @@ import (
 	"github.com/vdaas/vald/internal/servers/server"
 	testdata "github.com/vdaas/vald/internal/test"
 	"github.com/vdaas/vald/internal/tls"
+)
+
+// Fixture values of the server configs below.
+const (
+	loopbackHost = "127.0.0.1"
+	livenessName = "liveness"
 )
 
 func TestNew(t *testing.T) {
@@ -260,6 +268,60 @@ func TestSetupAPIs(t *testing.T) {
 				return nil
 			},
 		},
+
+		{
+			name: "returns error instead of panicking when a REST server is configured without REST options",
+			args: args{
+				cfg: new(tls.Config),
+			},
+			field: field{
+				cfg: &config.Servers{
+					Servers: []*config.Server{
+						{
+							Mode: server.REST.String(),
+							Name: "rest_srv",
+							Host: "rest_srv_host",
+							Port: 8080,
+						},
+					},
+				},
+			},
+			checkFunc: func(opts []servers.Option, err error) error {
+				if err == nil {
+					return errors.New("error is nil")
+				} else if got, want := err, errors.ErrInvalidAPIConfig; got.Error() != want.Error() {
+					return errors.Errorf("error is not equals. want: %v, got: %v", want, got)
+				}
+				return nil
+			},
+		},
+
+		{
+			name: "returns error instead of panicking when a GQL server is configured without GQL options",
+			args: args{
+				cfg: new(tls.Config),
+			},
+			field: field{
+				cfg: &config.Servers{
+					Servers: []*config.Server{
+						{
+							Mode: server.GQL.String(),
+							Name: "gql_srv",
+							Host: "gql_srv_host",
+							Port: 8080,
+						},
+					},
+				},
+			},
+			checkFunc: func(opts []servers.Option, err error) error {
+				if err == nil {
+					return errors.New("error is nil")
+				} else if got, want := err, errors.ErrInvalidAPIConfig; got.Error() != want.Error() {
+					return errors.Errorf("error is not equals. want: %v, got: %v", want, got)
+				}
+				return nil
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -459,6 +521,166 @@ func TestSetupMetrics(t *testing.T) {
 				t.Error(err)
 			}
 		})
+	}
+}
+
+// setupHealthCheck appended config.Server.Opts after HealthServerOpts, and an
+// unset ("") config duration was parsed as 0, so the default Helm values (empty
+// http timeouts on the liveness/readiness servers) wiped the preset timeouts and
+// left the probe http.Server with none at all.
+func TestHealthServerOpts_emptyConfigKeepsPresets(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		http              *config.HTTP
+		name              string
+		rht, rt, wt, idle time.Duration
+	}{
+		{
+			name: "empty config durations keep the presets",
+			http: &config.HTTP{},
+			rht:  3 * time.Second,
+			rt:   2 * time.Second,
+			wt:   3 * time.Second,
+			idle: 3 * time.Second,
+		},
+		{
+			name: "set config durations override the presets",
+			http: &config.HTTP{
+				ReadHeaderTimeout: "1s",
+				ReadTimeout:       "4s",
+				WriteTimeout:      "5s",
+				IdleTimeout:       "6s",
+				ShutdownDuration:  "0s",
+			},
+			rht:  1 * time.Second,
+			rt:   4 * time.Second,
+			wt:   5 * time.Second,
+			idle: 6 * time.Second,
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			hsc := &config.Server{
+				Name: livenessName,
+				Host: loopbackHost,
+				Port: 3000,
+				Mode: server.REST.String(),
+				HTTP: tc.http,
+			}
+			hs := new(http.Server)
+			if _, err := server.New(append(healthServerOpts(hsc), server.WithHTTPServer(hs))...); err != nil {
+				t.Fatalf("server.New() error = %v", err)
+			}
+			for _, c := range []struct {
+				name      string
+				got, want time.Duration
+			}{
+				{"ReadHeaderTimeout", hs.ReadHeaderTimeout, tc.rht},
+				{"ReadTimeout", hs.ReadTimeout, tc.rt},
+				{"WriteTimeout", hs.WriteTimeout, tc.wt},
+				{"IdleTimeout", hs.IdleTimeout, tc.idle},
+			} {
+				if c.got != c.want {
+					t.Errorf("%s = %v, want %v", c.name, c.got, c.want)
+				}
+			}
+		})
+	}
+}
+
+// TestNew_preStartFuncIsWired checks that a function registered by WithPreStartFunc runs before the
+// named server starts. It used to be stored and never passed to the server, so the server started listening.
+// The registered function fails, so ListenAndServe returns before the server binds its port.
+func TestNew_preStartFuncIsWired(t *testing.T) {
+	t.Parallel()
+	type handler struct {
+		http.Handler
+	}
+	tests := []struct {
+		cfg  *config.Servers
+		name string
+		srv  string
+	}{
+		{
+			name: "api server",
+			srv:  "rest_srv",
+			cfg: &config.Servers{
+				Servers: []*config.Server{
+					{Mode: server.REST.String(), Name: "rest_srv", Host: loopbackHost, Port: 8080},
+				},
+			},
+		},
+		{
+			name: "health check server",
+			srv:  livenessName,
+			cfg: &config.Servers{
+				HealthCheckServers: []*config.Server{
+					{Mode: server.REST.String(), Name: livenessName, Host: loopbackHost, Port: 3000},
+				},
+			},
+		},
+		{
+			name: "metrics server",
+			srv:  "pprof",
+			cfg: &config.Servers{
+				MetricsServers: []*config.Server{
+					{Mode: server.REST.String(), Name: "pprof", Host: loopbackHost, Port: 6060},
+				},
+			},
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			want := errors.New("pre-start called for " + tc.srv)
+			l, err := New(
+				WithConfig(tc.cfg),
+				WithREST(func(*config.Server) []server.Option {
+					return []server.Option{server.WithHTTPHandler(new(handler))}
+				}),
+				WithPreStartFunc(tc.srv, func() error { return want }),
+			)
+			if err != nil {
+				t.Fatalf("New() error = %v", err)
+			}
+			ctx, cancel := context.WithCancel(t.Context())
+			defer cancel()
+			ech := l.ListenAndServe(ctx)
+			timeout := time.After(10 * time.Second)
+			select {
+			case got := <-ech:
+				if !errors.Is(got, want) {
+					t.Errorf("ListenAndServe error = %v, want %v", got, want)
+				}
+			case <-timeout:
+				t.Fatal("timed out waiting for the pre-start error")
+			}
+			cancel()
+			for {
+				select {
+				case _, ok := <-ech:
+					if !ok {
+						return
+					}
+				case <-timeout:
+					t.Fatal("timed out waiting for the error channel to close")
+				}
+			}
+		})
+	}
+}
+
+func TestSrvs_hookOpts(t *testing.T) {
+	t.Parallel()
+	ss := &srvs{
+		pstartf: map[string]func() error{"a": func() error { return nil }},
+		pstopf:  map[string]func() error{"a": func() error { return nil }, "b": func() error { return nil }},
+	}
+	for name, want := range map[string]int{"a": 2, "b": 1, "c": 0} {
+		if got := len(ss.hookOpts(name)); got != want {
+			t.Errorf("hookOpts(%q) returned %d options, want %d", name, got, want)
+		}
 	}
 }
 

@@ -62,6 +62,10 @@ func (s *server) Search(
 		errhandler.RecordSpanAttrs(span, trace.StatusCodeInvalidArgument(err.Error()), err)
 		return nil, err
 	}
+	if err = s.validateVectorValue(span, vald.SearchRPCName, faissResourceType+"/faiss.Search",
+		req.GetConfig().GetRequestId(), req, req.GetVector()); err != nil {
+		return nil, err
+	}
 	res, err = s.faiss.Search(
 		req.GetConfig().GetNum(),
 		req.GetConfig().GetNprobe(),
@@ -72,6 +76,8 @@ func (s *server) Search(
 	}
 	if err != nil || res == nil {
 		var attrs []attribute.KeyValue
+		// errors.As writes to its target, so it must be local to stay race-free across concurrent requests.
+		var errFaiss errors.FaissError
 		switch {
 		case errors.Is(err, errors.ErrCreateIndexingIsInProgress):
 			err = status.WrapWithAborted("Search API aborted to process search request due to createing indices is in progress", err,
@@ -120,6 +126,28 @@ func (s *server) Search(
 				},
 				// ResourceType-only (no ResourceName), matching the up-front check,
 				// main's wire output, and ngt.Search.
+				&errdetails.ResourceInfo{
+					ResourceType: faissResourceType + "/faiss.Search",
+				})
+			log.Warn(err)
+			attrs = trace.StatusCodeInvalidArgument(err.Error())
+		case errors.Is(err, errors.ErrNaNOrInfVector):
+			err = status.WrapWithInvalidArgument("Search API vector with NaN or Inf value detected",
+				err,
+				&errdetails.RequestInfo{
+					RequestId:   req.GetConfig().GetRequestId(),
+					ServingData: errdetails.Serialize(req),
+				},
+				&errdetails.BadRequest{
+					FieldViolations: []*errdetails.BadRequestFieldViolation{
+						{
+							Field:       vectorField,
+							Description: err.Error(),
+						},
+					},
+				},
+				// ResourceType-only (no ResourceName), same shape as the dimension-size
+				// case above and ngt.Search.
 				&errdetails.ResourceInfo{
 					ResourceType: faissResourceType + "/faiss.Search",
 				})

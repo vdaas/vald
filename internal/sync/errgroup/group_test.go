@@ -16,22 +16,27 @@ package errgroup
 
 import (
 	"context"
+	"fmt"
 	"reflect"
-	"runtime"
 	"sync/atomic"
 	"testing"
+	"testing/synctest"
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/log/logger"
+	"github.com/vdaas/vald/internal/log/nop"
+	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/semaphore"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestMain(m *testing.M) {
-	log.Init(log.WithLoggerType(logger.NOP.String()))
+	// recLog discards like the NOP logger but records Errorf messages so
+	// tests can assert that global group task errors are logged.
+	log.Init(log.WithLogger(recLog))
 	goleak.VerifyTestMain(m)
 }
 
@@ -74,7 +79,6 @@ func TestNew(t *testing.T) {
 					want: &group{
 						egctx:  egctx,
 						cancel: cancel,
-						emap:   make(map[string]struct{}),
 					},
 					want1: egctx,
 				},
@@ -147,6 +151,48 @@ func TestInit(t *testing.T) {
 				afterFunc: func(t *testing.T, a args) {
 					t.Helper()
 					cancel(context.Canceled)
+					defaultBeforeFunc(a)
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(t.Context())
+
+			return test{
+				name: "returns ctx unchanged and binds the already initialized instance to ctx",
+				args: args{
+					ctx: ctx,
+				},
+				want: want{
+					wantEgctx: ctx,
+				},
+				beforeFunc: func(a args) {
+					defaultBeforeFunc(a)
+					// the instance is created first with context.Background(), as package init does in production.
+					Get()
+				},
+				checkFunc: func(w want, gotEgctx context.Context) error {
+					if err := defaultCheckFunc(w, gotEgctx); err != nil {
+						return err
+					}
+					g, ok := instance.(*group)
+					if !ok {
+						return errors.Errorf("instance type = %T, want *group", instance)
+					}
+					if err := g.egctx.Err(); err != nil {
+						return errors.Errorf("global group ctx is canceled before ctx is canceled: %v", err)
+					}
+					cancel()
+					select {
+					case <-g.egctx.Done():
+						return nil
+					case <-time.After(5 * time.Second):
+						return errors.New("global group ctx is not canceled after ctx is canceled")
+					}
+				},
+				afterFunc: func(t *testing.T, a args) {
+					t.Helper()
+					cancel()
 					defaultBeforeFunc(a)
 				},
 			}
@@ -714,32 +760,6 @@ func Test_group_Wait(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		func() test {
-			var num atomic.Int32
-			return test{
-				name:   "returns nil after all goroutne returns",
-				fields: fields{},
-				beforeFunc: func(t *testing.T, g Group) {
-					t.Helper()
-					g.Go(func() error {
-						num.Store(int32(runtime.NumGoroutine()))
-						time.Sleep(time.Second)
-						return nil
-					})
-				},
-				checkFunc: func(w want, err error) error {
-					if err := defaultCheckFunc(w, err); err != nil {
-						return err
-					}
-
-					if got, want := int(num.Load()), runtime.NumGoroutine(); got <= want {
-						return errors.New("all goroutine not returns")
-					}
-					return nil
-				},
-			}
-		}(),
-
 		{
 			name: "returns error when g.errs is not nil",
 			fields: fields{
@@ -776,6 +796,253 @@ func Test_group_Wait(t *testing.T) {
 			err := g.Wait()
 			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+// Wait blocks until every task has returned and then reports no error. The test used to count
+// runtime.NumGoroutine() around a one second Sleep, which depends on the goroutines of every other
+// test and of earlier -count runs. In a synctest bubble, synctest.Wait returns once every goroutine
+// is durably blocked, so "Wait has not returned while the tasks are held" and "Wait returned after
+// they were released" are observed, not timed.
+func Test_group_Wait_waitsForAllTasks(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		const tasks = 3
+		g := &group{}
+		release := make(chan struct{})
+		var finished atomic.Int32
+		for range tasks {
+			g.Go(func() error {
+				<-release
+				finished.Add(1)
+				return nil
+			})
+		}
+
+		var (
+			waitErr  error
+			returned atomic.Bool
+		)
+		go func() {
+			waitErr = g.Wait()
+			returned.Store(true)
+		}()
+
+		synctest.Wait() // the tasks wait for release and Wait waits for the tasks
+		if returned.Load() {
+			t.Fatal("Wait returned before the tasks did")
+		}
+		close(release)
+		synctest.Wait()
+		if !returned.Load() {
+			t.Fatal("Wait did not return after the tasks returned")
+		}
+		if got := finished.Load(); got != tasks {
+			t.Errorf("finished tasks = %d, want %d", got, tasks)
+		}
+		if waitErr != nil {
+			t.Errorf("Wait() error = %v, want nil", waitErr)
+		}
+	})
+}
+
+// fanOutProbe records how many calls to hold overlap. A call stays in flight
+// until more than limit calls overlap (then every call is released at once, so
+// an unbounded fan-out is seen without waiting) or a short grace period ends
+// (so a bounded fan-out still makes progress).
+type fanOutProbe struct {
+	over   chan struct{}
+	mu     sync.Mutex
+	limit  int
+	cur    int
+	peak   int
+	calls  int
+	closed bool
+}
+
+func (p *fanOutProbe) hold() {
+	p.mu.Lock()
+	p.cur++
+	p.calls++
+	p.peak = max(p.peak, p.cur)
+	if p.cur > p.limit && !p.closed {
+		p.closed = true
+		close(p.over)
+	}
+	p.mu.Unlock()
+	timer := time.NewTimer(20 * time.Millisecond)
+	select {
+	case <-p.over:
+	case <-timer.C:
+	}
+	timer.Stop()
+	p.mu.Lock()
+	p.cur--
+	p.mu.Unlock()
+}
+
+func (p *fanOutProbe) stats() (peak, calls int) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	return p.peak, p.calls
+}
+
+// TestNewBoundedFanOut pins the group the Multi* handlers fan out on: it never
+// runs more than limit items at once, limit <= 0 means unbounded (not a
+// deadlock), and neither an already-cancelled request nor a failing item makes
+// it silently skip the items that had to wait for a slot; the item error is
+// still returned by Wait.
+func TestNewBoundedFanOut(t *testing.T) {
+	t.Parallel()
+	const n = 6
+	errItem := errors.New("item failed")
+	tests := []struct {
+		name      string
+		limit     int
+		cancelled bool
+		fails     bool
+	}{
+		{name: "bounded", limit: 2},
+		{name: "bounded with a cancelled request ctx", limit: 2, cancelled: true},
+		{name: "bounded with a failing item", limit: 2, fails: true},
+		{name: "zero limit is unbounded", limit: 0},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			ctx, cancel := context.WithCancel(t.Context())
+			defer cancel()
+			if test.cancelled {
+				cancel()
+			}
+			p := &fanOutProbe{over: make(chan struct{}), limit: 2}
+			done := make(chan error, 1)
+			go func() {
+				eg := NewBoundedFanOut(ctx, test.limit)
+				for i := range n {
+					eg.Go(func() error {
+						p.hold()
+						if test.fails && i == 0 {
+							return errItem
+						}
+						return nil
+					})
+				}
+				done <- eg.Wait()
+			}()
+			select {
+			case err := <-done:
+				if test.fails {
+					if !errors.Is(err, errItem) {
+						t.Errorf("Wait() = %v, want %v", err, errItem)
+					}
+				} else if err != nil {
+					t.Fatalf("Wait() = %v, want nil", err)
+				}
+			case <-time.After(10 * time.Second):
+				t.Fatal("timed out waiting for the group")
+			}
+			peak, calls := p.stats()
+			if calls != n {
+				t.Errorf("ran %d items, want all %d", calls, n)
+			}
+			if test.limit > 0 && peak > test.limit {
+				t.Errorf("peak concurrency = %d, want <= %d", peak, test.limit)
+			}
+		})
+	}
+}
+
+// recordingLogger discards everything except Errorf messages, which it records
+// so a test can count them by a unique error message.
+type recordingLogger struct {
+	logger.Interface
+	errors []string
+	mu     sync.Mutex
+}
+
+//nolint:gochecknoglobals // TestMain installs this as the process-wide log.Init logger, so tests must share the one instance to read what the group logged
+var recLog = &recordingLogger{Interface: nop.New()}
+
+func (r *recordingLogger) Errorf(format string, vals ...any) {
+	msg := fmt.Sprintf(format, vals...)
+	r.mu.Lock()
+	r.errors = append(r.errors, msg)
+	r.mu.Unlock()
+}
+
+// count returns how many recorded Errorf messages contain s.
+func (r *recordingLogger) count(s string) (n int) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	for _, m := range r.errors {
+		if strings.Contains(m, s) {
+			n++
+		}
+	}
+	return n
+}
+
+// A task error on the process-wide group is logged when it occurs (its
+// cancellation is watched by nobody and Wait only runs at shutdown); a local
+// group keeps leaving reporting to its caller, and cancellation is never logged.
+// Not parallel: it resets the package-level instance.
+func TestGlobalGroupLogsTaskErrors(t *testing.T) {
+	tests := []struct {
+		group   func(t *testing.T) Group
+		taskErr error
+		name    string
+		want    int
+	}{
+		{
+			name: "global group logs a failed task",
+			group: func(t *testing.T) Group {
+				t.Helper()
+				instance, once = nil, sync.Once{}
+				t.Cleanup(func() { instance, once = nil, sync.Once{} })
+				Init(t.Context())
+				return Get()
+			},
+			taskErr: errors.New("TestGlobalGroupLogsTaskErrors/global failure"),
+			want:    1,
+		},
+		{
+			name: "local group does not log a failed task",
+			group: func(t *testing.T) Group {
+				t.Helper()
+				g, _ := New(t.Context())
+				return g
+			},
+			taskErr: errors.New("TestGlobalGroupLogsTaskErrors/local failure"),
+			want:    0,
+		},
+		{
+			name: "global group does not log a canceled task",
+			group: func(t *testing.T) Group {
+				t.Helper()
+				instance, once = nil, sync.Once{}
+				t.Cleanup(func() { instance, once = nil, sync.Once{} })
+				Init(t.Context())
+				return Get()
+			},
+			taskErr: errors.Errorf("TestGlobalGroupLogsTaskErrors/canceled: %w", context.Canceled),
+			want:    0,
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			g := tc.group(t)
+			// recLog is process-wide and keeps its records, so a repeated run (-count, -shuffle)
+			// sees the messages of the earlier ones; count what this run adds.
+			before := recLog.count(tc.taskErr.Error())
+			g.Go(func() error { return tc.taskErr })
+			// Wait returns once the task has run; its result is not under test.
+			if err := g.Wait(); err != nil {
+				t.Logf("Wait() error = %v", err)
+			}
+			if got := recLog.count(tc.taskErr.Error()) - before; got != tc.want {
+				t.Errorf("logged %d times, want %d", got, tc.want)
 			}
 		})
 	}
@@ -1516,3 +1783,62 @@ func Test_group_Wait(t *testing.T) {
 // 		})
 // 	}
 // }
+
+// appendErr used to check and insert under separate locks, so concurrent goroutines
+// returning the same error could all record it.
+func Test_group_appendErr_concurrentDuplicates(t *testing.T) {
+	t.Parallel()
+	g := new(group)
+	const workers = 64
+	var wg sync.WaitGroup
+	start := make(chan struct{})
+	for range workers {
+		wg.Go(func() {
+			<-start
+			g.appendErr(errors.New("same"))
+		})
+	}
+	close(start)
+	wg.Wait()
+	if got := len(g.errs); got != 1 {
+		t.Errorf("recorded %d errors, want 1", got)
+	}
+}
+
+// TestNewContinueOnError pins that a task error does not cancel the context of
+// a NewContinueOnError group, so tasks that wait for a slot after the failed
+// one still run, while Wait still returns the error.
+func TestNewContinueOnError(t *testing.T) {
+	t.Parallel()
+	const n = 4
+	errTask := errors.New("task failed")
+	g, egctx := NewContinueOnError(t.Context())
+	// limit 1 runs the failing task inline, so its effect on egctx is settled
+	// when Go returns.
+	g.SetLimit(1)
+	g.Go(func() error { return errTask })
+	if err := egctx.Err(); err != nil {
+		t.Fatalf("egctx.Err() = %v after a task error, want nil", err)
+	}
+	g.SetLimit(2)
+	var ran atomic.Int64
+	for range n {
+		g.Go(func() error {
+			ran.Add(1)
+			return nil
+		})
+	}
+	done := make(chan error, 1)
+	go func() { done <- g.Wait() }()
+	select {
+	case err := <-done:
+		if !errors.Is(err, errTask) {
+			t.Errorf("Wait() = %v, want %v", err, errTask)
+		}
+	case <-time.After(10 * time.Second):
+		t.Fatal("timed out waiting for the group")
+	}
+	if got := ran.Load(); got != n {
+		t.Errorf("ran %d tasks, want all %d", got, n)
+	}
+}

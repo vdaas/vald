@@ -14,8 +14,6 @@
 
 package compress
 
-import "github.com/vdaas/vald/internal/errors"
-
 // LZ4Option represents the functional option for lz4Compressor.
 type LZ4Option func(c *lz4Compressor) error
 
@@ -37,11 +35,12 @@ func WithLZ4Gob(opts ...GobOption) LZ4Option {
 }
 
 // WithLZ4CompressionLevel returns the option to set compressionLevel for lz4Compressor.
+// Every int is accepted. A positive level selects the high compression (HC) mode of pierrec/lz4 v3
+// with that search depth, and any other level (the Helm default is -1) the fast compressor; both
+// CompressVector and Writer follow this rule, because the library itself treats every non-zero
+// level as HC.
 func WithLZ4CompressionLevel(level int) LZ4Option {
 	return func(c *lz4Compressor) error {
-		if level > 0 {
-			return errors.ErrInvalidCompressionLevel(level)
-		}
 		c.compressionLevel = level
 		return nil
 	}

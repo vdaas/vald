@@ -35,6 +35,9 @@ var defaultOptions = []Option{
 // WithInitialDuration returns the option to set the initial duration of backoff.
 func WithInitialDuration(dur string) Option {
 	return func(b *backoff) {
+		if dur == "" {
+			return
+		}
 		d, err := timeutil.Parse(dur)
 		if err != nil {
 			d = 500 * time.Millisecond
@@ -46,8 +49,11 @@ func WithInitialDuration(dur string) Option {
 // WithMaximumDuration returns the option to set the maximum duration of backoff.
 func WithMaximumDuration(dur string) Option {
 	return func(b *backoff) {
+		if dur == "" {
+			return
+		}
 		d, err := timeutil.Parse(dur)
-		if err != nil {
+		if err != nil || d <= 0 {
 			d = 5 * time.Hour
 		}
 		b.maxDuration = float64(d)
@@ -57,6 +63,9 @@ func WithMaximumDuration(dur string) Option {
 // WithJitterLimit returns the option to set the jitter limit duration of backoff.
 func WithJitterLimit(dur string) Option {
 	return func(b *backoff) {
+		if dur == "" {
+			return
+		}
 		d, err := timeutil.Parse(dur)
 		if err != nil {
 			d = time.Minute
@@ -88,8 +97,11 @@ func WithRetryCount(c int) Option {
 // WithBackOffTimeLimit returns the option to set the limit of backoff.
 func WithBackOffTimeLimit(dur string) Option {
 	return func(b *backoff) {
+		if dur == "" {
+			return
+		}
 		d, err := timeutil.Parse(dur)
-		if err != nil {
+		if err != nil || d <= 0 {
 			d = time.Second * 20
 		}
 		b.backoffTimeLimit = d

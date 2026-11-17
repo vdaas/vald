@@ -139,6 +139,9 @@ func WithDataset(d *config.BenchmarkDataset) Option {
 		if d.Name == hdf5.Original.String() && len(d.URL) == 0 {
 			return errors.NewErrInvalidOption("dataset", d)
 		}
+		if d.Range == nil {
+			return errors.NewErrInvalidOption("dataset range", d.Range)
+		}
 		j.dataset = d
 		return nil
 	}
@@ -219,6 +222,10 @@ func WithBeforeJobDuration(dur string) Option {
 		dur, err := timeutil.Parse(dur)
 		if err != nil {
 			return err
+		}
+		if dur <= 0 {
+			// time.NewTicker panics for non-positive intervals
+			return errors.NewErrInvalidOption("beforeJobDuration", dur)
 		}
 		j.beforeJobDur = dur
 		return nil

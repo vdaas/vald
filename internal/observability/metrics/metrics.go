@@ -32,6 +32,7 @@ type (
 
 	Int64ObservableGauge   = metric.Int64ObservableGauge
 	Float64ObservableGauge = metric.Float64ObservableGauge
+	MeasurementOption      = metric.MeasurementOption
 )
 
 const (
@@ -59,7 +60,7 @@ var (
 		10,
 		30,
 		60,
-		8,
+		80,
 		100,
 		200,
 		300,

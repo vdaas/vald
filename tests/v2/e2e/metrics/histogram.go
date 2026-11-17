@@ -20,6 +20,7 @@ import (
 	"slices"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/sync"
 )
 
@@ -84,11 +85,15 @@ func NewHistogram(opts ...HistogramOption) (Histogram, error) {
 	}
 	// Apply default options first
 	for _, opt := range defaultHistogramOpts {
-		_ = opt(&cfg)
+		if err := opt(&cfg); err != nil {
+			return nil, err
+		}
 	}
 	// Apply user options
 	for _, opt := range opts {
-		_ = opt(&cfg)
+		if err := opt(&cfg); err != nil {
+			return nil, err
+		}
 	}
 
 	if cfg.NumShards <= 1 {
@@ -296,7 +301,9 @@ func (sh *shardedHistogram) Snapshot() *HistogramSnapshot {
 
 	merged := sh.shards[0].Clone().(*histogram)
 	for i := 1; i < len(sh.shards); i++ {
-		_ = merged.mergeHistogram(sh.shards[i])
+		if err := merged.mergeHistogram(sh.shards[i]); err != nil {
+			log.Errorf("failed to merge histogram shard %d into snapshot: %v", i, err)
+		}
 	}
 	return merged.Snapshot()
 }

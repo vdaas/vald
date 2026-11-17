@@ -56,11 +56,7 @@ type discoverer struct {
 	nodeMetrics     sync.Map[string, NodeMetrics]
 	nodes           sync.Map[string, *Node]
 	podMetrics      sync.Map[string, PodMetrics]
-	// maxPods is written from the reconciler goroutine (podEntries) and read
-	// from the serving goroutine (GetPods slice pre-alloc), so it is atomic to
-	// avoid a data race on the plain int it used to be.
-	maxPods atomic.Int64
-	csd     time.Duration
+	csd             time.Duration
 }
 
 // New returns Discoverer implementation.
@@ -89,10 +85,29 @@ func New(selector *config.Selectors, opts ...Option) (Discoverer, error) {
 		k8s.WithDialer(d.der),
 		k8s.WithControllerName("vald k8s agent discoverer"),
 		k8s.WithLeaderElection(false, "", ""),
+	}
+	for _, rc := range d.listControllers(selector) {
+		k8sOpts = append(k8sOpts, k8s.WithResourceController(rc))
+	}
+
+	ctrl, err := k8s.New(k8sOpts...)
+	if err != nil {
+		return nil, err
+	}
+	d.ctrl = ctrl
+	return d, nil
+}
+
+// listControllers returns the list reconcilers that mirror the watched
+// resources into d. Node and NodeMetrics are cluster-scoped, so their lists
+// must not be restricted to d.namespace: the cache indexes them under the
+// empty namespace and an InNamespace filter would always list nothing.
+func (d *discoverer) listControllers(selector *config.Selectors) []k8s.ResourceController {
+	return []k8s.ResourceController{
 		listSyncController("node metrics discoverer", "node metrics",
 			new(k8s.NodeMetrics), &d.nodeMetrics,
 			debugLogged("node metrics", toNodeMetricsMap),
-			d.namespace, selector.GetNodeMetricsFields(), selector.GetNodeMetricsLabels(),
+			"", selector.GetNodeMetricsFields(), selector.GetNodeMetricsLabels(),
 			reconciler.WithAddToScheme(k8s.AddMetricsToScheme),
 		),
 		listSyncController("pod metrics discoverer", "pod metrics",
@@ -111,17 +126,10 @@ func New(selector *config.Selectors, opts ...Option) (Discoverer, error) {
 		listSyncController("node discoverer", "node resource",
 			new(k8s.Node), &d.nodes,
 			nodeEntries,
-			d.namespace, selector.GetNodeFields(), selector.GetNodeLabels(),
+			"", selector.GetNodeFields(), selector.GetNodeLabels(),
 			reconciler.WithFieldIndex("status.phase", nodeStatusPhaseIndexer),
 		),
 	}
-
-	ctrl, err := k8s.New(k8sOpts...)
-	if err != nil {
-		return nil, err
-	}
-	d.ctrl = ctrl
-	return d, nil
 }
 
 // startErrChanBufferSize buffers the controller error stream relayed onto ech
@@ -148,9 +156,20 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 				return ctx.Err()
 			case <-dt.C:
 				d.refreshSnapshots(ctx)
-			case err = <-dech:
-				if err != nil {
-					ech <- err
+			case derr, ok := <-dech:
+				if !ok {
+					// the controller closed its error stream (its manager
+					// returned); a closed channel is always ready, so stop
+					// selecting it or this loop busy-spins until ctx ends.
+					dech = nil
+					continue
+				}
+				if derr != nil {
+					select {
+					case ech <- derr:
+					case <-ctx.Done():
+						return ctx.Err()
+					}
 				}
 			}
 		}
@@ -190,9 +209,10 @@ func (d *discoverer) refreshSnapshots(ctx context.Context) {
 					Limit:   n.MemCapacity,
 					Request: n.MemCapacity - n.MemRemain,
 				},
-				Pods: &payload.Info_Pods{
-					Pods: make([]*payload.Info_Pod, d.maxPods.Load()),
-				},
+				// Non-nil so GetNodes keeps listing the node's pods; the
+				// snapshot node itself never carries a pod aggregate (pods
+				// are served from podsByNode via response-only copies).
+				Pods: new(payload.Info_Pods),
 			}
 			nm, ok := d.nodeMetrics.Load(nodeName)
 			if ok {
@@ -227,8 +247,11 @@ func (d *discoverer) refreshSnapshots(ctx context.Context) {
 							Request: p.MemRequest,
 						},
 					}
+					// podMetrics is keyed by bare pod name, so with all-namespace
+					// discovery same-named pods in different namespaces collide;
+					// only attach metrics that belong to this pod's namespace.
 					pm, ok := d.podMetrics.Load(p.Name)
-					if ok {
+					if ok && (pm.Namespace == "" || pm.Namespace == p.Namespace) {
 						pi.GetCpu().Usage = pm.CPU
 						pi.GetMemory().Usage = pm.Mem
 					}
@@ -255,7 +278,7 @@ func (d *discoverer) refreshSnapshots(ctx context.Context) {
 					}
 					nsApps, ok := podsByNamespace[p.Namespace]
 					if !ok {
-						nsApps = make(map[string][]*payload.Info_Pod, len(*pods))
+						nsApps = make(map[string][]*payload.Info_Pod)
 						podsByNamespace[p.Namespace] = nsApps
 					}
 					group, ok := podsByName[appName]
@@ -282,23 +305,17 @@ func (d *discoverer) refreshSnapshots(ctx context.Context) {
 		for nodeName, nodeNs := range podsByNode {
 			nn, ok := nodeByName[nodeName]
 			if !ok || nn == nil {
-				nn = new(payload.Info_Node)
+				nn = &payload.Info_Node{Name: nodeName}
 				nodeByName[nodeName] = nn
 			}
 			if nn.GetPods() == nil {
 				nn.Pods = new(payload.Info_Pods)
 			}
-			aggregated := nn.GetPods().GetPods()
 			for _, nodeApps := range nodeNs {
 				for _, p := range nodeApps {
 					slices.SortFunc(p, byMemoryUsage)
-					aggregated = append(aggregated, p...)
 				}
 			}
-			// Sorting the aggregate is not redundant with the per-group
-			// sorts above: it orders the concatenation of the sorted groups.
-			slices.SortFunc(aggregated, byMemoryUsage)
-			nn.GetPods().Pods = aggregated
 		}
 		d.nodeByName.Store(&nodeByName)
 		d.podsByNode.Store(&podsByNode)
@@ -412,25 +429,47 @@ func (d *discoverer) GetPods(req *payload.Discoverer_Request) (pods *payload.Inf
 			return nil, errors.ErrNamespaceNotFound(req.GetNamespace())
 		}
 	}
-	if podsByName == nil {
-		if podsByNamespace != nil {
-			podsByName = make(map[string][]*payload.Info_Pod)
-			for _, pbn := range podsByNamespace {
-				for appName, pb := range pbn {
-					podsByName[appName] = append(podsByName[appName], pb...)
-				}
-			}
-		} else {
-			podsByName = *d.podsByName.Load()
-			if podsByName == nil {
-				return nil, errors.ErrInvalidDiscoveryCache
-			}
-		}
-	}
 	// The snapshot groups and the *Info_Pod / *Info_Node messages they point
 	// to are shared with every other concurrent request, so the response is
 	// built from response-only copies: both the recursion-stripping inside
 	// responsePod and the sort below must never touch the shared snapshot.
+	if podsByName == nil && podsByNamespace != nil {
+		// Node-scoped request across all namespaces: copy straight out of the
+		// node's per-namespace groups instead of merging them into a
+		// throwaway per-request map first. The final sort fixes the order.
+		if req.GetName() != "" && req.GetName() != "*" {
+			found := false
+			for _, pbn := range podsByNamespace {
+				group, ok := pbn[req.GetName()]
+				if !ok {
+					continue
+				}
+				found = true
+				for _, p := range group {
+					pods.Pods = append(pods.Pods, responsePod(p))
+				}
+			}
+			if !found {
+				return nil, errors.ErrPodNameNotFound(req.GetName())
+			}
+		} else {
+			for _, pbn := range podsByNamespace {
+				for _, group := range pbn {
+					for _, p := range group {
+						pods.Pods = append(pods.Pods, responsePod(p))
+					}
+				}
+			}
+		}
+		slices.SortFunc(pods.Pods, byMemoryUsage)
+		return pods, nil
+	}
+	if podsByName == nil {
+		podsByName = *d.podsByName.Load()
+		if podsByName == nil {
+			return nil, errors.ErrInvalidDiscoveryCache
+		}
+	}
 	if req.GetName() != "" && req.GetName() != "*" {
 		group, ok := podsByName[req.GetName()]
 		if !ok {
@@ -481,15 +520,17 @@ func (d *discoverer) GetNodes(
 	nodes = &payload.Info_Nodes{
 		Nodes: make([]*payload.Info_Node, 0, len(nbn)),
 	}
+	// Query per node with a local request so the caller's request is not mutated.
+	nreq := &payload.Discoverer_Request{Namespace: req.GetNamespace(), Name: req.GetName()}
 	for name, n := range nbn {
-		req.Node = name
+		nreq.Node = name
 		rn := responseNode(n)
 		if n.GetPods() != nil {
 			// An empty, non-nil aggregate mirrors the previous response shape
 			// for nodes without pods in the snapshot (GetPods returns
 			// node-not-found for them).
 			rn.Pods = new(payload.Info_Pods)
-			ps, err := d.GetPods(req)
+			ps, err := d.GetPods(nreq)
 			if err == nil && ps != nil {
 				stripResponsePodNodes(ps)
 				rn.Pods = ps

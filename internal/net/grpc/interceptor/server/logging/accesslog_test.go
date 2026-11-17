@@ -15,13 +15,144 @@
 package logging
 
 import (
+	"context"
+	"fmt"
 	"testing"
 
+	"github.com/vdaas/vald/internal/encoding/json"
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/sync/atomic"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestMain(m *testing.M) {
 	goleak.VerifyTestMain(m)
+}
+
+// countingError counts how many times its message is requested.
+// AccessLogEntity.String reads the message of entity.Error, so the count tells
+// whether the access log entity has been rendered.
+type countingError struct {
+	n *atomic.Int64
+}
+
+func (e countingError) Error() string {
+	e.n.Add(1)
+	return "counting error"
+}
+
+type stubServerStream struct {
+	grpc.ServerStream
+	ctx context.Context //nolint:containedctx // test stub that must return a fixed context
+}
+
+func (s stubServerStream) Context() context.Context {
+	return s.ctx
+}
+
+// TestAccessLogInterceptor_LazyRender verifies that the access log entity is not
+// rendered while the log level that would emit it is disabled.
+// log.Init is effective only once per process, and no other test in this package
+// initializes it, so the error level set here applies to the whole package.
+func TestAccessLogInterceptor_LazyRender(t *testing.T) {
+	log.Init(log.WithLoggerType("glg"), log.WithLevel("error"))
+
+	t.Run("unary failure does not render the entity when warn is disabled", func(tt *testing.T) {
+		var n atomic.Int64
+		handlerErr := countingError{n: &n}
+		_, err := AccessLogInterceptor()(
+			tt.Context(),
+			nil,
+			&grpc.UnaryServerInfo{FullMethod: "/vald.v1.Search/Search"},
+			func(context.Context, any) (any, error) { return nil, handlerErr },
+		)
+		if !errors.Is(err, handlerErr) {
+			tt.Fatalf("handler error must be returned as is, got: %v", err)
+		}
+		if got := n.Load(); got != 0 {
+			tt.Errorf("entity was rendered %d times while warn is disabled", got)
+		}
+	})
+
+	t.Run("stream failure does not render the entity when warn is disabled", func(tt *testing.T) {
+		var n atomic.Int64
+		handlerErr := countingError{n: &n}
+		err := AccessLogStreamInterceptor()(
+			nil,
+			stubServerStream{ctx: tt.Context()},
+			&grpc.StreamServerInfo{FullMethod: "/vald.v1.Search/StreamSearch"},
+			func(any, grpc.ServerStream) error { return handlerErr },
+		)
+		if !errors.Is(err, handlerErr) {
+			tt.Fatalf("handler error must be returned as is, got: %v", err)
+		}
+		if got := n.Load(); got != 0 {
+			tt.Errorf("entity was rendered %d times while warn is disabled", got)
+		}
+	})
+}
+
+// TestLazyAccessLog verifies that the lazily rendered value produces the same
+// output as the pre-rendered string for the fmt based backends (glg RAW, zap) and
+// for the glg JSON format.
+func TestLazyAccessLog(t *testing.T) {
+	var n atomic.Int64
+	tests := []struct {
+		entity *AccessLogEntity
+		name   string
+	}{
+		{
+			name: "success entity",
+			entity: &AccessLogEntity{
+				GRPC:      &AccessLogGRPCEntity{Kind: grpcKindUnary, Service: "vald.v1.Search", Method: "Search"},
+				TraceID:   "0123456789abcdef",
+				StartTime: 1,
+				EndTime:   3,
+				Latency:   2,
+			},
+		},
+		{
+			name: "failure entity with an error message",
+			entity: &AccessLogEntity{
+				GRPC:  &AccessLogGRPCEntity{Kind: grpcKindStream, Service: "vald.v1.Insert", Method: "StreamInsert"},
+				Error: countingError{n: &n},
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			want := test.entity.String()
+			lazy := (*lazyAccessLog)(test.entity)
+
+			if got := lazy.String(); got != want {
+				tt.Errorf("String() = %q, want %q", got, want)
+			}
+			// glg RAW format ("%v %v") and zap (fmt.Sprint)
+			if got, w := fmt.Sprintf("%v %v", rpcCompletedMessage, lazy), fmt.Sprintf("%v %v", rpcCompletedMessage, want); got != w {
+				tt.Errorf("Sprintf = %q, want %q", got, w)
+			}
+			if got, w := fmt.Sprint(rpcCompletedMessage, lazy), fmt.Sprint(rpcCompletedMessage, want); got != w {
+				tt.Errorf("Sprint = %q, want %q", got, w)
+			}
+			// glg JSON format encodes the []any of arguments
+			got, err := json.Marshal([]any{rpcFailedMessage, lazy})
+			if err != nil {
+				tt.Fatal(err)
+			}
+			w, err := json.Marshal([]any{rpcFailedMessage, want})
+			if err != nil {
+				tt.Fatal(err)
+			}
+			if string(got) != string(w) {
+				tt.Errorf("json.Marshal = %s, want %s", got, w)
+			}
+		})
+	}
 }
 
 // NOT IMPLEMENTED BELOW

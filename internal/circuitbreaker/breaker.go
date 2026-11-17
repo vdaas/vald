@@ -16,11 +16,11 @@ package circuitbreaker
 import (
 	"context"
 	"reflect"
-	"sync/atomic"
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/sync/atomic"
 )
 
 type breaker struct {
@@ -37,11 +37,6 @@ type breaker struct {
 	closedErrRate         float32
 	halfOpenErrRate       float32
 }
-
-var (
-	serr  = new(errors.ErrCircuitBreakerMarkWithSuccess)
-	igerr = new(errors.ErrCircuitBreakerIgnorable)
-)
 
 func newBreaker(key string, opts ...BreakerOption) (*breaker, error) {
 	b := &breaker{
@@ -80,21 +75,16 @@ func (b *breaker) do(
 	}
 	val, err = fn(ctx)
 	if err != nil {
+		// errors.As writes to its target, so the targets must be local to stay race-free across concurrent callers.
+		var serr *errors.ErrCircuitBreakerMarkWithSuccess
 		if errors.As(err, &serr) {
 			b.success()
-			return nil, b.currentState(), func() *errors.ErrCircuitBreakerMarkWithSuccess {
-				target := &errors.ErrCircuitBreakerMarkWithSuccess{}
-				_ = errors.As(err, &target)
-				return target
-			}().Unwrap()
+			return nil, b.currentState(), serr.Unwrap()
 		}
 
+		var igerr *errors.ErrCircuitBreakerIgnorable
 		if errors.As(err, &igerr) {
-			return nil, b.currentState(), func() *errors.ErrCircuitBreakerIgnorable {
-				target := &errors.ErrCircuitBreakerIgnorable{}
-				_ = errors.As(err, &target)
-				return target
-			}().Unwrap()
+			return nil, b.currentState(), igerr.Unwrap()
 		}
 
 		if errors.Is(err, context.Canceled) ||
@@ -133,7 +123,7 @@ func (b *breaker) success() {
 	// halfOpenErrShouldTrip.ShouldTrip returns true when the sum of the number of successes and failures is greater than the b.minSamples and when the error rate is greater than the b.halfOpenErrRate.
 	// In other words, if the error rate is less than the b.halfOpenErrRate, it can be judged that the success rate is high, so this function change to the "Close" state from "Half-Open".
 	if st := b.currentState(); st == StateHalfOpen &&
-		b.count.Successes()+b.count.Fails() >= b.minSamples &&
+		b.count.Successes()+b.count.Fails() > b.minSamples && // same strict bound as the tripper, which never trips at exactly minSamples
 		!b.halfOpenErrShouldTrip.ShouldTrip(b.count) {
 		log.Infof("the operation succeeded, circuit breaker state for '%s' changed,\tfrom: %s, to: %s", b.key, st.String(), StateClosed.String())
 		b.reset()
@@ -170,8 +160,11 @@ func (b *breaker) currentState() State {
 		}
 		return StateHalfOpen
 	}
-	if expire := atomic.LoadInt64(&b.closedRefreshExp); expire == 0 || now > expire {
-		b.reset()
+	// Refresh only the closed-state counters here. Touching tripped/openExp would undo a trip() that a concurrent fail() made after the isTripped check above,
+	// and the CAS makes a single caller own each refresh boundary.
+	if expire := atomic.LoadInt64(&b.closedRefreshExp); (expire == 0 || now > expire) &&
+		atomic.CompareAndSwapInt64(&b.closedRefreshExp, expire, time.Now().Add(b.closedRefreshTimeout).UnixNano()) {
+		b.count.reset()
 	}
 	return StateClosed
 }
@@ -186,7 +179,8 @@ func (b *breaker) reset() {
 func (b *breaker) trip() {
 	atomic.StoreInt32(&b.tripped, 1)
 	atomic.StoreInt64(&b.openExp, time.Now().Add(b.openTimeout).UnixNano())
-	atomic.StoreInt64(&b.closedRefreshExp, 0)
+	// closedRefreshExp is intentionally left as is: it is ignored while tripped and reset() rewrites it on the way back to Closed.
+	// Zeroing it here let a concurrent currentState that had already seen tripped==0 treat the 0 as expired and reset() this trip away.
 	b.count.reset()
 }
 

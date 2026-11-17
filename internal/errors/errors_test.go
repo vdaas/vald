@@ -844,7 +844,7 @@ func TestWrapf(t *testing.T) {
 		func() test {
 			err := New("err: ")
 			format := "error is occurred: %v : %v"
-			wantErr := err
+			wantErr := fmt.Errorf("%s: %w", format, err)
 			return test{
 				name: "return an error when err and format are not empty and args is empty.",
 				args: args{
@@ -853,6 +853,12 @@ func TestWrapf(t *testing.T) {
 				},
 				want: want{
 					wantErr,
+				},
+				checkFunc: func(w want, got error) error {
+					if got == nil || got.Error() != w.want.Error() || !Is(got, err) {
+						return fmt.Errorf("got: \"%w\",\n\t\t\t\twant: \"%w\"", got, w.want)
+					}
+					return nil
 				},
 			}
 		}(),
@@ -2320,3 +2326,278 @@ func TestJoin(t *testing.T) {
 // 		})
 // 	}
 // }
+
+// multiUnwrapError is a minimal error exposing Unwrap() []error, which lets the
+// tests place nil elements in the multi-unwrap chain.
+type multiUnwrapError struct {
+	msg  string
+	errs []error
+}
+
+func (e *multiUnwrapError) Error() string { return e.msg }
+
+func (e *multiUnwrapError) Unwrap() []error { return e.errs }
+
+func TestIs_multiUnwrapNilElement(t *testing.T) {
+	t.Parallel()
+	const multiMsg = "multi"
+	hit := New("hit")
+	other := New("other")
+	missing := New("missing")
+	tests := []struct {
+		err    error
+		target error
+		name   string
+		want   bool
+	}{
+		{
+			name:   "nil first element is skipped and later element matches",
+			err:    &multiUnwrapError{msg: multiMsg, errs: []error{nil, hit}},
+			target: hit,
+			want:   true,
+		},
+		{
+			name:   "nil first element is skipped and nothing matches",
+			err:    &multiUnwrapError{msg: multiMsg, errs: []error{nil, other}},
+			target: missing,
+			want:   false,
+		},
+		{
+			name:   "nil last element does not panic when nothing matches",
+			err:    &multiUnwrapError{msg: multiMsg, errs: []error{other, nil}},
+			target: missing,
+			want:   false,
+		},
+		{
+			name:   "nil last element does not hide an earlier match",
+			err:    &multiUnwrapError{msg: multiMsg, errs: []error{hit, nil}},
+			target: hit,
+			want:   true,
+		},
+		{
+			name:   "only nil elements",
+			err:    &multiUnwrapError{msg: multiMsg, errs: []error{nil, nil}},
+			target: missing,
+			want:   false,
+		},
+		{
+			name:   "empty element list",
+			err:    &multiUnwrapError{msg: multiMsg},
+			target: missing,
+			want:   false,
+		},
+		{
+			name:   "the multi error itself matches by message",
+			err:    &multiUnwrapError{msg: "missing", errs: []error{nil}},
+			target: missing,
+			want:   true,
+		},
+	}
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			if got := Is(test.err, test.target); got != test.want {
+				tt.Errorf("Is() = %v, want %v", got, test.want)
+			}
+		})
+	}
+}
+
+type callCountError struct {
+	next  error
+	calls *int
+	msg   string
+}
+
+func (e *callCountError) Error() string {
+	*e.calls++
+	return e.msg
+}
+
+func (e *callCountError) Unwrap() error { return e.next }
+
+func TestIs_errorCallCount(t *testing.T) {
+	t.Parallel()
+	type want struct {
+		layerCalls  []int
+		targetCalls int
+		same        bool
+	}
+	tests := []struct {
+		name   string
+		want   want
+		layers int
+		match  bool
+		ident  bool
+	}{
+		{
+			name:   "mismatch calls Error once per layer and once for target",
+			layers: 3,
+			want:   want{same: false, targetCalls: 1, layerCalls: []int{1, 1, 1}},
+		},
+		{
+			name:   "message match at innermost layer",
+			layers: 3,
+			match:  true,
+			want:   want{same: true, targetCalls: 1, layerCalls: []int{1, 1, 1}},
+		},
+		{
+			name:   "identity match does not call Error",
+			layers: 1,
+			ident:  true,
+			want:   want{same: true, targetCalls: 0, layerCalls: []int{0}},
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			var targetCalls int
+			target := &callCountError{msg: "target", calls: &targetCalls}
+			counts := make([]int, tc.layers)
+			var err error
+			for i := tc.layers - 1; i >= 0; i-- {
+				msg := fmt.Sprintf("layer-%d", i)
+				if i == tc.layers-1 && tc.match {
+					msg = "TARGET"
+				}
+				err = &callCountError{msg: msg, calls: &counts[i], next: err}
+			}
+			if tc.ident {
+				err = target
+				counts[0] = 0
+			}
+			if got := Is(err, target); got != tc.want.same {
+				t.Fatalf("Is() = %v, want %v", got, tc.want.same)
+			}
+			if targetCalls != tc.want.targetCalls {
+				t.Errorf("target.Error() calls = %d, want %d", targetCalls, tc.want.targetCalls)
+			}
+			if !tc.ident && !reflect.DeepEqual(counts, tc.want.layerCalls) {
+				t.Errorf("layer Error() calls = %v, want %v", counts, tc.want.layerCalls)
+			}
+		})
+	}
+}
+
+// TestJoin_dedupToSingle verifies that the variadic Join returns the remaining
+// error itself, not a one-element join, when duplicates and nils collapse to one.
+func TestJoin_dedupToSingle(t *testing.T) {
+	t.Parallel()
+	e := New("same")
+	tests := []struct {
+		name string
+		errs []error
+	}{
+		{name: "identical errors", errs: []error{e, e, e}},
+		{name: "equal messages", errs: []error{New("same"), New("same"), New("same")}},
+		{name: "duplicates and nils", errs: []error{nil, e, nil, e}},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			got := Join(tc.errs...)
+			if _, ok := got.(*joinError); ok {
+				t.Fatalf("Join() = %#v, want a single non-join error", got)
+			}
+			if got == nil || got.Error() != "same" {
+				t.Errorf("Join() = %v, want error \"same\"", got)
+			}
+		})
+	}
+}
+
+// TestJoin_uncomparable verifies that the two-argument Join does not panic
+// when both errors share an uncomparable dynamic type.
+func TestJoin_uncomparable(t *testing.T) {
+	t.Parallel()
+	const msgDup = "dup"
+	tests := []struct {
+		a, b     error
+		name     string
+		wantMsg  string
+		wantJoin bool
+	}{
+		{
+			name:    "same message collapses to the first error",
+			a:       uncomparableErr{err: []interErr{{msg: msgDup}}},
+			b:       uncomparableErr{err: []interErr{{msg: msgDup}}},
+			wantMsg: msgDup,
+		},
+		{
+			name:     "different messages are joined",
+			a:        uncomparableErr{err: []interErr{{msg: "a"}}},
+			b:        uncomparableErr{err: []interErr{{msg: "b"}}},
+			wantMsg:  "a\nb",
+			wantJoin: true,
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			defer func() {
+				if r := recover(); r != nil {
+					t.Fatalf("Join() panicked: %v", r)
+				}
+			}()
+			got := Join(tc.a, tc.b)
+			if got == nil {
+				t.Fatal("Join() = nil, want non-nil")
+			}
+			if _, ok := got.(*joinError); ok != tc.wantJoin {
+				t.Errorf("Join() is *joinError = %v, want %v", ok, tc.wantJoin)
+			}
+			if got.Error() != tc.wantMsg {
+				t.Errorf("Join().Error() = %q, want %q", got.Error(), tc.wantMsg)
+			}
+		})
+	}
+}
+
+// TestWrap_errorCallCount verifies that Wrap does not evaluate err.Error()
+// redundantly before Is, which already compares the messages.
+func TestWrap_errorCallCount(t *testing.T) {
+	t.Parallel()
+	const msgEqual = "equal"
+	tests := []struct {
+		name     string
+		errMsg   string
+		msg      string
+		want     string
+		maxCalls int
+	}{
+		{
+			// one call inside Is plus one when fmt formats the %w operand.
+			name:     "different message is wrapped",
+			errMsg:   "inner",
+			msg:      "outer",
+			want:     "outer: inner",
+			maxCalls: 2,
+		},
+		{
+			name:     "equal message returns err",
+			errMsg:   msgEqual,
+			msg:      msgEqual,
+			want:     msgEqual,
+			maxCalls: 1,
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			var calls int
+			err := &callCountError{msg: tc.errMsg, calls: &calls}
+			got := Wrap(err, tc.msg)
+			if calls > tc.maxCalls {
+				t.Errorf("err.Error() calls = %d, want <= %d", calls, tc.maxCalls)
+			}
+			if got == nil || got.Error() != tc.want {
+				t.Fatalf("Wrap() = %v, want %q", got, tc.want)
+			}
+			// err has no inner error, so only a wrapper returned by Wrap unwraps to non-nil.
+			if tc.errMsg == tc.msg && Unwrap(got) != nil {
+				t.Errorf("Wrap() = %#v, want the input error itself", got)
+			}
+		})
+	}
+}

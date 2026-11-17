@@ -46,6 +46,7 @@ type run struct {
 	client        client.Client
 	ingress       ingress.Client
 	egress        egress.Client
+	stopClients   context.CancelFunc
 }
 
 func New(cfg *config.Data) (r runner.Interface, err error) {
@@ -74,72 +75,44 @@ func New(cfg *config.Data) (r runner.Interface, err error) {
 		return nil, err
 	}
 	var iaddrs []string
-	if cfg.IngressFilters != nil {
-		as := make([]string, 0, 10)
-		if cfg.IngressFilters.Client != nil && cfg.IngressFilters.Client.Addrs != nil {
-			as = append(as, cfg.IngressFilters.Client.Addrs...)
-		}
-		if cfg.IngressFilters.Vectorizer != "" {
-			as = append(as, cfg.IngressFilters.Vectorizer)
-		}
-		if cfg.IngressFilters.SearchFilters != nil {
-			as = append(as, cfg.IngressFilters.SearchFilters...)
-		}
-		if cfg.IngressFilters.InsertFilters != nil {
-			as = append(as, cfg.IngressFilters.InsertFilters...)
-		}
-		if cfg.IngressFilters.UpdateFilters != nil {
-			as = append(as, cfg.IngressFilters.UpdateFilters...)
-		}
-		if cfg.IngressFilters.UpsertFilters != nil {
-			as = append(as, cfg.IngressFilters.UpsertFilters...)
-		}
-		if len(as) != 0 {
-			slices.Sort(as)
-			dup := make(map[string]bool, len(as))
-			iaddrs = make([]string, 0, len(as))
-			for _, addr := range as {
-				if !dup[addr] {
-					dup[addr] = true
-					iaddrs = append(iaddrs, addr)
-				}
+	var iidle string
+	if f := cfg.IngressFilters; f != nil {
+		var as []string
+		if f.Client != nil {
+			as = append(as, f.Client.Addrs...)
+			if f.Client.DialOption != nil {
+				iidle = f.Client.DialOption.IdleTimeout
 			}
 		}
+		if f.Vectorizer != "" {
+			as = append(as, f.Vectorizer)
+		}
+		iaddrs = sortedUnique(slices.Concat(as, f.SearchFilters, f.InsertFilters, f.UpdateFilters, f.UpsertFilters))
 	}
 	ic, err := ingress.New(
 		ingress.WithAddrs(iaddrs...),
 		ingress.WithClient(grpc.New("Ingress Filter Client", icopts...)),
+		ingress.WithIdleTimeout(iidle),
 	)
 	if err != nil {
 		return nil, err
 	}
 	var eaddrs []string
-	if cfg.EgressFilters != nil {
-		as := make([]string, 0, 10)
-		if cfg.EgressFilters.Client != nil && cfg.EgressFilters.Client.Addrs != nil {
-			as = append(as, cfg.EgressFilters.Client.Addrs...)
-		}
-		if cfg.EgressFilters.DistanceFilters != nil {
-			as = append(as, cfg.EgressFilters.DistanceFilters...)
-		}
-		if cfg.EgressFilters.ObjectFilters != nil {
-			as = append(as, cfg.EgressFilters.ObjectFilters...)
-		}
-		if len(as) != 0 {
-			slices.Sort(as)
-			dup := make(map[string]bool, len(as))
-			eaddrs = make([]string, 0, len(as))
-			for _, addr := range as {
-				if !dup[addr] {
-					dup[addr] = true
-					eaddrs = append(eaddrs, addr)
-				}
+	var eidle string
+	if f := cfg.EgressFilters; f != nil {
+		var as []string
+		if f.Client != nil {
+			as = append(as, f.Client.Addrs...)
+			if f.Client.DialOption != nil {
+				eidle = f.Client.DialOption.IdleTimeout
 			}
 		}
+		eaddrs = sortedUnique(slices.Concat(as, f.DistanceFilters, f.ObjectFilters))
 	}
 	ec, err := egress.New(
 		egress.WithAddrs(eaddrs...),
 		egress.WithClient(grpc.New("Egress Filter Client", ecopts...)),
+		egress.WithIdleTimeout(eidle),
 	)
 	if err != nil {
 		return nil, err
@@ -230,23 +203,31 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	if r.observability != nil {
 		oech = r.observability.Start(ctx)
 	}
+	// ctx is cancelled by the shutdown signal, before the server drains its
+	// in-flight requests, and a cancelled client closes its connections. Run
+	// the outbound clients on a context that only PostStop cancels.
+	cctx, cancel := context.WithCancel(context.WithoutCancel(ctx))
+	r.stopClients = cancel
 	if r.ingress != nil {
-		iech, err = r.ingress.Start(ctx)
+		iech, err = r.ingress.Start(cctx)
 		if err != nil {
+			cancel()
 			close(ech)
 			return nil, err
 		}
 	}
 	if r.egress != nil {
-		eech, err = r.egress.Start(ctx)
+		eech, err = r.egress.Start(cctx)
 		if err != nil {
+			cancel()
 			close(ech)
 			return nil, err
 		}
 	}
 	if r.client != nil {
-		cech, err = r.client.Start(ctx)
+		cech, err = r.client.Start(cctx)
 		if err != nil {
+			cancel()
 			close(ech)
 			return nil, err
 		}
@@ -280,25 +261,29 @@ func (*run) PreStop(context.Context) error {
 	return nil
 }
 
-func (r *run) Stop(ctx context.Context) error {
+func (r *run) Stop(ctx context.Context) (err error) {
+	// Shut the server down first so spans and metrics of the requests it drains
+	// are still exported before observability is stopped.
+	err = r.server.Shutdown(ctx)
 	if r.observability != nil {
-		r.observability.Stop(ctx)
+		err = errors.Join(err, r.observability.Stop(ctx))
 	}
-	return r.server.Shutdown(ctx)
+	return err
 }
 
-func (r *run) PostStop(ctx context.Context) (err error) {
-	defer func() {
-		if err != nil {
-			err = errors.Join(r.ingress.Stop(ctx), errors.Join(r.egress.Stop(ctx), err))
-			return
-		}
-		err = r.ingress.Stop(ctx)
-		if err != nil {
-			err = errors.Join(r.egress.Stop(ctx), err)
-			return
-		}
-		err = r.egress.Stop(ctx)
-	}()
-	return r.client.Stop(ctx)
+func (r *run) PostStop(ctx context.Context) error {
+	if r.stopClients != nil {
+		defer r.stopClients()
+	}
+	// All three clients are always stopped, in this order, and their errors joined.
+	return errors.Join(r.client.Stop(ctx), r.ingress.Stop(ctx), r.egress.Stop(ctx))
+}
+
+// sortedUnique sorts addrs and drops duplicates; it returns nil for no addresses.
+func sortedUnique(addrs []string) []string {
+	if len(addrs) == 0 {
+		return nil
+	}
+	slices.Sort(addrs)
+	return slices.Compact(addrs)
 }

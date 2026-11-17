@@ -15,20 +15,18 @@ package json
 
 import (
 	"bytes"
-	"context"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"reflect"
-	"strconv"
 	"testing"
 
+	"github.com/vdaas/vald/internal/encoding/json"
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/log/logger"
+	"github.com/vdaas/vald/internal/net/grpc/codes"
+	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/net/http/rest"
-	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
@@ -94,6 +92,32 @@ func TestEncodeResponse(t *testing.T) {
 				return nil
 			},
 		},
+		func() test {
+			w := new(httptest.ResponseRecorder)
+			return test{
+				name: "does not write the header when encoding fails",
+				args: args{
+					w:      w,
+					data:   make(chan struct{}),
+					status: http.StatusOK,
+					contentTypes: []string{
+						"application/json",
+					},
+				},
+				checkFunc: func(err error) error {
+					if err == nil {
+						return errors.New("err is nil")
+					}
+					if w.Code != 0 {
+						return errors.Errorf("header was written. code: %v", w.Code)
+					}
+					if got := w.Header().Get(rest.ContentType); got != "" {
+						return errors.Errorf("content-type was set: %v", got)
+					}
+					return nil
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
@@ -318,6 +342,36 @@ func TestHandler(t *testing.T) {
 				return nil
 			},
 		},
+		func() test {
+			w := new(httptest.ResponseRecorder)
+			buf := new(bytes.Buffer)
+			buf.WriteString(`{"name":"vald"}`)
+			r := httptest.NewRequest(http.MethodPost, "/", buf)
+
+			return test{
+				name: "sends 503 to the client when encoding fails",
+				args: args{
+					r:    r,
+					w:    w,
+					data: make(map[string]string),
+					logic: func() (any, error) {
+						return func() {}, nil
+					},
+				},
+				checkFunc: func(code int, err error, data map[string]string) error {
+					if err == nil {
+						return errors.New("err is nil")
+					}
+					if code != http.StatusServiceUnavailable {
+						return errors.Errorf("code not equals. want: %v, got: %v", http.StatusServiceUnavailable, code)
+					}
+					if w.Code != http.StatusServiceUnavailable {
+						return errors.Errorf("written code not equals. want: %v, got: %v", http.StatusServiceUnavailable, w.Code)
+					}
+					return nil
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
@@ -325,8 +379,105 @@ func TestHandler(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 			code, err := Handler(test.args.w, test.args.r, &test.args.data, test.args.logic)
-			if err := test.checkFunc(code, err, test.args.data); err != nil {
-				t.Error(err)
+			if cerr := test.checkFunc(code, err, test.args.data); cerr != nil {
+				t.Error(cerr)
+			}
+		})
+	}
+}
+
+func TestHandler_logicErrorStatus(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		w     *httptest.ResponseRecorder
+		r     *http.Request
+		data  map[string]string
+		logic func() (any, error)
+	}
+	type test struct {
+		args      args
+		checkFunc func(code int, err error, data map[string]string) error
+		name      string
+	}
+	tests := []test{
+		func() test {
+			w := httptest.NewRecorder()
+			wantErr := status.Error(codes.NotFound, "not found")
+			buf := new(bytes.Buffer)
+			buf.WriteString(`{"name":"vald"}`)
+			r := httptest.NewRequest(http.MethodPost, "/", buf)
+
+			return test{
+				name: "returns 404 and leaves the body to the router when logic returns NotFound",
+				args: args{
+					r:    r,
+					w:    w,
+					data: make(map[string]string),
+					logic: func() (any, error) {
+						return nil, wantErr
+					},
+				},
+				checkFunc: func(code int, err error, data map[string]string) error {
+					if !errors.Is(err, wantErr) {
+						return errors.Errorf("err not equals. want: %v, got: %v", wantErr, err)
+					}
+					if code != http.StatusNotFound {
+						return errors.Errorf("code not equals. want: %v, got: %v", http.StatusNotFound, code)
+					}
+					if w.Body.Len() != 0 {
+						return errors.Errorf("body written by Handler: %q", w.Body.String())
+					}
+					return nil
+				},
+			}
+		}(),
+		func() test {
+			w := httptest.NewRecorder()
+			wantErr := status.Error(codes.Unavailable, "unavailable")
+			buf := new(bytes.Buffer)
+			buf.WriteString(`{"name":"vald"}`)
+			r := httptest.NewRequest(http.MethodPost, "/", buf)
+
+			return test{
+				name: "writes 503 problem json when logic returns Unavailable",
+				args: args{
+					r:    r,
+					w:    w,
+					data: make(map[string]string),
+					logic: func() (any, error) {
+						return nil, wantErr
+					},
+				},
+				checkFunc: func(code int, err error, data map[string]string) error {
+					if !errors.Is(err, wantErr) {
+						return errors.Errorf("err not equals. want: %v, got: %v", wantErr, err)
+					}
+					if code != http.StatusServiceUnavailable {
+						return errors.Errorf("code not equals. want: %v, got: %v", http.StatusServiceUnavailable, code)
+					}
+					if w.Code != http.StatusServiceUnavailable {
+						return errors.Errorf("written code not equals. want: %v, got: %v", http.StatusServiceUnavailable, w.Code)
+					}
+					var got RFC7807Error
+					if err := json.Unmarshal(w.Body.Bytes(), &got); err != nil {
+						return errors.Errorf("body is not problem json: %v, body: %q", err, w.Body.String())
+					}
+					if got.Status != http.StatusServiceUnavailable {
+						return errors.Errorf("body status not equals. want: %v, got: %v", http.StatusServiceUnavailable, got.Status)
+					}
+					return nil
+				},
+			}
+		}(),
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			code, err := Handler(test.args.w, test.args.r, &test.args.data, test.args.logic)
+			if cerr := test.checkFunc(code, err, test.args.data); cerr != nil {
+				tt.Error(cerr)
 			}
 		})
 	}
@@ -383,6 +534,43 @@ func TestErrorHandler(t *testing.T) {
 				},
 			}
 		}(),
+		func() test {
+			rbuf := new(bytes.Buffer)
+			rbuf.WriteString(`{"name":"vald"}`)
+			r := httptest.NewRequest(http.MethodPost, "/", rbuf)
+			// The body has already been consumed and closed, as it is after Handler.
+			if err := DecodeRequest(r, &map[string]any{}); err != nil {
+				t.Fatalf("failed to decode request: %v", err)
+			}
+
+			w := &httptest.ResponseRecorder{
+				Body: new(bytes.Buffer),
+			}
+
+			return test{
+				name: "returns nil when the request body is already consumed",
+				args: args{
+					r:    r,
+					w:    w,
+					msg:  "hello",
+					code: http.StatusNotFound,
+					err:  errors.New("not found"),
+				},
+				checkFunc: func(err error) error {
+					if err != nil {
+						return errors.Errorf("err not equals. want: %v, got: %v", nil, err)
+					}
+					if got, want := w.Header()[rest.ContentType],
+						[]string{rest.ProblemJSON, rest.CharsetUTF8}; !reflect.DeepEqual(got, want) {
+						return errors.Errorf("resp %v header not equals. want: %v, got: %v", rest.ContentType, want, got)
+					}
+					if got, want := w.Code, http.StatusNotFound; got != want {
+						return errors.Errorf("response code not equals. want: %v, got: %v", want, got)
+					}
+					return nil
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
@@ -397,406 +585,103 @@ func TestErrorHandler(t *testing.T) {
 	}
 }
 
-func TestDecodeResponse(t *testing.T) {
+func Test_isConsumedBody(t *testing.T) {
 	t.Parallel()
-	type args struct {
-		res  *http.Response
-		data any
+	decodeErr := func(t *testing.T, r *http.Request) error {
+		t.Helper()
+		return json.Decode(r.Body, &map[string]any{})
 	}
-	type want struct {
-		err error
+	tests := []struct {
+		err  func(t *testing.T) error
+		name string
+		want bool
+	}{
+		{
+			name: "returns true for a body drained by DecodeRequest",
+			err: func(t *testing.T) error {
+				t.Helper()
+				r := httptest.NewRequest(http.MethodPost, "/", bytes.NewBufferString(`{"name":"vald"}`))
+				if err := DecodeRequest(r, &map[string]any{}); err != nil {
+					t.Fatalf("failed to decode request: %v", err)
+				}
+				return decodeErr(t, r)
+			},
+			want: true,
+		},
+		{
+			name: "returns true for an empty body",
+			err: func(t *testing.T) error {
+				t.Helper()
+				return decodeErr(t, httptest.NewRequest(http.MethodGet, "/", nil))
+			},
+			want: true,
+		},
+		{
+			name: "returns true for a closed server request body",
+			err: func(t *testing.T) error {
+				t.Helper()
+				return errors.Wrap(http.ErrBodyReadAfterClose, "read")
+			},
+			want: true,
+		},
+		{
+			name: "returns false for a malformed body",
+			err: func(t *testing.T) error {
+				t.Helper()
+				return decodeErr(t, httptest.NewRequest(http.MethodPost, "/", bytes.NewBufferString(`{"name":`)))
+			},
+			want: false,
+		},
 	}
-	type test struct {
-		args       args
-		want       want
-		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(*testing.T, args)
-		name       string
-	}
-	defaultCheckFunc := func(w want, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		return nil
-	}
-	tests := []test{
-		func() test {
-			return test{
-				name: "returns nil when response is nil",
-				args: args{
-					res:  nil,
-					data: new(any),
-				},
-				want: want{
-					err: nil,
-				},
-			}
-		}(),
-		func() test {
-			return test{
-				name: "returns nil when response body is nil",
-				args: args{
-					res: &http.Response{
-						Body: nil,
-					},
-					data: new(any),
-				},
-				want: want{
-					err: nil,
-				},
-			}
-		}(),
-		func() test {
-			return test{
-				name: "returns nil when the data to be decoded is nil",
-				args: args{
-					res: &http.Response{
-						Body: io.NopCloser(new(bytes.Buffer)),
-					},
-					data: nil,
-				},
-				want: want{
-					err: nil,
-				},
-			}
-		}(),
-		func() test {
-			return test{
-				name: "returns nil when the contents length is 0",
-				args: args{
-					res: &http.Response{
-						Body:          io.NopCloser(new(bytes.Buffer)),
-						ContentLength: 0,
-					},
-					data: new(any),
-				},
-				want: want{
-					err: nil,
-				},
-			}
-		}(),
-		func() test {
-			return test{
-				name: "returns json decode error when the response body is invalid",
-				args: args{
-					res: &http.Response{
-						Body:          io.NopCloser(strings.NewReader("1+3i")),
-						ContentLength: 2,
-					},
-					data: new(any),
-				},
-				want: want{
-					err: &strconv.NumError{
-						Func: "ParseFloat",
-						Num:  "1+3",
-						Err:  strconv.ErrSyntax,
-					},
-				},
-			}
-		}(),
-		func() test {
-			var data int
-			return test{
-				name: "returns nil when the decode success",
-				args: args{
-					res: &http.Response{
-						Body:          io.NopCloser(strings.NewReader("1")),
-						ContentLength: 1,
-					},
-					data: &data,
-				},
-				checkFunc: func(w want, got error) error {
-					if err := defaultCheckFunc(w, got); err != nil {
-						return err
-					}
-
-					if want, got := 1, data; want != got {
-						return errors.Errorf("data want: %d, but got: %d", want, got)
-					}
-
-					return nil
-				},
-				want: want{
-					err: nil,
-				},
-			}
-		}(),
-	}
-
 	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			err := tc.err(t)
+			if err == nil {
+				t.Fatal("decode error is nil")
 			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(tt, test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-
-			err := DecodeResponse(test.args.res, test.args.data)
-			if err := checkFunc(test.want, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func TestEncodeRequest(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		req          *http.Request
-		data         any
-		contentTypes []string
-	}
-	type want struct {
-		err error
-	}
-	type test struct {
-		want       want
-		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(*testing.T, args)
-		name       string
-		args       args
-	}
-	defaultCheckFunc := func(w want, err error) error {
-		if w.err != nil && err != nil && !strings.HasPrefix(err.Error(), w.err.Error()) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		return nil
-	}
-	tests := []test{
-		func() test {
-			val := 1 + 3i
-			return test{
-				name: "returns json encode error when the json encode fails",
-				args: args{
-					req:  new(http.Request),
-					data: val,
-				},
-				want: want{
-					err: errors.New("json: unsupported type:"),
-				},
-			}
-		}(),
-		func() test {
-			req := &http.Request{
-				Header: http.Header{},
-			}
-			return test{
-				name: "returns nil when json encode success",
-				args: args{
-					req: req,
-					contentTypes: []string{
-						"application/json",
-					},
-					data: 1,
-				},
-				checkFunc: func(w want, got error) error {
-					if err := defaultCheckFunc(w, got); err != nil {
-						return err
-					}
-
-					if len(req.Header) != 1 {
-						return errors.Errorf("header length is wrong. want: %v, but got: %d", 1, len(req.Header))
-					}
-
-					gotHeaders, ok := req.Header[rest.ContentType]
-					if !ok {
-						return errors.Errorf("header not found. key: %s", rest.ContentType)
-					}
-
-					if len(gotHeaders) != 1 {
-						return errors.Errorf("header value length is wrong. key:%s want: %d, but got: %d", rest.ContentType, 1, len(gotHeaders))
-					}
-
-					if want, got := "application/json", gotHeaders[0]; want != got {
-						return errors.Errorf("header value is wrong. want: %s, but got: %s", want, got)
-					}
-
-					if want, got := int64(2), req.ContentLength; want != got {
-						return errors.Errorf("content length is wrong. want: %v, but got: %d", want, got)
-					}
-
-					if req.Body == nil {
-						return errors.New("Body is nil")
-					}
-
-					return nil
-				},
-				want: want{
-					err: nil,
-				},
-			}
-		}(),
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(tt, test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-
-			err := EncodeRequest(test.args.req, test.args.data, test.args.contentTypes...)
-			if err := checkFunc(test.want, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func TestRequest(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		ctx     context.Context
-		payload any
-		data    any
-		method  string
-		url     string
-	}
-	type want struct {
-		err error
-	}
-	type test struct {
-		args       args
-		want       want
-		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(*testing.T, args)
-		name       string
-	}
-	defaultCheckFunc := func(w want, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		return nil
-	}
-	tests := []test{
-		func() test {
-			return test{
-				name: "returns generation of request error when method is invalid",
-				args: args{
-					ctx:     t.Context(),
-					method:  "@",
-					url:     "/",
-					payload: nil,
-					data:    nil,
-				},
-				want: want{
-					err: errors.Errorf("net/http: invalid method %q", "@"),
-				},
-			}
-		}(),
-		func() test {
-			return test{
-				name: "returns json encode error when the request json encoding fails",
-				args: args{
-					ctx:     t.Context(),
-					method:  "POST",
-					url:     "/",
-					payload: 1 + 3i,
-					data:    new(any),
-				},
-				checkFunc: func(w want, err error) error {
-					if w.err != nil && err != nil && !strings.HasPrefix(err.Error(), w.err.Error()) {
-						return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-					}
-					return nil
-				},
-				want: want{
-					err: errors.New("json: unsupported type:"),
-				},
-			}
-		}(),
-		func() test {
-			return test{
-				name: "returns http request error when sending http request fails",
-				args: args{
-					ctx:     t.Context(),
-					method:  "POST",
-					url:     "/",
-					payload: "1",
-					data:    new(any),
-				},
-				want: want{
-					err: &url.Error{
-						Op:  "Post",
-						URL: "/",
-						Err: errors.New(`unsupported protocol scheme ""`),
-					},
-				},
-			}
-		}(),
-		func() test {
-			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-				_, _ = w.Write([]byte("\"1\""))
-			}))
-			var got string
-			return test{
-				name: "returns nil when no error occurs internally",
-				args: args{
-					ctx:     t.Context(),
-					method:  "POST",
-					url:     srv.URL,
-					payload: "1",
-					data:    &got,
-				},
-				want: want{
-					err: nil,
-				},
-				checkFunc: func(w want, err error) error {
-					if err := defaultCheckFunc(w, err); err != nil {
-						return err
-					}
-					if want, got := "1", got; want != got {
-						return errors.Errorf("decoded data: want %s, but got: %v", want, got)
-					}
-					return nil
-				},
-				afterFunc: func(t *testing.T, _ args) {
-					t.Helper()
-					srv.Close()
-				},
-			}
-		}(),
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(tt, test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-
-			err := Request(test.args.ctx, test.args.method, test.args.url, test.args.payload, test.args.data)
-			if err := checkFunc(test.want, err); err != nil {
-				tt.Errorf("error = %v", err)
+			if got := isConsumedBody(err); got != tc.want {
+				t.Errorf("isConsumedBody(%v) = %v, want %v", err, got, tc.want)
 			}
 		})
 	}
 }
 
 // NOT IMPLEMENTED BELOW
+
+func Test_httpStatusFromError(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		err  error
+		name string
+		want int
+	}{
+		{name: "plain error is 500", err: errors.New("logic error"), want: http.StatusInternalServerError},
+		{name: "Unknown is 500", err: status.Error(codes.Unknown, "x"), want: http.StatusInternalServerError},
+		{name: "Internal is 500", err: status.Error(codes.Internal, "x"), want: http.StatusInternalServerError},
+		{name: "DataLoss is 500", err: status.Error(codes.DataLoss, "x"), want: http.StatusInternalServerError},
+		{name: "InvalidArgument is 400", err: status.Error(codes.InvalidArgument, "x"), want: http.StatusBadRequest},
+		{name: "FailedPrecondition is 400", err: status.Error(codes.FailedPrecondition, "x"), want: http.StatusBadRequest},
+		{name: "OutOfRange is 400", err: status.Error(codes.OutOfRange, "x"), want: http.StatusBadRequest},
+		{name: "Unauthenticated is 401", err: status.Error(codes.Unauthenticated, "x"), want: http.StatusUnauthorized},
+		{name: "PermissionDenied is 403", err: status.Error(codes.PermissionDenied, "x"), want: http.StatusForbidden},
+		{name: "NotFound is 404", err: status.Error(codes.NotFound, "x"), want: http.StatusNotFound},
+		{name: "AlreadyExists is 409", err: status.Error(codes.AlreadyExists, "x"), want: http.StatusConflict},
+		{name: "Aborted is 409", err: status.Error(codes.Aborted, "x"), want: http.StatusConflict},
+		{name: "ResourceExhausted is 429", err: status.Error(codes.ResourceExhausted, "x"), want: http.StatusTooManyRequests},
+		{name: "Canceled is 499", err: status.Error(codes.Canceled, "x"), want: 499},
+		{name: "Unimplemented is 501", err: status.Error(codes.Unimplemented, "x"), want: http.StatusNotImplemented},
+		{name: "Unavailable is 503", err: status.Error(codes.Unavailable, "x"), want: http.StatusServiceUnavailable},
+		{name: "DeadlineExceeded is 504", err: status.Error(codes.DeadlineExceeded, "x"), want: http.StatusGatewayTimeout},
+		{name: "wrapped NotFound is 404", err: errors.Wrap(status.Error(codes.NotFound, "x"), "wrapped"), want: http.StatusNotFound},
+	}
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			if got := httpStatusFromError(test.err); got != test.want {
+				tt.Errorf("httpStatusFromError(%v) = %d, want %d", test.err, got, test.want)
+			}
+		})
+	}
+}

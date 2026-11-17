@@ -747,6 +747,52 @@ func TestReconciler_Progress(t *testing.T) {
 	}
 }
 
+// TestReconciler_FailedPhaseRollsBackLaterConditions: a CR that already
+// reached Completed must stop reporting success once an earlier phase fails.
+func TestReconciler_FailedPhaseRollsBackLaterConditions(t *testing.T) {
+	trueCond := func(typ string) k8s.Condition {
+		return k8s.Condition{
+			Type:               typ,
+			Status:             k8s.ConditionTrue,
+			Reason:             conditionReasonSucceeded,
+			LastTransitionTime: k8s.Now(),
+		}
+	}
+	// No infrastructure: checkClusters reports Failed for the first phase.
+	cr := newCRWithInfra(nil)
+	cr.Status.Phase = phaseCompleted
+	cr.Status.Progress.Completed = 2
+	cr.Status.Conditions = []k8s.Condition{
+		trueCond(phaseWaitForClusterCreate),
+		trueCond(phaseWaitForCreateVrs),
+		trueCond(phaseCompleted),
+	}
+
+	scheme := newTestScheme(t)
+	c := mock.NewFakeClientBuilder().
+		WithScheme(scheme).
+		WithObjects(cr).
+		WithStatusSubresource(cr).
+		Build()
+	r := &reconciler{
+		client: c,
+		cfg:    &config.Config{},
+		vor:    resource.NewClient(c, new(v1.ValdOperatorRelease), new(v1.ValdOperatorReleaseList)),
+	}
+
+	assert.Error(t, r.reconcileValdOperatorRelease(context.Background(), cr))
+	assert.Equal(t, 0, cr.Status.Progress.Completed, "progress must roll back to the failing phase")
+	assert.Equal(t, phaseWaitForClusterCreate, cr.Status.Phase)
+	got := map[string]k8s.ConditionStatus{}
+	for _, cond := range cr.Status.Conditions {
+		got[cond.Type] = cond.Status
+	}
+	assert.Equal(t, k8s.ConditionFalse, got[phaseWaitForClusterCreate])
+	assert.NotEqual(t, k8s.ConditionTrue, got[phaseWaitForCreateVrs], "later phase must not stay True")
+	assert.NotEqual(t, k8s.ConditionTrue, got[phaseCompleted], "Completed must not stay True")
+	assert.Len(t, cr.Status.Conditions, 3)
+}
+
 // NOT IMPLEMENTED BELOW
 //
 // func Test_newResourceController(t *testing.T) {

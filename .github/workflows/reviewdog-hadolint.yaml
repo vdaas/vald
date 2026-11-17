@@ -18,6 +18,9 @@ on:
   pull_request:
     paths:
       - "dockers/**"
+defaults:
+  run:
+    shell: bash
 jobs:
   dump-contexts-to-log:
     timeout-minutes: 30
@@ -46,7 +49,7 @@ jobs:
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: Run hadolint
-        uses: reviewdog/action-hadolint@1b2cfa6ba72072ad35158d7ff3aa49bbdc03506d # v1.51.0
+        uses: reviewdog/action-hadolint@a3bc84c51f4ddbcbc5b91d950d0b66c15c88b113 # v1.56.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review

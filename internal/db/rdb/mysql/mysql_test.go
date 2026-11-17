@@ -20,8 +20,11 @@ import (
 	"reflect"
 	"sync/atomic"
 	"testing"
+	"testing/synctest"
 	"time"
+	_ "time/tzdata" // IANA zones for mysql.ParseDSN in Test_mySQLClient_Open_timezoneDSN
 
+	"github.com/go-sql-driver/mysql"
 	"github.com/vdaas/vald/internal/db/rdb/mysql/dbr"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
@@ -410,43 +413,106 @@ func Test_mySQLClient_Open(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			// Open pings on a ticker of microseconds against a deadline of about a millisecond. On
+			// a real clock a scheduling delay of that size lets the deadline win and the case fail
+			// at random. synctest runs the case in a bubble whose clock advances only when every
+			// goroutine in it is blocked, so the timers fire in the order of their durations.
+			// goleak runs after the bubble has ended: inside it, the goroutines of the bubble itself
+			// would be reported
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(tt, test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			m := &mySQLClient{
-				db:                   test.fields.db,
-				network:              test.fields.network,
-				host:                 test.fields.host,
-				port:                 test.fields.port,
-				user:                 test.fields.user,
-				pass:                 test.fields.pass,
-				name:                 test.fields.name,
-				charset:              test.fields.charset,
-				timezone:             test.fields.timezone,
-				initialPingTimeLimit: test.fields.initialPingTimeLimit,
-				initialPingDuration:  test.fields.initialPingDuration,
-				connMaxLifeTime:      test.fields.connMaxLifeTime,
-				dialer:               test.fields.dialer,
-				dialerFunc:           test.fields.dialerFunc,
-				tlsConfig:            test.fields.tlsConfig,
-				maxOpenConns:         test.fields.maxOpenConns,
-				maxIdleConns:         test.fields.maxIdleConns,
-				session:              test.fields.session,
-				connected:            test.fields.connected,
-				dbr:                  test.fields.dbr,
-			}
+			synctest.Test(tt, func(tt *testing.T) {
+				if test.beforeFunc != nil {
+					test.beforeFunc(test.args)
+				}
+				if test.afterFunc != nil {
+					defer test.afterFunc(tt, test.args)
+				}
+				checkFunc := test.checkFunc
+				if test.checkFunc == nil {
+					checkFunc = defaultCheckFunc
+				}
+				m := &mySQLClient{
+					db:                   test.fields.db,
+					network:              test.fields.network,
+					host:                 test.fields.host,
+					port:                 test.fields.port,
+					user:                 test.fields.user,
+					pass:                 test.fields.pass,
+					name:                 test.fields.name,
+					charset:              test.fields.charset,
+					timezone:             test.fields.timezone,
+					initialPingTimeLimit: test.fields.initialPingTimeLimit,
+					initialPingDuration:  test.fields.initialPingDuration,
+					connMaxLifeTime:      test.fields.connMaxLifeTime,
+					dialer:               test.fields.dialer,
+					dialerFunc:           test.fields.dialerFunc,
+					tlsConfig:            test.fields.tlsConfig,
+					maxOpenConns:         test.fields.maxOpenConns,
+					maxIdleConns:         test.fields.maxIdleConns,
+					session:              test.fields.session,
+					connected:            test.fields.connected,
+					dbr:                  test.fields.dbr,
+				}
 
-			err := m.Open(test.args.ctx)
-			if err := checkFunc(test.want, err); err != nil {
-				tt.Errorf("error = %v", err)
+				// the context is created in the bubble: channels of a bubble cannot be used outside it
+				ctx, cancel := context.WithCancel(context.Background())
+				defer cancel()
+				err := m.Open(ctx)
+				if cerr := checkFunc(test.want, err); cerr != nil {
+					tt.Errorf("error = %v", cerr)
+				}
+			})
+		})
+	}
+}
+
+func Test_mySQLClient_Open_timezoneDSN(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name     string
+		timezone string
+	}{
+		{name: "Local", timezone: "Local"},
+		{name: "UTC", timezone: "UTC"},
+		{name: "IANA zone with slash", timezone: "America/New_York"},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			var dsn string
+			openErr := errors.New("stop after DSN capture")
+			m := &mySQLClient{
+				host:     "vald.com",
+				port:     3306,
+				user:     "vdaas",
+				pass:     "vald",
+				name:     "vald-user",
+				charset:  "utf8mb4",
+				timezone: tc.timezone,
+				dbr: &dbr.MockDBR{
+					OpenFunc: func(_, d string, _ EventReceiver) (dbr.Connection, error) {
+						dsn = d
+						return nil, openErr
+					},
+				},
+			}
+			if err := m.Open(t.Context()); !errors.Is(err, openErr) {
+				t.Fatalf("Open() error = %v, want %v", err, openErr)
+			}
+			cfg, err := mysql.ParseDSN(dsn)
+			if err != nil {
+				t.Fatalf("mysql.ParseDSN(%q) error = %v", dsn, err)
+			}
+			if tc.timezone == "Local" {
+				// time.Local is process-global and may be replaced by other tests, so compare identity, not its name.
+				if cfg.Loc != time.Local { //nolint:gosmopolitan // the DSN loc=Local must resolve to time.Local itself
+					t.Errorf("loc = %q, want time.Local", cfg.Loc)
+				}
+			} else if got := cfg.Loc.String(); got != tc.timezone {
+				t.Errorf("loc = %q, want %q", got, tc.timezone)
+			}
+			if cfg.DBName != "vald-user" {
+				t.Errorf("DBName = %q, want %q", cfg.DBName, "vald-user")
 			}
 		})
 	}
@@ -588,27 +654,39 @@ func Test_mySQLClient_Ping(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
+			// Ping races a ticker (microseconds) against the time limit. On a real clock a
+			// scheduling delay makes both ready at once and select picks either, so "ping failed
+			// due to initialPingTimeLimit" passed or failed at random. In a synctest bubble the
+			// clock advances only when every goroutine is blocked, so the earlier deadline always
+			// wins and a case whose limit is longer than the ticker always pings first.
+			// goleak runs after the bubble has ended: inside it, the goroutines of the bubble itself
+			// would be reported
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(tt, test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			m := &mySQLClient{
-				initialPingTimeLimit: test.fields.initialPingTimeLimit,
-				initialPingDuration:  test.fields.initialPingDuration,
-				session:              test.fields.session,
-			}
+			synctest.Test(tt, func(tt *testing.T) {
+				if test.beforeFunc != nil {
+					test.beforeFunc(test.args)
+				}
+				if test.afterFunc != nil {
+					defer test.afterFunc(tt, test.args)
+				}
+				checkFunc := test.checkFunc
+				if test.checkFunc == nil {
+					checkFunc = defaultCheckFunc
+				}
+				m := &mySQLClient{
+					initialPingTimeLimit: test.fields.initialPingTimeLimit,
+					initialPingDuration:  test.fields.initialPingDuration,
+					session:              test.fields.session,
+				}
 
-			err := m.Ping(test.args.ctx)
-			if err := checkFunc(test.want, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
+				// the context is created in the bubble: channels of a bubble cannot be used outside it
+				ctx, cancel := context.WithCancel(context.Background())
+				defer cancel()
+				err := m.Ping(ctx)
+				if cerr := checkFunc(test.want, err); cerr != nil {
+					tt.Errorf("error = %v", cerr)
+				}
+			})
 		})
 	}
 }

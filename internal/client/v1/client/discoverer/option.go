@@ -76,7 +76,7 @@ func WithReadReplicaClient(gc grpc.Client) Option {
 func WithDiscoverDuration(dur string) Option {
 	return func(c *client) error {
 		d, err := timeutil.Parse(dur)
-		if err != nil {
+		if err != nil || d <= 0 {
 			d = time.Second
 		}
 		c.dscDur = d

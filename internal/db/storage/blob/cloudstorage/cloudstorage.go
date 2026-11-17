@@ -50,10 +50,13 @@ func New(opts ...Option) (iblob.Bucket, error) {
 }
 
 func (c *client) Open(ctx context.Context) (err error) {
-	c.bucket, err = c.urlOpener.OpenBucketURL(ctx, c.url)
-	if err != nil {
-		return err
+	if c.url == nil {
+		return errors.NewErrInvalidOption("url", c.url)
 	}
+	if c.urlOpener == nil {
+		return errors.NewErrInvalidOption("urlOpener", c.urlOpener)
+	}
+	c.bucket, err = c.urlOpener.OpenBucketURL(ctx, c.url)
 	return err
 }
 
@@ -70,10 +73,13 @@ func (c *client) Reader(ctx context.Context, key string) (io.ReadCloser, error) 
 	}
 	rc, err := c.bucket.NewReader(ctx, key, c.readerOpts)
 	if err != nil {
-		log.Warn(err)
 		if gcerrors.Code(err) == gcerrors.NotFound {
+			log.Warn(err)
 			return io.NopCloser(io.NewEOFReader()), nil
 		}
+		// rc is a nil *blob.Reader here; returning it would yield a non-nil
+		// io.ReadCloser interface wrapping a nil pointer.
+		return nil, err
 	}
 	return rc, nil
 }

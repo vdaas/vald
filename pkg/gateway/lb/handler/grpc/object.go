@@ -31,7 +31,6 @@ import (
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/sync"
-	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/pkg/gateway/lb/service"
 )
 
@@ -96,36 +95,38 @@ func (s *server) handleObjectBroadCastError(
 	return nil
 }
 
-func (s *server) exists(ctx context.Context, uuid string) (id *payload.Object_ID, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "exists"), apiName+"/"+vald.ExistsRPCName+"/exists")
-	defer trace.End(span)
-
-	if len(uuid) == 0 {
-		err = errors.ErrInvalidUUID(uuid)
-		log.Warn(err)
-		return errhandler.HandleError[payload.Object_ID](span, codes.InvalidArgument, err)
-	}
-	ich := make(chan *payload.Object_ID, 1)
+// broadcastFirst broadcasts call to every READ target and returns the first
+// result accepted by hit, canceling the remaining targets once it arrives. name
+// labels the per-target spans (apiName/<name>/BroadCast/<target>). call must
+// return the zero T together with any error; a nil error with a missing object
+// is reported by returning a result rejected by hit. ok is false (with a nil
+// err) when no target had the object.
+func broadcastFirst[T any](
+	ctx context.Context,
+	s *server,
+	name string,
+	hit func(T) bool,
+	call func(ctx context.Context, sspan trace.Span, target string, vc vald.Client, copts ...grpc.CallOption) (T, error),
+) (res T, ok bool, err error) {
+	rch := make(chan T, 1)
 	ech := make(chan error, 1)
-	doneErr := errors.New("done exists")
+	doneErr := errors.New("done " + name)
 	ctx, cancel := context.WithCancelCause(ctx)
+	defer cancel(nil)
 	s.eg.Go(safety.RecoverFunc(func() error {
-		defer close(ich)
+		defer close(rch)
 		defer close(ech)
 		var once sync.Once
 		ech <- s.gateway.BroadCast(ctx, service.READ, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
-			sctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/exists/BroadCast/"+target)
+			sctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+name+"/BroadCast/"+target)
 			defer trace.End(sspan)
-			meta := &payload.Object_ID{
-				Id: uuid,
+			r, cerr := call(sctx, sspan, target, vc, copts...)
+			if cerr != nil {
+				return cerr
 			}
-			oid, err := vc.Exists(sctx, meta, copts...)
-			if err != nil {
-				return s.handleObjectBroadCastError(sspan, target, vald.ExistsRPCName, uuid, meta, err)
-			}
-			if oid != nil && oid.GetId() != "" {
+			if hit(r) {
 				once.Do(func() {
-					ich <- oid
+					rch <- r
 					cancel(doneErr)
 				})
 			}
@@ -138,22 +139,59 @@ func (s *server) exists(ctx context.Context, uuid string) (id *payload.Object_ID
 		err = ctx.Err()
 		if errors.Is(err, context.Canceled) && errors.Is(context.Cause(ctx), doneErr) {
 			select {
-			case id = <-ich:
-				if id == nil || id.GetId() == "" {
-					err = errors.ErrObjectIDNotFound(uuid)
-				} else {
-					err = nil
-				}
+			case res = <-rch:
+				err = nil
 			default:
 			}
 		}
-	case id = <-ich:
-		if id == nil || id.GetId() == "" {
-			err = errors.ErrObjectIDNotFound(uuid)
+	case r, received := <-rch:
+		if received {
+			res = r
+		} else {
+			// rch was closed without a hit: the broadcast result is already
+			// buffered in ech, so report it instead of a blanket NotFound.
+			err = <-ech
 		}
 	case err = <-ech:
+		// The hit is buffered in rch before BroadCast returns, so prefer it over
+		// the (nil or canceled) broadcast result.
+		select {
+		case r := <-rch:
+			if hit(r) {
+				res, err = r, nil
+			}
+		default:
+		}
 	}
-	if err == nil && (id == nil || id.GetId() == "") {
+	if err != nil || !hit(res) {
+		var zero T
+		return zero, false, err
+	}
+	return res, true, nil
+}
+
+func (s *server) exists(ctx context.Context, uuid string) (id *payload.Object_ID, err error) {
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "exists"), apiName+"/"+vald.ExistsRPCName+"/exists")
+	defer trace.End(span)
+
+	if len(uuid) == 0 {
+		err = errors.ErrInvalidUUID(uuid)
+		log.Warn(err)
+		return errhandler.HandleError[payload.Object_ID](span, codes.InvalidArgument, err)
+	}
+	meta := &payload.Object_ID{
+		Id: uuid,
+	}
+	id, ok, err := broadcastFirst(ctx, s, "exists",
+		func(oid *payload.Object_ID) bool { return oid.GetId() != "" },
+		func(ctx context.Context, sspan trace.Span, target string, vc vald.Client, copts ...grpc.CallOption) (*payload.Object_ID, error) {
+			oid, rerr := vc.Exists(ctx, meta, copts...)
+			if rerr != nil {
+				return nil, s.handleObjectBroadCastError(sspan, target, vald.ExistsRPCName, uuid, meta, rerr)
+			}
+			return oid, nil
+		})
+	if err == nil && !ok {
 		err = errors.ErrObjectIDNotFound(uuid)
 	}
 	if err != nil {
@@ -172,37 +210,30 @@ func (s *server) Exists(
 	if err == nil {
 		return id, nil
 	}
-	reqInfo := &errdetails.RequestInfo{
-		RequestId:   uuid,
-		ServingData: errdetails.Serialize(meta),
-	}
-	resInfo := &errdetails.ResourceInfo{
-		ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.ExistsRPCName,
-		ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-	}
+	details := s.errDetails(ctx, vald.ExistsRPCName, uuid, meta)
 	var attrs trace.Attributes
 	switch {
 	case errors.Is(err, errors.ErrInvalidUUID(uuid)):
-		err = status.WrapWithInvalidArgument(vald.ExistsRPCName+" API invalid argument for uuid \""+uuid+"\" detected", err, reqInfo, resInfo, &errdetails.BadRequest{
+		err = status.WrapWithInvalidArgument(vald.ExistsRPCName+" API invalid argument for uuid \""+uuid+"\" detected", err, append(details, &errdetails.BadRequest{
 			FieldViolations: []*errdetails.BadRequestFieldViolation{
 				{
-					Field:       "uuid",
+					Field:       uuidField,
 					Description: err.Error(),
 				},
 			},
-		})
+		})...)
 		attrs = trace.StatusCodeInvalidArgument(err.Error())
 	case errors.Is(err, errors.ErrObjectIDNotFound(uuid)):
-		err = status.WrapWithNotFound(vald.ExistsRPCName+" API id "+uuid+"'s data not found", err, reqInfo, resInfo)
+		err = status.WrapWithNotFound(vald.ExistsRPCName+" API id "+uuid+"'s data not found", err, details...)
 		attrs = trace.StatusCodeNotFound(err.Error())
 	case errors.Is(err, errors.ErrGRPCClientConnNotFound("*")):
-		err = status.WrapWithInternal(vald.ExistsRPCName+" API connection not found", err, reqInfo, resInfo)
+		err = status.WrapWithInternal(vald.ExistsRPCName+" API connection not found", err, details...)
 		attrs = trace.StatusCodeInternal(err.Error())
 	case errors.Is(err, context.Canceled):
-		err = status.WrapWithCanceled(vald.ExistsRPCName+" API canceled", err, reqInfo, resInfo)
+		err = status.WrapWithCanceled(vald.ExistsRPCName+" API canceled", err, details...)
 		attrs = trace.StatusCodeCancelled(err.Error())
 	case errors.Is(err, context.DeadlineExceeded):
-		err = status.WrapWithDeadlineExceeded(vald.ExistsRPCName+" API deadline exceeded", err, reqInfo, resInfo)
+		err = status.WrapWithDeadlineExceeded(vald.ExistsRPCName+" API deadline exceeded", err, details...)
 		attrs = trace.StatusCodeDeadlineExceeded(err.Error())
 	default:
 		var (
@@ -230,57 +261,21 @@ func (s *server) getObject(
 ) (vec *payload.Object_Vector, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "getObject"), apiName+"/"+vald.GetObjectRPCName+"/getObject")
 	defer trace.End(span)
-	vch := make(chan *payload.Object_Vector, 1)
-	ech := make(chan error, 1)
-	doneErr := errors.New("done getObject")
-	ctx, cancel := context.WithCancelCause(ctx)
-	s.eg.Go(safety.RecoverFunc(func() error {
-		defer close(vch)
-		defer close(ech)
-		var once sync.Once
-		ech <- s.gateway.BroadCast(ctx, service.READ, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
-			sctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/getObject/BroadCast/"+target)
-			defer trace.End(sspan)
-			req := &payload.Object_VectorRequest{
-				Id: &payload.Object_ID{
-					Id: uuid,
-				},
-			}
-			ovec, err := vc.GetObject(sctx, req, copts...)
-			if err != nil {
-				return s.handleObjectBroadCastError(sspan, target, vald.GetObjectRPCName, uuid, req, err)
-			}
-			if ovec != nil && ovec.GetId() != "" && ovec.GetVector() != nil {
-				once.Do(func() {
-					vch <- ovec
-					cancel(doneErr)
-				})
-			}
-			return nil
-		})
-		return nil
-	}))
-	select {
-	case <-ctx.Done():
-		err = ctx.Err()
-		if errors.Is(err, context.Canceled) && errors.Is(context.Cause(ctx), doneErr) {
-			select {
-			case vec = <-vch:
-				if vec == nil || vec.GetId() == "" || vec.GetVector() == nil {
-					err = errors.ErrObjectNotFound(nil, uuid)
-				} else {
-					err = nil
-				}
-			default:
-			}
-		}
-	case vec = <-vch:
-		if vec == nil || vec.GetId() == "" || vec.GetVector() == nil {
-			err = errors.ErrObjectNotFound(nil, uuid)
-		}
-	case err = <-ech:
+	req := &payload.Object_VectorRequest{
+		Id: &payload.Object_ID{
+			Id: uuid,
+		},
 	}
-	if err == nil && (vec == nil || vec.GetId() == "" || vec.GetVector() == nil) {
+	vec, ok, err := broadcastFirst(ctx, s, "getObject",
+		func(ovec *payload.Object_Vector) bool { return ovec.GetId() != "" && ovec.GetVector() != nil },
+		func(ctx context.Context, sspan trace.Span, target string, vc vald.Client, copts ...grpc.CallOption) (*payload.Object_Vector, error) {
+			ovec, rerr := vc.GetObject(ctx, req, copts...)
+			if rerr != nil {
+				return nil, s.handleObjectBroadCastError(sspan, target, vald.GetObjectRPCName, uuid, req, rerr)
+			}
+			return ovec, nil
+		})
+	if err == nil && !ok {
 		err = errors.ErrObjectNotFound(nil, uuid)
 	}
 	if err != nil {
@@ -303,37 +298,30 @@ func (s *server) GetObject(
 		}
 		err = errors.ErrObjectNotFound(nil, uuid)
 	}
-	reqInfo := &errdetails.RequestInfo{
-		RequestId:   uuid,
-		ServingData: errdetails.Serialize(req),
-	}
-	resInfo := &errdetails.ResourceInfo{
-		ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.GetObjectRPCName,
-		ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-	}
+	details := s.errDetails(ctx, vald.GetObjectRPCName, uuid, req)
 	var attrs trace.Attributes
 	switch {
 	case errors.Is(err, errors.ErrInvalidUUID(uuid)):
-		err = status.WrapWithInvalidArgument(vald.GetObjectRPCName+" API invalid argument for uuid \""+uuid+"\" detected", err, reqInfo, resInfo, &errdetails.BadRequest{
+		err = status.WrapWithInvalidArgument(vald.GetObjectRPCName+" API invalid argument for uuid \""+uuid+"\" detected", err, append(details, &errdetails.BadRequest{
 			FieldViolations: []*errdetails.BadRequestFieldViolation{
 				{
-					Field:       "uuid",
+					Field:       uuidField,
 					Description: err.Error(),
 				},
 			},
-		})
+		})...)
 		attrs = trace.StatusCodeInvalidArgument(err.Error())
 	case errors.Is(err, errors.ErrObjectIDNotFound(uuid)), errors.Is(err, errors.ErrObjectNotFound(nil, uuid)):
-		err = status.WrapWithNotFound(vald.GetObjectRPCName+" API id "+uuid+"'s object not found", err, reqInfo, resInfo)
+		err = status.WrapWithNotFound(vald.GetObjectRPCName+" API id "+uuid+"'s object not found", err, details...)
 		attrs = trace.StatusCodeNotFound(err.Error())
 	case errors.Is(err, errors.ErrGRPCClientConnNotFound("*")):
-		err = status.WrapWithInternal(vald.GetObjectRPCName+" API connection not found", err, reqInfo, resInfo)
+		err = status.WrapWithInternal(vald.GetObjectRPCName+" API connection not found", err, details...)
 		attrs = trace.StatusCodeInternal(err.Error())
 	case errors.Is(err, context.Canceled):
-		err = status.WrapWithCanceled(vald.GetObjectRPCName+" API canceled", err, reqInfo, resInfo)
+		err = status.WrapWithCanceled(vald.GetObjectRPCName+" API canceled", err, details...)
 		attrs = trace.StatusCodeCancelled(err.Error())
 	case errors.Is(err, context.DeadlineExceeded):
-		err = status.WrapWithDeadlineExceeded(vald.GetObjectRPCName+" API deadline exceeded", err, reqInfo, resInfo)
+		err = status.WrapWithDeadlineExceeded(vald.GetObjectRPCName+" API deadline exceeded", err, details...)
 		attrs = trace.StatusCodeDeadlineExceeded(err.Error())
 	default:
 		st, _ := status.FromError(err)
@@ -391,78 +379,73 @@ func (s *server) StreamListObject(
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	var rmu, smu sync.Mutex
+	// smu serializes stream.Send: BroadCast runs the per-target callbacks
+	// concurrently and they all forward to the same caller stream. Each agent
+	// client stream is only read by its own callback goroutine, so Recv needs no
+	// lock and no per-message goroutine.
+	var smu sync.Mutex
 	err := s.gateway.BroadCast(ctx, service.READ, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
 		ctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+vald.StreamListObjectRPCName+"/"+target)
 		defer trace.End(sspan)
 
-		eg, ctx := errgroup.WithContext(ctx)
-		ectx, ecancel := context.WithCancel(ctx)
-		defer ecancel()
-		eg.SetLimit(s.streamConcurrency)
-
-		// Bind the client stream to the cancelable ectx (created before the stream)
-		// so ecancel() on EOF and an eg.Go worker error both actually abort
-		// client.Recv(). If the stream were bound to the pre-errgroup ancestor ctx
-		// (the previous ordering), cancellation here would never reach it and the
-		// early-abort on a downstream send failure would be a silent no-op.
-		client, err := vc.StreamListObject(ectx, req, copts...)
+		// Bind the client stream to a ctx canceled when this callback returns so
+		// an early return (send failure) also tears down the agent stream.
+		ctx, ccancel := context.WithCancel(ctx)
+		defer ccancel()
+		client, err := vc.StreamListObject(ctx, req, copts...)
 		if err != nil {
 			log.Errorf("failed to get StreamListObject client for agent(%s): %v", target, err)
 			return err
 		}
 
-		for {
-			select {
-			case <-ectx.Done():
-				var err error
-				if !errors.Is(ctx.Err(), context.Canceled) {
-					err = errors.Join(err, ctx.Err())
-				}
-				if egerr := eg.Wait(); err != nil {
-					err = errors.Join(err, egerr)
-				}
-				return err
-			default:
-				eg.Go(safety.RecoverFunc(func() error {
-					rmu.Lock()
-					res, err := client.Recv()
-					rmu.Unlock()
-					if err != nil {
-						if errors.Is(err, io.EOF) {
-							ecancel()
-							return nil
-						}
-						return errors.ErrServerStreamClientRecv(err)
-					}
-
-					vec := res.GetVector()
-					if vec == nil {
-						st := res.GetStatus()
-						log.Warnf("received empty vector: code %v: details %v: message %v",
-							st.GetCode(),
-							st.GetDetails(),
-							st.GetMessage(),
-						)
-						return nil
-					}
-
-					smu.Lock()
-					err = stream.Send(res)
-					smu.Unlock()
-					if err != nil {
-						if sspan != nil {
-							st, msg, err := status.ParseError(err, codes.Internal, "failed to parse StreamListObject send gRPC error response")
-							sspan.RecordError(err)
-							sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
-							sspan.SetStatus(trace.StatusError, err.Error())
-						}
-						return errors.ErrServerStreamServerSend(err)
-					}
-
-					return nil
-				}))
+		// forwarded records whether any message of this agent stream has already
+		// reached the caller. The gRPC client backoff re-invokes this callback on
+		// retryable codes and the new agent stream restarts from the beginning, so a
+		// failure after partial delivery is returned as Aborted (not retried) to
+		// avoid sending duplicates to the caller.
+		var forwarded bool
+		fail := func(err error) error {
+			if cerr := ctx.Err(); cerr != nil && !errors.Is(cerr, context.Canceled) {
+				err = errors.Join(cerr, err)
 			}
+			if forwarded {
+				return status.WrapWithAborted(vald.StreamListObjectRPCName+" API stream from "+target+" failed after partial delivery", err)
+			}
+			return err
+		}
+		for {
+			res, err := client.Recv()
+			if err != nil {
+				if errors.Is(err, io.EOF) {
+					return nil
+				}
+				return fail(errors.ErrServerStreamClientRecv(err))
+			}
+
+			vec := res.GetVector()
+			if vec == nil {
+				st := res.GetStatus()
+				log.Warnf("received empty vector: code %v: details %v: message %v",
+					st.GetCode(),
+					st.GetDetails(),
+					st.GetMessage(),
+				)
+				continue
+			}
+
+			smu.Lock()
+			err = stream.Send(res)
+			smu.Unlock()
+			if err != nil {
+				if sspan != nil {
+					st, msg, perr := status.ParseError(err, codes.Internal, "failed to parse StreamListObject send gRPC error response")
+					sspan.RecordError(perr)
+					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+					sspan.SetStatus(trace.StatusError, perr.Error())
+				}
+				return fail(errors.ErrServerStreamServerSend(err))
+			}
+			forwarded = true
 		}
 	})
 	return err
@@ -474,88 +457,48 @@ func (s *server) GetTimestamp(
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.ObjectRPCServiceName+"/"+vald.GetTimestampRPCName), apiName+"/"+vald.GetTimestampRPCName)
 	defer trace.End(span)
 	uuid := req.GetId().GetId()
-	tch := make(chan *payload.Object_Timestamp, 1)
-	ech := make(chan error, 1)
-	doneErr := errors.New("done getTimestamp")
-	ctx, cancel := context.WithCancelCause(ctx)
-	s.eg.Go(safety.RecoverFunc(func() error {
-		defer close(tch)
-		defer close(ech)
-		var once sync.Once
-		ech <- s.gateway.BroadCast(ctx, service.READ, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
-			sctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/getTimestamp/BroadCast/"+target)
-			defer trace.End(sspan)
-			req := &payload.Object_TimestampRequest{
-				Id: &payload.Object_ID{
-					Id: uuid,
-				},
+	treq := &payload.Object_TimestampRequest{
+		Id: &payload.Object_ID{
+			Id: uuid,
+		},
+	}
+	ts, ok, err := broadcastFirst(ctx, s, "getTimestamp",
+		func(ots *payload.Object_Timestamp) bool { return ots.GetId() != "" },
+		func(ctx context.Context, sspan trace.Span, target string, vc vald.Client, copts ...grpc.CallOption) (*payload.Object_Timestamp, error) {
+			ots, rerr := vc.GetTimestamp(ctx, treq, copts...)
+			if rerr != nil {
+				return nil, s.handleObjectBroadCastError(sspan, target, vald.GetTimestampRPCName, uuid, treq, rerr)
 			}
-			ots, err := vc.GetTimestamp(sctx, req, copts...)
-			if err != nil {
-				return s.handleObjectBroadCastError(sspan, target, vald.GetTimestampRPCName, uuid, req, err)
-			}
-			if ots != nil && ots.GetId() != "" {
-				once.Do(func() {
-					tch <- ots
-					cancel(doneErr)
-				})
-			}
-			return nil
+			return ots, nil
 		})
-		return nil
-	}))
-	select {
-	case <-ctx.Done():
-		err = ctx.Err()
-		if errors.Is(err, context.Canceled) && errors.Is(context.Cause(ctx), doneErr) {
-			select {
-			case ts = <-tch:
-				if ts == nil || ts.GetId() == "" {
-					err = errors.ErrObjectNotFound(nil, uuid)
-				} else {
-					err = nil
-				}
-			default:
-			}
-		}
-	case ts = <-tch:
-		if ts == nil || ts.GetId() == "" {
-			err = errors.ErrObjectNotFound(nil, uuid)
-		}
-	case err = <-ech:
+	if err == nil && !ok {
+		err = errors.ErrObjectNotFound(nil, uuid)
 	}
 	if err != nil {
-		reqInfo := &errdetails.RequestInfo{
-			RequestId:   uuid,
-			ServingData: errdetails.Serialize(req),
-		}
-		resInfo := &errdetails.ResourceInfo{
-			ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.GetTimestampRPCName,
-			ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-		}
+		details := s.errDetails(ctx, vald.GetTimestampRPCName, uuid, req)
 		var attrs trace.Attributes
 		switch {
 		case errors.Is(err, errors.ErrInvalidUUID(uuid)):
-			err = status.WrapWithInvalidArgument(vald.GetTimestampRPCName+" API invalid argument for uuid \""+uuid+"\" detected", err, reqInfo, resInfo, &errdetails.BadRequest{
+			err = status.WrapWithInvalidArgument(vald.GetTimestampRPCName+" API invalid argument for uuid \""+uuid+"\" detected", err, append(details, &errdetails.BadRequest{
 				FieldViolations: []*errdetails.BadRequestFieldViolation{
 					{
-						Field:       "uuid",
+						Field:       uuidField,
 						Description: err.Error(),
 					},
 				},
-			})
+			})...)
 			attrs = trace.StatusCodeInvalidArgument(err.Error())
 		case errors.Is(err, errors.ErrObjectIDNotFound(uuid)), errors.Is(err, errors.ErrObjectNotFound(nil, uuid)):
-			err = status.WrapWithNotFound(vald.GetTimestampRPCName+" API id "+uuid+"'s object not found", err, reqInfo, resInfo)
+			err = status.WrapWithNotFound(vald.GetTimestampRPCName+" API id "+uuid+"'s object not found", err, details...)
 			attrs = trace.StatusCodeNotFound(err.Error())
 		case errors.Is(err, errors.ErrGRPCClientConnNotFound("*")):
-			err = status.WrapWithInternal(vald.GetTimestampRPCName+" API connection not found", err, reqInfo, resInfo)
+			err = status.WrapWithInternal(vald.GetTimestampRPCName+" API connection not found", err, details...)
 			attrs = trace.StatusCodeInternal(err.Error())
 		case errors.Is(err, context.Canceled):
-			err = status.WrapWithCanceled(vald.GetTimestampRPCName+" API canceled", err, reqInfo, resInfo)
+			err = status.WrapWithCanceled(vald.GetTimestampRPCName+" API canceled", err, details...)
 			attrs = trace.StatusCodeCancelled(err.Error())
 		case errors.Is(err, context.DeadlineExceeded):
-			err = status.WrapWithDeadlineExceeded(vald.GetTimestampRPCName+" API deadline exceeded", err, reqInfo, resInfo)
+			err = status.WrapWithDeadlineExceeded(vald.GetTimestampRPCName+" API deadline exceeded", err, details...)
 			attrs = trace.StatusCodeDeadlineExceeded(err.Error())
 		default:
 			st, _ := status.FromError(err)

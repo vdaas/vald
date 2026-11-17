@@ -16,6 +16,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"hash/maphash"
 	"reflect"
 	"strconv"
 	"time"
@@ -165,8 +166,14 @@ func (e *export) doExportIndex(ctx context.Context) (err error) {
 	// each stream contributes at most one recv-side and one send-side error.
 	const recvSendOps = 2
 	var (
-		emu  sync.Mutex
-		errs = make([]error, 0, e.streamListConcurrency*recvSendOps)
+		emu sync.Mutex
+		// vmus makes the Get/compare/Set on storedVector atomic per id: every
+		// replica of an id is streamed and handled concurrently, so an older
+		// vector could otherwise be written last. Striping by id keeps different
+		// ids running in parallel.
+		vmus  [64]sync.Mutex
+		vseed = maphash.MakeSeed()
+		errs  = make([]error, 0, e.streamListConcurrency*recvSendOps)
 	)
 
 	finalize := func() (err error) {
@@ -180,16 +187,15 @@ func (e *export) doExportIndex(ctx context.Context) (err error) {
 		emu.Lock()
 		err = errors.Join(errs...)
 		emu.Unlock()
-		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse BidirectionalStream final gRPC error response")
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
-			span.SetStatus(trace.StatusError, msg)
-		}
-
 		if err != nil {
-			log.Errorf("exporter returned error status errgroup returned error: %v", ctx.Err())
-			return err
+			st, msg, perr := status.ParseError(err, codes.Internal, "failed to parse BidirectionalStream final gRPC error response")
+			if span != nil {
+				span.RecordError(perr)
+				span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+				span.SetStatus(trace.StatusError, msg)
+			}
+			log.Errorf("exporter returned error status errgroup returned error: %v", perr)
+			return perr
 		}
 
 		return nil
@@ -203,7 +209,15 @@ func (e *export) doExportIndex(ctx context.Context) (err error) {
 			res, err := stream.Recv()
 			if err != nil {
 				if !errors.Is(err, io.EOF) {
-					err = errors.Wrap(err, "BidirectionalStream Recv returned error")
+					if ctx.Err() != nil {
+						// Recv failed because the stream ctx was canceled: by a worker
+						// error (eg.Wait in finalize reports it) or by the parent.
+						// Record the cause, not the resulting Canceled status, which
+						// would otherwise decide the final status code.
+						err = context.Cause(ctx)
+					} else {
+						err = errors.Wrap(err, "BidirectionalStream Recv returned error")
+					}
 					emu.Lock()
 					errs = append(errs, err)
 					emu.Unlock()
@@ -215,8 +229,11 @@ func (e *export) doExportIndex(ctx context.Context) (err error) {
 			if res != nil && res.GetVector() != nil && res.GetVector().GetId() != "" {
 				eg.Go(safety.RecoverFunc(func() (err error) {
 					objVec := res.GetVector()
-					log.Infof("received object vector id: %s, timestamp: %d", objVec.GetId(), objVec.GetTimestamp())
+					log.Debugf("received object vector id: %s, timestamp: %d", objVec.GetId(), objVec.GetTimestamp())
 
+					vmu := &vmus[maphash.String(vseed, objVec.GetId())%uint64(len(vmus))]
+					vmu.Lock()
+					defer vmu.Unlock()
 					storedBinary, ok, err := e.storedVector.Get(objVec.GetId())
 					if err != nil {
 						log.Errorf("failed to perform Get from check list but still try to finish processing without cache: %v", err)

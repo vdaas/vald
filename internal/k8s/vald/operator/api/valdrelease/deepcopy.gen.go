@@ -53,11 +53,13 @@ func (in *Agent) DeepCopyInto(out *Agent) {
 	out.PodAnnotations = resource.CopyPtr(in.PodAnnotations) // TODO(free-form map): deep copy
 	out.PodManagementPolicy = resource.CopyPtr(in.PodManagementPolicy)
 	out.PodPriority = resource.CopyPtrInto(in.PodPriority)
+	out.PodSecurityContext = resource.CopyPtrInto(in.PodSecurityContext)
 	out.ProgressDeadlineSeconds = resource.CopyPtr(in.ProgressDeadlineSeconds)
 	out.Readreplica = resource.CopyPtrInto(in.Readreplica)
 	out.Resources = resource.CopyPtrInto(in.Resources)
 	out.RevisionHistoryLimit = resource.CopyPtr(in.RevisionHistoryLimit)
 	out.RollingUpdate = resource.CopyPtrInto(in.RollingUpdate)
+	out.SecurityContext = resource.CopyPtrInto(in.SecurityContext)
 	out.ServerConfig = resource.CopyPtrInto(in.ServerConfig)
 	out.Service = resource.CopyPtrInto(in.Service)
 	out.ServiceAccountName = resource.CopyPtr(in.ServiceAccountName)
@@ -346,6 +348,15 @@ func (in *Defaults) DeepCopyInto(out *Defaults) {
 func (in *DefaultsGrpc) DeepCopyInto(out *DefaultsGrpc) {
 	*out = *in
 	out.Client = resource.CopyPtrInto(in.Client)
+}
+
+func (in *DefaultsGrpcClientCallOption) DeepCopyInto(out *DefaultsGrpcClientCallOption) {
+	*out = *in
+	out.ContentSubtype = resource.CopyPtr(in.ContentSubtype)
+	out.MaxRecvMsgSize = resource.CopyPtr(in.MaxRecvMsgSize)
+	out.MaxRetryRpcBufferSize = resource.CopyPtr(in.MaxRetryRpcBufferSize)
+	out.MaxSendMsgSize = resource.CopyPtr(in.MaxSendMsgSize)
+	out.WaitForReady = resource.CopyPtr(in.WaitForReady)
 }
 
 func (in *DefaultsGrpcClientCircuitBreaker) DeepCopyInto(out *DefaultsGrpcClientCircuitBreaker) {
@@ -648,10 +659,12 @@ func (in *Discoverer) DeepCopyInto(out *Discoverer) {
 	out.Observability = resource.CopyPtr(in.Observability)
 	out.PodAnnotations = resource.CopyPtr(in.PodAnnotations) // TODO(free-form map): deep copy
 	out.PodPriority = resource.CopyPtrInto(in.PodPriority)
+	out.PodSecurityContext = resource.CopyPtrInto(in.PodSecurityContext)
 	out.ProgressDeadlineSeconds = resource.CopyPtr(in.ProgressDeadlineSeconds)
 	out.Resources = resource.CopyPtrInto(in.Resources)
 	out.RevisionHistoryLimit = resource.CopyPtr(in.RevisionHistoryLimit)
 	out.RollingUpdate = resource.CopyPtrInto(in.RollingUpdate)
+	out.SecurityContext = resource.CopyPtrInto(in.SecurityContext)
 	out.ServerConfig = resource.CopyPtrInto(in.ServerConfig)
 	out.Service = resource.CopyPtrInto(in.Service)
 	out.ServiceAccountName = resource.CopyPtr(in.ServiceAccountName)
@@ -763,10 +776,12 @@ func (in *GatewayFilter) DeepCopyInto(out *GatewayFilter) {
 	out.Observability = resource.CopyPtr(in.Observability)
 	out.PodAnnotations = resource.CopyPtr(in.PodAnnotations) // TODO(free-form map): deep copy
 	out.PodPriority = resource.CopyPtrInto(in.PodPriority)
+	out.PodSecurityContext = resource.CopyPtrInto(in.PodSecurityContext)
 	out.ProgressDeadlineSeconds = resource.CopyPtr(in.ProgressDeadlineSeconds)
 	out.Resources = resource.CopyPtrInto(in.Resources)
 	out.RevisionHistoryLimit = resource.CopyPtr(in.RevisionHistoryLimit)
 	out.RollingUpdate = resource.CopyPtrInto(in.RollingUpdate)
+	out.SecurityContext = resource.CopyPtrInto(in.SecurityContext)
 	out.ServerConfig = resource.CopyPtrInto(in.ServerConfig)
 	out.Service = resource.CopyPtrInto(in.Service)
 	out.ServiceAccountName = resource.CopyPtr(in.ServiceAccountName)
@@ -851,10 +866,12 @@ func (in *GatewayLb) DeepCopyInto(out *GatewayLb) {
 	out.Observability = resource.CopyPtr(in.Observability)
 	out.PodAnnotations = resource.CopyPtr(in.PodAnnotations) // TODO(free-form map): deep copy
 	out.PodPriority = resource.CopyPtrInto(in.PodPriority)
+	out.PodSecurityContext = resource.CopyPtrInto(in.PodSecurityContext)
 	out.ProgressDeadlineSeconds = resource.CopyPtr(in.ProgressDeadlineSeconds)
 	out.Resources = resource.CopyPtrInto(in.Resources)
 	out.RevisionHistoryLimit = resource.CopyPtr(in.RevisionHistoryLimit)
 	out.RollingUpdate = resource.CopyPtrInto(in.RollingUpdate)
+	out.SecurityContext = resource.CopyPtrInto(in.SecurityContext)
 	out.ServerConfig = resource.CopyPtrInto(in.ServerConfig)
 	out.Service = resource.CopyPtrInto(in.Service)
 	out.ServiceAccountName = resource.CopyPtr(in.ServiceAccountName)
@@ -876,6 +893,7 @@ func (in *GatewayLbGatewayConfig) DeepCopyInto(out *GatewayLbGatewayConfig) {
 	out.IndexReplica = resource.CopyPtr(in.IndexReplica)
 	out.MultiOperationConcurrency = resource.CopyPtr(in.MultiOperationConcurrency)
 	out.NodeName = resource.CopyPtr(in.NodeName)
+	out.SearchQuorumGrace = resource.CopyPtr(in.SearchQuorumGrace)
 }
 
 func (in *GatewayLbGatewayConfigDiscoverer) DeepCopyInto(out *GatewayLbGatewayConfigDiscoverer) {
@@ -928,10 +946,12 @@ func (in *GatewayMirror) DeepCopyInto(out *GatewayMirror) {
 	out.Observability = resource.CopyPtr(in.Observability)
 	out.PodAnnotations = resource.CopyPtr(in.PodAnnotations) // TODO(free-form map): deep copy
 	out.PodPriority = resource.CopyPtrInto(in.PodPriority)
+	out.PodSecurityContext = resource.CopyPtrInto(in.PodSecurityContext)
 	out.ProgressDeadlineSeconds = resource.CopyPtr(in.ProgressDeadlineSeconds)
 	out.Resources = resource.CopyPtrInto(in.Resources)
 	out.RevisionHistoryLimit = resource.CopyPtr(in.RevisionHistoryLimit)
 	out.RollingUpdate = resource.CopyPtrInto(in.RollingUpdate)
+	out.SecurityContext = resource.CopyPtrInto(in.SecurityContext)
 	out.ServerConfig = resource.CopyPtrInto(in.ServerConfig)
 	out.Service = resource.CopyPtrInto(in.Service)
 	out.ServiceAccountName = resource.CopyPtr(in.ServiceAccountName)
@@ -1021,17 +1041,12 @@ func (in *GrpcClient) DeepCopyInto(out *GrpcClient) {
 	*out = *in
 	out.Addrs = resource.CopyPtr(in.Addrs)
 	out.Backoff = resource.CopyPtr(in.Backoff)
-	out.CallOption = resource.CopyPtr(in.CallOption) // TODO(free-form map): deep copy
+	out.CallOption = resource.CopyPtrInto(in.CallOption)
 	out.CircuitBreaker = resource.CopyPtrInto(in.CircuitBreaker)
 	out.ConnectionPool = resource.CopyPtrInto(in.ConnectionPool)
-	out.ContentSubtype = resource.CopyPtr(in.ContentSubtype)
 	out.DialOption = resource.CopyPtrInto(in.DialOption)
 	out.HealthCheckDuration = resource.CopyPtr(in.HealthCheckDuration)
-	out.MaxRecvMsgSize = resource.CopyPtr(in.MaxRecvMsgSize)
-	out.MaxRetryRpcBufferSize = resource.CopyPtr(in.MaxRetryRpcBufferSize)
-	out.MaxSendMsgSize = resource.CopyPtr(in.MaxSendMsgSize)
 	out.Tls = resource.CopyPtr(in.Tls)
-	out.WaitForReady = resource.CopyPtr(in.WaitForReady)
 }
 
 func (in *Hpa) DeepCopyInto(out *Hpa) {
@@ -1043,6 +1058,7 @@ func (in *Hpa) DeepCopyInto(out *Hpa) {
 func (in *Image) DeepCopyInto(out *Image) {
 	*out = *in
 	out.PullPolicy = resource.CopyPtr(in.PullPolicy)
+	out.Registry = resource.CopyPtr(in.Registry)
 	out.Repository = resource.CopyPtr(in.Repository)
 	out.Tag = resource.CopyPtr(in.Tag)
 }
@@ -1075,6 +1091,7 @@ func (in *ManagerIndex) DeepCopyInto(out *ManagerIndex) {
 	out.Operator = resource.CopyPtrInto(in.Operator)
 	out.PodAnnotations = resource.CopyPtr(in.PodAnnotations) // TODO(free-form map): deep copy
 	out.PodPriority = resource.CopyPtrInto(in.PodPriority)
+	out.PodSecurityContext = resource.CopyPtrInto(in.PodSecurityContext)
 	out.ProgressDeadlineSeconds = resource.CopyPtr(in.ProgressDeadlineSeconds)
 	out.Readreplica = resource.CopyPtrInto(in.Readreplica)
 	out.Replicas = resource.CopyPtr(in.Replicas)
@@ -1082,6 +1099,7 @@ func (in *ManagerIndex) DeepCopyInto(out *ManagerIndex) {
 	out.RevisionHistoryLimit = resource.CopyPtr(in.RevisionHistoryLimit)
 	out.RollingUpdate = resource.CopyPtrInto(in.RollingUpdate)
 	out.Saver = resource.CopyPtrInto(in.Saver)
+	out.SecurityContext = resource.CopyPtrInto(in.SecurityContext)
 	out.ServerConfig = resource.CopyPtrInto(in.ServerConfig)
 	out.Service = resource.CopyPtrInto(in.Service)
 	out.ServiceAccountName = resource.CopyPtr(in.ServiceAccountName)
@@ -1236,12 +1254,14 @@ func (in *ManagerIndexOperator) DeepCopyInto(out *ManagerIndexOperator) {
 	out.Observability = resource.CopyPtr(in.Observability)
 	out.PodAnnotations = resource.CopyPtr(in.PodAnnotations) // TODO(free-form map): deep copy
 	out.PodPriority = resource.CopyPtrInto(in.PodPriority)
+	out.PodSecurityContext = resource.CopyPtrInto(in.PodSecurityContext)
 	out.ProgressDeadlineSeconds = resource.CopyPtr(in.ProgressDeadlineSeconds)
 	out.Replicas = resource.CopyPtr(in.Replicas)
 	out.Resources = resource.CopyPtrInto(in.Resources)
 	out.RevisionHistoryLimit = resource.CopyPtr(in.RevisionHistoryLimit)
 	out.RollingUpdate = resource.CopyPtrInto(in.RollingUpdate)
 	out.RotationJobConcurrency = resource.CopyPtr(in.RotationJobConcurrency)
+	out.SecurityContext = resource.CopyPtrInto(in.SecurityContext)
 	out.ServerConfig = resource.CopyPtrInto(in.ServerConfig)
 	out.ServiceAccountName = resource.CopyPtr(in.ServiceAccountName)
 	out.TerminationGracePeriodSeconds = resource.CopyPtr(in.TerminationGracePeriodSeconds)
@@ -1282,6 +1302,8 @@ func (in *ManagerIndexReadreplicaRotator) DeepCopyInto(out *ManagerIndexReadrepl
 	out.InitContainers = resource.CopyPtrSliceInto(in.InitContainers)
 	out.Name = resource.CopyPtr(in.Name)
 	out.Observability = resource.CopyPtr(in.Observability)
+	out.PodSecurityContext = resource.CopyPtrInto(in.PodSecurityContext)
+	out.SecurityContext = resource.CopyPtrInto(in.SecurityContext)
 	out.ServerConfig = resource.CopyPtrInto(in.ServerConfig)
 	out.ServiceAccountName = resource.CopyPtr(in.ServiceAccountName)
 	out.TargetReadReplicaIdAnnotationsKey = resource.CopyPtr(in.TargetReadReplicaIdAnnotationsKey)

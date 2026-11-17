@@ -23,7 +23,7 @@ $(BINDIR)/helm:
 	$(eval DARCH := $(subst aarch64,arm64,$(ARCH)))
 	TAR_NAME=helm-$(HELM_VERSION)-$(OS)-$(subst x86_64,amd64,$(shell echo $(DARCH) | tr '[:upper:]' '[:lower:]')) \
 	&& cd $(TEMP_DIR) \
-	&& curl -fsSL --retry 3 "https://get.helm.sh/$${TAR_NAME}.tar.gz" -o "$(TEMP_DIR)/$${TAR_NAME}" \
+	&& $(CURL) $(CURL_RETRY_SHORT) "https://get.helm.sh/$${TAR_NAME}.tar.gz" -o "$(TEMP_DIR)/$${TAR_NAME}" \
 	&& tar -xzvf "$(TEMP_DIR)/$${TAR_NAME}" --strip=1 \
 	&& mv helm $(BINDIR)/helm
 
@@ -36,7 +36,7 @@ $(BINDIR)/helm-docs:
 	$(eval DARCH := $(subst aarch64,arm64,$(ARCH)))
 	TAR_NAME=helm-docs_$(HELM_DOCS_VERSION)_$(UNAME)_$(DARCH).tar.gz \
 	&& cd $(TEMP_DIR) \
-	&& curl -fsSL "https://github.com/norwoodj/helm-docs/releases/download/v$(HELM_DOCS_VERSION)/$${TAR_NAME}" -o "$(TEMP_DIR)/$${TAR_NAME}" \
+	&& $(CURL) "https://github.com/norwoodj/helm-docs/releases/download/v$(HELM_DOCS_VERSION)/$${TAR_NAME}" -o "$(TEMP_DIR)/$${TAR_NAME}" \
 	&& tar -xzvf "$(TEMP_DIR)/$${TAR_NAME}" \
 	&& mv helm-docs $(BINDIR)/helm-docs
 
@@ -79,6 +79,7 @@ helm/package/operator/benchmark: \
 helm/package/vald-readreplica:
 	helm package $(ROOTDIR)/charts/vald-readreplica
 
+.PHONY: helm/repo/add
 ## add Helm chart repository
 helm/repo/add:
 	helm repo add vald https://vald.vdaas.org/charts
@@ -112,6 +113,13 @@ helm/docs/vald: $(ROOTDIR)/charts/vald/README.md
 ## generate docs for Helm Chart (charts/%)
 helm/docs/%: $(ROOTDIR)/charts/%/README.md
 	@echo "generated docs for $*"
+
+# force to rebuild
+.PHONY: $(ROOTDIR)/charts/vald/README.md
+$(ROOTDIR)/charts/vald/README.md: \
+	$(ROOTDIR)/charts/vald/README.md.gotmpl \
+	$(ROOTDIR)/charts/vald/values.yaml
+	helm-docs
 
 .PHONY: helm/docs/operator/helm
 helm/docs/operator/helm: $(ROOTDIR)/charts/operator/helm/README.md

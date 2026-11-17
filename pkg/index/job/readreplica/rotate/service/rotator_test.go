@@ -14,8 +14,11 @@
 package service
 
 import (
+	"context"
 	"testing"
+	"time"
 
+	snapshotv1 "github.com/kubernetes-csi/external-snapshotter/client/v6/apis/volumesnapshot/v1"
 	"github.com/stretchr/testify/require"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s"
@@ -174,6 +177,319 @@ func Test_parseReplicaID(t *testing.T) {
 			ids, err := r.parseReplicaID(tt.args.replicaID)
 			require.Equal(t, tt.want.ids, ids)
 			require.Equal(t, tt.want.err, err)
+		})
+	}
+}
+
+func Test_rollbackContext(t *testing.T) {
+	t.Parallel()
+	type ctxKey struct{}
+	parent, cancel := context.WithCancel(context.WithValue(t.Context(), ctxKey{}, "v"))
+	cancel() // a sibling rotation failed and the errgroup cancelled the shared ctx
+
+	before := time.Now()
+	cctx, ccancel := rollbackContext(parent)
+	defer ccancel()
+	if err := cctx.Err(); err != nil {
+		t.Fatalf("rollback ctx inherited the parent cancellation: %v", err)
+	}
+	dl, ok := cctx.Deadline()
+	if !ok {
+		t.Fatal("rollback ctx has no deadline")
+	}
+	if dl.Before(before.Add(rollbackTimeout)) || dl.After(time.Now().Add(rollbackTimeout)) {
+		t.Errorf("deadline = %v, want about %v from now", dl, rollbackTimeout)
+	}
+	if got := cctx.Value(ctxKey{}); got != "v" {
+		t.Errorf("rollback ctx value = %v, want %q", got, "v")
+	}
+}
+
+func Test_subProcess_updateDeployment_volume(t *testing.T) {
+	t.Parallel()
+	const (
+		labelKey = "vald-readreplica-id"
+		volName  = "readreplica-pvc"
+		newPVC   = "readreplica-pvc-new"
+	)
+	tests := []struct {
+		name      string
+		volumes   string
+		wantClaim string
+		wantErr   bool
+	}{
+		{
+			name:      "PVC-backed volume is rewritten",
+			volumes:   `[{"name":"` + volName + `","persistentVolumeClaim":{"claimName":"old"}}]`,
+			wantClaim: newPVC,
+		},
+		{
+			name:    "no volume with the configured name is an error",
+			volumes: `[{"name":"other","persistentVolumeClaim":{"claimName":"old"}}]`,
+			wantErr: true,
+		},
+		{
+			name:    "volume with the configured name but no PVC source is an error",
+			volumes: `[{"name":"` + volName + `","emptyDir":{}}]`,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			dep := new(k8s.Deployment)
+			raw := `{"metadata":{"name":"dep","namespace":"default","labels":{"` + labelKey + `":"0"}},` +
+				`"spec":{"template":{"spec":{"volumes":` + tt.volumes + `}}}}`
+			if err := k8s.YAMLUnmarshal([]byte(raw), dep); err != nil {
+				t.Fatalf("failed to build deployment: %v", err)
+			}
+			scheme := k8s.NewScheme()
+			if err := k8s.AddClientGoScheme(scheme); err != nil {
+				t.Fatalf("failed to add scheme: %v", err)
+			}
+			cli := &mock.ValdK8sClientMock{}
+			cli.WithRaw(mock.NewFakeClientBuilder().WithScheme(scheme).WithObjects(dep).Build())
+			s := &subProcess{
+				deployments: resource.NewClientOf(cli, new(k8s.Deployment), new(k8s.DeploymentList)),
+				volumeName:  volName,
+				listOpts:    []k8s.ListOption{k8s.InNamespace("default"), k8s.MatchingLabels{labelKey: "0"}},
+			}
+			cur, err := s.getDeployment(t.Context())
+			if err != nil {
+				t.Fatalf("getDeployment: %v", err)
+			}
+			err = s.updateDeployment(t.Context(), newPVC, cur, time.Now())
+			if tt.wantErr {
+				if err == nil {
+					t.Fatal("updateDeployment() error = nil, want error")
+				}
+				got, gerr := s.getDeployment(t.Context())
+				if gerr != nil {
+					t.Fatalf("getDeployment: %v", gerr)
+				}
+				if got.Spec.Template.Annotations["kubectl.kubernetes.io/restartedAt"] != "" {
+					t.Error("deployment was updated despite the error")
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("updateDeployment() unexpected error: %v", err)
+			}
+			got, err := s.getDeployment(t.Context())
+			if err != nil {
+				t.Fatalf("getDeployment: %v", err)
+			}
+			if claim := got.Spec.Template.Spec.Volumes[0].PersistentVolumeClaim.ClaimName; claim != tt.wantClaim {
+				t.Errorf("claimName = %q, want %q", claim, tt.wantClaim)
+			}
+		})
+	}
+}
+
+func Test_withReplicaID(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name      string
+		old       string
+		replicaID string
+		want      string
+	}{
+		{
+			name:      "first rotation of a single-digit replica keeps the id",
+			old:       "vald-agent-ngt-readreplica-snapshot-0",
+			replicaID: "0",
+			want:      "vald-agent-ngt-readreplica-snapshot-0-",
+		},
+		{
+			name:      "first rotation of a two-digit replica keeps the id",
+			old:       "vald-agent-ngt-readreplica-snapshot-10",
+			replicaID: "10",
+			want:      "vald-agent-ngt-readreplica-snapshot-10-",
+		},
+		{
+			name:      "later rotation of a two-digit replica strips only the timestamp",
+			old:       "vald-agent-ngt-readreplica-pvc-10-1700000000",
+			replicaID: "10",
+			want:      "vald-agent-ngt-readreplica-pvc-10-",
+		},
+		{
+			name:      "a name that already lost the replica id is repaired",
+			old:       "vald-agent-ngt-readreplica-snapshot-1700000000",
+			replicaID: "11",
+			want:      "vald-agent-ngt-readreplica-snapshot-11-",
+		},
+		{
+			name:      "a name without a replica id stays empty",
+			old:       "vald",
+			replicaID: "0",
+			want:      "",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			if got := withReplicaID(getNewBaseName(tt.old), tt.replicaID); got != tt.want {
+				t.Errorf("withReplicaID(getNewBaseName(%q), %q) = %q, want %q", tt.old, tt.replicaID, got, tt.want)
+			}
+		})
+	}
+}
+
+// Test_subProcess_deleteOld pins that the post-switch cleanup survives the
+// sibling cancellation of the shared ctx and always attempts both deletes.
+func Test_subProcess_deleteOld(t *testing.T) {
+	t.Parallel()
+	const (
+		ns       = "default"
+		labelKey = "vald-readreplica-id"
+	)
+	tests := []struct {
+		name     string
+		withSnap bool
+		wantErr  bool
+	}{
+		{
+			name:     "both old resources are deleted although ctx was cancelled",
+			withSnap: true,
+		},
+		{
+			name:    "the old PVC is deleted although the snapshot delete fails",
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			labels := map[string]string{labelKey: "0"}
+			snap := &k8s.VolumeSnapshot{}
+			snap.Name, snap.Namespace, snap.Labels = "snap-old", ns, labels
+			pvc := &k8s.PersistentVolumeClaim{}
+			pvc.Name, pvc.Namespace, pvc.Labels = "pvc-old", ns, labels
+
+			scheme := k8s.NewScheme()
+			if err := k8s.AddClientGoScheme(scheme); err != nil {
+				t.Fatalf("failed to add scheme: %v", err)
+			}
+			if err := snapshotv1.AddToScheme(scheme); err != nil {
+				t.Fatalf("failed to add snapshot scheme: %v", err)
+			}
+			objs := []k8s.Object{pvc.DeepCopy()}
+			if tt.withSnap {
+				objs = append(objs, snap.DeepCopy())
+			}
+			// The fake client is passed as is (not through ValdK8sClientMock) because
+			// DeleteAndWait needs its Watch support.
+			fc := mock.NewFakeClientBuilder().WithScheme(scheme).WithObjects(objs...).Build()
+			s := &subProcess{
+				snapshots: resource.NewClient(fc, new(k8s.VolumeSnapshot), new(k8s.VolumeSnapshotList)),
+				pvcs:      resource.NewClient(fc, new(k8s.PersistentVolumeClaim), new(k8s.PersistentVolumeClaimList)),
+				listOpts:  []k8s.ListOption{k8s.InNamespace(ns), k8s.MatchingLabels(labels)},
+			}
+
+			// a sibling rotation failed and the errgroup cancelled the shared ctx
+			ctx, cancel := context.WithCancel(t.Context())
+			cancel()
+			done := make(chan error, 1)
+			go func() { done <- s.deleteOld(ctx, snap, pvc) }()
+			var err error
+			select {
+			case err = <-done:
+			case <-time.After(30 * time.Second):
+				t.Fatal("deleteOld did not return")
+			}
+			if tt.wantErr != (err != nil) {
+				t.Errorf("deleteOld() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			if _, gerr := s.pvcs.Get(t.Context(), pvc.Name, ns); !k8s.IsNotFound(gerr) {
+				t.Errorf("old PVC still exists or lookup failed: %v", gerr)
+			}
+			if _, gerr := s.snapshots.Get(t.Context(), snap.Name, ns); !k8s.IsNotFound(gerr) {
+				t.Errorf("old snapshot still exists or lookup failed: %v", gerr)
+			}
+		})
+	}
+}
+
+// Test_subProcess_createPVC_mountedClaim pins that the PVC replaced (and later
+// deleted) is the one the Deployment mounts, not just the first labeled PVC.
+func Test_subProcess_createPVC_mountedClaim(t *testing.T) {
+	t.Parallel()
+	const (
+		ns       = "default"
+		labelKey = "vald-readreplica-id"
+		volName  = "readreplica-pvc"
+		stale    = "pvc-0-100"
+		mounted  = "pvc-0-200"
+	)
+	pvcYAML := func(name string, terminating bool) string {
+		meta := `"name":"` + name + `","namespace":"` + ns + `","labels":{"` + labelKey + `":"0"}`
+		if terminating {
+			meta += `,"deletionTimestamp":"2026-01-01T00:00:00Z","finalizers":["kubernetes.io/pvc-protection"]`
+		}
+		return `{"metadata":{` + meta + `},"spec":{"dataSource":{"kind":"VolumeSnapshot","name":"snap"}}}`
+	}
+	tests := []struct {
+		name    string
+		volumes string
+		want    string
+		pvcs    []string
+	}{
+		{
+			name:    "the mounted PVC is chosen over an older labeled one",
+			volumes: `[{"name":"` + volName + `","persistentVolumeClaim":{"claimName":"` + mounted + `"}}]`,
+			pvcs:    []string{pvcYAML(stale, false), pvcYAML(mounted, false)},
+			want:    mounted,
+		},
+		{
+			name:    "a terminating PVC with the mounted name is skipped",
+			volumes: `[{"name":"` + volName + `","persistentVolumeClaim":{"claimName":"` + mounted + `"}}]`,
+			pvcs:    []string{pvcYAML(stale, false), pvcYAML(mounted, true)},
+			want:    stale,
+		},
+		{
+			name:    "without a mounted claim the first PVC is used",
+			volumes: `[{"name":"other","persistentVolumeClaim":{"claimName":"` + mounted + `"}}]`,
+			pvcs:    []string{pvcYAML(stale, false), pvcYAML(mounted, false)},
+			want:    stale,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			dep := new(k8s.Deployment)
+			raw := `{"metadata":{"name":"dep","namespace":"` + ns + `"},"spec":{"template":{"spec":{"volumes":` + tt.volumes + `}}}}`
+			if err := k8s.YAMLUnmarshal([]byte(raw), dep); err != nil {
+				t.Fatalf("failed to build deployment: %v", err)
+			}
+			objs := make([]k8s.Object, 0, len(tt.pvcs))
+			for _, p := range tt.pvcs {
+				pvc := new(k8s.PersistentVolumeClaim)
+				if err := k8s.YAMLUnmarshal([]byte(p), pvc); err != nil {
+					t.Fatalf("failed to build pvc: %v", err)
+				}
+				objs = append(objs, pvc)
+			}
+			scheme := k8s.NewScheme()
+			if err := k8s.AddClientGoScheme(scheme); err != nil {
+				t.Fatalf("failed to add scheme: %v", err)
+			}
+			fc := mock.NewFakeClientBuilder().WithScheme(scheme).WithObjects(objs...).Build()
+			s := &subProcess{
+				pvcs:       resource.NewClient(fc, new(k8s.PersistentVolumeClaim), new(k8s.PersistentVolumeClaimList)),
+				listOpts:   []k8s.ListOption{k8s.InNamespace(ns), k8s.MatchingLabels{labelKey: "0"}},
+				replicaID:  "0",
+				volumeName: volName,
+			}
+			newPvc, oldPvc, err := s.createPVC(t.Context(), "snap-new", dep)
+			if err != nil {
+				t.Fatalf("createPVC() unexpected error: %v", err)
+			}
+			if got := oldPvc.GetName(); got != tt.want {
+				t.Errorf("old PVC = %q, want %q", got, tt.want)
+			}
+			if got := newPvc.Spec.DataSource.Name; got != "snap-new" {
+				t.Errorf("new PVC data source = %q, want %q", got, "snap-new")
+			}
 		})
 	}
 }

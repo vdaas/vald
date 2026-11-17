@@ -107,14 +107,11 @@ func fitos(path string, fi os.FileInfo) string {
 			return fmt.Sprintf("unknown file info: for %s\t%v", path, fi)
 		}
 	}
-	if fi != nil {
-		return fmt.Sprintf("{name: %s, size: %d, mode: %s, mode_int: %d, is_dir: %v}",
-			fi.Name(),
-			fi.Size(),
-			fi.Mode().String(),
-			fi.Mode(),
-			fi.IsDir(),
-		)
-	}
-	return fmt.Sprintf("unknown file info: %v", fi)
+	return fmt.Sprintf("{name: %s, size: %d, mode: %s, mode_int: %d, is_dir: %v}",
+		fi.Name(),
+		fi.Size(),
+		fi.Mode().String(),
+		fi.Mode(),
+		fi.IsDir(),
+	)
 }

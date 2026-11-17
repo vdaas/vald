@@ -33,6 +33,12 @@ var (
 
 type Span = trace.Span
 
+// Enabled reports whether spans are recorded, so hot paths can skip building
+// span names that StartSpan would discard.
+func Enabled() bool {
+	return enabled
+}
+
 func StartSpan(
 	ctx context.Context, name string, opts ...trace.SpanStartOption,
 ) (context.Context, Span) {

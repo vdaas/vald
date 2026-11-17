@@ -101,8 +101,15 @@ func GetActualValue[T ~string](val T) (res T) {
 	}
 	r := os.ExpandEnv(string(val))
 	if strings.HasPrefix(r, fileValuePrefix) {
-		body, err := file.ReadFile(strings.TrimPrefix(r, fileValuePrefix))
-		if err != nil || body == nil {
+		path := strings.TrimPrefix(r, fileValuePrefix)
+		body, err := file.ReadFile(path)
+		if err != nil {
+			// the value stays empty (pinned by tests), but a missing secret
+			// mount must not fail silently.
+			log.Warnf("failed to read config value from %s: %v", path, err)
+			return res
+		}
+		if body == nil {
 			return res
 		}
 		r = conv.Btoa(body)
@@ -174,10 +181,6 @@ func deepMergeExplicit(
 	// intentional "set this value" signal even when the pointed-to value is zero.
 	if !explicit && src.IsZero() {
 		return nil
-	}
-	if !dst.IsValid() {
-		dst = src
-		log.Info(dst.Type(), dst, src)
 	}
 	dType := dst.Type()
 	sType := src.Type()

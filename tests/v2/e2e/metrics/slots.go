@@ -206,6 +206,19 @@ func (s *slot) Merge(other Slot) error {
 	defer s.mu.Unlock()
 	defer os.mu.Unlock()
 
+	// A slot holds a single window (see Record), so only data for the same
+	// window is accumulated. As in Record, a newer window replaces the current
+	// data and an older window is dropped. An empty slot adopts the other window.
+	switch {
+	case os.Total.Load() == 0:
+		return nil
+	case s.Total.Load() == 0 || os.WindowStart > s.WindowStart:
+		s.reset()
+		s.WindowStart = os.WindowStart
+	case os.WindowStart < s.WindowStart:
+		return nil
+	}
+
 	s.Total.Add(os.Total.Load())
 	s.Errors.Add(os.Errors.Load())
 

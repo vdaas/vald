@@ -17,11 +17,11 @@ package worker
 import (
 	"context"
 	"reflect"
-	"sync/atomic"
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/internal/sync/atomic"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
@@ -70,10 +70,13 @@ func (q *queue) Start(ctx context.Context) (<-chan error, error) {
 	}
 
 	ech := make(chan error, 1)
+	// running must be set before the goroutine starts, otherwise its deferred Store(false)
+	// can run first and the queue would be reported as running after it has stopped.
+	q.running.Store(true)
 	q.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)
 		defer close(q.outCh)
-		defer close(q.inCh)
+		// inCh is intentionally never closed: Push may be sending concurrently and a send on a closed channel panics.
 		defer q.running.Store(false)
 		s := make([]JobFunc, 0, q.buffer)
 		tick := time.NewTicker(q.qcdur)
@@ -99,8 +102,6 @@ func (q *queue) Start(ctx context.Context) (<-chan error, error) {
 			q.qLen.Store(uint64(len(s)))
 		}
 	}))
-
-	q.running.Store(true)
 
 	return ech, nil
 }

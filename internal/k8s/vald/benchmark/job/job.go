@@ -30,7 +30,6 @@ func New(opts ...Option) (BenchmarkWatcher, error) {
 	return vald.NewListWatcher(
 		v1.AddToScheme,
 		func(job *v1.ValdBenchmarkJob) v1.ValdBenchmarkJob { return *job },
-		vald.SkipNonCriticalOptionError,
 		opts...,
 	)
 }

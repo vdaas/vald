@@ -12,18 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package errors
-
-type UsearchError struct {
-	Msg string
-}
-
-func NewUsearchError(msg string) error {
-	return UsearchError{
-		Msg: msg,
-	}
-}
-
-func (u UsearchError) Error() string {
-	return u.Msg
-}
+// Package lb provides the partial-failure metrics of the lb gateway: the search agent
+// failures and partial successes, and the write agent failures and partial successes.
+package lb
