@@ -29,3 +29,4 @@ list/actions:
 ## update github actions version
 update/actions:
 	$(call update-github-actions, $(ACTIONS_LIST))
+	@$(MAKE) --no-print-directory pinact/lint
