@@ -49,12 +49,16 @@ type Queue interface {
 type vqueue struct {
 	il, dl sync.Map[string, *index]
 	ic, dc uint64
+	// seq is a monotonic per-operation sequence used as a last-write-wins
+	// tiebreaker when insert and delete timestamps collide in the same nanosecond.
+	seq uint64
 }
 
 type index struct {
 	uuid      string
 	vector    []float32
 	timestamp int64
+	seq       uint64
 }
 
 func New(opts ...Option) (Queue, error) {
@@ -81,14 +85,15 @@ func (v *vqueue) PushInsert(uuid string, vector []float32, timestamp int64) erro
 	if timestamp == 0 {
 		timestamp = time.Now().UnixNano()
 	}
-	dts, ok := v.loadDVQ(uuid)
-	if ok && newer(dts, timestamp) {
-		return nil
-	}
 	idx := index{
 		uuid:      uuid,
 		vector:    vector,
 		timestamp: timestamp,
+		seq:       atomic.AddUint64(&v.seq, 1),
+	}
+	didx, ok := v.loadDeleteIndex(uuid)
+	if ok && newerIndex(didx, &idx) {
+		return nil
 	}
 	push(&v.il, &v.ic, uuid, &idx)
 	return nil
@@ -104,6 +109,7 @@ func (v *vqueue) PushDelete(uuid string, timestamp int64) error {
 	idx := index{
 		uuid:      uuid,
 		timestamp: timestamp,
+		seq:       atomic.AddUint64(&v.seq, 1),
 	}
 	push(&v.dl, &v.dc, uuid, &idx)
 	return nil
@@ -121,7 +127,7 @@ func push(m *sync.Map[string, *index], cnt *uint64, uuid string, idx *index) {
 		// An already queued uuid never changes cnt, so check it first and leave the shared counter
 		// alone: bumping and undoing it for every re-push made all pushers contend on one cache line.
 		if oidx, ok := m.Load(uuid); ok {
-			if !newer(idx.timestamp, oidx.timestamp) || m.CompareAndSwap(uuid, oidx, idx) {
+			if !newerIndex(idx, oidx) || m.CompareAndSwap(uuid, oidx, idx) {
 				return
 			}
 			continue
@@ -132,7 +138,7 @@ func push(m *sync.Map[string, *index], cnt *uint64, uuid string, idx *index) {
 			return
 		}
 		atomic.AddUint64(cnt, ^uint64(0))
-		if !newer(idx.timestamp, oidx.timestamp) || m.CompareAndSwap(uuid, oidx, idx) {
+		if !newerIndex(idx, oidx) || m.CompareAndSwap(uuid, oidx, idx) {
 			return
 		}
 	}
@@ -140,8 +146,7 @@ func push(m *sync.Map[string, *index], cnt *uint64, uuid string, idx *index) {
 
 // popIfSame removes uuid only while it still maps to idx, so an entry pushed after
 // idx was read is never dropped by mistake. The map compares with reflect.DeepEqual, so
-// an entry equal to idx in uuid, vector and timestamp counts as idx too; such entries
-// are interchangeable, so which of them is removed does not matter.
+// the operation sequence also distinguishes writes with equal timestamps and vectors.
 func popIfSame(m *sync.Map[string, *index], cnt *uint64, uuid string, idx *index) {
 	if m.CompareAndDelete(uuid, idx) {
 		atomic.AddUint64(cnt, ^uint64(0))
@@ -181,32 +186,36 @@ func (v *vqueue) GetVectorWithTimestamp(uuid string) (vec []float32, its, dts in
 
 // getVector returns the vector and timestamps stored in the queue.
 // If the same UUID exists in the insert queue and the delete queue, the timestamp is compared.
-// And the vector is returned if the timestamp in the insert queue is newer than the delete queue.
+// And the vector is returned if the insert operation is newer than the delete operation.
+// When timestamps collide, last-write-wins uses the per-operation sequence so a later
+// sequential PushInsert exists even if both operations share the same nanosecond.
 func (v *vqueue) getVector(
 	uuid string, enableDeleteTimestamp bool,
 ) (vec []float32, its, dts int64, ok bool) {
-	vec, its, ok = v.loadIVQ(uuid)
-	if !ok || vec == nil {
+	iidx, ok := v.loadInsertIndex(uuid)
+	if !ok || iidx == nil || iidx.vector == nil {
 		if !enableDeleteTimestamp {
 			// data not in the insert queue then return not exists(false)
 			return nil, 0, 0, false
 		}
-		dts, ok = v.loadDVQ(uuid)
-		if !ok || dts == 0 {
+		didx, ok := v.loadDeleteIndex(uuid)
+		if !ok || didx == nil || didx.timestamp == 0 {
 			// data not in the delete queue and insert queue then return not exists(false)
 			return nil, 0, 0, false
 		}
 		// data not in theinsert queue and exists in delete queue then return not exists(false) with delete index timestamp
-		return nil, 0, dts, false
+		return nil, 0, didx.timestamp, false
 	}
-	dts, ok = v.loadDVQ(uuid)
-	if !ok || dts == 0 {
+	vec, its = iidx.vector, iidx.timestamp
+	didx, ok := v.loadDeleteIndex(uuid)
+	if !ok || didx == nil || didx.timestamp == 0 {
 		// data not in the delete queue but exists in insert queue then return exists(true)
 		return vec, its, 0, vec != nil // usually vec is non-nil which means true
 	}
-	// data exists both queue, compare data timestamp if insert queue timestamp is newer than delete one last value will true
-	// However, if insert and delete are sent by the update instruction, the timestamp will be the same
-	return vec, its, dts, vec != nil && newer(its, dts) // ususaly vec is non-nil
+	dts = didx.timestamp
+	// data exists both queue, compare operations if insert is newer than delete last value will true.
+	// Same-timestamp update still works when delete is issued first then insert (seq makes insert newer).
+	return vec, its, dts, vec != nil && newerIndex(iidx, didx) // ususaly vec is non-nil
 }
 
 // IVExists returns timestamp of iv and true if there is the UUID in the insert queue.
@@ -239,7 +248,7 @@ func (v *vqueue) RangePopInsert(
 		uii = nil
 	}()
 	v.il.Range(func(uuid string, idx *index) bool {
-		if newer(idx.timestamp, now) {
+		if idx == nil || newer(idx.timestamp, now) {
 			return true
 		}
 		// A newer delete cancels the insert. An older (or equal) delete still queued
@@ -247,8 +256,8 @@ func (v *vqueue) RangePopInsert(
 		// RangePopDelete(now) snapshot. Applying the insert first would repoint the uuid and let that delete
 		// remove the new object on the next run, so keep the insert queued until the
 		// delete has been applied.
-		if dts, ok := v.loadDVQ(uuid); ok {
-			if newer(dts, idx.timestamp) {
+		if didx, ok := v.loadDeleteIndex(uuid); ok {
+			if newerIndex(didx, idx) {
 				popIfSame(&v.il, &v.ic, uuid, idx)
 			}
 			return true
@@ -312,11 +321,14 @@ func (v *vqueue) RangePopDelete(
 			// f already removed uuid from the index, which also satisfies any newer
 			// delete pushed meanwhile, so pop the delete entry by key. Cancel only
 			// inserts older than the newest delete popped; a newer insert must stay.
-			dts, ok := v.PopDelete(didx.uuid)
-			if !ok || dts < didx.timestamp {
-				dts = didx.timestamp
+			latest, ok := v.dl.LoadAndDelete(didx.uuid)
+			if ok {
+				atomic.AddUint64(&v.dc, ^uint64(0))
 			}
-			if iidx, ok := v.il.Load(didx.uuid); ok && iidx != nil && newer(dts, iidx.timestamp) {
+			if !ok || !newerIndex(latest, didx) {
+				latest = didx
+			}
+			if iidx, ok := v.il.Load(didx.uuid); ok && iidx != nil && newerIndex(latest, iidx) {
 				popIfSame(&v.il, &v.ic, didx.uuid, iidx)
 			}
 		}
@@ -335,8 +347,8 @@ func (v *vqueue) Range(_ context.Context, f func(uuid string, vector []float32, 
 		if idx == nil {
 			return true
 		}
-		dts, ok := v.loadDVQ(uuid)
-		if !ok || newer(idx.timestamp, dts) {
+		didx, ok := v.loadDeleteIndex(uuid)
+		if !ok || newerIndex(idx, didx) {
 			return f(uuid, idx.vector, idx.timestamp)
 		}
 		return true
@@ -353,24 +365,39 @@ func (v *vqueue) DVQLen() (l int) {
 	return int(atomic.LoadUint64(&v.dc))
 }
 
-func (v *vqueue) loadIVQ(uuid string) (vec []float32, ts int64, ok bool) {
-	var idx *index
+func (v *vqueue) loadInsertIndex(uuid string) (idx *index, ok bool) {
 	idx, ok = v.il.Load(uuid)
 	if !ok || idx == nil {
-		return nil, 0, false
+		return nil, false
 	}
-	return idx.vector, idx.timestamp, true
+	return idx, true
 }
 
-func (v *vqueue) loadDVQ(uuid string) (ts int64, ok bool) {
-	var idx *index
+func (v *vqueue) loadDeleteIndex(uuid string) (idx *index, ok bool) {
 	idx, ok = v.dl.Load(uuid)
 	if !ok || idx == nil {
-		return 0, false
+		return nil, false
 	}
-	return idx.timestamp, true
+	return idx, true
 }
 
 func newer(ts1, ts2 int64) bool {
 	return ts1 > ts2
+}
+
+// newerIndex reports whether idx1 is a later write than idx2.
+// Timestamps remain the primary order. Equal timestamps fall back to the
+// per-operation sequence so sequential calls that share a nanosecond still
+// follow last-write-wins without treating a same-timestamp update as a no-op.
+func newerIndex(idx1, idx2 *index) bool {
+	if idx1 == nil {
+		return false
+	}
+	if idx2 == nil {
+		return true
+	}
+	if idx1.timestamp != idx2.timestamp {
+		return newer(idx1.timestamp, idx2.timestamp)
+	}
+	return idx1.seq > idx2.seq
 }

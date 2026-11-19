@@ -35,7 +35,6 @@ func TestExistsGetObject_doNotWriteKVS(t *testing.T) {
 		kts  = int64(1)
 		its  = int64(2)
 	)
-	kvVec := []float32{1, 2, 3}
 	tests := []struct {
 		call func(kv kvs.BidiMap, vq vqueue.Queue) error
 		name string
@@ -44,8 +43,8 @@ func TestExistsGetObject_doNotWriteKVS(t *testing.T) {
 			name: "Exists",
 			call: func(kv kvs.BidiMap, vq vqueue.Queue) error {
 				got, ok := Exists(kv, vq, uuid)
-				if !ok || got != oid {
-					return errors.Errorf("Exists() = (%d, %v), want (%d, true)", got, ok, oid)
+				if ok {
+					return errors.Errorf("Exists() = (%d, %v), want not found", got, ok)
 				}
 				return nil
 			},
@@ -57,10 +56,10 @@ func TestExistsGetObject_doNotWriteKVS(t *testing.T) {
 					if got != oid {
 						return nil, errors.Errorf("getVectorFn oid = %d, want %d", got, oid)
 					}
-					return kvVec, nil
+					return []float32{1, 2, 3}, nil
 				})
-				if err != nil || ts != kts || !slices.Equal(vec, kvVec) {
-					return errors.Errorf("GetObject() = (%v, %d, %v), want (%v, %d, nil)", vec, ts, err, kvVec, kts)
+				if !errors.Is(err, errors.ErrObjectIDNotFound(uuid)) {
+					return errors.Errorf("GetObject() = (%v, %d, %v), want not found", vec, ts, err)
 				}
 				return nil
 			},
@@ -256,11 +255,12 @@ func TestUpdateTimestamp_queuedInsertAndDelete(t *testing.T) {
 			wantIts: 101,
 		},
 		{
-			name:    "delete tying the insert: the queued vector is re-queued at ts",
+			name:    "later delete tying the insert: pending deletion is not found",
+			wantErr: errors.ErrObjectNotFound(nil, uuid),
 			its:     100,
 			dts:     100,
 			ts:      300,
-			wantIts: 300,
+			wantIts: 100,
 		},
 	}
 	for _, tt := range tests {
@@ -431,6 +431,92 @@ func TestUUIDs_capacityHint(t *testing.T) {
 			}()
 			if !slices.Equal(got, tt.kv) {
 				t.Errorf("UUIDs() = %v, want %v", got, tt.kv)
+			}
+		})
+	}
+}
+
+func TestSameTimestampOperations(t *testing.T) {
+	const (
+		uuid             = "same-timestamp-object"
+		timestamp int64  = 200
+		oid       uint32 = 1
+	)
+	indexedVector := []float32{1, 2, 3}
+	queuedVector := []float32{4, 5, 6}
+	tests := []struct {
+		name       string
+		indexed    bool
+		operations []string
+		exists     bool
+		vector     []float32
+		timestamp  int64
+		readIndex  bool
+	}{
+		{name: "indexed insert then delete", indexed: true, operations: []string{"insert", "delete"}},
+		{name: "indexed delete then insert", indexed: true, operations: []string{"delete", "insert"}, exists: true, vector: queuedVector, timestamp: timestamp},
+		{name: "unindexed insert then delete", operations: []string{"insert", "delete"}},
+		{name: "unindexed delete then insert", operations: []string{"delete", "insert"}, exists: true, vector: queuedVector, timestamp: timestamp},
+		{name: "indexed without pending operations", indexed: true, exists: true, vector: indexedVector, timestamp: 100, readIndex: true},
+		{name: "missing without pending operations"},
+		{name: "indexed delete only", indexed: true, operations: []string{"delete"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			kv := kvs.New()
+			vq, err := vqueue.New()
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if tt.indexed {
+				kv.Set(uuid, oid, 100)
+			}
+			for _, operation := range tt.operations {
+				switch operation {
+				case "insert":
+					if err := vq.PushInsert(uuid, queuedVector, timestamp); err != nil {
+						t.Fatalf("unexpected error: %v", err)
+					}
+				case "delete":
+					if err := vq.PushDelete(uuid, timestamp); err != nil {
+						t.Fatalf("unexpected error: %v", err)
+					}
+				}
+			}
+
+			_, exists := Exists(kv, vq, uuid)
+			if exists != tt.exists {
+				t.Fatalf("got %v, want %v", exists, tt.exists)
+			}
+
+			readIndex := false
+			vec, ts, err := GetObject(kv, vq, uuid, func(id uint32) ([]float32, error) {
+				readIndex = true
+				if id != oid {
+					t.Fatalf("got %v, want %v", id, oid)
+				}
+				return indexedVector, nil
+			})
+			if readIndex != tt.readIndex {
+				t.Fatalf("got %v, want %v", readIndex, tt.readIndex)
+			}
+			if !tt.exists {
+				if !errors.Is(err, errors.ErrObjectIDNotFound(uuid)) {
+					t.Fatalf("GetObject() error = %v, want object ID not found", err)
+				}
+				if vec != nil {
+					t.Fatalf("got %v, want nil", vec)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if !slices.Equal(vec, tt.vector) {
+				t.Fatalf("got %v, want %v", vec, tt.vector)
+			}
+			if ts != tt.timestamp {
+				t.Fatalf("got %v, want %v", ts, tt.timestamp)
 			}
 		})
 	}

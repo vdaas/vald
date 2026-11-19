@@ -15,6 +15,8 @@
 package vqueue
 
 import (
+	"fmt"
+	"slices"
 	"testing"
 	"time"
 
@@ -74,6 +76,200 @@ func TestGetVector(t *testing.T) {
 			_, _, exists = vq.GetVector(test.uuid)
 			require.False(t, exists)
 		})
+	}
+}
+
+func TestGetVectorSameTimestampDeleteThenInsert(t *testing.T) {
+	vq, err := New()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	const uuid = "same-ns-uuid"
+	vec := []float32{1.0, 2.0, 3.0}
+	ts := time.Now().UnixNano()
+
+	if err := vq.PushDelete(uuid, ts); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if err := vq.PushInsert(uuid, vec, ts); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	gotVec, gotTS, exists := vq.GetVector(uuid)
+	if !exists {
+		t.Fatalf("exists = %v, want true", exists)
+	}
+	if !slices.Equal(gotVec, vec) {
+		t.Fatalf("got %v, want %v", gotVec, vec)
+	}
+	if gotTS != ts {
+		t.Fatalf("got %v, want %v", gotTS, ts)
+	}
+
+	_, ivOK := vq.IVExists(uuid)
+	if !ivOK {
+		t.Fatalf("ivOK = %v, want true", ivOK)
+	}
+	_, dvOK := vq.DVExists(uuid)
+	if dvOK {
+		t.Fatalf("dvOK = %v, want false", dvOK)
+	}
+
+	gotVec, gotITS, gotDTS, exists := vq.GetVectorWithTimestamp(uuid)
+	if !exists {
+		t.Fatalf("exists = %v, want true", exists)
+	}
+	if !slices.Equal(gotVec, vec) {
+		t.Fatalf("got %v, want %v", gotVec, vec)
+	}
+	if gotITS != ts {
+		t.Fatalf("got %v, want %v", gotITS, ts)
+	}
+	if gotDTS != ts {
+		t.Fatalf("got %v, want %v", gotDTS, ts)
+	}
+}
+
+func TestGetVectorSameTimestampInsertThenDelete(t *testing.T) {
+	vq, err := New()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	const uuid = "same-ns-uuid"
+	vec := []float32{1.0, 2.0, 3.0}
+	ts := time.Now().UnixNano()
+
+	if err := vq.PushInsert(uuid, vec, ts); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if err := vq.PushDelete(uuid, ts); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	_, _, exists := vq.GetVector(uuid)
+	if exists {
+		t.Fatalf("exists = %v, want false", exists)
+	}
+
+	_, ivOK := vq.IVExists(uuid)
+	if ivOK {
+		t.Fatalf("ivOK = %v, want false", ivOK)
+	}
+	_, dvOK := vq.DVExists(uuid)
+	if !dvOK {
+		t.Fatalf("dvOK = %v, want true", dvOK)
+	}
+}
+
+func TestRangePopSameTimestampDeleteThenInsert(t *testing.T) {
+	vq, err := New()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	const uuid = "same-ns-uuid"
+	vec := []float32{4.0, 5.0, 6.0}
+	ts := time.Now().UnixNano()
+
+	if err := vq.PushDelete(uuid, ts); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if err := vq.PushInsert(uuid, vec, ts); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	now := ts + 1
+	deleted := make([]string, 0)
+	vq.RangePopDelete(t.Context(), now, func(id string, _ int64) bool {
+		deleted = append(deleted, id)
+		return true
+	})
+	if !slices.Equal(deleted, []string{uuid}) {
+		t.Fatalf("got %v, want %v", deleted, []string{uuid})
+	}
+
+	inserted := make(map[string][]float32)
+	vq.RangePopInsert(t.Context(), now, func(id string, vector []float32, timestamp int64) bool {
+		inserted[id] = vector
+		if timestamp != ts {
+			t.Fatalf("got %v, want %v", timestamp, ts)
+		}
+		return true
+	})
+	if len(inserted) != 1 || !slices.Equal(inserted[uuid], vec) {
+		t.Fatalf("got %v, want %v", inserted, map[string][]float32{uuid: vec})
+	}
+}
+
+func TestPushSameTimestampKeepsLastOperation(t *testing.T) {
+	for _, operations := range [][]string{
+		{"insert", "insert"},
+		{"delete", "insert", "delete"},
+		{"insert", "delete", "insert"},
+	} {
+		t.Run(fmt.Sprint(operations), func(t *testing.T) {
+			q, err := New()
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			for i, operation := range operations {
+				if operation == "delete" {
+					if err := q.PushDelete("uuid", 1); err != nil {
+						t.Fatalf("unexpected error: %v", err)
+					}
+				} else {
+					if err := q.PushInsert("uuid", []float32{float32(i)}, 1); err != nil {
+						t.Fatalf("unexpected error: %v", err)
+					}
+				}
+			}
+			_, _, exists := q.GetVector("uuid")
+			if exists != (operations[len(operations)-1] == "insert") {
+				t.Fatalf("got %v, want %v", exists, operations[len(operations)-1] == "insert")
+			}
+			q.RangePopDelete(t.Context(), 2, func(string, int64) bool { return true })
+			vec, _, exists := q.GetVector("uuid")
+			if exists != (operations[len(operations)-1] == "insert") {
+				t.Fatalf("got %v, want %v", exists, operations[len(operations)-1] == "insert")
+			}
+			if exists {
+				if !slices.Equal(vec, []float32{float32(len(operations) - 1)}) {
+					t.Fatalf("got %v, want %v", vec, []float32{float32(len(operations) - 1)})
+				}
+			}
+		})
+	}
+}
+
+func TestRangeSameTimestampDeleteThenInsert(t *testing.T) {
+	vq, err := New()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	const uuid = "same-ns-uuid"
+	vec := []float32{7.0, 8.0, 9.0}
+	ts := time.Now().UnixNano()
+
+	if err := vq.PushDelete(uuid, ts); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if err := vq.PushInsert(uuid, vec, ts); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	seen := make(map[string][]float32)
+	vq.Range(t.Context(), func(id string, vector []float32, timestamp int64) bool {
+		seen[id] = vector
+		if timestamp != ts {
+			t.Fatalf("got %v, want %v", timestamp, ts)
+		}
+		return true
+	})
+	if len(seen) != 1 || !slices.Equal(seen[uuid], vec) {
+		t.Fatalf("got %v, want %v", seen, map[string][]float32{uuid: vec})
 	}
 }
 
@@ -2375,10 +2571,10 @@ func TestPush_counterNeverUnderflows(t *testing.T) {
 		require.False(t, negative.Load(), "queue length went below zero")
 		var ic, dc int
 		for _, id := range uuids {
-			if _, _, ok := q.loadIVQ(id); ok {
+			if _, ok := q.loadInsertIndex(id); ok {
 				ic++
 			}
-			if _, ok := q.loadDVQ(id); ok {
+			if _, ok := q.loadDeleteIndex(id); ok {
 				dc++
 			}
 		}
