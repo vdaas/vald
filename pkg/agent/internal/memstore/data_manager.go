@@ -32,7 +32,7 @@ func Exists(kv kvs.BidiMap, vq vqueue.Queue, uuid string) (oid uint32, ok bool) 
 		if !ok {
 			return 0, false
 		}
-		if dts > its {
+		if dts != 0 && dts >= its {
 			log.Debugf(
 				"Exists\tuuid: %s's data found in kvsdb and not found in insert vqueue, but delete vqueue data exists. the object will be delete soon\terror: %v",
 				uuid,
@@ -58,7 +58,7 @@ func GetObject(
 		return nil, 0, errors.ErrObjectIDNotFound(uuid)
 	}
 
-	if ok && dts > its {
+	if dts != 0 && dts >= its {
 		log.Debugf("GetObject\tuuid: %s's data found in kvsdb and not found in insert vqueue, but delete vqueue data exists. the object will be delete soon", uuid)
 		return nil, 0, errors.ErrObjectIDNotFound(uuid)
 	}
@@ -205,17 +205,13 @@ func UpdateTimestamp(
 			return nil // successfully update the kvs and delete-vqueue
 		}
 		return nil // successfully update the kvs
-	case !vqok && its != 0 && kvok && kts <= dts && dts > its:
+	case !vqok && its != 0 && kvok && kts <= dts && dts >= its:
 		// its != 0 means a queued vector exists (getVector reports its=0 for a nil vector), so
 		// vqok=false means the queued delete is not older than it. A newer delete cancels the
 		// insert and removes the indexed object at CreateIndex: the object is pending deletion
 		// (GetObject and Exists report it as not found). Raising the kvs timestamp past dts
 		// would make CreateIndex skip that delete and resurrect the indexed object.
 		return errors.ErrObjectNotFound(nil, uuid)
-	case !vqok && its != 0 && kvok && kts <= dts && dts < ts && (force || (kts < ts && its < ts)):
-		// dts == its: CreateIndex applies the delete and then the queued insert, so the queued
-		// vector is the object. Re-queue it at ts and leave the kvs timestamp as is, as above.
-		return vq.PushInsert(uuid, vec, ts)
 	case !vqok && its != 0 && kvok && kts > dts && (force || kts < ts):
 		// The indexed object is newer than both queued entries, so CreateIndex skips them
 		// (newest wins) and the indexed object stays. Raise its timestamp and drop the stale
