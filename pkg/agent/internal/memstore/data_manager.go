@@ -18,11 +18,17 @@ import (
 	"context"
 
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/pkg/agent/internal/kvs"
 	"github.com/vdaas/vald/pkg/agent/internal/vqueue"
 )
+
+// objectIDNotFoundError matches errors.ErrObjectIDNotFound(uuid).Error() without fmt.Errorf allocations.
+type objectIDNotFoundError string
+
+func (e objectIDNotFoundError) Error() string {
+	return "uuid " + string(e) + "'s object id not found"
+}
 
 func Exists(kv kvs.BidiMap, vq vqueue.Queue, uuid string) (oid uint32, ok bool) {
 	var its, dts int64
@@ -33,11 +39,6 @@ func Exists(kv kvs.BidiMap, vq vqueue.Queue, uuid string) (oid uint32, ok bool) 
 			return 0, false
 		}
 		if dts > its {
-			log.Debugf(
-				"Exists\tuuid: %s's data found in kvsdb and not found in insert vqueue, but delete vqueue data exists. the object will be delete soon\terror: %v",
-				uuid,
-				errors.ErrObjectIDNotFound(uuid),
-			)
 			return 0, false
 		}
 	}
@@ -54,13 +55,11 @@ func GetObject(
 
 	oid, kts, ok := kv.Get(uuid)
 	if !ok {
-		log.Debugf("GetObject\tuuid: %s's data not found in kvsdb and insert vqueue", uuid)
-		return nil, 0, errors.ErrObjectIDNotFound(uuid)
+		return nil, 0, objectIDNotFoundError(uuid)
 	}
 
-	if ok && dts > its {
-		log.Debugf("GetObject\tuuid: %s's data found in kvsdb and not found in insert vqueue, but delete vqueue data exists. the object will be delete soon", uuid)
-		return nil, 0, errors.ErrObjectIDNotFound(uuid)
+	if dts > its {
+		return nil, 0, objectIDNotFoundError(uuid)
 	}
 
 	if getVectorFn == nil {
@@ -69,7 +68,6 @@ func GetObject(
 
 	vec, err = getVectorFn(oid)
 	if err != nil {
-		log.Debugf("GetObject\tuuid: %s oid: %d's vector not found in ngt index", uuid, oid)
 		return nil, 0, errors.ErrObjectNotFound(err, uuid)
 	}
 
@@ -85,12 +83,16 @@ func ListObjectFunc(
 	vq vqueue.Queue,
 	f func(uuid string, oid uint32, ts int64) bool,
 ) {
-	dup := make(map[string]bool, max(vq.DVQLen(), 3)/3)
+	var dup map[string]struct{}
 	vq.Range(ctx, func(uuid string, vec []float32, ts int64) (ok bool) {
 		oid, kts, ok := kv.Get(uuid)
 		if ok { // exists same data ikv
 			if ts > kts { // exist ikv but vq is newer
-				dup[uuid] = true
+				if dup == nil {
+					const minDupCap = 8
+					dup = make(map[string]struct{}, max(vq.IVQLen(), minDupCap))
+				}
+				dup[uuid] = struct{}{}
 				return f(uuid, oid, ts)
 			}
 			// exist in kv and kvs data is newer thavqueue skip and process it at kvs.Range
@@ -100,8 +102,10 @@ func ListObjectFunc(
 		return f(uuid, 0, ts)
 	})
 	kv.Range(ctx, func(uuid string, oid uint32, ts int64) (ok bool) {
-		if dup[uuid] {
-			return true
+		if len(dup) > 0 {
+			if _, exists := dup[uuid]; exists {
+				return true
+			}
 		}
 		// if delete vqueue data exists and timestamp of dvq is newer which means data will be delete soon, then skip process
 		dts, ok := vq.DVExists(uuid)

@@ -168,9 +168,24 @@ func (c *client) Start(ctx context.Context) (<-chan error, error) {
 			select {
 			case <-ctx.Done():
 				return finalize()
-			case err = <-dech:
-			case err = <-aech:
-			case err = <-rrech:
+			case derr, ok := <-dech:
+				if !ok {
+					dech = nil
+					continue
+				}
+				err = derr
+			case aerr, ok := <-aech:
+				if !ok {
+					aech = nil
+					continue
+				}
+				err = aerr
+			case rrerr, ok := <-rrech:
+				if !ok {
+					rrech = nil
+					continue
+				}
+				err = rrerr
 			case <-dt.C:
 				err = c.discover(ctx)
 			}
@@ -208,19 +223,10 @@ func (c *client) GetClient() grpc.Client {
 
 func (c *client) GetReadClient() grpc.Client {
 	// just return write client when there is no read replica
-	if c.readClient == nil {
+	if c.readClient == nil || c.readReplicaReplicas == 0 {
 		return c.client
 	}
-
-	var next uint64
-	for {
-		cur := c.roundRobin.Load()
-		next = (cur + 1) % (c.readReplicaReplicas + 1)
-		if c.roundRobin.CompareAndSwap(cur, next) {
-			break
-		}
-	}
-	if next == 0 {
+	if c.roundRobin.Add(1)%(c.readReplicaReplicas+1) == 0 {
 		return c.client
 	}
 	return c.readClient

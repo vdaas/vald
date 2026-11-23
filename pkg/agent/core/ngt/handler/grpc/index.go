@@ -31,8 +31,11 @@ import (
 func (s *server) CreateIndex(
 	ctx context.Context, c *payload.Control_CreateIndexRequest,
 ) (res *payload.Empty, err error) {
-	ctx, span := trace.StartSpan(ctx, apiName+".CreateIndex")
-	defer trace.End(span)
+	var span trace.Span
+	if trace.Enabled() {
+		ctx, span = trace.StartSpan(ctx, apiName+".CreateIndex")
+		defer trace.End(span)
+	}
 	res = new(payload.Empty)
 	err = s.ngt.CreateIndex(ctx, c.GetPoolSize())
 	if err != nil {
@@ -78,15 +81,17 @@ func (s *server) CreateIndex(
 }
 
 func (s *server) SaveIndex(ctx context.Context, _ *payload.Empty) (res *payload.Empty, err error) {
-	ctx, span := trace.StartSpan(ctx, apiName+".SaveIndex")
-	defer trace.End(span)
+	var span trace.Span
+	if trace.Enabled() {
+		ctx, span = trace.StartSpan(ctx, apiName+".SaveIndex")
+		defer trace.End(span)
+	}
 	res = new(payload.Empty)
 	err = s.ngt.SaveIndex(ctx)
 	if err != nil {
 		log.Error(err)
 		err = status.WrapWithInternal("SaveIndex API failed to save indices", err,
 			s.resourceInfo(ngtResourceType+"/ngt.SaveIndex"), info.Get())
-		log.Error(err)
 		return errhandler.HandleError[payload.Empty](span, codes.Internal, err)
 	}
 	return res, nil
@@ -95,8 +100,11 @@ func (s *server) SaveIndex(ctx context.Context, _ *payload.Empty) (res *payload.
 func (s *server) CreateAndSaveIndex(
 	ctx context.Context, c *payload.Control_CreateIndexRequest,
 ) (res *payload.Empty, err error) {
-	ctx, span := trace.StartSpan(ctx, apiName+".CreateAndSaveIndex")
-	defer trace.End(span)
+	var span trace.Span
+	if trace.Enabled() {
+		ctx, span = trace.StartSpan(ctx, apiName+".CreateAndSaveIndex")
+		defer trace.End(span)
+	}
 	res = new(payload.Empty)
 	err = s.ngt.CreateAndSaveIndex(ctx, c.GetPoolSize())
 	if err != nil {
@@ -144,8 +152,11 @@ func (s *server) CreateAndSaveIndex(
 func (s *server) IndexInfo(
 	ctx context.Context, _ *payload.Empty,
 ) (res *payload.Info_Index_Count, err error) {
-	_, span := trace.StartSpan(ctx, apiName+".IndexInfo")
-	defer trace.End(span)
+	if trace.Enabled() {
+		var span trace.Span
+		_, span = trace.StartSpan(ctx, apiName+".IndexInfo")
+		defer trace.End(span)
+	}
 	return &payload.Info_Index_Count{
 		Stored:      uint32(s.ngt.Len()),
 		Uncommitted: uint32(s.ngt.InsertVQueueBufferLen() + s.ngt.DeleteVQueueBufferLen()),
@@ -157,10 +168,13 @@ func (s *server) IndexInfo(
 func (s *server) IndexDetail(
 	ctx context.Context, _ *payload.Empty,
 ) (res *payload.Info_Index_Detail, err error) {
-	_, span := trace.StartSpan(ctx, apiName+".IndexDetail")
-	defer trace.End(span)
+	if trace.Enabled() {
+		var span trace.Span
+		_, span = trace.StartSpan(ctx, apiName+".IndexDetail")
+		defer trace.End(span)
+	}
 	res = &payload.Info_Index_Detail{
-		Counts:     make(map[string]*payload.Info_Index_Count),
+		Counts:     make(map[string]*payload.Info_Index_Count, 1),
 		Replica:    1,
 		LiveAgents: 1,
 	}
@@ -176,16 +190,22 @@ func (s *server) IndexDetail(
 func (s *server) IndexStatistics(
 	ctx context.Context, _ *payload.Empty,
 ) (res *payload.Info_Index_Statistics, err error) {
-	_, span := trace.StartSpan(ctx, apiName+".IndexStatistics")
-	defer trace.End(span)
+	if trace.Enabled() {
+		var span trace.Span
+		_, span = trace.StartSpan(ctx, apiName+".IndexStatistics")
+		defer trace.End(span)
+	}
 	return s.ngt.IndexStatistics()
 }
 
 func (s *server) IndexStatisticsDetail(
 	ctx context.Context, _ *payload.Empty,
 ) (res *payload.Info_Index_StatisticsDetail, err error) {
-	_, span := trace.StartSpan(ctx, apiName+".IndexStatisticsDetail")
-	defer trace.End(span)
+	if trace.Enabled() {
+		var span trace.Span
+		_, span = trace.StartSpan(ctx, apiName+".IndexStatisticsDetail")
+		defer trace.End(span)
+	}
 	stats, err := s.ngt.IndexStatistics()
 	if err != nil {
 		return nil, err
@@ -200,8 +220,11 @@ func (s *server) IndexStatisticsDetail(
 func (s *server) IndexProperty(
 	ctx context.Context, _ *payload.Empty,
 ) (res *payload.Info_Index_PropertyDetail, err error) {
-	_, span := trace.StartSpan(ctx, apiName+".IndexStatisticsDetail")
-	defer trace.End(span)
+	if trace.Enabled() {
+		var span trace.Span
+		_, span = trace.StartSpan(ctx, apiName+".IndexProperty")
+		defer trace.End(span)
+	}
 	prop, err := s.ngt.IndexProperty()
 	if err != nil {
 		return nil, err

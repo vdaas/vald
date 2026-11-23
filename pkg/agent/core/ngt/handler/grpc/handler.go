@@ -15,6 +15,7 @@
 package grpc
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"unicode"
@@ -25,7 +26,10 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
+	"github.com/vdaas/vald/internal/net/grpc/proto"
+	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
@@ -43,6 +47,8 @@ type server struct {
 	eg                errgroup.Group
 	name              string
 	ip                string
+	resourceName      string
+	ips               []string
 	streamConcurrency int
 }
 
@@ -55,9 +61,13 @@ const (
 // path: the resourceType is caller-specific, the resource name is always this
 // server's apiName/name/ip triple.
 func (s *server) resourceInfo(resourceType string) *errdetails.ResourceInfo {
+	rn := s.resourceName
+	if rn == "" {
+		rn = fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip)
+	}
 	return &errdetails.ResourceInfo{
 		ResourceType: resourceType,
-		ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+		ResourceName: rn,
 	}
 }
 
@@ -76,24 +86,36 @@ func New(opts ...Option) (Server, error) {
 			log.Warn(werr)
 		}
 	}
+	s.resourceName = fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip)
+	s.ips = []string{s.ip}
 	return s, nil
+}
+
+func (s *server) serverIPs() []string {
+	if s.ips != nil {
+		return s.ips
+	}
+	return []string{s.ip}
 }
 
 func (s *server) newLocations(uuids ...string) (locs *payload.Object_Locations) {
 	if len(uuids) == 0 {
 		return nil
 	}
-	locs = &payload.Object_Locations{
-		Locations: make([]*payload.Object_Location, 0, len(uuids)),
-	}
-	for _, uuid := range uuids {
-		locs.Locations = append(locs.GetLocations(), &payload.Object_Location{
+	ips := s.serverIPs()
+	buf := make([]payload.Object_Location, len(uuids))
+	ptrs := make([]*payload.Object_Location, len(uuids))
+	for i, uuid := range uuids {
+		buf[i] = payload.Object_Location{
 			Name: s.name,
 			Uuid: uuid,
-			Ips:  []string{s.ip},
-		})
+			Ips:  ips,
+		}
+		ptrs[i] = &buf[i]
 	}
-	return locs
+	return &payload.Object_Locations{
+		Locations: ptrs,
+	}
 }
 
 // errMatcher returns a func reporting the same as errors.Is(err, target) for
@@ -152,6 +174,33 @@ func (s *server) newLocation(uuid string) *payload.Object_Location {
 	return &payload.Object_Location{
 		Name: s.name,
 		Uuid: uuid,
-		Ips:  []string{s.ip},
+		Ips:  s.serverIPs(),
 	}
+}
+
+func streamLocation[Q proto.Message, S grpc.TypedServerStream[Q, *payload.Object_StreamLocation]](
+	s *server,
+	stream S,
+	rpcName string,
+	itemID func(Q) string,
+	fn func(context.Context, Q) (*payload.Object_Location, error),
+) error {
+	return grpc.HandleBidirectionalStream(
+		stream,
+		s.streamConcurrency,
+		"",
+		apiName+"/"+rpcName,
+		func(req Q) string { return "id-" + itemID(req) },
+		fn,
+		func(res *payload.Object_Location) *payload.Object_StreamLocation {
+			return &payload.Object_StreamLocation{
+				Payload: &payload.Object_StreamLocation_Location{Location: res},
+			}
+		},
+		func(st *status.Status) *payload.Object_StreamLocation {
+			return &payload.Object_StreamLocation{
+				Payload: &payload.Object_StreamLocation_Status{Status: st.Proto()},
+			}
+		},
+	)
 }

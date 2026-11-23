@@ -19,7 +19,6 @@ import (
 	"context"
 	"io"
 
-	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/sync"
@@ -45,12 +44,18 @@ var (
 	ErrShortWrite    = io.ErrShortWrite
 	ErrShortBuffer   = io.ErrShortBuffer
 
-	bufferPool = sync.Pool{
-		New: func() any {
-			return bytes.NewBuffer(make([]byte, 0, bytes.MinRead*2))
-		},
-	}
+	//nolint:gochecknoglobals // bufferPool reuses scratch buffers for ReadAll
+	bufferPool = sync.Pool[*bytes.Buffer]{New: newReadBuffer}
 )
+
+const (
+	readAllBufMultiplier = 2
+	maxReadAllPoolCap    = 1 << 20
+)
+
+func newReadBuffer() *bytes.Buffer {
+	return bytes.NewBuffer(make([]byte, 0, bytes.MinRead*readAllBufMultiplier))
+}
 
 type ctxReader struct {
 	ctx context.Context
@@ -185,9 +190,16 @@ func (*eofReader) Read([]byte) (n int, err error) {
 }
 
 func ReadAll(r Reader) (b []byte, err error) {
-	buf := bufferPool.Get().(*bytes.Buffer)
-	defer bufferPool.Put(buf)
-	defer buf.Reset()
+	buf := bufferPool.Get()
+	if buf == nil {
+		buf = newReadBuffer()
+	}
+	defer func() {
+		buf.Reset()
+		if buf.Cap() <= maxReadAllPoolCap {
+			bufferPool.Put(buf)
+		}
+	}()
 	err = safety.RecoverFunc(func() (err error) {
 		_, err = buf.ReadFrom(r)
 		return err
@@ -195,5 +207,7 @@ func ReadAll(r Reader) (b []byte, err error) {
 	if err != nil {
 		return nil, err
 	}
-	return conv.Atob(buf.String()), nil
+	out := make([]byte, buf.Len())
+	copy(out, buf.Bytes())
+	return out, nil
 }

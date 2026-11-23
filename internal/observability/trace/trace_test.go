@@ -14,99 +14,32 @@
 
 package trace
 
-// NOT IMPLEMENTED BELOW
-//
-// func TestStartSpan(t *testing.T) {
-// 	type args struct {
-// 		ctx  context.Context
-// 		name string
-// 		opts []trace.SpanStartOption
-// 	}
-// 	type want struct {
-// 		want  context.Context
-// 		want1 Span
-// 	}
-// 	type test struct {
-// 		name       string
-// 		args       args
-// 		want       want
-// 		checkFunc  func(want, context.Context, Span) error
-// 		beforeFunc func(*testing.T, args)
-// 		afterFunc  func(*testing.T, args)
-// 	}
-// 	defaultCheckFunc := func(w want, got context.Context, got1 Span) error {
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-// 		}
-// 		if !reflect.DeepEqual(got1, w.want1) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got1, w.want1)
-// 		}
-// 		return nil
-// 	}
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       args: args {
-// 		           ctx:nil,
-// 		           name:"",
-// 		           opts:nil,
-// 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
-//
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           args: args {
-// 		           ctx:nil,
-// 		           name:"",
-// 		           opts:nil,
-// 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
-//
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt, test.args)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt, test.args)
-// 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
-//
-// 			got, got1 := StartSpan(test.args.ctx, test.args.name, test.args.opts...)
-// 			if err := checkFunc(test.want, got, got1); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
-// 		})
-// 	}
-// }
+import (
+	"context"
+	"testing"
+)
+
+func TestEnable(t *testing.T) {
+	t.Cleanup(func() { enabled.Store(false) })
+
+	ctx := context.Background()
+	if Enabled() {
+		t.Fatal("tracing must be disabled by default")
+	}
+	if got, span := StartSpan(ctx, "disabled"); span != nil || got != ctx {
+		t.Fatalf("disabled StartSpan must return the input ctx and a nil span, got span=%v", span)
+	}
+
+	Enable()
+	if !Enabled() {
+		t.Fatal("Enable must turn tracing on")
+	}
+	got, span := StartSpan(ctx, "enabled")
+	if span == nil {
+		t.Fatal("enabled StartSpan must return a span")
+	}
+	End(span)
+	if got == ctx {
+		t.Fatal("enabled StartSpan must return a derived ctx")
+	}
+}

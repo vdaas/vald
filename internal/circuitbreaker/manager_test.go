@@ -15,12 +15,27 @@ package circuitbreaker
 
 import (
 	"context"
+	"fmt"
 	"slices"
 	"testing"
 	"time"
 
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/sync"
 )
+
+func TestBreakerStateError_Parity(t *testing.T) {
+	t.Parallel()
+	base := errors.New("not found")
+	lazy := error(&breakerStateError{err: base, st: StateClosed})
+	eager := errors.Wrapf(base, "circuitbreaker state is %s, this error is not caused by circuitbreaker", StateClosed.String())
+	if lazy.Error() != eager.Error() {
+		t.Errorf("Error() = %q, want %q", lazy.Error(), eager.Error())
+	}
+	if !errors.Is(lazy, base) {
+		t.Errorf("errors.Is(lazy, base) = false")
+	}
+}
 
 // Do counts every call per breaker name and state; the counters are lock-free
 // per key, so concurrent calls must still be counted exactly.
@@ -153,6 +168,303 @@ func TestBreakerManager_EvictAddr_inFlightCall(t *testing.T) {
 	}
 }
 
+func TestBreakerManager_Handle(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Resolve Allow FinishSuccess FinishError and IsEvicted parity", func(t *testing.T) {
+		t.Parallel()
+		const (
+			addr = "10.0.0.11:8081"
+			key  = "TestBreakerManager_Handle/" + addr
+		)
+		cb, err := New(
+			WithBreakerOpts(
+				WithClosedErrorRate(0.5),
+				WithMinSamples(1),
+				WithOpenTimeout("100ms"),
+			),
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+		bm := cb.(*breakerManager)
+		h, err := bm.Resolve(key)
+		if err != nil {
+			t.Fatalf("Resolve() error = %v", err)
+		}
+		if h.IsEvicted() {
+			t.Fatal("newly resolved handle should not be evicted")
+		}
+		beforeClosed := Metrics(t.Context())[key][StateClosed]
+
+		if err := h.Allow(); err != nil {
+			t.Fatalf("Allow() error = %v", err)
+		}
+		h.FinishSuccess()
+
+		// Non-retryable error must not trip the breaker even with minSamples=1.
+		nonRetryErr := errors.New("not found")
+		wrapped := h.FinishError(nonRetryErr, false)
+		if !errors.Is(wrapped, nonRetryErr) {
+			t.Fatalf("FinishError(false) = %v, want wrapping %v", wrapped, nonRetryErr)
+		}
+		if err := h.Allow(); err != nil {
+			t.Fatalf("Allow() after non-retryable error = %v", err)
+		}
+
+		// MarkWithSuccess wrapper must count as success and unwrap.
+		markErr := errors.New("ok-mark")
+		if got := h.FinishError(errors.NewErrCircuitBreakerMarkWithSuccess(markErr), true); !errors.Is(got, markErr) {
+			t.Fatalf("FinishError(MarkWithSuccess) = %v, want wrapping %v", got, markErr)
+		}
+
+		// Ignorable wrapper must not trip even when retryable=true.
+		igErr := errors.New("ignorable")
+		if got := h.FinishError(errors.NewErrCircuitBreakerIgnorable(igErr), true); !errors.Is(got, igErr) {
+			t.Fatalf("FinishError(Ignorable) = %v, want wrapping %v", got, igErr)
+		}
+
+		// Context sentinels must not trip even when retryable=true.
+		if got := h.FinishError(context.Canceled, true); !errors.Is(got, context.Canceled) {
+			t.Fatalf("FinishError(Canceled) = %v, want Canceled", got)
+		}
+
+		// Retryable failures should trip the breaker once minSamples and error rate exceed threshold.
+		retryErr := errors.New("unavailable")
+		for range 10 {
+			if err := h.Allow(); err != nil {
+				break
+			}
+			if ferr := h.FinishError(retryErr, true); !errors.Is(ferr, retryErr) {
+				t.Fatalf("FinishError() = %v, want %v", ferr, retryErr)
+			}
+		}
+		if err := h.Allow(); !errors.Is(err, errors.ErrCircuitBreakerOpenState) {
+			t.Fatalf("Allow() after retryable failures = %v, want ErrCircuitBreakerOpenState", err)
+		}
+		if got := Metrics(t.Context())[key][StateClosed] - beforeClosed; got == 0 {
+			t.Errorf("expected closed metrics to increase")
+		}
+
+		bm.EvictAddr(addr)
+		if !h.IsEvicted() {
+			t.Error("handle should report IsEvicted() == true after EvictAddr")
+		}
+	})
+
+	t.Run("nil handle is safe", func(t *testing.T) {
+		t.Parallel()
+		var h *Handle
+		if !h.IsEvicted() {
+			t.Error("nil handle IsEvicted() = false, want true")
+		}
+		if err := h.Allow(); err != nil {
+			t.Errorf("nil handle Allow() = %v, want nil", err)
+		}
+		h.FinishSuccess()
+		base := errors.New("boom")
+		if got := h.FinishError(base, true); !errors.Is(got, base) {
+			t.Errorf("nil handle FinishError() = %v, want %v", got, base)
+		}
+		if got := h.FinishError(nil, true); got != nil {
+			t.Errorf("nil handle FinishError(nil) = %v, want nil", got)
+		}
+	})
+}
+
+type customAsError struct {
+	target any
+	inner  error
+	msg    string
+}
+
+func (e *customAsError) Error() string { return e.msg }
+
+func (e *customAsError) Unwrap() error { return e.inner }
+
+func (e *customAsError) As(dst any) bool {
+	switch p := dst.(type) {
+	case **errors.ErrCircuitBreakerMarkWithSuccess:
+		if s, ok := e.target.(*errors.ErrCircuitBreakerMarkWithSuccess); ok {
+			*p = s
+			return true
+		}
+	case **errors.ErrCircuitBreakerIgnorable:
+		if ig, ok := e.target.(*errors.ErrCircuitBreakerIgnorable); ok {
+			*p = ig
+			return true
+		}
+	}
+	return false
+}
+
+func TestBreakerManager_FinishError_WrappedAndZeroAlloc(t *testing.T) {
+	t.Parallel()
+
+	base := errors.New("not found")
+	markBase := errors.New("mark-success")
+	igBase := errors.New("ignorable")
+
+	tests := []struct {
+		err        error
+		wantUnwrap error
+		name       string
+		retryable  bool
+		wantTrip   bool
+		wantMark   bool
+	}{
+		{
+			name:       "fmt wrapped MarkWithSuccess",
+			err:        fmt.Errorf("outer: %w", errors.NewErrCircuitBreakerMarkWithSuccess(markBase)),
+			retryable:  true,
+			wantUnwrap: markBase,
+			wantMark:   true,
+		},
+		{
+			name:       "fmt wrapped Ignorable",
+			err:        fmt.Errorf("outer: %w", errors.NewErrCircuitBreakerIgnorable(igBase)),
+			retryable:  true,
+			wantUnwrap: igBase,
+		},
+		{
+			name:       "errors.Join MarkWithSuccess overrides Ignorable",
+			err:        errors.Join(errors.NewErrCircuitBreakerIgnorable(igBase), errors.NewErrCircuitBreakerMarkWithSuccess(markBase)),
+			retryable:  true,
+			wantUnwrap: markBase,
+			wantMark:   true,
+		},
+		{
+			name:       "direct Ignorable wrapping MarkWithSuccess honors MarkWithSuccess precedence",
+			err:        errors.NewErrCircuitBreakerIgnorable(errors.NewErrCircuitBreakerMarkWithSuccess(markBase)),
+			retryable:  true,
+			wantUnwrap: markBase,
+			wantMark:   true,
+		},
+		{
+			name:       "Ignorable wrapping MarkWithSuccess honors MarkWithSuccess precedence",
+			err:        fmt.Errorf("outer: %w", errors.NewErrCircuitBreakerIgnorable(errors.NewErrCircuitBreakerMarkWithSuccess(markBase))),
+			retryable:  true,
+			wantUnwrap: markBase,
+			wantMark:   true,
+		},
+		{
+			name:       "custom As MarkWithSuccess",
+			err:        &customAsError{msg: "custom-mark", target: errors.NewErrCircuitBreakerMarkWithSuccess(markBase)},
+			retryable:  true,
+			wantUnwrap: markBase,
+			wantMark:   true,
+		},
+		{
+			name:       "custom As Ignorable with inner MarkWithSuccess",
+			err:        &customAsError{msg: "custom-ig", target: errors.NewErrCircuitBreakerIgnorable(igBase), inner: errors.NewErrCircuitBreakerMarkWithSuccess(markBase)},
+			retryable:  true,
+			wantUnwrap: markBase,
+			wantMark:   true,
+		},
+		{
+			name:       "custom As Ignorable only",
+			err:        &customAsError{msg: "custom-ig-only", target: errors.NewErrCircuitBreakerIgnorable(igBase)},
+			retryable:  true,
+			wantUnwrap: igBase,
+		},
+		{
+			name:       "wrapped DeadlineExceeded does not trip",
+			err:        fmt.Errorf("rpc timeout: %w", context.DeadlineExceeded),
+			retryable:  true,
+			wantUnwrap: context.DeadlineExceeded,
+		},
+		{
+			name:       "wrapped non-retryable error does not trip",
+			err:        fmt.Errorf("wrapped: %w", base),
+			retryable:  false,
+			wantUnwrap: base,
+		},
+		{
+			name:       "retryable normal error trips breaker at minSamples=1",
+			err:        fmt.Errorf("wrapped: %w", base),
+			retryable:  true,
+			wantUnwrap: base,
+			wantTrip:   true,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			cb, err := New(
+				WithBreakerOpts(
+					WithClosedErrorRate(0.5),
+					WithMinSamples(1),
+					WithOpenTimeout("100ms"),
+				),
+			)
+			if err != nil {
+				t.Fatal(err)
+			}
+			bm := cb.(*breakerManager)
+			h, err := bm.Resolve("TestBreakerManager_FinishError_Wrapped/" + tc.name)
+			if err != nil {
+				t.Fatal(err)
+			}
+			// Prime one sample so minSamples=1 threshold (> minSamples) trips on failure.
+			if err := h.Allow(); err != nil {
+				t.Fatal(err)
+			}
+			h.FinishSuccess()
+			succBefore := h.b.count.Successes()
+
+			if err := h.Allow(); err != nil {
+				t.Fatal(err)
+			}
+			got := h.FinishError(tc.err, tc.retryable)
+			if !errors.Is(got, tc.wantUnwrap) {
+				t.Fatalf("FinishError() = %v, want wrapping %v", got, tc.wantUnwrap)
+			}
+			if tc.wantMark && h.b.count.Successes() != succBefore+1 {
+				t.Fatalf("Successes() = %d, want %d", h.b.count.Successes(), succBefore+1)
+			}
+			if tc.wantTrip {
+				if err := h.Allow(); !errors.Is(err, errors.ErrCircuitBreakerOpenState) {
+					t.Fatalf("Allow() after retryable failure = %v, want ErrCircuitBreakerOpenState", err)
+				}
+			} else if err := h.Allow(); err != nil {
+				t.Fatalf("Allow() unexpectedly errored: %v", err)
+			}
+		})
+	}
+}
+
+func TestClassifyWrappedBreakerErr_ZeroAlloc(t *testing.T) {
+	leaf := errors.New("rpc error: code = NotFound desc = not found")
+	wrapped := fmt.Errorf("rpc wrapped: %w", leaf)
+	igDirect := errors.NewErrCircuitBreakerIgnorable(leaf)
+	igWrapped := fmt.Errorf("ig wrapped: %w", errors.NewErrCircuitBreakerIgnorable(leaf))
+
+	for _, tc := range []struct {
+		err  error
+		name string
+		kind breakerErrKind
+	}{
+		{name: "leaf", err: leaf, kind: breakerErrNone},
+		{name: "wrapped", err: wrapped, kind: breakerErrNone},
+		{name: "ignorable_direct", err: igDirect, kind: breakerErrIgnorable},
+		{name: "ignorable_wrapped", err: igWrapped, kind: breakerErrIgnorable},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			var gotKind breakerErrKind
+			allocs := testing.AllocsPerRun(100, func() {
+				gotKind, _ = classifyWrappedBreakerErr(tc.err)
+			})
+			if gotKind != tc.kind {
+				t.Fatalf("kind = %v, want %v", gotKind, tc.kind)
+			}
+			if allocs != 0 {
+				t.Fatalf("allocs = %v, want 0", allocs)
+			}
+		})
+	}
+}
+
 // NOT IMPLEMENTED BELOW
 //
 // func TestNew(t *testing.T) {
@@ -165,8 +477,8 @@ func TestBreakerManager_EvictAddr_inFlightCall(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want, CircuitBreaker, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -260,9 +572,9 @@ func TestBreakerManager_EvictAddr_inFlightCall(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, any, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -365,8 +677,8 @@ func TestBreakerManager_EvictAddr_inFlightCall(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want, map[string]map[State]int64) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)

@@ -74,6 +74,143 @@ func New(opts ...Option) Backoff {
 	return b
 }
 
+func resolveBackoffName(ctx context.Context) string {
+	name := FromBackoffName(ctx)
+	if name == "" || name == "Value" || strings.TrimSpace(name) == "" {
+		st := info.Get().StackTrace
+		for _, f := range st {
+			if f.FuncName != "" && !strings.Contains(f.FuncName, "/internal/backoff.") {
+				return f.FuncName
+			}
+		}
+		if len(st) > 0 && st[len(st)-1].FuncName != "" {
+			return st[len(st)-1].FuncName
+		}
+		return "unknown backoff"
+	}
+	return name
+}
+
+func backoffContextErr(dctx context.Context, name string, err error) error {
+	switch dctx.Err() {
+	case context.DeadlineExceeded:
+		log.Debugf("[backoff]\tfor: "+name+",\tDeadline Exceeded\terror: %v", err.Error())
+		return errors.ErrBackoffTimeout(err)
+	case context.Canceled:
+		log.Debugf("[backoff]\tfor: "+name+",\tCanceled\terror: %v", err.Error())
+		return err
+	default:
+		return errors.Join(dctx.Err(), err)
+	}
+}
+
+func (b *backoff) recordRetryFailure(ctx context.Context, name string, err error) {
+	if b.errLog && err != nil && err.Error() != "" {
+		if IsQuietErrorLog(ctx) {
+			log.Debugd("[backoff]\tfor: "+name+",\terror: "+err.Error(), info.Get())
+		} else {
+			log.Errord("[backoff]\tfor: "+name+",\terror: "+err.Error(), info.Get())
+		}
+	}
+	// e.g. name = vald.v1.Exists/ip ...etc
+	if name != "" {
+		mu.Lock()
+		metrics[name] += 1
+		mu.Unlock()
+	}
+}
+
+func (b *backoff) nextDuration(dur float64) (nextDur, nextJdur float64) {
+	if dur >= b.durationLimit {
+		return b.maxDuration, b.maxDuration
+	}
+	nextDur = dur * b.backoffFactor
+	return nextDur, b.addJitter(nextDur)
+}
+
+func (b *backoff) retry(
+	ctx context.Context, firstErr error, f func(ctx context.Context) (retryable bool, err error),
+) (cleared bool, err error) {
+	if firstErr == nil || f == nil || b.maxRetryCount <= 0 {
+		return false, firstErr
+	}
+	ctx, running := isRunning(ctx)
+	if running {
+		return false, firstErr
+	}
+
+	sctx, span := trace.StartSpan(ctx, traceTag)
+	defer trace.End(span)
+	b.wg.Add(1)
+	defer b.wg.Done()
+	timer := time.NewTimer(time.Minute)
+	defer timer.Stop()
+
+	dur := b.initialDuration
+	jdur := b.jittedInitialDuration
+	name := resolveBackoffName(ctx)
+	err = firstErr
+
+	dctx, cancel := context.WithDeadline(sctx, time.Now().Add(b.backoffTimeLimit))
+	defer cancel()
+	for cnt := 0; cnt < b.maxRetryCount; cnt++ {
+		select {
+		case <-dctx.Done():
+			return true, backoffContextErr(dctx, name, err)
+		default:
+			var ret bool
+			if trace.Enabled() {
+				ret, err = func() (retryable bool, err error) {
+					ssctx, span := trace.StartSpan(dctx, traceTag+"/"+strconv.Itoa(cnt+1))
+					defer trace.End(span)
+					return f(ssctx)
+				}()
+			} else {
+				ret, err = f(dctx)
+			}
+			if !ret {
+				return false, err
+			}
+			if err == nil {
+				return false, nil
+			}
+			if errors.Is(err, context.Canceled) ||
+				errors.Is(err, context.DeadlineExceeded) ||
+				errors.Is(err, errors.ErrBackoffTimeout(nil)) {
+				return true, err
+			}
+			b.recordRetryFailure(ctx, name, err)
+
+			// No attempt is left (continue ends the loop), so waiting here would only delay (or, if the deadline hits, mask) the final result.
+			if cnt == b.maxRetryCount-1 {
+				continue
+			}
+			timer.Reset(time.Duration(jdur))
+			select {
+			case <-dctx.Done():
+				return true, backoffContextErr(dctx, name, err)
+			case <-timer.C:
+				dur, jdur = b.nextDuration(dur)
+			}
+		}
+	}
+	select {
+	case <-dctx.Done():
+		return true, backoffContextErr(dctx, name, err)
+	default:
+		return false, err
+	}
+}
+
+// RetryVoid executes the retry loop after attempt 0 already ran inline and
+// returned (retryable=true, firstErr!=nil).
+func (b *backoff) RetryVoid(
+	ctx context.Context, firstErr error, f func(ctx context.Context) (retryable bool, err error),
+) error {
+	_, err := b.retry(ctx, firstErr, f)
+	return err
+}
+
 // Do tries to backoff using the input function and returns the response and error.
 func (b *backoff) Do(
 	ctx context.Context, f func(ctx context.Context) (val any, retryable bool, err error),
@@ -86,130 +223,27 @@ func (b *backoff) Do(
 	if err == nil || !ret {
 		return res, err
 	}
-	ctx, running := isRunning(ctx)
-	if running {
-		return res, err
-	}
+	return b.doRetry(ctx, res, err, f)
+}
 
-	sctx, span := trace.StartSpan(ctx, traceTag)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	b.wg.Add(1)
-	defer b.wg.Done()
-	timer := time.NewTimer(time.Minute)
-	defer timer.Stop()
+//go:noinline
 
-	dur := b.initialDuration
-	jdur := b.jittedInitialDuration
-	name := FromBackoffName(ctx)
-	if name == "" || name == "Value" || strings.TrimSpace(name) == "" {
-		st := info.Get().StackTrace
-		switch len(st) {
-		case 0:
-			name = "unknown backoff"
-		case 1:
-			name = st[0].FuncName
-		default:
-			name = st[1].FuncName
-		}
+func (b *backoff) doRetry(
+	ctx context.Context,
+	res any,
+	firstErr error,
+	f func(ctx context.Context) (val any, retryable bool, err error),
+) (any, error) {
+	cleared, rerr := b.retry(ctx, firstErr, func(ictx context.Context) (bool, error) {
+		var r bool
+		var e error
+		res, r, e = f(ictx)
+		return r, e
+	})
+	if cleared {
+		return nil, rerr
 	}
-
-	dctx, cancel := context.WithDeadline(sctx, time.Now().Add(b.backoffTimeLimit))
-	defer cancel()
-	for cnt := 0; cnt < b.maxRetryCount; cnt++ {
-		select {
-		case <-dctx.Done():
-			switch dctx.Err() {
-			case context.DeadlineExceeded:
-				log.Debugf("[backoff]\tfor: "+name+",\tDeadline Exceeded\terror: %v", err.Error())
-				return nil, errors.ErrBackoffTimeout(err)
-			case context.Canceled:
-				log.Debugf("[backoff]\tfor: "+name+",\tCanceled\terror: %v", err.Error())
-				return nil, err
-			default:
-				return nil, errors.Join(err, dctx.Err())
-			}
-		default:
-			res, ret, err = func() (val any, retryable bool, err error) {
-				ssctx, span := trace.StartSpan(dctx, traceTag+"/"+strconv.Itoa(cnt+1))
-				defer func() {
-					if span != nil {
-						span.End()
-					}
-				}()
-				return f(ssctx)
-			}()
-			if !ret {
-				return res, err
-			}
-			if err == nil {
-				return res, nil
-			}
-			if errors.Is(err, context.Canceled) ||
-				errors.Is(err, context.DeadlineExceeded) ||
-				errors.Is(err, errors.ErrBackoffTimeout(nil)) {
-				return nil, err
-			}
-			if b.errLog && err != nil && err.Error() != "" {
-				if isQuietErrorLog(ctx) {
-					log.Debugd("[backoff]\tfor: "+name+",\terror: "+err.Error(), info.Get())
-				} else {
-					log.Errord("[backoff]\tfor: "+name+",\terror: "+err.Error(), info.Get())
-				}
-			}
-			// e.g. name = vald.v1.Exists/ip ...etc
-			if name != "" {
-				mu.Lock()
-				metrics[name] += 1
-				mu.Unlock()
-			}
-
-			// No attempt is left (continue ends the loop), so waiting here would only delay (or, if the deadline hits, mask) the final result.
-			if cnt == b.maxRetryCount-1 {
-				continue
-			}
-			timer.Reset(time.Duration(jdur))
-			select {
-			case <-dctx.Done():
-				switch dctx.Err() {
-				case context.DeadlineExceeded:
-					log.Debugf("[backoff]\tfor: "+name+",\tDeadline Exceeded\terror: %v", err.Error())
-					return nil, errors.ErrBackoffTimeout(err)
-				case context.Canceled:
-					log.Debugf("[backoff]\tfor: "+name+",\tCanceled\terror: %v", err.Error())
-					return nil, err
-				default:
-					return nil, errors.Join(dctx.Err(), err)
-				}
-			case <-timer.C:
-				if dur >= b.durationLimit {
-					dur = b.maxDuration
-					jdur = b.maxDuration
-				} else {
-					dur *= b.backoffFactor
-					jdur = b.addJitter(dur)
-				}
-			}
-		}
-	}
-	select {
-	case <-dctx.Done():
-		switch dctx.Err() {
-		case context.DeadlineExceeded:
-			log.Debugf("[backoff]\tfor: "+name+",\tDeadline Exceeded\terror: %v", err.Error())
-			return nil, errors.ErrBackoffTimeout(err)
-		case context.Canceled:
-			log.Debugf("[backoff]\tfor: "+name+",\tCanceled\terror: %v", err.Error())
-			return nil, err
-		default:
-			return nil, errors.Join(dctx.Err(), err)
-		}
-	default:
-		return res, err
-	}
+	return res, rerr
 }
 
 func (b *backoff) addJitter(dur float64) float64 {

@@ -17,7 +17,6 @@ package errgroup
 
 import (
 	"context"
-	"runtime"
 	"sync/atomic"
 
 	"github.com/vdaas/vald/internal/errors"
@@ -41,15 +40,14 @@ type Group interface {
 
 // group is the concrete implementation of Group.
 type group struct {
-	egctx      context.Context
-	cancel     context.CancelCauseFunc
-	sem        *semaphore.Weighted
-	emap       map[string]struct{}
-	errs       []error
-	wg         sync.WaitGroup
-	limit      atomic.Int64
-	mu         sync.RWMutex
-	cancelOnce sync.Once
+	egctx  context.Context //nolint:containedctx // group carries child context for task cancellation
+	cancel context.CancelCauseFunc
+	sem    *semaphore.Weighted
+	emap   map[string]struct{}
+	errs   []error
+	wg     sync.WaitGroup
+	limit  atomic.Int64
+	mu     sync.Mutex
 	// continueOnError keeps a task error from cancelling egctx, so Go never
 	// skips the tasks still waiting for a slot.
 	continueOnError bool
@@ -79,12 +77,15 @@ func New(ctx context.Context) (Group, context.Context) {
 // item must still run so that a cancelled request reports each item's context
 // error instead of dropping it. For the same reason an item's error (e.g. a
 // recovered panic) does not cancel the group either; it is only returned by Wait.
-func NewBoundedFanOut(ctx context.Context, limit int) Group {
-	eg, _ := NewContinueOnError(context.WithoutCancel(ctx))
-	if limit > 0 {
-		eg.SetLimit(limit)
+func NewBoundedFanOut(_ context.Context, limit int) Group {
+	g := &group{
+		egctx:           context.Background(),
+		continueOnError: true,
 	}
-	return eg
+	if limit > 0 {
+		g.SetLimit(limit)
+	}
+	return g
 }
 
 // NewContinueOnError is like New, but a task error does not cancel the derived
@@ -172,17 +173,15 @@ func (g *group) exec(f func() error) {
 	// Execute the task function.
 	err := f()
 	if err != nil {
-		// If the error is not due to cancellation or deadline, yield and record it.
+		// Cancel the context immediately so siblings fail fast before recording/logging.
+		if !g.continueOnError {
+			g.doCancel(err)
+		}
 		if errors.IsNot(err, context.Canceled, context.DeadlineExceeded) {
 			if g.logErrors {
 				log.Errorf("task on the global errgroup failed: %v", err)
 			}
-			runtime.Gosched()
 			g.appendErr(err)
-		}
-		// Cancel the context with the encountered error.
-		if !g.continueOnError {
-			g.doCancel(err)
 		}
 	}
 }
@@ -202,23 +201,51 @@ func (g *group) run(f func() error) {
 // For limit == 1, the function is executed inline to avoid unnecessary goroutine creation.
 // For limit > 1, the function is scheduled in a new goroutine after acquiring the semaphore.
 func (g *group) Go(f func() error) {
-	if f == nil {
+	if err := g.submit(f); err != nil {
+		// The semaphore was not acquired because the group context is done:
+		// f is skipped and, being a context error, is not recorded.
 		return
+	}
+}
+
+// submit is Go with a receipt: nil means f was run inline or started, a non-nil
+// error is exactly the sem.Acquire failure (g.egctx.Err(), context.Canceled or
+// context.DeadlineExceeded) and means f was never scheduled.
+func (g *group) submit(f func() error) error {
+	if f == nil {
+		return nil
 	}
 	// Check if we should execute inline (serial execution).
 	if g.limit.Load() == 1 {
 		g.exec(f)
-		return
+		return nil
 	}
 	// In concurrent mode, acquire the semaphore before launching a new goroutine.
 	if g.sem != nil {
-		// Acquire only fails with g.egctx.Err() (context.Canceled or
-		// context.DeadlineExceeded), which is not recorded as a task error.
 		if err := g.sem.Acquire(g.egctx, 1); err != nil {
-			return
+			return err
 		}
 	}
 	g.run(f)
+	return nil
+}
+
+// submitGroup is Go with a receipt for internal callers. A nil result means f was
+// accepted: it ran inline or will run exactly once. A non-nil result means f
+// was rejected before scheduling and never runs. For a group created by this
+// package it is the group's own Go, whose only rejection is the context error of
+// the semaphore acquisition. For any other Group it calls Go and returns nil,
+// trusting Go's documented contract to start f; it does not detect a Group that
+// breaks that contract.
+func submitGroup(g Group, f func() error) error {
+	if f == nil {
+		return nil
+	}
+	if gg, ok := g.(*group); ok {
+		return gg.submit(f)
+	}
+	g.Go(f)
+	return nil
 }
 
 // TryGo attempts to run the function, starting it in a new goroutine or inline if limit == 1,
@@ -262,11 +289,9 @@ func (g *group) done() {
 // doCancel cancels the group's context with the provided error.
 // It ensures that cancellation is performed only once.
 func (g *group) doCancel(err error) {
-	g.cancelOnce.Do(func() {
-		if g.cancel != nil {
-			g.cancel(err)
-		}
-	})
+	if g.cancel != nil {
+		g.cancel(err)
+	}
 }
 
 // Wait blocks until all tasks started with Go have completed.
@@ -275,8 +300,8 @@ func (g *group) Wait() (err error) {
 	g.wg.Wait()
 	// After all tasks complete, cancel the context to propagate cancellation if needed.
 	g.doCancel(context.Canceled)
-	g.mu.RLock()
-	defer g.mu.RUnlock()
+	g.mu.Lock()
+	defer g.mu.Unlock()
 	switch len(g.errs) {
 	case 0:
 		return nil

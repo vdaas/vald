@@ -301,7 +301,13 @@ func readCgroupV1Metrics() (metrics *CgroupMetrics, err error) {
 	var memLimit uint64
 	data, err = file.ReadFile(file.Join(cgroupBasePath, "memory", "memory.limit_in_bytes"))
 	if err == nil {
-		memLimit, _ = strconv.ParseUint(strings.TrimSpace(conv.Btoa(data)), 10, 64)
+		var parsed uint64
+		parsed, err = strconv.ParseUint(strings.TrimSpace(conv.Btoa(data)), 10, 64)
+		if err != nil {
+			log.Debugf("failed to parse cgroup v1 memory.limit_in_bytes: %v", err)
+		} else {
+			memLimit = parsed
+		}
 	}
 
 	var cpuUsage uint64
@@ -333,11 +339,11 @@ func readCgroupV1Metrics() (metrics *CgroupMetrics, err error) {
 	for _, path := range quotaPaths {
 		data, err := file.ReadFile(path)
 		if err == nil {
-			quota, err = strconv.ParseInt(strings.TrimSpace(conv.Btoa(data)), 10, 64)
-			if err == nil {
-				if quota == -1 {
-					quota = 0
-				}
+			parsed, perr := strconv.ParseInt(strings.TrimSpace(conv.Btoa(data)), 10, 64)
+			if perr != nil {
+				log.Debugf("failed to parse cgroup v1 cpu.cfs_quota_us (%s): %v", path, perr)
+			} else if parsed != -1 {
+				quota = parsed
 			}
 			break
 		}
@@ -349,7 +355,12 @@ func readCgroupV1Metrics() (metrics *CgroupMetrics, err error) {
 	for _, path := range periodPaths {
 		data, err := file.ReadFile(path)
 		if err == nil {
-			period, _ = strconv.ParseInt(strings.TrimSpace(conv.Btoa(data)), 10, 64)
+			parsed, perr := strconv.ParseInt(strings.TrimSpace(conv.Btoa(data)), 10, 64)
+			if perr != nil {
+				log.Debugf("failed to parse cgroup v1 cpu.cfs_period_us (%s): %v", path, perr)
+			} else {
+				period = parsed
+			}
 			break
 		}
 	}

@@ -21,12 +21,12 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net"
+	"github.com/vdaas/vald/internal/net/grpc/connectivity"
 	"github.com/vdaas/vald/internal/sync/atomic"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/test/goleak"
 	"google.golang.org/grpc"
 	gbackoff "google.golang.org/grpc/backoff"
-	"google.golang.org/grpc/connectivity"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
@@ -778,11 +778,15 @@ func TestPool_getHealthyConn_concurrentChurn(t *testing.T) {
 	}
 	s := grpc.NewServer()
 	go func() {
-		_ = s.Serve(lis)
+		if serr := s.Serve(lis); serr != nil && !errors.Is(serr, grpc.ErrServerStopped) {
+			t.Errorf("Serve failed: %v", serr)
+		}
 	}()
 	t.Cleanup(func() {
 		s.Stop()
-		_ = lis.Close()
+		if cerr := lis.Close(); cerr != nil && !errors.Is(cerr, net.ErrClosed) {
+			t.Errorf("lis.Close failed: %v", cerr)
+		}
 	})
 
 	addr := lis.Addr().String()
@@ -828,7 +832,9 @@ func TestPool_getHealthyConn_concurrentChurn(t *testing.T) {
 				return
 			case <-ticker.C:
 				_ = po.IsHealthy(egctx)
-				_, _ = po.Reconnect(egctx, false)
+				if _, rerr := po.Reconnect(egctx, false); rerr != nil && egctx.Err() == nil {
+					t.Errorf("Reconnect() error = %v", rerr)
+				}
 			}
 		}
 	}()
@@ -890,11 +896,15 @@ func TestPool_getHealthyConn_indexWrapAround(t *testing.T) {
 	}
 	s := grpc.NewServer()
 	go func() {
-		_ = s.Serve(lis)
+		if serr := s.Serve(lis); serr != nil && !errors.Is(serr, grpc.ErrServerStopped) {
+			t.Errorf("Serve failed: %v", serr)
+		}
 	}()
 	t.Cleanup(func() {
 		s.Stop()
-		_ = lis.Close()
+		if cerr := lis.Close(); cerr != nil && !errors.Is(cerr, net.ErrClosed) {
+			t.Errorf("lis.Close failed: %v", cerr)
+		}
 	})
 
 	addr := lis.Addr().String()
@@ -5711,7 +5721,9 @@ func Test_newPoolConn_watch(t *testing.T) {
 	waitState("connection becomes Ready", func(st connectivity.State) bool { return st == connectivity.Ready })
 
 	s.Stop()
-	_ = lis.Close()
+	if err := lis.Close(); err != nil && !errors.Is(err, net.ErrClosed) {
+		t.Errorf("lis.Close() error = %v", err)
+	}
 	waitState("connection leaves Ready after the server stops", func(st connectivity.State) bool { return st != connectivity.Ready })
 
 	if err := pc.Close(t.Context(), 100*time.Millisecond); err != nil {
@@ -5801,6 +5813,93 @@ func Test_pool_healthChecksDoNotStoreState(t *testing.T) {
 			tt.run(t)
 			if got := pc.getState(); got != tt.marker {
 				t.Errorf("state = %v after the call, want it left at %v", got, tt.marker)
+			}
+		})
+	}
+}
+
+func TestPool_getHealthyConn_singleSlotFastPath(t *testing.T) {
+	defer goleak.VerifyNone(t, goleak.IgnoreCurrent())
+
+	lis, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	s := grpc.NewServer()
+	serveErr := make(chan error, 1)
+	go func() {
+		serveErr <- s.Serve(lis)
+	}()
+	defer func() {
+		s.Stop()
+		if serveResult := <-serveErr; serveResult != nil && !errors.Is(serveResult, grpc.ErrServerStopped) {
+			t.Errorf("Serve() error = %v", serveResult)
+		}
+	}()
+	addr := lis.Addr().String()
+
+	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		t.Fatal(err)
+	}
+	conn.Connect()
+	pc := newPoolConn(conn, addr)
+	defer func() {
+		if err := pc.Close(t.Context(), 100*time.Millisecond); err != nil {
+			t.Error(err)
+		}
+	}()
+
+	// Wait until initial handshake completes so pc.watch stops racing test state stores.
+	deadline := time.Now().Add(10 * time.Second)
+	for pc.getState() != connectivity.Ready {
+		if time.Now().After(deadline) {
+			t.Fatalf("connection is not Ready: %v", pc.getState())
+		}
+		time.Sleep(time.Millisecond)
+	}
+
+	p := &pool{addr: addr}
+	p.poolSize.Store(1)
+	slots := make([]atomic.Pointer[poolConn], 1)
+	slots[0].Store(pc)
+	p.connSlots.Store(&slots)
+	const sentinelIndex = uint64(42)
+	p.currentIndex.Store(sentinelIndex)
+
+	tests := []struct {
+		name     string
+		state    connectivity.State
+		clear    bool
+		wantConn bool
+	}{
+		{name: "Ready returns slot without atomic index increment", state: connectivity.Ready, wantConn: true},
+		{name: "Connecting returns slot without atomic index increment", state: connectivity.Connecting, wantConn: true},
+		{name: "Idle connects and returns slot without atomic index increment", state: connectivity.Idle, wantConn: true},
+		{name: "TransientFailure falls back without atomic index increment", state: connectivity.TransientFailure, wantConn: true},
+		{name: "nil slot fails refresh without atomic index increment", clear: true, wantConn: false},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(tt *testing.T) {
+			if tc.clear {
+				slots[0].Store(nil)
+			} else {
+				slots[0].Store(pc)
+				pc.state.Store(int32(tc.state) + 1) //nolint:gosec // connectivity.State is 0..4
+			}
+			got, ok := p.getHealthyConn(tt.Context())
+			if ok != tc.wantConn {
+				tt.Fatalf("getHealthyConn() ok = %v, want %v", ok, tc.wantConn)
+			}
+			if tc.wantConn && got != pc {
+				tt.Fatalf("getHealthyConn() = %v, want %v", got, pc)
+			}
+			if !tc.wantConn && got != nil {
+				tt.Fatalf("getHealthyConn() = %v, want nil", got)
+			}
+			if idx := p.currentIndex.Load(); idx != sentinelIndex {
+				tt.Fatalf("currentIndex = %d, want %d", idx, sentinelIndex)
 			}
 		})
 	}

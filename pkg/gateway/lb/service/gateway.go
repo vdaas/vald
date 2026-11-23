@@ -17,9 +17,7 @@ package service
 
 import (
 	"context"
-	"maps"
 	"reflect"
-	"slices"
 
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
@@ -47,6 +45,9 @@ type Gateway interface {
 	// while every reachable agent is still written. READ does not report unreached agents.
 	BroadCast(ctx context.Context, kind BroadCastKind,
 		f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error) error
+	NextRotateOffset(total int) int
+	BroadCastSlice(ctx context.Context, kind BroadCastKind, addrs []string, offset, count int,
+		f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error) error
 }
 
 type BroadCastKind int
@@ -57,7 +58,14 @@ const (
 )
 
 type gateway struct {
-	client discoverer.Client
+	client  discoverer.Client
+	vcCache vc.ConnCache
+	_       [128]byte
+	rrIdx   atomic.Uint64
+}
+
+func (g *gateway) getValdClient(conn *grpc.ClientConn) vald.Client {
+	return g.vcCache.Get(conn)
 }
 
 func NewGateway(opts ...Option) (gw Gateway, err error) {
@@ -74,25 +82,239 @@ func (g *gateway) Start(ctx context.Context) (<-chan error, error) {
 	return g.client.Start(ctx)
 }
 
+const (
+	defaultBroadcastRanCap    = 8
+	maxBroadcastRanCap        = 256
+	defaultDoMultiVisitedCap  = 16
+	maxDoMultiVisitedSliceCap = 256
+)
+
+type broadcastCarrier struct {
+	g      *gateway
+	f      func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error
+	cbFn   func(ctx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error
+	ran    map[string]struct{}
+	ferr   map[string]error
+	kind   BroadCastKind
+	hasErr atomic.Bool
+	mu     sync.Mutex
+}
+
+func (c *broadcastCarrier) callback(
+	ictx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption,
+) error {
+	if ictx.Err() != nil {
+		return nil //nolint:nilerr // canceled worker returns nil so Range* collects healthy agents
+	}
+	cerr := c.f(ictx, addr, c.g.getValdClient(conn), copts...)
+	if c.kind == READ && cerr == nil && !c.hasErr.Load() {
+		return nil
+	}
+	c.mu.Lock()
+	if c.kind == WRITE {
+		c.ran[addr] = struct{}{}
+	}
+	if cerr != nil {
+		if c.ferr == nil {
+			c.ferr = make(map[string]error)
+		}
+		c.ferr[addr] = cerr
+		if c.kind == READ {
+			c.hasErr.Store(true)
+		}
+	} else if c.ferr != nil {
+		delete(c.ferr, addr)
+	}
+	c.mu.Unlock()
+	return cerr
+}
+
+type doMultiCarrier struct {
+	g       *gateway
+	f       func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error
+	visitFn func(ctx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error
+	visited []string
+	cur     atomic.Int64
+	limit   int64
+}
+
+func (c *doMultiCarrier) visit(
+	ictx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption,
+) error {
+	if c.cur.Load() >= c.limit {
+		return nil
+	}
+	if cerr := c.f(ictx, addr, c.g.getValdClient(conn), copts...); cerr != nil {
+		return cerr
+	}
+	if pos := int(c.cur.Add(1) - 1); pos < len(c.visited) {
+		c.visited[pos] = addr
+	}
+	return nil
+}
+
+var (
+	broadcastCarrierPool = sync.Pool[*broadcastCarrier]{ //nolint:gochecknoglobals // broadcast callback state is reused across BroadCast/BroadCastSlice calls
+		New: func() *broadcastCarrier {
+			c := &broadcastCarrier{
+				ran: make(map[string]struct{}, defaultBroadcastRanCap),
+			}
+			c.cbFn = c.callback
+			return c
+		},
+	}
+	doMultiCarrierPool = sync.Pool[*doMultiCarrier]{ //nolint:gochecknoglobals // DoMulti callback state and visited slice are reused across DoMulti calls
+		New: func() *doMultiCarrier {
+			c := &doMultiCarrier{
+				visited: make([]string, 0, defaultDoMultiVisitedCap),
+			}
+			c.visitFn = c.visit
+			return c
+		},
+	}
+)
+
+func getBroadcastCarrier(
+	g *gateway,
+	kind BroadCastKind,
+	f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error,
+) *broadcastCarrier {
+	c := broadcastCarrierPool.Get()
+	c.g = g
+	c.kind = kind
+	c.f = f
+	c.hasErr.Store(false)
+	return c
+}
+
+func putBroadcastCarrier(c *broadcastCarrier) {
+	if len(c.ran) > maxBroadcastRanCap {
+		c.ran = make(map[string]struct{}, defaultBroadcastRanCap)
+	} else {
+		clear(c.ran)
+	}
+	if len(c.ferr) > maxBroadcastRanCap {
+		c.ferr = nil
+	} else if c.ferr != nil {
+		clear(c.ferr)
+	}
+	c.g = nil
+	c.f = nil
+	broadcastCarrierPool.Put(c)
+}
+
+func getDoMultiCarrier(
+	g *gateway,
+	limitInt int,
+	f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error,
+) *doMultiCarrier {
+	c := doMultiCarrierPool.Get()
+	c.g = g
+	c.f = f
+	c.limit = int64(limitInt)
+	c.cur.Store(0)
+	if cap(c.visited) >= limitInt {
+		c.visited = c.visited[:limitInt]
+	} else {
+		c.visited = make([]string, limitInt)
+	}
+	return c
+}
+
+func putDoMultiCarrier(c *doMultiCarrier) {
+	if cap(c.visited) > maxDoMultiVisitedSliceCap {
+		c.visited = make([]string, 0, defaultDoMultiVisitedCap)
+	} else {
+		clear(c.visited)
+		c.visited = c.visited[:0]
+	}
+	c.g = nil
+	c.f = nil
+	doMultiCarrierPool.Put(c)
+}
+
+func (g *gateway) clientForKind(kind BroadCastKind) grpc.Client {
+	switch kind {
+	case READ:
+		return g.client.GetReadClient()
+	case WRITE:
+		return g.client.GetClient()
+	default:
+		return g.client.GetClient()
+	}
+}
+
+func (g *gateway) broadCastWith(
+	fctx context.Context,
+	client grpc.Client,
+	kind BroadCastKind,
+	addrs []string,
+	offset, count int,
+	isSlice bool,
+	f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error,
+) error {
+	c := getBroadcastCarrier(g, kind, f)
+	defer putBroadcastCarrier(c)
+
+	var err error
+	if isSlice {
+		err = client.RangeSliceConcurrent(fctx, addrs, offset, count, -1, c.cbFn)
+	} else {
+		err = client.RangeConcurrent(fctx, -1, c.cbFn)
+	}
+	if err != nil {
+		return err
+	}
+	if kind == READ && !c.hasErr.Load() {
+		return nil
+	}
+	// RangeConcurrent/RangeSliceConcurrent has joined all workers before reaching
+	// this point, so c.ran and c.ferr are read without acquiring c.mu.
+	if kind == WRITE && fctx.Err() == nil {
+		if isSlice {
+			n := len(addrs)
+			for i := range count {
+				idx := offset + i
+				if idx >= n {
+					idx -= n
+				}
+				addr := addrs[idx]
+				if _, ok := c.ran[addr]; !ok {
+					if c.ferr == nil {
+						c.ferr = make(map[string]error)
+					}
+					c.ferr[addr] = status.Errorf(codes.Unavailable,
+						"agent %s was not reached: no healthy connection, or the request was rejected before it was sent", addr)
+				}
+			}
+		} else {
+			for _, addr := range addrs {
+				if _, ok := c.ran[addr]; !ok {
+					if c.ferr == nil {
+						c.ferr = make(map[string]error)
+					}
+					c.ferr[addr] = status.Errorf(codes.Unavailable,
+						"agent %s was not reached: no healthy connection, or the request was rejected before it was sent", addr)
+				}
+			}
+		}
+	}
+	return errors.JoinMap(c.ferr)
+}
+
 func (g *gateway) BroadCast(
 	ctx context.Context,
 	kind BroadCastKind,
 	f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error,
 ) (err error) {
-	fctx, span := trace.StartSpan(ctx, "vald/gateway-lb/service/Gateway.BroadCast")
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-
-	var client grpc.Client
-	switch kind {
-	case READ:
-		client = g.client.GetReadClient()
-	case WRITE:
-		client = g.client.GetClient()
+	fctx := ctx
+	var span trace.Span
+	if trace.Enabled() {
+		fctx, span = trace.StartSpan(ctx, "vald/gateway-lb/service/Gateway.BroadCast")
+		defer trace.End(span)
 	}
+
+	client := g.clientForKind(kind)
 
 	// The agents a write has to reach are fixed before the broadcast. A discoverer update
 	// can change the list while it runs, and an agent that fell out of it in the meantime
@@ -103,67 +325,55 @@ func (g *gateway) BroadCast(
 	if kind == WRITE {
 		targets = g.client.GetAddrs(fctx)
 	}
+	return g.broadCastWith(fctx, client, kind, targets, 0, 0, false, f)
+}
 
-	// RangeConcurrent drops every per-target error except a local ctx error, so
-	// the callback errors are collected here; otherwise a failing agent would look
-	// to the handlers like one that has nothing to report. Only the last result per
-	// target is kept because the client backoff may re-invoke f for that target.
-	var (
-		mu   sync.Mutex
-		ferr = make(map[string]error)
-		// ran holds the targets whose callback was invoked.
-		ran = make(map[string]struct{})
-	)
-	err = client.RangeConcurrent(fctx, -1, func(ictx context.Context,
-		addr string, conn *grpc.ClientConn, copts ...grpc.CallOption,
-	) (err error) {
-		select {
-		case <-ictx.Done():
-			return nil
-		default:
-			err = f(ictx, addr, vc.NewFromConn(conn), copts...)
-			mu.Lock()
-			ran[addr] = struct{}{}
-			if err != nil {
-				ferr[addr] = err
-			} else {
-				delete(ferr, addr)
-			}
-			mu.Unlock()
-			if err != nil {
-				return err
-			}
-		}
-		return nil
-	})
-	if err != nil {
-		return err
+// NextRotateOffset returns the next starting index in [0, total) for round-robin subset routing.
+func (g *gateway) NextRotateOffset(total int) int {
+	if total <= 1 {
+		return 0
 	}
-	mu.Lock()
-	defer mu.Unlock()
-	// RangeConcurrent also drops a target whose connection could not be acquired
-	// (or whose circuit breaker is open) before the callback ran. A write is still
-	// sent to every reachable agent, but the unreached ones must be reported: a
-	// Remove or Flush that skipped an agent is not a success. Reads keep serving
-	// partial results, so they are left as they are.
-	if kind == WRITE && fctx.Err() == nil {
-		for _, addr := range targets {
-			if _, ok := ran[addr]; !ok {
-				ferr[addr] = status.Errorf(codes.Unavailable,
-					"agent %s was not reached: no healthy connection, or the request was rejected before it was sent", addr)
-			}
-		}
+	return int((g.rrIdx.Add(1) - 1) % uint64(total)) //nolint:gosec // modulo by total bounds result within [0, total)
+}
+
+// BroadCastSlice runs f against count agents starting at cyclic offset in addrs.
+func (g *gateway) BroadCastSlice(
+	ctx context.Context,
+	kind BroadCastKind,
+	addrs []string,
+	offset int,
+	count int,
+	f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error,
+) error {
+	n := len(addrs)
+	if n == 0 {
+		return errors.ErrGRPCClientConnNotFound("*")
 	}
-	if len(ferr) == 0 {
+	if count <= 0 {
 		return nil
 	}
-	// sorted by target so the leading error (whose code a joined error reports)
-	// does not depend on map order.
-	errs := make([]error, 0, len(ferr))
-	for _, addr := range slices.Sorted(maps.Keys(ferr)) {
-		errs = append(errs, ferr[addr])
+	if count > n {
+		count = n
 	}
-	return errors.Join(errs...)
+	offset %= n
+	if offset < 0 {
+		offset += n
+	}
+
+	fctx := ctx
+	var span trace.Span
+	if trace.Enabled() {
+		fctx, span = trace.StartSpan(ctx, "vald/gateway-lb/service/Gateway.BroadCastSlice")
+		defer trace.End(span)
+	}
+
+	client := g.clientForKind(kind)
+	if kind == READ && client != g.client.GetClient() {
+		// ReadReplica clients key snapByAddr by service DNS names rather than primary pod IPs,
+		// so fall back to full RangeConcurrent on the chosen read client instead of passing pod IPs.
+		return g.broadCastWith(fctx, client, kind, nil, 0, 0, false, f)
+	}
+	return g.broadCastWith(fctx, client, kind, addrs, offset, count, true, f)
 }
 
 func (g *gateway) DoMulti(
@@ -171,56 +381,65 @@ func (g *gateway) DoMulti(
 	num int,
 	f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error,
 ) (err error) {
-	sctx, span := trace.StartSpan(ctx, "vald/gateway-lb/service/Gateway.DoMulti")
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	var cur uint32 = 0
-	addrs := g.client.GetAddrs(sctx)
-	var limit uint32
-	if len(addrs) < num {
-		limit = uint32(len(addrs))
-	} else {
-		limit = uint32(num)
+	sctx := ctx
+	var span trace.Span
+	if trace.Enabled() {
+		sctx, span = trace.StartSpan(ctx, "vald/gateway-lb/service/Gateway.DoMulti")
+		defer trace.End(span)
 	}
-	var visited sync.Map[string, any]
-	err = g.client.GetClient().OrderedRange(sctx, addrs, func(ictx context.Context,
-		addr string,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption,
-	) (err error) {
-		if atomic.LoadUint32(&cur) < limit {
-			err = f(ictx, addr, vc.NewFromConn(conn), copts...)
+	addrs := g.client.GetAddrs(sctx)
+	if len(addrs) == 0 {
+		return errors.ErrGRPCClientConnNotFound("*")
+	}
+	limitInt := min(max(num, 0), len(addrs))
+	limit := int64(limitInt)
+	if limitInt == 0 {
+		return nil
+	}
+	offset := 0
+	if len(addrs) > limitInt {
+		offset = g.NextRotateOffset(len(addrs))
+	}
+
+	c := getDoMultiCarrier(g, limitInt, f)
+	defer putDoMultiCarrier(c)
+
+	client := g.client.GetClient()
+	err = client.RangeSliceConcurrent(sctx, addrs, offset, limitInt, limitInt, c.visitFn)
+	if err != nil || c.cur.Load() < limit {
+		recorded := min(int(c.cur.Load()), len(c.visited))
+		seen := make(map[string]struct{}, recorded)
+		for _, addr := range c.visited[:recorded] {
+			if addr != "" {
+				seen[addr] = struct{}{}
+			}
+		}
+		remaining := make([]string, 0, len(addrs))
+		for _, addr := range addrs {
+			if _, ok := seen[addr]; !ok {
+				remaining = append(remaining, addr)
+			}
+		}
+		if len(remaining) > 0 {
+			err = client.OrderedRange(sctx, remaining, func(ictx context.Context,
+				addr string,
+				conn *grpc.ClientConn,
+				copts ...grpc.CallOption,
+			) error {
+				if c.cur.Load() < limit {
+					if _, ok := seen[addr]; !ok {
+						if cerr := f(ictx, addr, g.getValdClient(conn), copts...); cerr != nil {
+							return cerr
+						}
+						c.cur.Add(1)
+						seen[addr] = struct{}{}
+					}
+				}
+				return nil
+			})
 			if err != nil {
 				return err
 			}
-			atomic.AddUint32(&cur, 1)
-			visited.Store(addr, struct{}{})
-		}
-		return nil
-	})
-	if err != nil || cur < limit {
-		err = g.client.GetClient().OrderedRange(sctx, addrs, func(ictx context.Context,
-			addr string,
-			conn *grpc.ClientConn,
-			copts ...grpc.CallOption,
-		) (err error) {
-			if atomic.LoadUint32(&cur) < limit {
-				_, ok := visited.Load(addr)
-				if !ok {
-					err = f(ictx, addr, vc.NewFromConn(conn), copts...)
-					if err != nil {
-						return err
-					}
-					atomic.AddUint32(&cur, 1)
-				}
-			}
-			return nil
-		})
-		if err != nil {
-			return err
 		}
 	}
 	return nil

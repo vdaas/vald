@@ -17,6 +17,7 @@ package trace
 import (
 	"context"
 
+	"github.com/vdaas/vald/internal/sync/atomic"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -26,27 +27,47 @@ const (
 )
 
 var (
-	enabled bool
+	enabled      atomic.Bool                  //nolint:gochecknoglobals // process-wide tracing enabled gate
+	cachedTracer atomic.Pointer[trace.Tracer] //nolint:gochecknoglobals // cached tracer avoids global TracerProvider.mu contention per StartSpan
 
 	FromContext = trace.SpanFromContext
 )
 
 type Span = trace.Span
 
+// Enable turns span recording on. The OTLP exporter calls it once its tracer
+// provider is registered, so tracing stays a no-op until one is configured.
+func Enable() {
+	tr := otel.Tracer(tracerName)
+	cachedTracer.Store(&tr)
+	enabled.Store(true)
+}
+
 // Enabled reports whether spans are recorded, so hot paths can skip building
 // span names that StartSpan would discard.
 func Enabled() bool {
-	return enabled
+	return enabled.Load()
 }
 
 func StartSpan(
 	ctx context.Context, name string, opts ...trace.SpanStartOption,
 ) (context.Context, Span) {
-	if !enabled {
+	if !enabled.Load() {
 		return ctx, nil
 	}
 
-	return otel.Tracer(tracerName).Start(ctx, name, opts...)
+	return startSpan(ctx, name, opts...)
+}
+
+func startSpan(
+	ctx context.Context, name string, opts ...trace.SpanStartOption,
+) (context.Context, Span) {
+	if p := cachedTracer.Load(); p != nil {
+		return (*p).Start(ctx, name, opts...)
+	}
+	tr := otel.Tracer(tracerName)
+	cachedTracer.Store(&tr)
+	return tr.Start(ctx, name, opts...)
 }
 
 // End ends the span if it is non-nil. It folds the ubiquitous handler tail

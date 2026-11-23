@@ -23,7 +23,9 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/io"
+	"github.com/vdaas/vald/internal/net/grpc/codes"
 	_ "github.com/vdaas/vald/internal/net/grpc/logger"
+	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/atomic"
 	"github.com/vdaas/vald/internal/test/data/request"
@@ -775,5 +777,68 @@ func TestBidirectionalStream_sendFailureDrain(t *testing.T) {
 	case <-time.After(3 * time.Second):
 		cancel()
 		t.Fatalf("BidirectionalStream deadlocked on SendMsg failure")
+	}
+}
+
+func TestHandleBidirectionalStream(t *testing.T) {
+	ctx, cancel := context.WithTimeout(t.Context(), 5*time.Second)
+	defer cancel()
+
+	var sent []*payload.Object_StreamLocation
+	var mu sync.Mutex
+	var recvIdx atomic.Int64
+	reqs := []*payload.Insert_Request{
+		{Vector: &payload.Object_Vector{Id: "ok-1"}},
+		{Vector: &payload.Object_Vector{Id: "err-2"}},
+	}
+	serverStream := &mock.StreamInsertServerMock{
+		ServerStream: &mock.ServerStreamMock{
+			ContextFunc: func() context.Context { return ctx },
+			RecvMsgFunc: func(m any) error {
+				idx := int(recvIdx.Add(1) - 1)
+				if idx >= len(reqs) {
+					return io.EOF
+				}
+				dst := m.(*payload.Insert_Request)
+				*dst = *reqs[idx]
+				return nil
+			},
+			SendMsgFunc: func(m any) error {
+				mu.Lock()
+				sent = append(sent, m.(*payload.Object_StreamLocation))
+				mu.Unlock()
+				return nil
+			},
+		},
+	}
+
+	err := HandleBidirectionalStream(
+		serverStream,
+		2,
+		"vald.v1.Insert/StreamInsert",
+		"test/StreamInsert",
+		func(req *payload.Insert_Request) string { return "id-" + req.GetVector().GetId() },
+		func(_ context.Context, req *payload.Insert_Request) (*payload.Object_Location, error) {
+			if req.GetVector().GetId() == "err-2" {
+				return nil, status.Error(codes.InvalidArgument, "bad vector")
+			}
+			return &payload.Object_Location{Uuid: req.GetVector().GetId()}, nil
+		},
+		func(res *payload.Object_Location) *payload.Object_StreamLocation {
+			return &payload.Object_StreamLocation{
+				Payload: &payload.Object_StreamLocation_Location{Location: res},
+			}
+		},
+		func(st *status.Status) *payload.Object_StreamLocation {
+			return &payload.Object_StreamLocation{
+				Payload: &payload.Object_StreamLocation_Status{Status: st.Proto()},
+			}
+		},
+	)
+	if err != nil {
+		t.Fatalf("HandleBidirectionalStream() error = %v", err)
+	}
+	if len(sent) != 2 {
+		t.Fatalf("sent len = %d, want 2", len(sent))
 	}
 }

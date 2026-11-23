@@ -911,3 +911,31 @@ func TestUUIDs_capacityHint(t *testing.T) {
 // 		})
 // 	}
 // }
+
+func TestGetObject_Vectorless_And_NotFound(t *testing.T) {
+	t.Parallel()
+
+	kv := kvs.New()
+	t.Cleanup(func() {
+		if err := kv.Close(); err != nil {
+			t.Error(err)
+		}
+	})
+	vq, err := vqueue.New()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Miss returns error matching errors.ErrObjectIDNotFound(uuid).
+	_, _, err = GetObject(kv, vq, "missing-uuid", nil)
+	if !errors.Is(err, errors.ErrObjectIDNotFound("missing-uuid")) {
+		t.Fatalf("GetObject(missing) err = %v, want errors.Is(_, ErrObjectIDNotFound)", err)
+	}
+
+	// Hit with nil getVectorFn returns (nil, kts, nil) without calling getVectorFn.
+	kv.Set("hit-uuid", 42, 123456)
+	vec, ts, err := GetObject(kv, vq, "hit-uuid", nil)
+	if err != nil || vec != nil || ts != 123456 {
+		t.Fatalf("GetObject(vectorless hit) = (%v, %d, %v), want (nil, 123456, nil)", vec, ts, err)
+	}
+}

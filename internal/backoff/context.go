@@ -52,6 +52,11 @@ func isRunning(ctx context.Context) (context.Context, bool) {
 // demoted to Debug.
 const backoffQuietErrLogContextKey contextKey = "backoff_quiet_error_log"
 
+// QuietErrorLogContextKey returns the context key used by WithQuietErrorLog.
+func QuietErrorLogContextKey() any {
+	return backoffQuietErrLogContextKey
+}
+
 // WithQuietErrorLog returns a copy of ctx whose per-attempt retryable errors
 // Do logs at Debug instead of Error, for fan-out callers that aggregate and
 // report the failures themselves.
@@ -59,8 +64,14 @@ func WithQuietErrorLog(ctx context.Context) context.Context {
 	return context.WithValue(ctx, backoffQuietErrLogContextKey, true)
 }
 
-// isQuietErrorLog reports whether ctx was marked by WithQuietErrorLog.
-func isQuietErrorLog(ctx context.Context) bool {
-	quiet, ok := ctx.Value(backoffQuietErrLogContextKey).(bool)
-	return ok && quiet
+// IsQuietErrorLog reports whether ctx was marked by WithQuietErrorLog.
+func IsQuietErrorLog(ctx context.Context) bool {
+	switch v := ctx.Value(backoffQuietErrLogContextKey).(type) {
+	case bool:
+		return v
+	case interface{ QuietErrorLog() bool }:
+		return v.QuietErrorLog()
+	default:
+		return false
+	}
 }

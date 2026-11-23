@@ -24,6 +24,7 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
+	"github.com/vdaas/vald/internal/net/grpc/errhandler"
 	"github.com/vdaas/vald/internal/net/grpc/proto"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
@@ -57,12 +58,11 @@ type (
 func BidirectionalStream[Q, R proto.Message, S TypedServerStream[Q, R]](
 	ctx context.Context, stream S, concurrency int, handle func(context.Context, Q) (R, error),
 ) (err error) {
-	ctx, span := trace.StartSpan(ctx, apiName+"/BidirectionalStream")
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	var span trace.Span
+	if trace.Enabled() {
+		ctx, span = trace.StartSpan(ctx, apiName+"/BidirectionalStream")
+		defer trace.End(span)
+	}
 	if any(stream) == nil {
 		return errors.ErrGRPCServerStreamNotFound
 	}
@@ -74,22 +74,30 @@ func BidirectionalStream[Q, R proto.Message, S TypedServerStream[Q, R]](
 	var (
 		mu   sync.Mutex
 		emu  sync.Mutex
-		errs = make([]error, 0, concurrency*2) // concurrency * recv+send
+		errs []error
 	)
 
-	finalize := func() (err error) {
+	finalize := func(workCh chan Q) (err error) {
+		if workCh != nil {
+			close(workCh)
+		}
 		err = eg.Wait()
 		if err != nil {
 			emu.Lock()
 			errs = append(errs, err)
 			emu.Unlock()
 		}
-		errs := errors.RemoveDuplicates(errs)
 		emu.Lock()
-		err = errors.Join(errs...)
+		nerrs := len(errs)
+		if nerrs == 0 && span == nil {
+			emu.Unlock()
+			return nil
+		}
+		dedup := errors.RemoveDuplicates(errs)
+		err = errors.Join(dedup...)
 		emu.Unlock()
 		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse BidirectionalStream final gRPC error response")
-		if span != nil {
+		if span != nil && span.IsRecording() {
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
 			if err != nil {
 				span.RecordError(err)
@@ -100,13 +108,8 @@ func BidirectionalStream[Q, R proto.Message, S TypedServerStream[Q, R]](
 	}
 
 	var cnt atomic.Uint64
-	// Run Recv in a helper goroutine so a ctx cancellation actually interrupts the
-	// receive loop. ctx here is a child of stream.Context() (errgroup.New above);
-	// grpc's stream.Recv observes only the parent stream.Context(), so the previous
-	// `default: stream.Recv()` could block forever once entered — e.g. after a
-	// worker's stream.Send fails non-transport-fatally (MaxSendMsgSize/marshal) and
-	// self-cancels this errgroup ctx — deadlocking finalize()'s eg.Wait against the
-	// stuck receiver (the server-side counterpart of the BidirectionalStreamClient fix).
+	wctx, wcancel := context.WithCancel(ctx)
+	defer wcancel()
 	// One receiver goroutine serves the whole stream. dc is buffered with max(concurrency*2, 16)
 	// so network read prefetching can overlap with worker dispatch.
 	dc := make(chan Q, max(concurrency*2, 16))
@@ -127,32 +130,43 @@ func BidirectionalStream[Q, R proto.Message, S TypedServerStream[Q, R]](
 			}
 		}
 	}()
-	// dispatch hands a received message to a worker in the errgroup. It is a named
-	// closure (not inlined into the receive case) so the ctx.Done() branch can also
-	// drain and dispatch an already-received message instead of dropping it.
-	dispatch := func(data Q) {
-		eg.Go(safety.RecoverWithoutPanicFunc(func() (err error) {
-			id := cnt.Add(1)
-			sctx, sspan := ctx, trace.Span(nil)
-			if trace.Enabled() {
-				sctx, sspan = trace.StartSpan(ctx, fmt.Sprintf("%s/BidirectionalStream/stream-%020d", apiName, id))
+
+	processOne := func(data Q) {
+		defer func() {
+			if r := recover(); r != nil {
+				log.Errorf("recovered from panic in BidirectionalStream: %v", r)
 			}
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
-			res, err := handle(sctx, data)
-			if err != nil {
-				st, msg, perr := status.ParseError(err, codes.Internal, fmt.Sprintf("failed to parse BidirectionalStream id= %020d gRPC error response", id))
-				if sspan != nil {
-					sspan.RecordError(perr)
+		}()
+		id := cnt.Add(1)
+		sctx, sspan := ctx, trace.Span(nil)
+		if trace.Enabled() {
+			sctx, sspan = trace.StartSpan(ctx, fmt.Sprintf("%s/BidirectionalStream/stream-%020d", apiName, id))
+		}
+		res, herr := handle(sctx, data)
+		if herr != nil {
+			var (
+				st   *status.Status
+				perr error
+			)
+			if gst, ok := status.FromError(herr); ok && gst != nil {
+				st, perr = gst, herr
+			} else {
+				var msg string
+				st, msg, perr = status.ParseError(herr, codes.Internal, fmt.Sprintf("failed to parse BidirectionalStream id= %020d gRPC error response", id))
+				_ = msg
+			}
+			if sspan != nil && sspan.IsRecording() {
+				msg := perr.Error()
+				if st != nil {
+					msg = st.Message()
 					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
-					sspan.SetStatus(trace.StatusError, msg)
 				}
+				sspan.RecordError(perr)
+				sspan.SetStatus(trace.StatusError, msg)
+			}
+			if perr != nil && st != nil {
 				code := st.Code()
-				if perr != nil && st != nil &&
-					code != codes.Canceled &&
+				if code != codes.Canceled &&
 					code != codes.DeadlineExceeded &&
 					code != codes.InvalidArgument &&
 					code != codes.NotFound &&
@@ -162,27 +176,68 @@ func BidirectionalStream[Q, R proto.Message, S TypedServerStream[Q, R]](
 					log.Error(perr)
 				}
 			}
-			mu.Lock()
-			err = stream.Send(res)
-			mu.Unlock()
-			if err != nil {
-				runtime.Gosched()
-				err = errors.Wrapf(err, "BidirectionalStream SendMsg returned error at stream-%020d", id)
-				emu.Lock()
-				errs = append(errs, err)
-				emu.Unlock()
-				st, msg, perr := status.ParseError(err, codes.Internal, fmt.Sprintf("failed to parse BidirectionalStream.SendMsg id= %020d gRPC error response", id),
-					&errdetails.RequestInfo{
-						RequestId:   fmt.Sprintf("%s/BidirectionalStream/stream-%020d/SendMsg", apiName, id),
-						ServingData: errdetails.Serialize(res),
-					})
-				if sspan != nil {
-					sspan.RecordError(perr)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
-					sspan.SetStatus(trace.StatusError, msg)
-				}
-				return perr
+		}
+		mu.Lock()
+		serr := stream.Send(res)
+		mu.Unlock()
+		if serr != nil {
+			runtime.Gosched()
+			serr = errors.Wrapf(serr, "BidirectionalStream SendMsg returned error at stream-%020d", id)
+			emu.Lock()
+			errs = append(errs, serr)
+			emu.Unlock()
+			st, msg, perr := status.ParseError(serr, codes.Internal, fmt.Sprintf("failed to parse BidirectionalStream.SendMsg id= %020d gRPC error response", id),
+				&errdetails.RequestInfo{
+					RequestId:   fmt.Sprintf("%s/BidirectionalStream/stream-%020d/SendMsg", apiName, id),
+					ServingData: errdetails.Serialize(res),
+				})
+			if sspan != nil && sspan.IsRecording() {
+				sspan.RecordError(perr)
+				sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+				sspan.SetStatus(trace.StatusError, msg)
 			}
+			emu.Lock()
+			errs = append(errs, perr)
+			emu.Unlock()
+			wcancel()
+		}
+		if sspan != nil {
+			sspan.End()
+		}
+	}
+
+	var (
+		workCh         chan Q
+		workersStarted int
+		workerFn       func() error
+	)
+	if concurrency > 0 {
+		const (
+			workChScale  = 2
+			minWorkChCap = 16
+		)
+		workCh = make(chan Q, max(concurrency*workChScale, minWorkChCap))
+		workerFn = func() error { //nolint:unparam // eg.Go requires func() error
+			for data := range workCh {
+				processOne(data)
+			}
+			return nil
+		}
+	}
+
+	// dispatch hands a received message to a pooled bounded worker (when concurrency > 0)
+	// or an unbounded errgroup goroutine (when concurrency <= 0).
+	dispatch := func(data Q) {
+		if concurrency > 0 {
+			if workersStarted < concurrency {
+				workersStarted++
+				eg.Go(workerFn)
+			}
+			workCh <- data
+			return
+		}
+		eg.Go(safety.RecoverWithoutPanicFunc(func() error {
+			processOne(data)
 			return nil
 		}))
 	}
@@ -199,7 +254,16 @@ func BidirectionalStream[Q, R proto.Message, S TypedServerStream[Q, R]](
 				case data := <-dc:
 					dispatch(data)
 				default:
-					return finalize()
+					return finalize(workCh)
+				}
+			}
+		case <-wctx.Done():
+			for {
+				select {
+				case data := <-dc:
+					dispatch(data)
+				default:
+					return finalize(workCh)
 				}
 			}
 		case err := <-ec:
@@ -219,7 +283,7 @@ func BidirectionalStream[Q, R proto.Message, S TypedServerStream[Q, R]](
 				emu.Unlock()
 				log.Errorf("failed to receive stream message: %v", err)
 			}
-			return finalize()
+			return finalize(workCh)
 		case data := <-dc:
 			dispatch(data)
 		}
@@ -359,4 +423,55 @@ func BidirectionalStreamClient[Q, R proto.Message, S TypedClientStream[Q, R]](
 			}
 		}
 	}()
+}
+
+// HandleBidirectionalStream executes BidirectionalStream with standardized top-level
+// and per-item tracing spans, status mapping, and span error recording.
+// When grpcMethod is non-empty, it attaches gRPC method metadata to the parent
+// span context and wraps per-item spans as "BidirectionalStream".
+func HandleBidirectionalStream[Q, R, W proto.Message, S TypedServerStream[Q, W]](
+	stream S,
+	concurrency int,
+	grpcMethod string,
+	spanPrefix string,
+	itemSpanSuffix func(Q) string,
+	handler func(context.Context, Q) (R, error),
+	wrapOK func(R) W,
+	wrapErr func(*status.Status) W,
+) error {
+	ctx := stream.Context()
+	var span trace.Span
+	if trace.Enabled() {
+		sctx := ctx
+		if grpcMethod != "" {
+			sctx = WithGRPCMethod(sctx, grpcMethod)
+		}
+		ctx, span = trace.StartSpan(sctx, spanPrefix)
+		defer trace.End(span)
+	}
+	err := BidirectionalStream(ctx, stream, concurrency,
+		func(sctx context.Context, req Q) (W, error) {
+			var sspan trace.Span
+			if trace.Enabled() {
+				spanCtx := sctx
+				if grpcMethod != "" {
+					spanCtx = WrapGRPCMethod(spanCtx, "BidirectionalStream")
+				}
+				sctx, sspan = trace.StartSpan(spanCtx, spanPrefix+"/"+itemSpanSuffix(req))
+				defer trace.End(sspan)
+			}
+			res, serr := handler(sctx, req)
+			if serr != nil {
+				st := errhandler.RecordSpanFromError(sspan, serr)
+				return wrapErr(st), serr
+			}
+			return wrapOK(res), nil
+		})
+	if err != nil {
+		if span != nil {
+			errhandler.RecordSpanFromError(span, err)
+		}
+		return err
+	}
+	return nil
 }

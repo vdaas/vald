@@ -30,6 +30,7 @@ E2E_BENCH_TIME ?= 1x
 
 .PHONY: e2e/v2/bench
 ## run e2e scenario as Go benchmarks (BenchmarkE2EStrategy, one execution pass per iteration)
+e2e/v2/bench: E2E_RACE := $(E2E_BENCH_RACE)
 e2e/v2/bench:
 	$(call run-v2-e2e-crud-test,-run '^$$' -bench BenchmarkE2EStrategy -benchtime $(E2E_BENCH_TIME))
 

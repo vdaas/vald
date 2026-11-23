@@ -14,6 +14,7 @@
 package pool
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -91,4 +92,63 @@ func BenchmarkParallel_GetHealthyConn(b *testing.B) {
 			po.getHealthyConn(ctx)
 		}
 	})
+}
+
+func BenchmarkGetHealthyConn(b *testing.B) {
+	for _, mode := range []struct {
+		name     string
+		addr     string
+		parallel bool
+	}{
+		{name: "Serial", addr: "localhost:5005", parallel: false},
+		{name: "Parallel", addr: "localhost:5006", parallel: true},
+	} {
+		b.Run(mode.name, func(b *testing.B) {
+			defer ListenAndServe(b, mode.addr)()
+
+			ctx := b.Context()
+			p, err := New(ctx,
+				WithAddr(mode.addr),
+				WithSize(3),
+				WithDialOptions(grpc.WithTransportCredentials(insecure.NewCredentials())),
+			)
+			if err != nil {
+				b.Fatal(err)
+			}
+			p, err = p.Connect(ctx)
+			if err != nil {
+				b.Fatal(err)
+			}
+			b.Cleanup(func() {
+				if err := p.Disconnect(context.Background()); err != nil {
+					b.Errorf("Disconnect() error = %v", err)
+				}
+			})
+
+			time.Sleep(100 * time.Millisecond)
+
+			po, ok := p.(*pool)
+			if !ok {
+				b.Fatal("not a *pool")
+			}
+
+			b.ReportAllocs()
+			b.ResetTimer()
+			if mode.parallel {
+				b.RunParallel(func(pb *testing.PB) {
+					for pb.Next() {
+						if _, ok := po.getHealthyConn(ctx); !ok {
+							b.Fatal("getHealthyConn failed")
+						}
+					}
+				})
+			} else {
+				for b.Loop() {
+					if _, ok := po.getHealthyConn(ctx); !ok {
+						b.Fatal("getHealthyConn failed")
+					}
+				}
+			}
+		})
+	}
 }

@@ -106,3 +106,15 @@ func BenchmarkUUIDs(b *testing.B) {
 		}
 	}
 }
+
+func BenchmarkGetObjectMiss(b *testing.B) {
+	kv, vq, _ := benchStores(b)
+	b.ReportAllocs()
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			if _, _, err := GetObject(kv, vq, "nonexistent-uuid", nil); err == nil {
+				b.Fatal("expected error for missing uuid")
+			}
+		}
+	})
+}

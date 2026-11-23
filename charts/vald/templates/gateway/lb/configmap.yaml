@@ -67,7 +67,7 @@ data:
           {{- $discovererGRPCclient := dict "Values" $discovererClient "default" .Values.defaults.grpc.client }}
           {{- include "vald.grpc.client" $discovererGRPCclient | nindent 10 }}
         agent_client_options:
-          {{- include "vald.grpc.client.addrs" (dict "Valued" $gateway.gateway_config.discoverer.agent_client_options.addrs) | nindent 10 }}
+          {{- include "vald.grpc.client.addrs" (dict "Values" $gateway.gateway_config.discoverer.agent_client_options.addrs) | nindent 10 }}
           {{- include "vald.grpc.client" (dict "Values" $gateway.gateway_config.discoverer.agent_client_options "default" .Values.defaults.grpc.client) | nindent 10 }}
       {{- if $readreplica.enabled }}
       read_replica_client:

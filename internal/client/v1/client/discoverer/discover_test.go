@@ -209,7 +209,7 @@ func Test_client_GetReadClient_concurrent(t *testing.T) {
 	err := eg.Wait()
 	require.NoError(t, err)
 
-	require.EqualValues(t, uint64(49), c.roundRobin.Load(), "atomic operation did not happen in the concurrent calls")
+	require.EqualValues(t, uint64(49), c.roundRobin.Load()%(c.readReplicaReplicas+1), "atomic operation did not happen in the concurrent calls")
 }
 
 // A nil Memory must sort as usage 0. Treating it as "equal to everything" is

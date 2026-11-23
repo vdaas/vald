@@ -16,6 +16,13 @@ package strings
 import (
 	"fmt"
 	"testing"
+
+	"github.com/vdaas/vald/internal/test/bench"
+)
+
+const (
+	fastParallelism = 4
+	fastLong        = 100
 )
 
 var (
@@ -26,13 +33,17 @@ var (
 
 func benchmark(b *testing.B, f func(l int) string) {
 	b.Helper()
+	p, maxLen := fastParallelism, fastLong
+	if bench.Full() {
+		p, maxLen = parallelism, long
+	}
 	b.ReportAllocs()
 	b.ResetTimer()
-	for i := short; i <= long; i *= 10 {
+	for i := short; i <= maxLen; i *= 10 {
 		cnt := i
 		b.Run(fmt.Sprint(cnt), func(bb *testing.B) {
 			bb.Helper()
-			bb.SetParallelism(parallelism)
+			bb.SetParallelism(p)
 			bb.ReportAllocs()
 			bb.ResetTimer()
 			bb.RunParallel(func(pb *testing.PB) {
