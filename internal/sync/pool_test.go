@@ -223,9 +223,7 @@ func TestPoolExclusiveCheckout(t *testing.T) {
 	var ready, done sync.WaitGroup
 	for range 8 {
 		ready.Add(1)
-		done.Add(1)
-		go func() {
-			defer done.Done()
+		done.Go(func() {
 			var items [burst]*item
 			ready.Done()
 			<-start
@@ -249,7 +247,7 @@ func TestPoolExclusiveCheckout(t *testing.T) {
 				default:
 				}
 			}
-		}()
+		})
 	}
 
 	ready.Wait()

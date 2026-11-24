@@ -1612,7 +1612,8 @@ internal/sync/map.go
 internal/sync/pool.go
 internal/sync/pool_fast.go
 internal/sync/pool_gc_test.go
-internal/sync/pool_race.go
+internal/sync/pool_norace_hooks.go
+internal/sync/pool_race_hooks.go
 internal/sync/pool_test.go
 internal/sync/poolqueue.go
 internal/sync/semaphore/doc.go
