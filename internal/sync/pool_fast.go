@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//go:build !race
-
 package sync
 
 import (
@@ -73,11 +71,17 @@ func (p *Pool[T]) Put(x T) {
 	} else {
 		l, _ = p.pinSlow()
 	}
+	if poolRaceEnabled {
+		poolRaceAcquire(unsafe.Pointer(&l.privateSet))
+	}
 	if !l.privateSet {
 		l.private = x
 		l.privateSet = true
 	} else {
 		l.shared.pushHead(x)
+	}
+	if poolRaceEnabled {
+		poolRaceRelease(unsafe.Pointer(&l.privateSet))
 	}
 	runtimeProcUnpin()
 }
@@ -98,15 +102,24 @@ func (p *Pool[T]) Get() T {
 	} else {
 		l, pid = p.pinSlow()
 	}
+	if poolRaceEnabled {
+		poolRaceAcquire(unsafe.Pointer(&l.privateSet))
+	}
 	if l.privateSet {
 		x := l.private
 		var zero T
 		l.private = zero
 		l.privateSet = false
+		if poolRaceEnabled {
+			poolRaceRelease(unsafe.Pointer(&l.privateSet))
+		}
 		runtimeProcUnpin()
 		return x
 	}
 	x, ok := l.shared.popHead()
+	if poolRaceEnabled {
+		poolRaceRelease(unsafe.Pointer(&l.privateSet))
+	}
 	if !ok {
 		x, ok = p.getSlow(pid)
 	}
@@ -136,11 +149,17 @@ func (p *Pool[T]) getSlow(pid int) (T, bool) {
 	}
 	locals = atomic.LoadPointer(&p.header.victim)
 	l := indexLocal[T](locals, pid)
+	if poolRaceEnabled {
+		poolRaceAcquire(unsafe.Pointer(&l.privateSet))
+	}
 	if l.privateSet {
 		x := l.private
 		var zero T
 		l.private = zero
 		l.privateSet = false
+		if poolRaceEnabled {
+			poolRaceRelease(unsafe.Pointer(&l.privateSet))
+		}
 		return x, true
 	}
 	for i := range int(size) {

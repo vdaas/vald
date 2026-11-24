@@ -15,7 +15,9 @@ package sync
 
 import (
 	"runtime"
+	"runtime/debug"
 	"sync"
+	"sync/atomic"
 	"testing"
 )
 
@@ -74,7 +76,9 @@ func TestPool(t *testing.T) {
 	})
 
 	t.Run("zero value round-trip for value types", func(t *testing.T) {
-		t.Parallel()
+		// Keep the cache and its P stable for the exact round-trip assertions.
+		prevGC := debug.SetGCPercent(-1)
+		defer debug.SetGCPercent(prevGC)
 		prev := runtime.GOMAXPROCS(1)
 		defer runtime.GOMAXPROCS(prev)
 
@@ -105,7 +109,9 @@ func TestPool(t *testing.T) {
 	})
 
 	t.Run("non-comparable reference types", func(t *testing.T) {
-		t.Parallel()
+		// Keep the cache and its P stable for the exact round-trip assertions.
+		prevGC := debug.SetGCPercent(-1)
+		defer debug.SetGCPercent(prevGC)
 		prev := runtime.GOMAXPROCS(1)
 		defer runtime.GOMAXPROCS(prev)
 
@@ -120,7 +126,9 @@ func TestPool(t *testing.T) {
 	})
 
 	t.Run("poolChain ring growth and drain", func(t *testing.T) {
-		t.Parallel()
+		// Keep the cache and its P stable for the exact round-trip assertions.
+		prevGC := debug.SetGCPercent(-1)
+		defer debug.SetGCPercent(prevGC)
 		prev := runtime.GOMAXPROCS(1)
 		defer runtime.GOMAXPROCS(prev)
 
@@ -172,4 +180,84 @@ func TestPool(t *testing.T) {
 		}
 		wg.Wait()
 	})
+}
+
+func TestPoolGC(t *testing.T) {
+	// Not parallel: controls GOMAXPROCS and GC cycles to verify exact victim aging.
+	prevGC := debug.SetGCPercent(-1)
+	defer debug.SetGCPercent(prevGC)
+	prevProcs := runtime.GOMAXPROCS(1)
+	defer runtime.GOMAXPROCS(prevProcs)
+
+	var p Pool[*testPoolItem]
+	for i := range 4 {
+		p.Put(&testPoolItem{val: i + 1})
+	}
+
+	// First GC moves items from local -> victim; items must still be retrievable.
+	runtime.GC()
+	if got := p.Get(); got == nil {
+		t.Fatal("Get() after 1st GC returned nil; expected item from victim cache")
+	}
+
+	// Second GC drops remaining victim items and rotates the empty local cache.
+	runtime.GC()
+	if got := p.Get(); got != nil {
+		t.Fatalf("Get() after 2nd GC = %+v, want nil (victim evicted)", got)
+	}
+}
+
+func TestPoolExclusiveCheckout(t *testing.T) {
+	// This test changes GOMAXPROCS while goroutines are using the pool.
+	procs := runtime.GOMAXPROCS(2)
+	defer runtime.GOMAXPROCS(procs)
+
+	type item struct {
+		inUse atomic.Bool
+	}
+
+	p := Pool[*item]{New: func() *item { return new(item) }}
+	const burst = 16
+	start := make(chan struct{})
+	stop := make(chan struct{})
+	var ready, done sync.WaitGroup
+	for range 8 {
+		ready.Add(1)
+		done.Add(1)
+		go func() {
+			defer done.Done()
+			var items [burst]*item
+			ready.Done()
+			<-start
+			for {
+				for i := range items {
+					it := p.Get()
+					if !it.inUse.CompareAndSwap(false, true) {
+						t.Error("pool returned an item that is already checked out")
+						return
+					}
+					items[i] = it
+				}
+				runtime.Gosched()
+				for _, it := range items {
+					it.inUse.Store(false)
+					p.Put(it)
+				}
+				select {
+				case <-stop:
+					return
+				default:
+				}
+			}
+		}()
+	}
+
+	ready.Wait()
+	close(start)
+	for _, n := range []int{2, 8, 1, 4} {
+		runtime.GOMAXPROCS(n)
+		runtime.GC()
+	}
+	close(stop)
+	done.Wait()
 }

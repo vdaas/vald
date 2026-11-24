@@ -23,31 +23,6 @@ import (
 	"testing"
 )
 
-func TestPoolGC(t *testing.T) {
-	// Not parallel: controls GOMAXPROCS and GC cycles to verify exact victim aging.
-	prevGC := debug.SetGCPercent(-1)
-	defer debug.SetGCPercent(prevGC)
-	prevProcs := runtime.GOMAXPROCS(1)
-	defer runtime.GOMAXPROCS(prevProcs)
-
-	var p Pool[*testPoolItem]
-	for i := range 4 {
-		p.Put(&testPoolItem{val: i + 1})
-	}
-
-	// First GC moves items from local -> victim; items must still be retrievable.
-	runtime.GC()
-	if got := p.Get(); got == nil {
-		t.Fatal("Get() after 1st GC returned nil; expected item from victim cache")
-	}
-
-	// Second GC drops remaining victim items and rotates the empty local cache.
-	runtime.GC()
-	if got := p.Get(); got != nil {
-		t.Fatalf("Get() after 2nd GC = %+v, want nil (victim evicted)", got)
-	}
-}
-
 func TestPoolChainedStdlibGC(t *testing.T) {
 	// Not parallel: verifies our registered poolCleanup preserves stdlib sync.Pool draining.
 	prevGC := debug.SetGCPercent(-1)
