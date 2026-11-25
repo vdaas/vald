@@ -21,14 +21,24 @@ e2e/v2/
       <service>-<profile_type>.pb
 ```
 
-## Metrics JSON Naming
+## Metrics JSON Schema & Naming
 
 - Filename pattern: `<scenario>-<deployment>-<cluster>-<environment>.json`
 - Example: `stream_crud-helm-chart-k3d-null.json`
-- Recorded metrics per scenario, strategy, operation, and execution (`schema_version: "v1"`):
-  - `total`, `errors`
-  - `duration_ns`, `duration_sec`, `qps`
-  - `latency`: `min_ns`, `max_ns`, `mean_ns`, `p99_ns`, `p95_ns`, `p90_ns`, `p50_ns`, `stddev_ns`
+- Top-level `metrics.Report` (`schema_version: "v1"`):
+  - `schema_version`, `scenario`, `timestamp`
+  - `summary`: aggregated `*metrics.GlobalSnapshot`
+  - `strategies[]`: per-strategy `name`, `summary`, `operations[]`
+    - `operations[]`: per-operation `name`, `summary`, `executions[]`
+      - `executions[]`: per-RPC `index`, `name`, `type`, `mode`, `summary`
+- `*metrics.GlobalSnapshot` fields (`summary`):
+  - `start_time`, `last_updated` (elapsed duration and throughput are derived from `last_updated - start_time` and `total`)
+  - `total`, `errors`, `codes`, `error_details`
+  - `latencies` (`HistogramSnapshot`, nanoseconds): `total`, `min`, `mean`, `max`, `std_dev`, `sum`, `sum_sq`, `m2`, `bounds`, `counts`
+  - `lat_percentiles` (`tdigest`, nanoseconds): `centroids`, `quantiles`, `compression`, `compression_trigger_factor`, `count`
+  - `queue_waits`, `qw_percentiles`
+  - `custom_counters` (e.g., `recall_sum_ppm`, `recall_samples`)
+  - `exemplars`, `exemplar_details`, `invariants_ok`, `sketch_kind`, `bounds_hash`
 
 ## Profile Baselines
 
