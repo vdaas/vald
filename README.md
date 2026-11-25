@@ -1,10 +1,14 @@
 # Vald E2E V2 Benchmarks
 
-This orphan branch stores the latest daily E2E V2 benchmark metrics and pprof
-baseline profiles for [`vdaas/vald`](https://github.com/vdaas/vald).
+This orphan branch stores E2E V2 benchmark metrics and pprof profiles for
+[`vdaas/vald`](https://github.com/vdaas/vald):
 
-Each daily scheduled run (`0 21 * * *` UTC / `06:00` JST) overwrites the files
-under `e2e/v2/latest/` and `e2e/v2/nightly/` with the newest verified results.
+- **Daily baselines** (`0 21 * * *` UTC / `06:00` JST): overwrites files under
+  `e2e/v2/latest/` and `e2e/v2/nightly/` with the newest verified results.
+- **PR builds** (`actions/benchmark` label): permanently archives each run under
+  `e2e/v2/prs/pr-<pr_number>/<head_commit_sha>/`.
+- **`main` commit-hash builds** (`push` to `main`): permanently archives each
+  commit build under `e2e/v2/commits/<commit_sha>/`.
 
 ## Directory Layout
 
@@ -19,6 +23,17 @@ e2e/v2/
     <scenario>-<deployment>-<cluster>-<environment>.json
     profiles/
       <service>-<profile_type>.pb
+  prs/
+    pr-<pr_number>/
+      <head_commit_sha>/
+        <scenario>-<deployment>-<cluster>-<environment>.json
+        profiles/
+          <service>-<profile_type>.pb
+  commits/
+    <commit_sha>/
+      <scenario>-<deployment>-<cluster>-<environment>.json
+      profiles/
+        <service>-<profile_type>.pb
 ```
 
 ## Metrics JSON Schema & Naming
@@ -40,11 +55,11 @@ e2e/v2/
   - `custom_counters` (e.g., `recall_sum_ppm`, `recall_samples`)
   - `exemplars`, `exemplar_details`, `invariants_ok`, `sketch_kind`, `bounds_hash`
 
-## Profile Baselines
+## Profile Snapshots & Baselines
 
 Profiles are collected via `profefe` during the `profile` environment run and
-stored at `e2e/v2/<tag>/profiles/<service>-<profile_type>.pb`:
+stored under `<base_dir>/profiles/<service>-<profile_type>.pb`:
 
-- `<tag>`: `latest`, `nightly`
+- `<base_dir>`: `e2e/v2/latest`, `e2e/v2/nightly`, `e2e/v2/prs/pr-<pr_number>/<head_commit_sha>`, or `e2e/v2/commits/<commit_sha>`
 - `<service>`: `vald-agent-ngt`, `vald-lb-gateway`, `vald-discoverer`, `vald-manager-index`
 - `<profile_type>`: `heap`, `cpu`, `goroutine`, `threadcreate`
