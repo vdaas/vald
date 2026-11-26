@@ -62,6 +62,8 @@ const (
 	targetCapHintDivisor = 2
 )
 
+var errGRPCClientConnNotFoundStar = errors.ErrGRPCClientConnNotFound("*")
+
 // resourceInfo builds the errdetails.ResourceInfo shared by every handler error
 // path: the resourceType is caller-specific, the resource name is always this
 // server's apiName/name/ip triple.
@@ -119,7 +121,7 @@ func wrapTargetError(
 			rpcName+" API target not found", err, reqInfo, resInfo,
 		)
 		attrs = trace.StatusCodeInternal(err.Error())
-	case errors.Is(err, errors.ErrGRPCClientConnNotFound("*")):
+	case errors.Is(err, errGRPCClientConnNotFoundStar):
 		err = status.WrapWithInternal(
 			rpcName+" API connection not found", err, reqInfo, resInfo,
 		)
@@ -195,7 +197,7 @@ func (s *server) Register(
 				mirror.RegisterRPCName+" API deadline exceeded", err, reqInfo, resInfo,
 			)
 			attrs = trace.StatusCodeDeadlineExceeded(err.Error())
-		case errors.Is(err, errors.ErrGRPCClientConnNotFound("*")):
+		case errors.Is(err, errGRPCClientConnNotFoundStar):
 			err = status.WrapWithInternal(
 				mirror.RegisterRPCName+" API connection not found", err, reqInfo, resInfo,
 			)
@@ -651,7 +653,7 @@ func (s *server) handleInsert(
 			RequestId: req.GetVector().GetId(),
 		}
 		resInfo := s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertRPCName + ".BroadCast")
-		if errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) {
+		if errors.Is(err, errGRPCClientConnNotFoundStar) {
 			err = status.WrapWithInternal(
 				vald.InsertRPCName+" API connection not found", err, reqInfo, resInfo,
 			)
@@ -773,7 +775,7 @@ func (s *server) handleInsertResult(
 			RequestId: req.GetVector().GetId(),
 		}
 		resInfo := s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateRPCName + "." + vald.InsertRPCName + ".DoMulti")
-		if errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) {
+		if errors.Is(err, errGRPCClientConnNotFoundStar) {
 			err = status.WrapWithInternal(
 				vald.UpdateRPCName+" for "+vald.InsertRPCName+" API connection not found", err, reqInfo, resInfo,
 			)
@@ -1011,7 +1013,7 @@ func (s *server) handleUpdate(
 			ServingData: errdetails.Serialize(req),
 		}
 		resInfo := s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateRPCName + ".BroadCast")
-		if errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) {
+		if errors.Is(err, errGRPCClientConnNotFoundStar) {
 			err = status.WrapWithInternal(
 				vald.UpdateRPCName+" API connection not found", err, reqInfo, resInfo,
 			)
@@ -1143,7 +1145,7 @@ func (s *server) handleUpdateResult(
 			ServingData: errdetails.Serialize(req),
 		}
 		resInfo := s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateRPCName + "." + vald.InsertRPCName + ".BroadCast")
-		if errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) {
+		if errors.Is(err, errGRPCClientConnNotFoundStar) {
 			err = status.WrapWithInternal(
 				vald.InsertRPCName+" for "+vald.UpdateRPCName+" API connection not found", err, reqInfo, resInfo,
 			)
@@ -1394,7 +1396,7 @@ func (s *server) handleUpsert(
 			ServingData: errdetails.Serialize(req),
 		}
 		resInfo := s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpsertRPCName + ".BroadCast")
-		if errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) {
+		if errors.Is(err, errGRPCClientConnNotFoundStar) {
 			err = status.WrapWithInternal(
 				vald.UpsertRPCName+" API connection not found", err, reqInfo, resInfo,
 			)
@@ -1636,7 +1638,7 @@ func (s *server) handleRemove(
 			RequestId: req.GetId().GetId(),
 		}
 		resInfo := s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.RemoveRPCName + ".BroadCast")
-		if errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) {
+		if errors.Is(err, errGRPCClientConnNotFoundStar) {
 			err = status.WrapWithInternal(
 				vald.RemoveRPCName+" API connection not found", err, reqInfo, resInfo,
 			)
@@ -1872,7 +1874,7 @@ func (s *server) handleRemoveByTimestamp(
 			ServingData: errdetails.Serialize(req),
 		}
 		resInfo := s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.RemoveByTimestampRPCName + ".BroadCast")
-		if errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) {
+		if errors.Is(err, errGRPCClientConnNotFoundStar) {
 			err = status.WrapWithInternal(
 				vald.RemoveByTimestampRPCName+" API connection not found", err, reqInfo, resInfo,
 			)

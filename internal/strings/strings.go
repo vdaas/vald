@@ -13,13 +13,7 @@
 // limitations under the License.
 package strings
 
-import (
-	"bytes"
-	"strings"
-	"syscall"
-
-	"github.com/vdaas/vald/internal/sync"
-)
+import "strings"
 
 type (
 	Builder  = strings.Builder
@@ -79,12 +73,6 @@ var (
 	NewReader      = strings.NewReader
 	NewReplacer    = strings.NewReplacer
 
-	bufferPool = sync.Pool{
-		New: func() any {
-			return bytes.NewBuffer(make([]byte, 0, syscall.Getpagesize()))
-		},
-	}
-
 	oldnew = []string{
 		" ", "",
 		",", "",
@@ -106,34 +94,11 @@ var (
 	_    = reps.Replace(" ")
 )
 
-func Join(elems []string, sep string) (str string) {
-	switch len(elems) {
-	case 0:
-		return ""
-	case 1:
-		return elems[0]
-	}
-	n := len(sep) * (len(elems) - 1)
-	for i := range elems {
-		n += len(elems[i])
-	}
-
-	b, ok := bufferPool.Get().(*bytes.Buffer)
-	if !ok || b == nil {
-		b = bytes.NewBuffer(make([]byte, 0, n))
-	} else {
-		b.Grow(n)
-	}
-	defer bufferPool.Put(b)
-	defer b.Reset()
-	b.WriteString(elems[0])
-	for _, s := range elems[1:] {
-		b.WriteString(sep)
-		b.WriteString(s)
-	}
-	return b.String()
-}
-
 func TrimForCompare[S ~string](str S) S {
 	return S(reps.Replace(ToLower(string(str))))
+}
+
+// Join concatenates the elements of its first argument to create a single string.
+func Join(elems []string, sep string) string {
+	return strings.Join(elems, sep)
 }

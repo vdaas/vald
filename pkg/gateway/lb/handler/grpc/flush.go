@@ -37,8 +37,11 @@ import (
 func (s *server) Flush(
 	ctx context.Context, req *payload.Flush_Request,
 ) (cnts *payload.Info_Index_Count, err error) {
-	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FlushRPCServiceName+"/"+vald.FlushRPCName), apiName+"/"+vald.FlushRPCName)
-	defer trace.End(span)
+	var span trace.Span
+	if trace.Enabled() {
+		ctx, span = trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FlushRPCServiceName+"/"+vald.FlushRPCName), apiName+"/"+vald.FlushRPCName)
+		defer trace.End(span)
+	}
 
 	var (
 		stored, uncommitted atomic.Uint32
@@ -46,8 +49,11 @@ func (s *server) Flush(
 	)
 	now := time.Now().UnixNano()
 	err = s.gateway.BroadCast(ctx, service.WRITE, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) (err error) {
-		ctx, span := trace.StartSpan(ctx, apiName+"."+vald.FlushRPCName+"/"+target)
-		defer trace.End(span)
+		var sspan trace.Span
+		if trace.Enabled() {
+			ctx, sspan = trace.StartSpan(ctx, apiName+"."+vald.FlushRPCName+"/"+target)
+			defer trace.End(sspan)
+		}
 		cnt, err := vc.Flush(ctx, req, copts...)
 		if err != nil {
 			st, msg, err := status.ParseError(err, codes.Internal,
@@ -60,10 +66,8 @@ func (s *server) Flush(
 					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.FlushRPCName,
 					ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
 				})
-			if span != nil {
-				span.RecordError(err)
-				span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
-				span.SetStatus(trace.StatusError, err.Error())
+			if sspan != nil {
+				errhandler.RecordSpanAttrs(sspan, trace.FromGRPCStatus(st.Code(), msg), err)
 			}
 			if err != nil && st.Code() != codes.NotFound {
 				log.Error(err)
@@ -71,22 +75,21 @@ func (s *server) Flush(
 			}
 			return nil
 		}
-		stored.Add(cnt.Stored)
-		uncommitted.Add(cnt.Uncommitted)
-		if cnt.Indexing {
-			indexing.Store(true)
-		}
-		if cnt.Saving {
-			saving.Store(true)
+		if cnt != nil {
+			stored.Add(cnt.Stored)
+			uncommitted.Add(cnt.Uncommitted)
+			if cnt.Indexing {
+				indexing.Store(true)
+			}
+			if cnt.Saving {
+				saving.Store(true)
+			}
 		}
 		return nil
 	})
 	if err != nil {
-		st, _ := status.FromError(err)
 		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-			span.SetStatus(trace.StatusError, err.Error())
+			errhandler.RecordSpanFromError(span, err)
 		}
 		return nil, err
 	}

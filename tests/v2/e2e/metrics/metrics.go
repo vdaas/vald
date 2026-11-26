@@ -43,24 +43,26 @@ const (
 // GetRequestResult returns a RequestResult from the pool.
 // This helps reduce GC pressure by reusing objects.
 func GetRequestResult() *RequestResult {
-	val, ok := requestResultPool.Get().(*RequestResult)
-	if !ok {
-		// Should never happen if pool is correctly configured
-		return new(RequestResult)
+	if val := requestResultPool.Get(); val != nil {
+		return val
 	}
-	return val
+	// Should never happen if pool is correctly configured
+	return new(RequestResult)
 }
 
 // PutRequestResult returns a RequestResult to the pool.
 // It resets all fields to ensure no data leakage or contamination.
 func PutRequestResult(rr *RequestResult) {
+	if rr == nil {
+		return
+	}
 	rr.Reset()
 	requestResultPool.Put(rr)
 }
 
 // nolint:gochecknoglobals
-var requestResultPool = sync.Pool{
-	New: func() any {
+var requestResultPool = sync.Pool[*RequestResult]{
+	New: func() *RequestResult {
 		return new(RequestResult)
 	},
 }

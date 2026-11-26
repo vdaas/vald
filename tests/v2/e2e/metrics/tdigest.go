@@ -66,8 +66,8 @@ type tdigest struct {
 // tdigestPool returns a tdigest from the pool.
 // It is used to reduce allocations when creating temporary tdigests for merging.
 // nolint:gochecknoglobals
-var tdigestPool = sync.Pool{
-	New: func() any {
+var tdigestPool = sync.Pool[*tdigest]{
+	New: func() *tdigest {
 		return &tdigest{
 			buffer:     make([]float64, 0, DefaultBufferCapacity),
 			backBuffer: make([]float64, 0, DefaultBufferCapacity),
@@ -181,35 +181,41 @@ func (t *tdigest) Reset() {
 	t.count = 0
 }
 
+func releasePooledTDigest(t *tdigest) {
+	if t == nil {
+		return
+	}
+	t.Reset()
+	t.quantiles = nil
+	tdigestPool.Put(t)
+}
+
 // Quantile returns the estimated quantile.
 func (t *shardedTDigest) Quantile(q float64) float64 {
 	merged := t.mergeAllShards()
-	defer tdigestPool.Put(merged)
+	defer releasePooledTDigest(merged)
 	return merged.Quantile(q)
 }
 
 // CDF returns the estimated cumulative distribution function value for the given value.
 func (t *shardedTDigest) CDF(value, min, max float64) float64 {
 	merged := t.mergeAllShards()
-	defer tdigestPool.Put(merged)
+	defer releasePooledTDigest(merged)
 	return merged.CDF(value, min, max)
 }
 
 // ForEachCentroid iterates over all centroids in the t-digest.
 func (t *shardedTDigest) ForEachCentroid(f func(mean, weight float64) bool) {
 	merged := t.mergeAllShards()
-	defer tdigestPool.Put(merged)
+	defer releasePooledTDigest(merged)
 	merged.ForEachCentroid(f)
 }
 
 // mergeAllShards merges all shards into a single tdigest for querying.
 func (t *shardedTDigest) mergeAllShards() *tdigest {
-	// Create a new temporary shard
-	// Reuse from pool if possible, but merged result is usually returned so we can't easily put it back unless caller does.
 	// Reuse from pool if possible
-	var merged *tdigest
-	if v := tdigestPool.Get(); v != nil {
-		merged = v.(*tdigest)
+	merged := tdigestPool.Get()
+	if merged != nil {
 		merged.Reset()
 	} else {
 		// Allocate new with default capacity if pool is empty
@@ -218,6 +224,7 @@ func (t *shardedTDigest) mergeAllShards() *tdigest {
 			backBuffer: make([]float64, 0, DefaultBufferCapacity),
 		}
 	}
+	merged.id = collectorIDCounter.Add(1)
 
 	merged.compression = t.shards[0].compression
 	merged.compressionTriggerFactor = t.shards[0].compressionTriggerFactor

@@ -25,12 +25,13 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/grpc/credentials"
 	"github.com/vdaas/vald/internal/sync/atomic"
 	"github.com/vdaas/vald/internal/sync/errgroup"
+	"github.com/vdaas/vald/internal/test/bench"
 	"github.com/vdaas/vald/internal/test/data/vector"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
-	ggrpc "google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
 const (
@@ -40,9 +41,9 @@ const (
 	sweepNoAuto = "96h"
 )
 
-// newSweepAgent serves a real in-memory NGT agent (20k x 128 indexed) over
+// newSweepAgent serves a real in-memory NGT agent (base x 128 indexed) over
 // loopback TCP gRPC and returns a client for it.
-func newSweepAgent(b *testing.B) vald.Client {
+func newSweepAgent(b *testing.B, base int) vald.Client {
 	b.Helper()
 	cfg := &config.NGT{
 		Dimension:              sweepDim,
@@ -65,7 +66,7 @@ func newSweepAgent(b *testing.B) vald.Client {
 	ctx, cancel := context.WithCancel(b.Context())
 	b.Cleanup(cancel)
 	n.Start(ctx)
-	for i, v := range vector.GaussianDistributedFloat32VectorGenerator(sweepBase, sweepDim) {
+	for i, v := range vector.GaussianDistributedFloat32VectorGenerator(base, sweepDim) {
 		if err := n.Insert("base-"+strconv.Itoa(i), v); err != nil {
 			b.Fatal(err)
 		}
@@ -77,7 +78,7 @@ func newSweepAgent(b *testing.B) vald.Client {
 	if err != nil {
 		b.Fatal(err)
 	}
-	gs := ggrpc.NewServer()
+	gs := grpc.NewServer()
 	vald.RegisterValdServer(gs, h)
 	lis, err := (&net.ListenConfig{}).Listen(ctx, "tcp", "127.0.0.1:0")
 	if err != nil {
@@ -89,7 +90,7 @@ func newSweepAgent(b *testing.B) vald.Client {
 		}
 	}()
 	b.Cleanup(gs.Stop)
-	conn, err := ggrpc.NewClient(lis.Addr().String(), ggrpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(lis.Addr().String(), grpc.WithTransportCredentials(credentials.NewInsecure()))
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -107,8 +108,14 @@ func newSweepAgent(b *testing.B) vald.Client {
 // LB multi-operation auto concurrency targets per agent.
 func BenchmarkAgentConcurrencySweep(b *testing.B) {
 	log.Init(log.WithLoggerType("nop"))
-	vc := newSweepAgent(b)
-	queries := vector.GaussianDistributedFloat32VectorGenerator(sweepBatch, sweepDim)
+	base, batch := 2000, 200
+	ps := []int{1, 8, 32}
+	if bench.Full() {
+		base, batch = sweepBase, sweepBatch
+		ps = []int{1, 2, 4, 8, 16, 32, 64, 128, 256}
+	}
+	vc := newSweepAgent(b, base)
+	queries := vector.GaussianDistributedFloat32VectorGenerator(batch, sweepDim)
 	var seq atomic.Uint64
 	ops := map[string]func(ctx context.Context, i int) error{
 		"Insert": func(ctx context.Context, i int) error {
@@ -127,7 +134,7 @@ func BenchmarkAgentConcurrencySweep(b *testing.B) {
 		},
 	}
 	for _, op := range []string{"Insert", "Search"} {
-		for _, p := range []int{1, 2, 4, 8, 16, 32, 64, 128, 256} {
+		for _, p := range ps {
 			b.Run(op+"/P="+strconv.Itoa(p), func(b *testing.B) {
 				do := ops[op]
 				var total time.Duration
@@ -136,7 +143,7 @@ func BenchmarkAgentConcurrencySweep(b *testing.B) {
 					start := time.Now()
 					eg, ectx := errgroup.New(b.Context())
 					eg.SetLimit(p)
-					for i := range sweepBatch {
+					for i := range batch {
 						eg.Go(func() error { return do(ectx, i) })
 					}
 					if err := eg.Wait(); err != nil {
@@ -144,7 +151,7 @@ func BenchmarkAgentConcurrencySweep(b *testing.B) {
 					}
 					total += time.Since(start)
 				}
-				b.ReportMetric(float64(sweepBatch*b.N)/total.Seconds(), "req/s")
+				b.ReportMetric(float64(batch*b.N)/total.Seconds(), "req/s")
 			})
 		}
 	}

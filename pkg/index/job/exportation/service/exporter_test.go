@@ -24,12 +24,12 @@ import (
 	"github.com/vdaas/vald/internal/db/kvs/pogreb"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
+	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/os"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/test/goleak"
-	"google.golang.org/grpc"
 )
 
 // NOTE: StartClient/Start/doExportIndex paths that require a real vc.Client

@@ -13,59 +13,119 @@
 // limitations under the License.
 package grpc
 
-type PairingHeap struct {
-	DistPayload *DistPayload
-	Children    []*PairingHeap
+import "github.com/vdaas/vald/internal/sync"
+
+const pairingNull int32 = -1
+
+const defaultPairingArenaCap = 32
+
+// pairingNode is a Left-Child Right-Sibling node stored by index in a pooled arena slice.
+type pairingNode struct {
+	dp      DistPayload
+	child   int32
+	sibling int32
 }
 
-func (ph *PairingHeap) IsEmpty() bool {
-	return ph == nil
+var pairingArenaPool = sync.Pool[[]pairingNode]{ //nolint:gochecknoglobals // pairing-heap node arenas are reused per search request
+	New: func() []pairingNode {
+		return make([]pairingNode, 0, defaultPairingArenaCap)
+	},
 }
 
-func (ph *PairingHeap) Insert(dp *DistPayload) *PairingHeap {
-	return ph.Merge(&PairingHeap{
-		DistPayload: dp,
-	})
+func mergeMinNodes(nodes []pairingNode, a, b int32) int32 {
+	if a == pairingNull {
+		return b
+	}
+	if b == pairingNull {
+		return a
+	}
+	if nodes[b].dp.distance < nodes[a].dp.distance {
+		a, b = b, a
+	}
+	nodes[b].sibling = nodes[a].child
+	nodes[a].child = b
+	return a
 }
 
-func (ph *PairingHeap) Merge(h2 *PairingHeap) *PairingHeap {
-	if ph == nil || ph.DistPayload == nil {
-		return h2
+func mergeMaxNodes(nodes []pairingNode, a, b int32) int32 {
+	if a == pairingNull {
+		return b
 	}
-	if h2 == nil || h2.DistPayload == nil {
-		return ph
+	if b == pairingNull {
+		return a
 	}
-
-	var smaller, larger *PairingHeap
-	if ph.DistPayload.distance < h2.DistPayload.distance {
-		smaller = ph
-		larger = h2
-	} else {
-		smaller = h2
-		larger = ph
+	if nodes[b].dp.distance > nodes[a].dp.distance {
+		a, b = b, a
 	}
-
-	smaller.Children = append(smaller.Children, larger)
-	return smaller
+	nodes[b].sibling = nodes[a].child
+	nodes[a].child = b
+	return a
 }
 
-func (ph *PairingHeap) ExtractMin() (*DistPayload, *PairingHeap) {
-	if ph == nil {
-		return nil, nil
+func mergePairsMinNodes(nodes []pairingNode, first int32) int32 {
+	if first == pairingNull {
+		return pairingNull
 	}
-	minDistPayload := ph.DistPayload
-	newHeap := ph.mergePairs(ph.Children)
-	return minDistPayload, newHeap
+	mergedList := pairingNull
+	cur := first
+	for cur != pairingNull {
+		a := cur
+		b := nodes[a].sibling
+		if b == pairingNull {
+			nodes[a].sibling = mergedList
+			mergedList = a
+			break
+		}
+		next := nodes[b].sibling
+		nodes[a].sibling = pairingNull
+		nodes[b].sibling = pairingNull
+		m := mergeMinNodes(nodes, a, b)
+		nodes[m].sibling = mergedList
+		mergedList = m
+		cur = next
+	}
+	acc := mergedList
+	cur = nodes[acc].sibling
+	nodes[acc].sibling = pairingNull
+	for cur != pairingNull {
+		next := nodes[cur].sibling
+		nodes[cur].sibling = pairingNull
+		acc = mergeMinNodes(nodes, cur, acc)
+		cur = next
+	}
+	return acc
 }
 
-func (ph *PairingHeap) mergePairs(pairs []*PairingHeap) *PairingHeap {
-	switch len(pairs) {
-	case 0:
-		return nil
-	case 1:
-		return pairs[0]
+func mergePairsMaxNodes(nodes []pairingNode, first int32) int32 {
+	if first == pairingNull {
+		return pairingNull
 	}
-	first := pairs[0].Merge(pairs[1])
-	remaining := pairs[2:]
-	return first.Merge(ph.mergePairs(remaining))
+	mergedList := pairingNull
+	cur := first
+	for cur != pairingNull {
+		a := cur
+		b := nodes[a].sibling
+		if b == pairingNull {
+			nodes[a].sibling = mergedList
+			mergedList = a
+			break
+		}
+		next := nodes[b].sibling
+		nodes[a].sibling = pairingNull
+		nodes[b].sibling = pairingNull
+		m := mergeMaxNodes(nodes, a, b)
+		nodes[m].sibling = mergedList
+		mergedList = m
+		cur = next
+	}
+	acc := mergedList
+	cur = nodes[acc].sibling
+	nodes[acc].sibling = pairingNull
+	for cur != pairingNull {
+		next := nodes[cur].sibling
+		nodes[cur].sibling = pairingNull
+		acc = mergeMaxNodes(nodes, cur, acc)
+		cur = next
+	}
+	return acc
 }

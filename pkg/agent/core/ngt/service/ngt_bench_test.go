@@ -22,6 +22,7 @@ import (
 
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/test/bench"
 	"github.com/vdaas/vald/internal/test/data/vector"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
 )
@@ -36,7 +37,7 @@ const (
 	benchNoAuto = "96h"
 )
 
-func newBenchNGT(b *testing.B, stats, gc bool) (service.NGT, context.Context) {
+func newBenchNGT(b *testing.B, baseNum int, stats, gc bool) (service.NGT, context.Context) {
 	b.Helper()
 	c := &config.NGT{
 		Dimension:              benchDim,
@@ -62,7 +63,7 @@ func newBenchNGT(b *testing.B, stats, gc bool) (service.NGT, context.Context) {
 	ctx, cancel := context.WithCancel(b.Context())
 	b.Cleanup(cancel)
 	n.Start(ctx)
-	for i, v := range vector.GaussianDistributedFloat32VectorGenerator(benchBaseNum, benchDim) {
+	for i, v := range vector.GaussianDistributedFloat32VectorGenerator(baseNum, benchDim) {
 		if err := n.Insert("base-"+strconv.Itoa(i), v); err != nil {
 			b.Fatalf("failed to insert base vector: %v", err)
 		}
@@ -78,6 +79,10 @@ func newBenchNGT(b *testing.B, stats, gc bool) (service.NGT, context.Context) {
 // true, the exact condition Search checks) next to the whole CreateIndex call.
 func BenchmarkCreateIndexSearchUnavailable(b *testing.B) {
 	log.Init(log.WithLoggerType("nop"))
+	baseNum, batchNum := 2000, 200
+	if bench.Full() {
+		baseNum, batchNum = benchBaseNum, benchBatchNum
+	}
 	for _, bc := range []struct {
 		name      string
 		stats, gc bool
@@ -86,12 +91,12 @@ func BenchmarkCreateIndexSearchUnavailable(b *testing.B) {
 		{name: "statistics+proactive_gc", stats: true, gc: true},
 	} {
 		b.Run(bc.name, func(b *testing.B) {
-			n, ctx := newBenchNGT(b, bc.stats, bc.gc)
+			n, ctx := newBenchNGT(b, baseNum, bc.stats, bc.gc)
 			var unavailable, total time.Duration
 			b.ResetTimer()
 			for iter := range b.N {
 				b.StopTimer()
-				for j, v := range vector.GaussianDistributedFloat32VectorGenerator(benchBatchNum, benchDim) {
+				for j, v := range vector.GaussianDistributedFloat32VectorGenerator(batchNum, benchDim) {
 					if err := n.Insert("batch-"+strconv.Itoa(iter)+"-"+strconv.Itoa(j), v); err != nil {
 						b.Fatalf("failed to insert batch vector: %v", err)
 					}

@@ -22,7 +22,6 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
-	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/errhandler"
@@ -36,8 +35,11 @@ import (
 func (s *server) Remove(
 	ctx context.Context, req *payload.Remove_Request,
 ) (res *payload.Object_Location, err error) {
-	_, span := trace.StartSpan(ctx, apiName+"/"+vald.RemoveRPCName)
-	defer trace.End(span)
+	var span trace.Span
+	if trace.Enabled() {
+		_, span = trace.StartSpan(ctx, apiName+"/"+vald.RemoveRPCName)
+		defer trace.End(span)
+	}
 	id := req.GetId()
 	uuid := id.GetId()
 	if err = s.validateUUID(span, vald.RemoveRPCName, ngtResourceType+"/ngt.Remove",
@@ -55,7 +57,9 @@ func (s *server) Remove(
 				},
 				s.resourceInfo(ngtResourceType+"/ngt.Remove"))
 			log.Warn(err)
-			attrs = trace.StatusCodeAborted(err.Error())
+			if span != nil {
+				attrs = trace.StatusCodeAborted(err.Error())
+			}
 		} else if errors.Is(err, errors.ErrObjectIDNotFound(uuid)) {
 			err = status.WrapWithNotFound(fmt.Sprintf("Remove API uuid %s not found", uuid), err,
 				&errdetails.RequestInfo{
@@ -64,7 +68,9 @@ func (s *server) Remove(
 				},
 				s.resourceInfo(ngtResourceType+"/ngt.Remove"))
 			log.Warn(err)
-			attrs = trace.StatusCodeNotFound(err.Error())
+			if span != nil {
+				attrs = trace.StatusCodeNotFound(err.Error())
+			}
 		} else if errors.Is(err, errors.ErrUUIDNotFound(0)) {
 			err = status.WrapWithInvalidArgument(fmt.Sprintf("Remove API invalid argument for uuid \"%s\" detected", uuid), err,
 				&errdetails.RequestInfo{
@@ -81,7 +87,9 @@ func (s *server) Remove(
 				},
 				s.resourceInfo(ngtResourceType+"/ngt.Remove"))
 			log.Warn(err)
-			attrs = trace.StatusCodeInvalidArgument(err.Error())
+			if span != nil {
+				attrs = trace.StatusCodeInvalidArgument(err.Error())
+			}
 		} else {
 			err = status.WrapWithInternal("Remove API failed", err,
 				&errdetails.RequestInfo{
@@ -90,7 +98,9 @@ func (s *server) Remove(
 				},
 				s.resourceInfo(ngtResourceType+"/ngt.Remove"), info.Get())
 			log.Error(err)
-			attrs = trace.StatusCodeInternal(err.Error())
+			if span != nil {
+				attrs = trace.StatusCodeInternal(err.Error())
+			}
 		}
 		errhandler.RecordSpanAttrs(span, attrs, err)
 		return nil, err
@@ -99,41 +109,19 @@ func (s *server) Remove(
 }
 
 func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) (err error) {
-	ctx, span := trace.StartSpan(stream.Context(), apiName+"/"+vald.StreamRemoveRPCName)
-	defer trace.End(span)
-	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
-		func(ctx context.Context, req *payload.Remove_Request) (*payload.Object_StreamLocation, error) {
-			ctx, sspan := trace.StartSpan(ctx, apiName+"/"+vald.StreamRemoveRPCName+"/id-"+req.GetId().GetId())
-			defer trace.End(sspan)
-			res, err := s.Remove(ctx, req)
-			if err != nil {
-				st, _ := status.FromError(err)
-				errhandler.RecordSpanStatus(sspan, st, err)
-				return &payload.Object_StreamLocation{
-					Payload: &payload.Object_StreamLocation_Status{
-						Status: st.Proto(),
-					},
-				}, err
-			}
-			return &payload.Object_StreamLocation{
-				Payload: &payload.Object_StreamLocation_Location{
-					Location: res,
-				},
-			}, nil
-		})
-	if err != nil {
-		st, _ := status.FromError(err)
-		errhandler.RecordSpanStatus(span, st, err)
-		return err
-	}
-	return nil
+	return streamLocation(s, stream, vald.StreamRemoveRPCName, func(req *payload.Remove_Request) string {
+		return req.GetId().GetId()
+	}, s.Remove)
 }
 
 func (s *server) MultiRemove(
 	ctx context.Context, reqs *payload.Remove_MultiRequest,
 ) (res *payload.Object_Locations, err error) {
-	_, span := trace.StartSpan(ctx, apiName+"/"+vald.MultiRemoveRPCName)
-	defer trace.End(span)
+	var span trace.Span
+	if trace.Enabled() {
+		_, span = trace.StartSpan(ctx, apiName+"/"+vald.MultiRemoveRPCName)
+		defer trace.End(span)
+	}
 	uuids := make([]string, 0, len(reqs.GetRequests()))
 	var ts int64
 	for i, req := range reqs.GetRequests() {
@@ -213,8 +201,11 @@ func (s *server) MultiRemove(
 func (s *server) RemoveByTimestamp(
 	ctx context.Context, req *payload.Remove_TimestampRequest,
 ) (locs *payload.Object_Locations, errs error) {
-	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.RemoveByTimestampRPCName)
-	defer trace.End(span)
+	var span trace.Span
+	if trace.Enabled() {
+		ctx, span = trace.StartSpan(ctx, apiName+"/"+vald.RemoveByTimestampRPCName)
+		defer trace.End(span)
+	}
 
 	var mu, emu sync.Mutex
 	var errList []error
@@ -244,9 +235,8 @@ func (s *server) RemoveByTimestamp(
 	})
 	errs = errors.Join(errList...)
 	if errs != nil {
-		st, _ := status.FromError(errs)
 		log.Error(errs)
-		errhandler.RecordSpanStatus(span, st, errs)
+		errhandler.RecordSpanFromError(span, errs)
 		return nil, errs
 	}
 	if locs == nil || len(locs.GetLocations()) == 0 {
@@ -279,30 +269,31 @@ func timestampOpsFunc(ts []*payload.Remove_Timestamp) func(int64) bool {
 }
 
 func timestampOpFunc(ts *payload.Remove_Timestamp) func(int64) bool {
+	target := ts.GetTimestamp()
 	switch ts.GetOperator() {
 	case payload.Remove_Timestamp_EQ:
 		return func(t int64) bool {
-			return ts.GetTimestamp() == t
+			return target == t
 		}
 	case payload.Remove_Timestamp_NE:
 		return func(t int64) bool {
-			return ts.GetTimestamp() != t
+			return target != t
 		}
 	case payload.Remove_Timestamp_GE:
 		return func(t int64) bool {
-			return ts.GetTimestamp() <= t
+			return target <= t
 		}
 	case payload.Remove_Timestamp_GT:
 		return func(t int64) bool {
-			return ts.GetTimestamp() < t
+			return target < t
 		}
 	case payload.Remove_Timestamp_LE:
 		return func(t int64) bool {
-			return ts.GetTimestamp() >= t
+			return target >= t
 		}
 	case payload.Remove_Timestamp_LT:
 		return func(t int64) bool {
-			return ts.GetTimestamp() > t
+			return target > t
 		}
 	default:
 		return func(timestamp int64) bool {

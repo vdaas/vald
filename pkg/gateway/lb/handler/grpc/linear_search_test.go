@@ -15,6 +15,7 @@ package grpc
 
 import (
 	"context"
+	"slices"
 	"strconv"
 	"strings"
 	"testing"
@@ -26,6 +27,8 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/status"
+	"github.com/vdaas/vald/internal/net/grpc/types"
+	lbmetrics "github.com/vdaas/vald/internal/observability/metrics/gateway/lb"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
@@ -121,6 +124,213 @@ func Test_server_MultiLinearSearch_joinedErrors(t *testing.T) {
 				if want := "required: " + strconv.Itoa(2+i) + ","; !strings.Contains(err.Error(), want) {
 					t.Errorf("error %q does not contain %q", err.Error(), want)
 				}
+			}
+		})
+	}
+}
+
+type funcLinearClient struct {
+	*regClient
+	fn func(context.Context, *payload.Search_Request) (*payload.Search_Response, error)
+}
+
+func (c *funcLinearClient) LinearSearch(
+	ctx context.Context, in *payload.Search_Request, _ ...grpc.CallOption,
+) (*payload.Search_Response, error) {
+	return c.fn(ctx, in)
+}
+
+func Test_server_LinearSearch_subsetReplicaCover(t *testing.T) {
+	t.Parallel()
+	addrs := []string{"a0", "a1", "a2", "a3", "a4"}
+	vec := []float32{1, 2, 3}
+
+	t.Run("healthy 3/5 subset rotates and records 0 unreached metrics", func(t *testing.T) {
+		t.Parallel()
+		clients := make(map[string]vald.Client, len(addrs))
+		for _, addr := range addrs {
+			clients[addr] = &funcLinearClient{
+				regClient: new(regClient),
+				fn: func(context.Context, *payload.Search_Request) (*payload.Search_Response, error) {
+					return &payload.Search_Response{
+						Results: []*payload.Object_Distance{{Id: "hit-" + addr, Distance: 0.1}},
+					}, nil
+				},
+			}
+		}
+		gw := newSubsetRegGateway(addrs, clients)
+		sm := lbmetrics.New()
+		s := &server{gateway: gw, replica: 3, timeout: time.Second, searchMetrics: sm}
+
+		// Asking for Num=10 with MinNum=0 and getting 3 (< 10) from 3/5 healthy agents must NOT fall back.
+		res1, err := s.LinearSearch(t.Context(), &payload.Search_Request{
+			Vector: vec,
+			Config: &payload.Search_Config{Num: 10},
+		})
+		if err != nil || len(res1.GetResults()) != 3 {
+			t.Fatalf("first LinearSearch = (%d, %v), want 3 results", len(res1.GetResults()), err)
+		}
+		res2, err := s.LinearSearch(t.Context(), &payload.Search_Request{
+			Vector: vec,
+			Config: &payload.Search_Config{Num: 10},
+		})
+		if err != nil || len(res2.GetResults()) != 3 {
+			t.Fatalf("second LinearSearch = (%d, %v), want 3 results", len(res2.GetResults()), err)
+		}
+
+		gw.mu.Lock()
+		if len(gw.waves) != 2 || gw.bcCalls != 0 {
+			gw.mu.Unlock()
+			t.Fatalf("waves = %+v, bcCalls = %d, want 2 waves and 0 full broadcasts", gw.waves, gw.bcCalls)
+		}
+		if !slices.Equal(gw.waves[0].targets, []string{"a0", "a1", "a2"}) ||
+			!slices.Equal(gw.waves[1].targets, []string{"a1", "a2", "a3"}) {
+			gw.mu.Unlock()
+			t.Fatalf("rotated waves = %+v, want [a0 a1 a2] then [a1 a2 a3]", gw.waves)
+		}
+		gw.mu.Unlock()
+
+		if metrics := collectSearchMetrics(t, sm); len(metrics) != 0 {
+			t.Errorf("expected 0 failure/partial metrics on healthy subset, got %v", metrics)
+		}
+	})
+
+	t.Run("Ratio != nil uses full broadcast", func(t *testing.T) {
+		t.Parallel()
+		clients := make(map[string]vald.Client, len(addrs))
+		for _, addr := range addrs {
+			clients[addr] = &linearClient{regClient: new(regClient)}
+		}
+		gw := newSubsetRegGateway(addrs, clients)
+		s := &server{gateway: gw, replica: 3, timeout: time.Second}
+		res, err := s.LinearSearch(t.Context(), &payload.Search_Request{
+			Vector: vec,
+			Config: &payload.Search_Config{Num: 5, Ratio: types.Float(0.5)},
+		})
+		if err != nil || len(res.GetResults()) == 0 {
+			t.Fatalf("LinearSearch = (%v, %v)", res, err)
+		}
+		gw.mu.Lock()
+		defer gw.mu.Unlock()
+		if len(gw.waves) != 0 || gw.bcCalls != 1 {
+			t.Fatalf("waves = %d, bcCalls = %d, want 0 waves and 1 full broadcast", len(gw.waves), gw.bcCalls)
+		}
+	})
+}
+
+func Test_server_LinearSearch_subsetFallback(t *testing.T) {
+	t.Parallel()
+	addrs := []string{"a0", "a1", "a2", "a3", "a4"}
+	vec := []float32{1, 2, 3}
+	newClients := func(fn func(idx int, addr string) (*payload.Search_Response, error)) map[string]vald.Client {
+		clients := make(map[string]vald.Client, len(addrs))
+		for i, addr := range addrs {
+			idx := i
+			target := addr
+			clients[addr] = &funcLinearClient{
+				regClient: new(regClient),
+				fn: func(context.Context, *payload.Search_Request) (*payload.Search_Response, error) {
+					return fn(idx, target)
+				},
+			}
+		}
+		return clients
+	}
+
+	for _, tc := range []struct {
+		setup func() (*subsetRegGateway, *payload.Search_Config)
+		name  string
+	}{
+		{
+			name: "Wave 1 error triggers Wave 2 fallback",
+			setup: func() (*subsetRegGateway, *payload.Search_Config) {
+				clients := newClients(func(idx int, addr string) (*payload.Search_Response, error) {
+					if idx == 0 {
+						return nil, status.Error(codes.Internal, "boom")
+					}
+					return &payload.Search_Response{
+						Results: []*payload.Object_Distance{{Id: "hit-" + addr, Distance: 0.1}},
+					}, nil
+				})
+				return newSubsetRegGateway(addrs, clients), &payload.Search_Config{Num: 1}
+			},
+		},
+		{
+			name: "unreached Wave 1 agent triggers Wave 2 fallback",
+			setup: func() (*subsetRegGateway, *payload.Search_Config) {
+				clients := newClients(func(_ int, addr string) (*payload.Search_Response, error) {
+					return &payload.Search_Response{
+						Results: []*payload.Object_Distance{{Id: "hit-" + addr, Distance: 0.1}},
+					}, nil
+				})
+				gw := newSubsetRegGateway(addrs, clients)
+				gw.skipped = map[string]bool{"a1": true}
+				return gw, &payload.Search_Config{Num: 1}
+			},
+		},
+		{
+			name: "per-target DeadlineExceeded triggers Wave 2 fallback",
+			setup: func() (*subsetRegGateway, *payload.Search_Config) {
+				clients := newClients(func(idx int, addr string) (*payload.Search_Response, error) {
+					if idx == 0 {
+						return nil, status.Error(codes.DeadlineExceeded, "agent timeout")
+					}
+					return &payload.Search_Response{
+						Results: []*payload.Object_Distance{{Id: "hit-" + addr, Distance: 0.1}},
+					}, nil
+				})
+				return newSubsetRegGateway(addrs, clients), &payload.Search_Config{Num: 1}
+			},
+		},
+		{
+			name: "0 results in Wave 1 triggers Wave 2 fallback",
+			setup: func() (*subsetRegGateway, *payload.Search_Config) {
+				clients := newClients(func(idx int, addr string) (*payload.Search_Response, error) {
+					if idx < 3 {
+						return &payload.Search_Response{}, nil
+					}
+					return &payload.Search_Response{
+						Results: []*payload.Object_Distance{{Id: "hit-" + addr, Distance: 0.1}},
+					}, nil
+				})
+				return newSubsetRegGateway(addrs, clients), &payload.Search_Config{Num: 1}
+			},
+		},
+		{
+			name: "fewer unique results than MinNum triggers Wave 2 fallback",
+			setup: func() (*subsetRegGateway, *payload.Search_Config) {
+				clients := newClients(func(idx int, addr string) (*payload.Search_Response, error) {
+					if idx < 3 {
+						return &payload.Search_Response{
+							Results: []*payload.Object_Distance{{Id: "dup", Distance: 0.1}},
+						}, nil
+					}
+					return &payload.Search_Response{
+						Results: []*payload.Object_Distance{{Id: "unique-" + addr, Distance: 0.2}},
+					}, nil
+				})
+				return newSubsetRegGateway(addrs, clients), &payload.Search_Config{Num: 5, MinNum: 2}
+			},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			gw, cfg := tc.setup()
+			s := &server{gateway: gw, replica: 3, timeout: time.Second}
+			res, err := s.LinearSearch(t.Context(), &payload.Search_Request{
+				Vector: vec,
+				Config: cfg,
+			})
+			if err != nil {
+				t.Fatalf("LinearSearch error = %v", err)
+			}
+			if len(res.GetResults()) == 0 {
+				t.Fatal("expected results after Wave 2 fallback")
+			}
+			gw.mu.Lock()
+			defer gw.mu.Unlock()
+			if len(gw.waves) != 2 || gw.waves[0].count != 3 || gw.waves[1].count != 2 {
+				t.Fatalf("waves = %+v, want [3, 2]", gw.waves)
 			}
 		})
 	}

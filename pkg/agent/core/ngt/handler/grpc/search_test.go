@@ -52,6 +52,12 @@ func (n *stubNGT) Search(
 	return nil, n.err
 }
 
+func (n *stubNGT) SearchValidated(
+	ctx context.Context, vec []float32, size uint32, epsilon, radius float32, edgeSize int32,
+) (*payload.Search_Response, error) {
+	return n.Search(ctx, vec, size, epsilon, radius, edgeSize)
+}
+
 func (n *stubNGT) SearchByID(
 	context.Context, string, uint32, float32, float32, int32,
 ) ([]float32, *payload.Search_Response, error) {
@@ -64,10 +70,101 @@ func (n *stubNGT) LinearSearch(
 	return nil, n.err
 }
 
+func (n *stubNGT) LinearSearchValidated(
+	ctx context.Context, vec []float32, size uint32,
+) (*payload.Search_Response, error) {
+	return n.LinearSearch(ctx, vec, size)
+}
+
 func (n *stubNGT) LinearSearchByID(
 	context.Context, string, uint32,
 ) ([]float32, *payload.Search_Response, error) {
 	return nil, nil, n.err
+}
+
+func Test_server_search_contextErrorPrecedence(t *testing.T) {
+	t.Parallel()
+
+	vec := []float32{0, 1}
+	calls := []struct {
+		call func(context.Context, *server) error
+		name string
+	}{
+		{
+			name: "Search", //nolint:goconst // subtest name equals the handler name
+			call: func(ctx context.Context, s *server) error {
+				_, err := s.Search(ctx, &payload.Search_Request{
+					Vector: vec,
+					Config: &payload.Search_Config{MinNum: 1},
+				})
+				return err
+			},
+		},
+		{
+			name: "SearchByID",
+			call: func(ctx context.Context, s *server) error {
+				_, err := s.SearchByID(ctx, &payload.Search_IDRequest{
+					Id:     searchErrorsTestID,
+					Config: &payload.Search_Config{MinNum: 1},
+				})
+				return err
+			},
+		},
+		{
+			name: "LinearSearch",
+			call: func(ctx context.Context, s *server) error {
+				_, err := s.LinearSearch(ctx, &payload.Search_Request{
+					Vector: vec,
+					Config: &payload.Search_Config{MinNum: 1},
+				})
+				return err
+			},
+		},
+		{
+			name: "LinearSearchByID",
+			call: func(ctx context.Context, s *server) error {
+				_, err := s.LinearSearchByID(ctx, &payload.Search_IDRequest{
+					Id:     searchErrorsTestID,
+					Config: &payload.Search_Config{MinNum: 1},
+				})
+				return err
+			},
+		},
+	}
+
+	ctxErrs := []struct {
+		err      error
+		name     string
+		wantCode codes.Code
+	}{
+		{
+			name:     "Canceled",
+			err:      context.Canceled,
+			wantCode: codes.Canceled,
+		},
+		{
+			name:     "DeadlineExceeded",
+			err:      context.DeadlineExceeded,
+			wantCode: codes.DeadlineExceeded,
+		},
+	}
+
+	for _, c := range calls {
+		for _, ce := range ctxErrs {
+			t.Run(c.name+"/"+ce.name, func(t *testing.T) {
+				t.Parallel()
+				s := &server{ngt: &stubNGT{err: ce.err, dim: len(vec)}}
+				err := c.call(t.Context(), s)
+				st, ok := status.FromError(err)
+				if !ok || st == nil {
+					t.Fatalf("got non-status error: %v", err)
+				}
+				if st.Code() != ce.wantCode {
+					t.Errorf("code = %v, want %v (err=%v)", st.Code(), ce.wantCode, err)
+				}
+			})
+		}
+	}
 }
 
 // Test_server_search_concurrentCoreError calls each search handler concurrently with an NGT core error.
@@ -229,6 +326,12 @@ func (n *probeNGT) Search(
 	return n.search(vec[0])
 }
 
+func (n *probeNGT) SearchValidated(
+	ctx context.Context, vec []float32, size uint32, epsilon, radius float32, edgeSize int32,
+) (*payload.Search_Response, error) {
+	return n.Search(ctx, vec, size, epsilon, radius, edgeSize)
+}
+
 func (n *probeNGT) SearchByID(
 	_ context.Context, uuid string, _ uint32, _, _ float32, _ int32,
 ) ([]float32, *payload.Search_Response, error) {
@@ -239,6 +342,12 @@ func (n *probeNGT) LinearSearch(
 	_ context.Context, vec []float32, _ uint32,
 ) (*payload.Search_Response, error) {
 	return n.search(vec[0])
+}
+
+func (n *probeNGT) LinearSearchValidated(
+	ctx context.Context, vec []float32, size uint32,
+) (*payload.Search_Response, error) {
+	return n.LinearSearch(ctx, vec, size)
 }
 
 func (n *probeNGT) LinearSearchByID(
@@ -550,14 +659,17 @@ func Test_server_Search(t *testing.T) {
 		if err != nil {
 			st, ok := status.FromError(err)
 			if !ok {
-				errors.Errorf("got error cannot convert to Status: \"%#v\"", err)
+				return errors.Errorf("got error cannot convert to Status: \"%#v\"", err)
 			}
 			if st.Code() != w.code {
 				return errors.Errorf("got_code: \"%#v\",\n\t\t\t\twant: \"%#v\"", st.Code(), w.code)
 			}
 		}
 		if gotSize := len(gotRes.GetResults()); gotSize != w.resultSize {
-			res, _ := gotRes.MarshalJSON()
+			res, err := gotRes.MarshalJSON()
+			if err != nil {
+				return errors.Errorf("got size: \"%#v\",\n\t\t\t\twant size: \"%#v\"\nMarshalJSON error: %v", gotSize, w.resultSize, err)
+			}
 			return errors.Errorf("got size: \"%#v\",\n\t\t\t\twant size: \"%#v\"\ngotResults: \"%s\"", gotSize, w.resultSize, string(res))
 		}
 		return nil
@@ -1602,6 +1714,142 @@ func Test_server_SearchByID(t *testing.T) {
 			}
 		})
 	}
+}
+
+type validatedSpyNGT struct {
+	stubNGT
+	searchValidatedCalls       int
+	linearSearchValidatedCalls int
+	searchCalls                int
+	linearSearchCalls          int
+	insertCalls                int
+	multiInsertCalls           int
+}
+
+func (n *validatedSpyNGT) Search(
+	context.Context, []float32, uint32, float32, float32, int32,
+) (*payload.Search_Response, error) {
+	n.searchCalls++
+	if n.err != nil {
+		return nil, n.err
+	}
+	return &payload.Search_Response{}, nil
+}
+
+func (n *validatedSpyNGT) SearchValidated(
+	context.Context, []float32, uint32, float32, float32, int32,
+) (*payload.Search_Response, error) {
+	n.searchValidatedCalls++
+	if n.err != nil {
+		return nil, n.err
+	}
+	return &payload.Search_Response{}, nil
+}
+
+func (n *validatedSpyNGT) LinearSearch(
+	context.Context, []float32, uint32,
+) (*payload.Search_Response, error) {
+	n.linearSearchCalls++
+	if n.err != nil {
+		return nil, n.err
+	}
+	return &payload.Search_Response{}, nil
+}
+
+func (n *validatedSpyNGT) LinearSearchValidated(
+	context.Context, []float32, uint32,
+) (*payload.Search_Response, error) {
+	n.linearSearchValidatedCalls++
+	if n.err != nil {
+		return nil, n.err
+	}
+	return &payload.Search_Response{}, nil
+}
+
+func (n *validatedSpyNGT) Insert(string, []float32) error {
+	n.insertCalls++
+	return n.err
+}
+
+func (n *validatedSpyNGT) InsertMultiple(map[string][]float32) error {
+	n.multiInsertCalls++
+	return n.err
+}
+
+func Test_server_ValidatedRoutingAndNilSpanSafety(t *testing.T) {
+	t.Parallel()
+
+	vec := []float32{1, 2}
+	t.Run("Search and LinearSearch route to Validated paths", func(t *testing.T) {
+		t.Parallel()
+		spy := &validatedSpyNGT{dim: len(vec)}
+		s := &server{ngt: spy, streamConcurrency: 2}
+
+		if _, err := s.Search(t.Context(), &payload.Search_Request{
+			Vector: vec,
+			Config: &payload.Search_Config{Num: 1, RequestId: "r1"},
+		}); err != nil {
+			t.Fatalf("Search() error = %v", err)
+		}
+		if _, err := s.LinearSearch(t.Context(), &payload.Search_Request{
+			Vector: vec,
+			Config: &payload.Search_Config{Num: 1, RequestId: "r2"},
+		}); err != nil {
+			t.Fatalf("LinearSearch() error = %v", err)
+		}
+		if spy.searchValidatedCalls != 1 || spy.searchCalls != 0 {
+			t.Errorf("Search calls = (%d validated, %d unvalidated), want (1, 0)", spy.searchValidatedCalls, spy.searchCalls)
+		}
+		if spy.linearSearchValidatedCalls != 1 || spy.linearSearchCalls != 0 {
+			t.Errorf("LinearSearch calls = (%d validated, %d unvalidated), want (1, 0)", spy.linearSearchValidatedCalls, spy.linearSearchCalls)
+		}
+	})
+
+	t.Run("Validation rejects NaN before calling LinearSearchValidated", func(t *testing.T) {
+		t.Parallel()
+		spy := &validatedSpyNGT{dim: len(vec)}
+		s := &server{ngt: spy}
+		_, err := s.LinearSearch(t.Context(), &payload.Search_Request{
+			Vector: []float32{float32(math.NaN()), 1},
+			Config: &payload.Search_Config{Num: 1},
+		})
+		if st, ok := status.FromError(err); !ok || st.Code() != codes.InvalidArgument {
+			t.Fatalf("LinearSearch(NaN) err = %v, want InvalidArgument", err)
+		}
+		if spy.linearSearchValidatedCalls != 0 || spy.linearSearchCalls != 0 {
+			t.Errorf("LinearSearch should not invoke service on NaN vector")
+		}
+	})
+
+	t.Run("Unguarded span paths safe when trace disabled on error", func(t *testing.T) {
+		t.Parallel()
+		const testID = "id-1"
+		spy := &validatedSpyNGT{dim: len(vec), err: errors.ErrFlushingIsInProgress}
+		eg, _ := errgroup.New(t.Context())
+		s := &server{ngt: spy, eg: eg, streamConcurrency: 2}
+
+		if _, err := s.LinearSearch(t.Context(), &payload.Search_Request{Vector: vec, Config: &payload.Search_Config{Num: 1}}); err == nil {
+			t.Error("LinearSearch expected error")
+		}
+		if _, err := s.LinearSearchByID(t.Context(), &payload.Search_IDRequest{Id: testID, Config: &payload.Search_Config{Num: 1}}); err == nil {
+			t.Error("LinearSearchByID expected error")
+		}
+		if _, err := s.MultiLinearSearch(t.Context(), &payload.Search_MultiRequest{
+			Requests: []*payload.Search_Request{{Vector: vec, Config: &payload.Search_Config{Num: 1}}},
+		}); err == nil {
+			t.Error("MultiLinearSearch expected error")
+		}
+		if _, err := s.Insert(t.Context(), &payload.Insert_Request{
+			Vector: &payload.Object_Vector{Id: testID, Vector: vec},
+		}); err == nil {
+			t.Error("Insert expected error")
+		}
+		if _, err := s.MultiInsert(t.Context(), &payload.Insert_MultiRequest{
+			Requests: []*payload.Insert_Request{{Vector: &payload.Object_Vector{Id: testID, Vector: vec}}},
+		}); err == nil {
+			t.Error("MultiInsert expected error")
+		}
+	})
 }
 
 // NOT IMPLEMENTED BELOW

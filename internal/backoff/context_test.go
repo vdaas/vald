@@ -48,8 +48,8 @@ func TestWithQuietErrorLog(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			if got := isQuietErrorLog(tc.ctx()); got != tc.want {
-				t.Errorf("isQuietErrorLog() = %v, want %v", got, tc.want)
+			if got := IsQuietErrorLog(tc.ctx()); got != tc.want {
+				t.Errorf("IsQuietErrorLog() = %v, want %v", got, tc.want)
 			}
 		})
 	}

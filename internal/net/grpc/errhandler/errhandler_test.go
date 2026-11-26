@@ -243,3 +243,39 @@ func TestHandleError(t *testing.T) {
 		}
 	})
 }
+
+func TestRecordSpanFromError(t *testing.T) {
+	t.Run("nil error returns nil", func(tt *testing.T) {
+		defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+		span, sr := recordingSpan(tt)
+		if st := RecordSpanFromError(span, nil); st != nil {
+			tt.Fatalf("got status %v, want nil", st)
+		}
+		span.End()
+		if ended := sr.Ended(); len(ended) != 1 || ended[0].Status().Code == ocodes.Error {
+			tt.Errorf("expected span not marked errored on nil error, ended=%v", ended)
+		}
+	})
+
+	t.Run("nil span still returns parsed status", func(tt *testing.T) {
+		defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+		st := RecordSpanFromError(nil, status.Error(codes.InvalidArgument, "bad arg"))
+		if st == nil || st.Code() != codes.InvalidArgument {
+			tt.Fatalf("got status %v, want InvalidArgument", st)
+		}
+	})
+
+	t.Run("records non-nil error on span and returns status", func(tt *testing.T) {
+		defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+		span, sr := recordingSpan(tt)
+		err := status.Error(codes.NotFound, "missing")
+		st := RecordSpanFromError(span, err)
+		span.End()
+		if st == nil || st.Code() != codes.NotFound {
+			tt.Fatalf("got status %v, want NotFound", st)
+		}
+		if ended := sr.Ended(); len(ended) != 1 || ended[0].Status().Code != ocodes.Error {
+			tt.Errorf("expected span to be marked errored, ended=%v", ended)
+		}
+	})
+}

@@ -66,11 +66,8 @@ func (o *Outcomes) Record(target string, err error) {
 // recorded target errors in target order and, only when clientErr is nil, an
 // ErrGRPCClientConnNotFound for every target whose callback never ran.
 func (o *Outcomes) Err(clientErr error) error {
-	var errs error
 	o.mu.Lock()
-	for _, target := range slices.Sorted(maps.Keys(o.errs)) {
-		errs = errors.Join(errs, o.errs[target])
-	}
+	errs := errors.JoinMap(o.errs)
 	// A non-nil clientErr already fails the job; report unprocessed targets only when the
 	// client claimed success.
 	if clientErr == nil {

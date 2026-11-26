@@ -47,7 +47,7 @@ type Queue interface {
 }
 
 type vqueue struct {
-	il, dl sync.Map[string, *index]
+	il, dl sync.Map[string, index]
 	ic, dc uint64
 }
 
@@ -110,47 +110,43 @@ func (v *vqueue) PushDelete(uuid string, timestamp int64) error {
 }
 
 // push stores idx unless a newer entry for uuid is already queued. The CAS loop
-// keeps the newest timestamp under concurrent pushes (the map compares entries with
-// reflect.DeepEqual, which is cheap for the same pointer), and a key popped in between
-// is re-created through LoadOrStore so cnt stays in step with the map.
-// cnt is incremented before the entry is published (and the increment is undone when
-// the key already existed), so a concurrent pop of the new entry can never decrement
-// cnt below zero; cnt may only over-count briefly.
-func push(m *sync.Map[string, *index], cnt *uint64, uuid string, idx *index) {
+// keeps the newest timestamp under concurrent pushes using pointer identity (zero
+// reflection, single map indirection via sync.Map.LoadPointer/CompareAndSwapPointer),
+// and a key popped in between is re-created through LoadOrStorePointer so cnt stays
+// in step with the map. cnt is incremented before publishing (and undone when already
+// present), so a concurrent pop never decrements cnt below zero.
+func push(m *sync.Map[string, index], cnt *uint64, uuid string, idx *index) {
 	for {
 		// An already queued uuid never changes cnt, so check it first and leave the shared counter
 		// alone: bumping and undoing it for every re-push made all pushers contend on one cache line.
-		if oidx, ok := m.Load(uuid); ok {
-			if !newer(idx.timestamp, oidx.timestamp) || m.CompareAndSwap(uuid, oidx, idx) {
+		if oidx, ok := m.LoadPointer(uuid); ok {
+			if !newer(idx.timestamp, oidx.timestamp) || m.CompareAndSwapPointer(uuid, oidx, idx) {
 				return
 			}
 			continue
 		}
 		atomic.AddUint64(cnt, 1)
-		oidx, loaded := m.LoadOrStore(uuid, idx)
+		oidx, loaded := m.LoadOrStorePointer(uuid, idx)
 		if !loaded {
 			return
 		}
 		atomic.AddUint64(cnt, ^uint64(0))
-		if !newer(idx.timestamp, oidx.timestamp) || m.CompareAndSwap(uuid, oidx, idx) {
+		if !newer(idx.timestamp, oidx.timestamp) || m.CompareAndSwapPointer(uuid, oidx, idx) {
 			return
 		}
 	}
 }
 
-// popIfSame removes uuid only while it still maps to idx, so an entry pushed after
-// idx was read is never dropped by mistake. The map compares with reflect.DeepEqual, so
-// an entry equal to idx in uuid, vector and timestamp counts as idx too; such entries
-// are interchangeable, so which of them is removed does not matter.
-func popIfSame(m *sync.Map[string, *index], cnt *uint64, uuid string, idx *index) {
-	if m.CompareAndDelete(uuid, idx) {
+// popIfSame removes uuid only while it still maps to idx by pointer identity, so an entry
+// pushed after idx was read is never dropped by mistake.
+func popIfSame(m *sync.Map[string, index], cnt *uint64, uuid string, idx *index) {
+	if m.CompareAndSwapPointer(uuid, idx, nil) {
 		atomic.AddUint64(cnt, ^uint64(0))
 	}
 }
 
 func (v *vqueue) PopInsert(uuid string) (vector []float32, timestamp int64, ok bool) {
-	var idx *index
-	idx, ok = v.il.LoadAndDelete(uuid)
+	idx, ok := v.il.LoadAndDeletePointer(uuid)
 	if !ok || idx == nil || idx.timestamp == 0 {
 		return nil, 0, false
 	}
@@ -159,8 +155,7 @@ func (v *vqueue) PopInsert(uuid string) (vector []float32, timestamp int64, ok b
 }
 
 func (v *vqueue) PopDelete(uuid string) (timestamp int64, ok bool) {
-	var idx *index
-	idx, ok = v.dl.LoadAndDelete(uuid)
+	idx, ok := v.dl.LoadAndDeletePointer(uuid)
 	if !ok || idx == nil || idx.timestamp == 0 {
 		return 0, false
 	}
@@ -224,6 +219,9 @@ func (v *vqueue) IVExists(uuid string) (its int64, ok bool) {
 // If the same UUID exists in the insert queue and the delete queue, the timestamp is compared.
 // And the true is returned if the timestamp in the delete queue is newer than the insert queue.
 func (v *vqueue) DVExists(uuid string) (dts int64, ok bool) {
+	if atomic.LoadUint64(&v.dc) == 0 {
+		return 0, false
+	}
 	_, _, dts, ok = v.getVector(uuid, true)
 	if ok || dts == 0 {
 		return 0, false
@@ -234,11 +232,15 @@ func (v *vqueue) DVExists(uuid string) (dts int64, ok bool) {
 func (v *vqueue) RangePopInsert(
 	ctx context.Context, now int64, f func(uuid string, vector []float32, timestamp int64) bool,
 ) {
-	uii := make([]*index, 0, atomic.LoadUint64(&v.ic))
+	ic := atomic.LoadUint64(&v.ic)
+	if ic == 0 {
+		return
+	}
+	uii := make([]*index, 0, ic)
 	defer func() {
 		uii = nil
 	}()
-	v.il.Range(func(uuid string, idx *index) bool {
+	v.il.RangePointer(func(uuid string, idx *index) bool {
 		if newer(idx.timestamp, now) {
 			return true
 		}
@@ -286,11 +288,15 @@ func (v *vqueue) RangePopInsert(
 func (v *vqueue) RangePopDelete(
 	ctx context.Context, now int64, f func(uuid string, timestamp int64) (applied bool),
 ) {
-	udi := make([]*index, 0, atomic.LoadUint64(&v.dc))
+	dc := atomic.LoadUint64(&v.dc)
+	if dc == 0 {
+		return
+	}
+	udi := make([]*index, 0, dc)
 	defer func() {
 		udi = nil
 	}()
-	v.dl.Range(func(_ string, idx *index) bool {
+	v.dl.RangePointer(func(_ string, idx *index) bool {
 		if newer(idx.timestamp, now) {
 			return true
 		}
@@ -316,7 +322,7 @@ func (v *vqueue) RangePopDelete(
 			if !ok || dts < didx.timestamp {
 				dts = didx.timestamp
 			}
-			if iidx, ok := v.il.Load(didx.uuid); ok && iidx != nil && newer(dts, iidx.timestamp) {
+			if iidx, ok := v.il.LoadPointer(didx.uuid); ok && iidx != nil && newer(dts, iidx.timestamp) {
 				popIfSame(&v.il, &v.ic, didx.uuid, iidx)
 			}
 		}
@@ -331,7 +337,10 @@ func (v *vqueue) RangePopDelete(
 
 // Range calls f sequentially for each key and value present in the vqueue.
 func (v *vqueue) Range(_ context.Context, f func(uuid string, vector []float32, ts int64) bool) {
-	v.il.Range(func(uuid string, idx *index) bool {
+	if atomic.LoadUint64(&v.ic) == 0 {
+		return
+	}
+	v.il.RangePointer(func(uuid string, idx *index) bool {
 		if idx == nil {
 			return true
 		}
@@ -354,8 +363,10 @@ func (v *vqueue) DVQLen() (l int) {
 }
 
 func (v *vqueue) loadIVQ(uuid string) (vec []float32, ts int64, ok bool) {
-	var idx *index
-	idx, ok = v.il.Load(uuid)
+	if atomic.LoadUint64(&v.ic) == 0 {
+		return nil, 0, false
+	}
+	idx, ok := v.il.LoadPointer(uuid)
 	if !ok || idx == nil {
 		return nil, 0, false
 	}
@@ -363,8 +374,10 @@ func (v *vqueue) loadIVQ(uuid string) (vec []float32, ts int64, ok bool) {
 }
 
 func (v *vqueue) loadDVQ(uuid string) (ts int64, ok bool) {
-	var idx *index
-	idx, ok = v.dl.Load(uuid)
+	if atomic.LoadUint64(&v.dc) == 0 {
+		return 0, false
+	}
+	idx, ok := v.dl.LoadPointer(uuid)
 	if !ok || idx == nil {
 		return 0, false
 	}

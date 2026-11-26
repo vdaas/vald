@@ -20,6 +20,7 @@ import (
 	"math"
 	"path/filepath"
 	"reflect"
+	"runtime/debug"
 	"testing"
 	"time"
 
@@ -141,7 +142,6 @@ func TestNew(t *testing.T) {
 						ces:                 10,
 						objectType:          Float,
 						mu:                  new(sync.RWMutex),
-						cmu:                 new(sync.RWMutex),
 						smu:                 new(sync.Mutex),
 						group:               singleflight.New[*GraphStatistics](),
 						epl:                 DefaultErrorBufferLimit,
@@ -171,7 +171,6 @@ func TestNew(t *testing.T) {
 						bulkInsertChunkSize: 100,
 						objectType:          Float,
 						mu:                  new(sync.RWMutex),
-						cmu:                 new(sync.RWMutex),
 						smu:                 new(sync.Mutex),
 						group:               singleflight.New[*GraphStatistics](),
 						epl:                 DefaultErrorBufferLimit,
@@ -200,7 +199,6 @@ func TestNew(t *testing.T) {
 						bulkInsertChunkSize: 100,
 						objectType:          Uint8,
 						mu:                  new(sync.RWMutex),
-						cmu:                 new(sync.RWMutex),
 						smu:                 new(sync.Mutex),
 						group:               singleflight.New[*GraphStatistics](),
 						epl:                 DefaultErrorBufferLimit,
@@ -333,7 +331,6 @@ func TestLoad(t *testing.T) {
 						bulkInsertChunkSize: 100,
 						objectType:          Uint8,
 						mu:                  new(sync.RWMutex),
-						cmu:                 new(sync.RWMutex),
 						smu:                 new(sync.Mutex),
 						group:               singleflight.New[*GraphStatistics](),
 						epl:                 DefaultErrorBufferLimit,
@@ -403,7 +400,6 @@ func TestLoad(t *testing.T) {
 						bulkInsertChunkSize: 100,
 						objectType:          Uint8,
 						mu:                  new(sync.RWMutex),
-						cmu:                 new(sync.RWMutex),
 						smu:                 new(sync.Mutex),
 						group:               singleflight.New[*GraphStatistics](),
 						epl:                 DefaultErrorBufferLimit,
@@ -473,7 +469,6 @@ func TestLoad(t *testing.T) {
 						bulkInsertChunkSize: 100,
 						objectType:          Float,
 						mu:                  new(sync.RWMutex),
-						cmu:                 new(sync.RWMutex),
 						smu:                 new(sync.Mutex),
 						group:               singleflight.New[*GraphStatistics](),
 						epl:                 DefaultErrorBufferLimit,
@@ -543,7 +538,6 @@ func TestLoad(t *testing.T) {
 						bulkInsertChunkSize: 100,
 						objectType:          Float,
 						mu:                  new(sync.RWMutex),
-						cmu:                 new(sync.RWMutex),
 						smu:                 new(sync.Mutex),
 						group:               singleflight.New[*GraphStatistics](),
 						epl:                 DefaultErrorBufferLimit,
@@ -742,7 +736,6 @@ func Test_gen(t *testing.T) {
 					bulkInsertChunkSize: 100,
 					objectType:          Float,
 					mu:                  new(sync.RWMutex),
-					cmu:                 new(sync.RWMutex),
 					smu:                 new(sync.Mutex),
 					group:               singleflight.New[*GraphStatistics](),
 					epl:                 DefaultErrorBufferLimit,
@@ -793,7 +786,6 @@ func Test_gen(t *testing.T) {
 						bulkInsertChunkSize: 100,
 						objectType:          Uint8,
 						mu:                  new(sync.RWMutex),
-						cmu:                 new(sync.RWMutex),
 						smu:                 new(sync.Mutex),
 						group:               singleflight.New[*GraphStatistics](),
 						epl:                 DefaultErrorBufferLimit,
@@ -1130,7 +1122,6 @@ func Test_ngt_create(t *testing.T) {
 func Test_ngt_open(t *testing.T) {
 	type fields struct {
 		mu                  *sync.RWMutex
-		cmu                 *sync.RWMutex
 		smu                 *sync.Mutex
 		idxPath             string
 		bulkInsertChunkSize int
@@ -1188,7 +1179,6 @@ func Test_ngt_open(t *testing.T) {
 				dimension:  9,
 				objectType: Float,
 				mu:         &sync.RWMutex{},
-				cmu:        &sync.RWMutex{},
 				smu:        &sync.Mutex{},
 			},
 			beforeFunc: func(t *testing.T, fields fields) {
@@ -1224,7 +1214,6 @@ func Test_ngt_open(t *testing.T) {
 				dimension:  9,
 				objectType: Float,
 				mu:         &sync.RWMutex{},
-				cmu:        &sync.RWMutex{},
 				smu:        &sync.Mutex{},
 			},
 			want: want{
@@ -1239,12 +1228,13 @@ func Test_ngt_open(t *testing.T) {
 				dimension:  9,
 				objectType: Float,
 				mu:         &sync.RWMutex{},
-				cmu:        &sync.RWMutex{},
 				smu:        &sync.Mutex{},
 			},
 			beforeFunc: func(t *testing.T, fields fields) {
 				t.Helper()
-				_ = file.MkdirAll(fields.idxPath, fs.ModePerm)
+				if err := file.MkdirAll(fields.idxPath, fs.ModePerm); err != nil {
+					t.Fatalf("MkdirAll(%q) error = %v", fields.idxPath, err)
+				}
 			},
 			checkFunc: func(w want, e error) error {
 				if e == nil {
@@ -5080,7 +5070,6 @@ func newClosedNGT(t *testing.T, ot objectType) *ngt {
 		objectType: ot,
 		group:      singleflight.New[*GraphStatistics](),
 		mu:         new(sync.RWMutex),
-		cmu:        new(sync.RWMutex),
 		smu:        new(sync.Mutex),
 	}
 }
@@ -5157,12 +5146,12 @@ const (
 	releaseTimeout = 5 * time.Second
 )
 
-// Close must not free the index while a reader (Search/LinearSearch) holds rLock(true).
+// Close must not free the index while a reader (Search/LinearSearch) holds mu.RLock().
 func TestNGT_CloseWaitsForInFlightReader(t *testing.T) {
 	t.Parallel()
 	n := newClosedNGT(t, Float)
 
-	n.rLock(true)
+	n.mu.RLock()
 	done := make(chan struct{})
 	go func() {
 		defer close(done)
@@ -5171,11 +5160,11 @@ func TestNGT_CloseWaitsForInFlightReader(t *testing.T) {
 
 	select {
 	case <-done:
-		n.rUnlock(true)
+		n.mu.RUnlock()
 		t.Fatal("Close returned while a reader held the index lock")
 	case <-time.After(blockedFor):
 	}
-	n.rUnlock(true)
+	n.mu.RUnlock()
 
 	select {
 	case <-done:
@@ -5184,12 +5173,12 @@ func TestNGT_CloseWaitsForInFlightReader(t *testing.T) {
 	}
 }
 
-// The statistics walk must not run while a writer (Insert/Remove) holds lock(true).
+// The statistics walk must not run while a writer (Insert/Remove) holds mu.Lock().
 func TestNGT_GraphStatisticsWaitsForWriter(t *testing.T) {
 	t.Parallel()
 	n := newClosedNGT(t, Float)
 
-	n.lock(true)
+	n.mu.Lock()
 	errCh := make(chan error, 1)
 	go func() {
 		_, err := n.GetGraphStatistics(t.Context(), NormalStatistics)
@@ -5198,11 +5187,11 @@ func TestNGT_GraphStatisticsWaitsForWriter(t *testing.T) {
 
 	select {
 	case <-errCh:
-		n.unlock(true)
+		n.mu.Unlock()
 		t.Fatal("GetGraphStatistics ran while a writer held the index lock")
 	case <-time.After(blockedFor):
 	}
-	n.unlock(true)
+	n.mu.Unlock()
 
 	select {
 	case err := <-errCh:
@@ -5212,5 +5201,219 @@ func TestNGT_GraphStatisticsWaitsForWriter(t *testing.T) {
 		}
 	case <-time.After(releaseTimeout):
 		t.Fatal("GetGraphStatistics did not return after the writer released the lock")
+	}
+}
+
+func isRaceDetectorEnabled() bool {
+	bi, ok := debug.ReadBuildInfo()
+	if !ok {
+		return false
+	}
+	for _, s := range bi.Settings {
+		if s.Key == "-race" && s.Value == "true" {
+			return true
+		}
+	}
+	return false
+}
+
+func TestNGT_SearchValidated_And_LinearSearchValidated(t *testing.T) {
+	t.Parallel()
+	const dim = 8
+	n, err := New(
+		WithDimension(dim),
+		WithIndexPath(idxTempDir(t)),
+		WithObjectType(Float),
+		WithDistanceType(L2),
+	)
+	if err != nil {
+		t.Fatalf("New() error = %v", err)
+	}
+	t.Cleanup(n.Close)
+
+	vecs := [][]float32{
+		{0, 1, 2, 3, 4, 5, 6, 7},
+		{1, 2, 3, 4, 5, 6, 7, 8},
+		{10, 11, 12, 13, 14, 15, 16, 17},
+	}
+	for _, v := range vecs {
+		if _, err = n.Insert(v); err != nil {
+			t.Fatalf("Insert() error = %v", err)
+		}
+	}
+	if err = n.CreateIndex(1); err != nil {
+		t.Fatalf("CreateIndex() error = %v", err)
+	}
+
+	query := []float32{0, 1, 2, 3, 4, 5, 6, 7}
+	wantSearch, err := n.Search(t.Context(), query, 2, 0.1, -1, 0)
+	if err != nil {
+		t.Fatalf("Search() error = %v", err)
+	}
+	gotSearch, err := n.SearchValidated(t.Context(), query, 2, 0.1, -1, 0)
+	if err != nil {
+		t.Fatalf("SearchValidated() error = %v", err)
+	}
+	if diff := comparator.Diff(gotSearch, wantSearch, searchResultComparator...); diff != "" {
+		t.Errorf("SearchValidated() diff = %s", diff)
+	}
+
+	wantLinear, err := n.LinearSearch(t.Context(), query, 2)
+	if err != nil {
+		t.Fatalf("LinearSearch() error = %v", err)
+	}
+	gotLinear, err := n.LinearSearchValidated(t.Context(), query, 2)
+	if err != nil {
+		t.Fatalf("LinearSearchValidated() error = %v", err)
+	}
+	if diff := comparator.Diff(gotLinear, wantLinear, searchResultComparator...); diff != "" {
+		t.Errorf("LinearSearchValidated() diff = %s", diff)
+	}
+
+	// Validation error precedence over canceled context.
+	canceledCtx, cancel := context.WithCancel(t.Context())
+	cancel()
+	if _, err := n.SearchValidated(canceledCtx, []float32{1, 2}, 2, 0.1, -1, 0); !errors.Is(err, errors.ErrIncompatibleDimensionSize(2, dim)) {
+		t.Errorf("SearchValidated(bad dim, canceled) error = %v, want ErrIncompatibleDimensionSize", err)
+	}
+	if _, err := n.LinearSearchValidated(canceledCtx, []float32{1, 2}, 2); !errors.Is(err, errors.ErrIncompatibleDimensionSize(2, dim)) {
+		t.Errorf("LinearSearchValidated(bad dim, canceled) error = %v, want ErrIncompatibleDimensionSize", err)
+	}
+	if _, err := n.SearchValidated(canceledCtx, query, 2, 0.1, -1, 0); !errors.Is(err, context.Canceled) {
+		t.Errorf("SearchValidated(canceled) error = %v, want context.Canceled", err)
+	}
+	if _, err := n.LinearSearchValidated(canceledCtx, query, 2); !errors.Is(err, context.Canceled) {
+		t.Errorf("LinearSearchValidated(canceled) error = %v, want context.Canceled", err)
+	}
+}
+
+func TestNGT_GetVectorInto(t *testing.T) {
+	t.Parallel()
+	const dim = 8
+	for _, ot := range []objectType{Float, HalfFloat, Uint8} {
+		t.Run(ot.String(), func(t *testing.T) {
+			t.Parallel()
+			n, err := New(
+				WithDimension(dim),
+				WithIndexPath(idxTempDir(t)),
+				WithObjectType(ot),
+				WithDistanceType(L2),
+			)
+			if err != nil {
+				t.Fatalf("New() error = %v", err)
+			}
+			t.Cleanup(n.Close)
+
+			want := []float32{1, 2, 3, 4, 5, 6, 7, 8}
+			id, err := n.Insert(want)
+			if err != nil {
+				t.Fatalf("Insert() error = %v", err)
+			}
+
+			gotNil, err := n.GetVectorInto(id, nil)
+			if err != nil || !reflect.DeepEqual(gotNil, want) {
+				t.Fatalf("GetVectorInto(nil) = (%v, %v), want (%v, nil)", gotNil, err, want)
+			}
+
+			small := make([]float32, 0, dim-1)
+			gotSmall, err := n.GetVectorInto(id, small)
+			if err != nil || !reflect.DeepEqual(gotSmall, want) {
+				t.Fatalf("GetVectorInto(small) = (%v, %v), want (%v, nil)", gotSmall, err, want)
+			}
+
+			buf := make([]float32, 0, dim+4)
+			gotReuse, err := n.GetVectorInto(id, buf)
+			if err != nil || !reflect.DeepEqual(gotReuse, want) {
+				t.Fatalf("GetVectorInto(buf) = (%v, %v), want (%v, nil)", gotReuse, err, want)
+			}
+			if &gotReuse[0] != &buf[:1][0] {
+				t.Errorf("GetVectorInto(buf) did not reuse backing array")
+			}
+		})
+	}
+
+	t.Run("closed index guard", func(t *testing.T) {
+		t.Parallel()
+		for _, ot := range []objectType{Float, HalfFloat, Uint8} {
+			n := newClosedNGT(t, ot)
+			if _, err := n.GetVectorInto(1, make([]float32, 0, 9)); !errors.Is(err, errIndexClosed) {
+				t.Errorf("GetVectorInto(%s) on closed index = %v, want %v", ot.String(), err, errIndexClosed)
+			}
+		}
+	})
+}
+
+func TestNGT_GetVectorInto_Alloc(t *testing.T) {
+	// Not parallel: testing.AllocsPerRun panics if any t.Parallel() test is active.
+	if isRaceDetectorEnabled() {
+		t.Skip("skipping AllocsPerRun under -race")
+	}
+	const dim = 8
+	n, err := New(
+		WithDimension(dim),
+		WithIndexPath(idxTempDir(t)),
+		WithObjectType(Float),
+		WithDistanceType(L2),
+	)
+	if err != nil {
+		t.Fatalf("New() error = %v", err)
+	}
+	t.Cleanup(n.Close)
+	id, err := n.Insert([]float32{1, 2, 3, 4, 5, 6, 7, 8})
+	if err != nil {
+		t.Fatalf("Insert() error = %v", err)
+	}
+	dst := make([]float32, 0, dim)
+	allocs := testing.AllocsPerRun(50, func() {
+		v, gerr := n.GetVectorInto(id, dst)
+		if gerr != nil || len(v) != dim {
+			t.Fatalf("GetVectorInto() = (%d, %v)", len(v), gerr)
+		}
+	})
+	if allocs != 0 {
+		t.Errorf("GetVectorInto() allocs = %v, want 0", allocs)
+	}
+}
+
+func TestNGT_SearchLargeRequestedSizeUsesSearchSlow(t *testing.T) {
+	t.Parallel()
+	const dim = 4
+	n, err := New(
+		WithDimension(dim),
+		WithIndexPath(idxTempDir(t)),
+		WithObjectType(Float),
+		WithDistanceType(L2),
+	)
+	if err != nil {
+		t.Fatalf("New() error = %v", err)
+	}
+	t.Cleanup(n.Close)
+
+	const largeSize = 1 << 20
+	q := []float32{1, 2, 3, 4}
+	if _, err = n.Search(t.Context(), q, largeSize, 0.1, -1, 0); !errors.Is(err, errors.ErrSearchResultEmptyButNoDataStored) {
+		t.Fatalf("empty Search(largeSize) error = %v, want %v", err, errors.ErrSearchResultEmptyButNoDataStored)
+	}
+	if _, err = n.LinearSearch(t.Context(), q, largeSize); !errors.Is(err, errors.ErrSearchResultEmptyButNoDataStored) {
+		t.Fatalf("empty LinearSearch(largeSize) error = %v, want %v", err, errors.ErrSearchResultEmptyButNoDataStored)
+	}
+
+	if _, err = n.Insert([]float32{1, 2, 3, 4}); err != nil {
+		t.Fatalf("Insert(1) error = %v", err)
+	}
+	if _, err = n.Insert([]float32{5, 6, 7, 8}); err != nil {
+		t.Fatalf("Insert(2) error = %v", err)
+	}
+	if err = n.CreateIndex(2); err != nil {
+		t.Fatalf("CreateIndex() error = %v", err)
+	}
+
+	res, err := n.Search(t.Context(), q, largeSize, 0.1, -1, 0)
+	if err != nil || len(res) != 2 {
+		t.Fatalf("Search(largeSize) = (%v, %v), want 2 hits", res, err)
+	}
+	lres, err := n.LinearSearch(t.Context(), q, largeSize)
+	if err != nil || len(lres) != 2 {
+		t.Fatalf("LinearSearch(largeSize) = (%v, %v), want 2 hits", lres, err)
 	}
 }

@@ -26,6 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/errhandler"
+	"github.com/vdaas/vald/internal/net/grpc/proto"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/attribute"
 	"github.com/vdaas/vald/internal/observability/trace"
@@ -35,17 +36,96 @@ import (
 	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
-func (s *server) Search(
-	ctx context.Context, req *payload.Search_Request,
-) (res *payload.Search_Response, err error) {
-	_, span := trace.StartSpan(ctx, apiName+"/"+vald.SearchRPCName)
-	defer trace.End(span)
-	if len(req.GetVector()) != s.ngt.GetDimensionSize() {
-		err = errors.ErrIncompatibleDimensionSize(len(req.GetVector()), int(s.ngt.GetDimensionSize()))
-		err = status.WrapWithInvalidArgument("Search API Incompatible Dimension Size detected",
+func (s *server) wrapSearchContextError(
+	err error, api, resType, reqID string, req any,
+) ([]attribute.KeyValue, error) {
+	reqInfo := &errdetails.RequestInfo{
+		RequestId:   reqID,
+		ServingData: errdetails.Serialize(req),
+	}
+	resInfo := s.resourceInfo(resType)
+	if errors.Is(err, context.DeadlineExceeded) {
+		err = status.WrapWithDeadlineExceeded(api+" API deadline exceeded to process search request", err, reqInfo, resInfo)
+		log.Debug(err)
+		return trace.StatusCodeDeadlineExceeded(err.Error()), err
+	}
+	err = status.WrapWithCanceled(api+" API canceled to process search request", err, reqInfo, resInfo)
+	log.Debug(err)
+	return trace.StatusCodeCancelled(err.Error()), err
+}
+
+func (s *server) handleSearchError(
+	span trace.Span,
+	rpcName string,
+	uuid string,
+	byID bool,
+	reqCfg *payload.Search_Config,
+	req any,
+	vecLen int,
+	err error,
+) error {
+	resType := ngtResourceType + "/ngt." + rpcName
+	reqID := reqCfg.GetRequestId()
+	var attrs []attribute.KeyValue
+	// errors.As writes to its target, so it must be local to stay race-free across concurrent requests.
+	var errNGT errors.NGTError
+	switch {
+	case errors.Is(err, context.Canceled), errors.Is(err, context.DeadlineExceeded):
+		attrs, err = s.wrapSearchContextError(err, rpcName, resType, reqID, req)
+	case errors.Is(err, errors.ErrCreateIndexingIsInProgress):
+		err = status.WrapWithAborted(rpcName+" API aborted to process search request due to creating indices is in progress", err,
+			&errdetails.RequestInfo{
+				RequestId:   reqID,
+				ServingData: errdetails.Serialize(req),
+			},
+			s.resourceInfo(resType))
+		log.Debug(err)
+		if span != nil {
+			attrs = trace.StatusCodeAborted(err.Error())
+		}
+	case errors.Is(err, errors.ErrFlushingIsInProgress):
+		err = status.WrapWithAborted(rpcName+" API aborted to process search request due to flushing indices is in progress", err,
+			&errdetails.RequestInfo{
+				RequestId:   reqID,
+				ServingData: errdetails.Serialize(req),
+			},
+			s.resourceInfo(resType))
+		log.Debug(err)
+		if span != nil {
+			attrs = trace.StatusCodeAborted(err.Error())
+		}
+	case errors.Is(err, errors.ErrEmptySearchResult):
+		if byID {
+			err = status.New(codes.NotFound, rpcName+" API uuid "+uuid+"'s search result not found").Err()
+		} else {
+			err = status.New(codes.NotFound, rpcName+" API requestID "+reqID+"'s search result not found").Err()
+		}
+		if span != nil {
+			attrs = trace.StatusCodeNotFound(err.Error())
+		}
+	case byID && (errors.Is(err, errors.ErrObjectIDNotFound(uuid)) ||
+		strings.Contains(err.Error(), "ngt uuid "+uuid+"'s object not found")):
+		err = status.New(codes.NotFound, rpcName+" API uuid "+uuid+"'s object not found").Err()
+		if span != nil {
+			attrs = trace.StatusCodeNotFound(err.Error())
+		}
+	case errors.As(err, &errNGT):
+		log.Errorf("ngt core process returned error: %v", err)
+		err = status.WrapWithInternal(rpcName+" API failed to process search request due to ngt core process returned error", err,
+			&errdetails.RequestInfo{
+				RequestId:   reqID,
+				ServingData: errdetails.Serialize(req),
+			},
+			s.resourceInfo(resType+"/core.ngt"), info.Get())
+		log.Error(err)
+		if span != nil {
+			attrs = trace.StatusCodeInternal(err.Error())
+		}
+	case errors.Is(err, errors.ErrIncompatibleDimensionSize(vecLen, s.ngt.GetDimensionSize())):
+		err = status.WrapWithInvalidArgument(rpcName+" API Incompatible Dimension Size detected",
 			err,
 			&errdetails.RequestInfo{
-				RequestId:   req.GetConfig().GetRequestId(),
+				RequestId:   reqID,
 				ServingData: errdetails.Serialize(req),
 			},
 			&errdetails.BadRequest{
@@ -57,93 +137,33 @@ func (s *server) Search(
 				},
 			},
 			&errdetails.ResourceInfo{
-				ResourceType: ngtResourceType + "/ngt.Search",
+				ResourceType: resType,
 			})
 		log.Warn(err)
-		return errhandler.HandleError[payload.Search_Response](span, codes.InvalidArgument, err)
-	}
-	if err = s.validateVectorValue(span, vald.SearchRPCName, ngtResourceType+"/ngt.Search",
-		req.GetConfig().GetRequestId(), req, req.GetVector()); err != nil {
-		return nil, err
-	}
-	res, err = s.ngt.Search(ctx,
-		req.GetVector(),
-		req.GetConfig().GetNum(),
-		req.GetConfig().GetEpsilon(),
-		req.GetConfig().GetRadius(),
-		req.GetConfig().GetEdgeSize())
-	if err == nil && res == nil {
-		return nil, nil
-	}
-	if err != nil || res == nil {
-		var attrs []attribute.KeyValue
-		// errors.As writes to its target, so it must be local to stay race-free across concurrent requests.
-		var errNGT errors.NGTError
-		switch {
-		case errors.Is(err, errors.ErrCreateIndexingIsInProgress):
-			err = status.WrapWithAborted("Search API aborted to process search request due to creating indices is in progress", err,
-				&errdetails.RequestInfo{
-					RequestId:   req.GetConfig().GetRequestId(),
-					ServingData: errdetails.Serialize(req),
-				},
-				s.resourceInfo(ngtResourceType+"/ngt.Search"))
-			log.Debug(err)
-			attrs = trace.StatusCodeAborted(err.Error())
-		case errors.Is(err, errors.ErrFlushingIsInProgress):
-			err = status.WrapWithAborted("Search API aborted to process search request due to flushing indices is in progress", err,
-				&errdetails.RequestInfo{
-					RequestId:   req.GetConfig().GetRequestId(),
-					ServingData: errdetails.Serialize(req),
-				},
-				s.resourceInfo(ngtResourceType+"/ngt.Search"))
-			log.Debug(err)
-			attrs = trace.StatusCodeAborted(err.Error())
-		case errors.Is(err, errors.ErrEmptySearchResult),
-			err == nil && res == nil,
-			0 < req.GetConfig().GetMinNum() && len(res.GetResults()) < int(req.GetConfig().GetMinNum()):
-			err = status.WrapWithNotFound(fmt.Sprintf("Search API requestID %s's search result not found", req.GetConfig().GetRequestId()), err,
-				&errdetails.RequestInfo{
-					RequestId:   req.GetConfig().GetRequestId(),
-					ServingData: errdetails.Serialize(req),
-				},
-				s.resourceInfo(ngtResourceType+"/ngt.Search"))
-			log.Debug(err)
-			attrs = trace.StatusCodeNotFound(err.Error())
-		case errors.As(err, &errNGT):
-			log.Errorf("ngt core process returned error: %v", err)
-			err = status.WrapWithInternal("Search API failed to process search request due to ngt core process returned error", err,
-				&errdetails.RequestInfo{
-					RequestId:   req.GetConfig().GetRequestId(),
-					ServingData: errdetails.Serialize(req),
-				},
-				s.resourceInfo(ngtResourceType+"/ngt.Search/core.ngt"), info.Get())
-			log.Error(err)
-			attrs = trace.StatusCodeInternal(err.Error())
-		case errors.Is(err, errors.ErrIncompatibleDimensionSize(len(req.GetVector()), int(s.ngt.GetDimensionSize()))):
-			err = status.WrapWithInvalidArgument("Search API Incompatible Dimension Size detected",
+		if span != nil {
+			attrs = trace.StatusCodeInvalidArgument(err.Error())
+		}
+	case errors.Is(err, errors.ErrNaNOrInfVector):
+		if byID {
+			err = status.WrapWithFailedPrecondition(fmt.Sprintf("%s API stored vector of %s contains NaN or Inf", rpcName, uuid),
 				err,
 				&errdetails.RequestInfo{
-					RequestId:   req.GetConfig().GetRequestId(),
+					RequestId:   reqID,
 					ServingData: errdetails.Serialize(req),
-				},
-				&errdetails.BadRequest{
-					FieldViolations: []*errdetails.BadRequestFieldViolation{
-						{
-							Field:       "vector dimension size",
-							Description: err.Error(),
-						},
-					},
 				},
 				&errdetails.ResourceInfo{
-					ResourceType: ngtResourceType + "/ngt.Search",
+					ResourceType: resType,
+					ResourceName: uuid,
 				})
 			log.Warn(err)
-			attrs = trace.StatusCodeInvalidArgument(err.Error())
-		case errors.Is(err, errors.ErrNaNOrInfVector):
-			err = status.WrapWithInvalidArgument("Search API vector with NaN or Inf value detected",
+			if span != nil {
+				attrs = trace.StatusCodeFailedPrecondition(err.Error())
+			}
+		} else {
+			err = status.WrapWithInvalidArgument(rpcName+" API vector with NaN or Inf value detected",
 				err,
 				&errdetails.RequestInfo{
-					RequestId:   req.GetConfig().GetRequestId(),
+					RequestId:   reqID,
 					ServingData: errdetails.Serialize(req),
 				},
 				&errdetails.BadRequest{
@@ -155,22 +175,58 @@ func (s *server) Search(
 					},
 				},
 				&errdetails.ResourceInfo{
-					ResourceType: ngtResourceType + "/ngt.Search",
+					ResourceType: resType,
 				})
 			log.Warn(err)
-			attrs = trace.StatusCodeInvalidArgument(err.Error())
-		default:
-			err = status.WrapWithInternal("Search API failed to process search request", err,
-				&errdetails.RequestInfo{
-					RequestId:   req.GetConfig().GetRequestId(),
-					ServingData: errdetails.Serialize(req),
-				},
-				s.resourceInfo(ngtResourceType+"/ngt.Search"), info.Get())
-			log.Error(err)
+			if span != nil {
+				attrs = trace.StatusCodeInvalidArgument(err.Error())
+			}
+		}
+	default:
+		err = status.WrapWithInternal(rpcName+" API failed to process search request", err,
+			&errdetails.RequestInfo{
+				RequestId:   reqID,
+				ServingData: errdetails.Serialize(req),
+			},
+			s.resourceInfo(resType), info.Get())
+		log.Error(err)
+		if span != nil {
 			attrs = trace.StatusCodeInternal(err.Error())
 		}
+	}
+	if span != nil {
 		errhandler.RecordSpanAttrs(span, attrs, err)
+	}
+	return err
+}
+
+func (s *server) Search(
+	ctx context.Context, req *payload.Search_Request,
+) (res *payload.Search_Response, err error) {
+	var span trace.Span
+	if trace.Enabled() {
+		ctx, span = trace.StartSpan(ctx, apiName+"/"+vald.SearchRPCName)
+		defer trace.End(span)
+	}
+	if err = s.validateVectorDimension(span, vald.SearchRPCName, ngtResourceType+"/ngt.Search",
+		req.GetConfig().GetRequestId(), req, len(req.GetVector()), s.ngt.GetDimensionSize()); err != nil {
 		return nil, err
+	}
+	if err = s.validateVectorValue(span, vald.SearchRPCName, ngtResourceType+"/ngt.Search",
+		req.GetConfig().GetRequestId(), req, req.GetVector()); err != nil {
+		return nil, err
+	}
+	res, err = s.ngt.SearchValidated(ctx,
+		req.GetVector(),
+		req.GetConfig().GetNum(),
+		req.GetConfig().GetEpsilon(),
+		req.GetConfig().GetRadius(),
+		req.GetConfig().GetEdgeSize())
+	if err == nil && res == nil {
+		return nil, nil //nolint:nilnil // preserve existing nil-response contract when NGT returns (nil, nil)
+	}
+	if err != nil {
+		return nil, s.handleSearchError(span, vald.SearchRPCName, "", false, req.GetConfig(), req, len(req.GetVector()), err)
 	}
 	res.RequestId = req.GetConfig().GetRequestId()
 	return res, nil
@@ -179,8 +235,11 @@ func (s *server) Search(
 func (s *server) SearchByID(
 	ctx context.Context, req *payload.Search_IDRequest,
 ) (res *payload.Search_Response, err error) {
-	_, span := trace.StartSpan(ctx, apiName+"/"+vald.SearchByIDRPCName)
-	defer trace.End(span)
+	var span trace.Span
+	if trace.Enabled() {
+		ctx, span = trace.StartSpan(ctx, apiName+"/"+vald.SearchByIDRPCName)
+		defer trace.End(span)
+	}
 	uuid := req.GetId()
 	if err = s.validateUUID(span, vald.SearchByIDRPCName, ngtResourceType+"/ngt.SearchByID",
 		uuid, req); err != nil {
@@ -193,172 +252,59 @@ func (s *server) SearchByID(
 		req.GetConfig().GetRadius(),
 		req.GetConfig().GetEdgeSize())
 	if err == nil && res == nil {
-		return nil, nil
+		return nil, nil //nolint:nilnil // preserve existing nil-response contract when NGT returns (nil, nil)
 	}
-	if err != nil || res == nil {
-		var attrs []attribute.KeyValue
-		// errors.As writes to its target, so it must be local to stay race-free across concurrent requests.
-		var errNGT errors.NGTError
-		switch {
-		case errors.Is(err, errors.ErrCreateIndexingIsInProgress):
-			err = status.WrapWithAborted("SearchByID API aborted to process search request due to creating indices is in progress", err,
-				&errdetails.RequestInfo{
-					RequestId:   req.GetConfig().GetRequestId(),
-					ServingData: errdetails.Serialize(req),
-				},
-				s.resourceInfo(ngtResourceType+"/ngt.SearchByID"))
-			log.Debug(err)
-			attrs = trace.StatusCodeAborted(err.Error())
-		case errors.Is(err, errors.ErrFlushingIsInProgress):
-			err = status.WrapWithAborted("SearchByID API aborted to process search request due to flushing indices is in progress", err,
-				&errdetails.RequestInfo{
-					RequestId:   req.GetConfig().GetRequestId(),
-					ServingData: errdetails.Serialize(req),
-				},
-				s.resourceInfo(ngtResourceType+"/ngt.SearchByID"))
-			log.Debug(err)
-			attrs = trace.StatusCodeAborted(err.Error())
-		case errors.Is(err, errors.ErrEmptySearchResult),
-			err == nil && res == nil,
-			0 < req.GetConfig().GetMinNum() && len(res.GetResults()) < int(req.GetConfig().GetMinNum()):
-			err = status.WrapWithNotFound(fmt.Sprintf("SearchByID API uuid %s's search result not found", req.GetId()), err,
-				&errdetails.RequestInfo{
-					RequestId:   req.GetConfig().GetRequestId(),
-					ServingData: errdetails.Serialize(req),
-				},
-				s.resourceInfo(ngtResourceType+"/ngt.SearchByID"))
-			log.Debug(err)
-			attrs = trace.StatusCodeNotFound(err.Error())
-		case errors.Is(err, errors.ErrObjectIDNotFound(req.GetId())),
-			strings.Contains(err.Error(), fmt.Sprintf("ngt uuid %s's object not found", req.GetId())):
-			err = status.WrapWithNotFound(fmt.Sprintf("SearchByID API uuid %s's object not found", req.GetId()), err,
-				&errdetails.RequestInfo{
-					RequestId:   req.GetConfig().GetRequestId(),
-					ServingData: errdetails.Serialize(req),
-				},
-				s.resourceInfo(ngtResourceType+"/ngt.SearchByID"))
-			log.Debug(err)
-			attrs = trace.StatusCodeNotFound(err.Error())
-		case errors.As(err, &errNGT):
-			log.Errorf("ngt core process returned error: %v", err)
-			err = status.WrapWithInternal("SearchByID API failed to process search request due to ngt core process returned error", err,
-				&errdetails.RequestInfo{
-					RequestId:   req.GetConfig().GetRequestId(),
-					ServingData: errdetails.Serialize(req),
-				},
-				s.resourceInfo(ngtResourceType+"/ngt.SearchByID/core.ngt"), info.Get())
-			log.Error(err)
-			attrs = trace.StatusCodeInternal(err.Error())
-		case errors.Is(err, errors.ErrIncompatibleDimensionSize(len(vec), int(s.ngt.GetDimensionSize()))):
-			err = status.WrapWithInvalidArgument("SearchByID API Incompatible Dimension Size detected",
-				err,
-				&errdetails.RequestInfo{
-					RequestId:   req.GetConfig().GetRequestId(),
-					ServingData: errdetails.Serialize(req),
-				},
-				&errdetails.BadRequest{
-					FieldViolations: []*errdetails.BadRequestFieldViolation{
-						{
-							Field:       "vector dimension size",
-							Description: err.Error(),
-						},
-					},
-				},
-				&errdetails.ResourceInfo{
-					ResourceType: ngtResourceType + "/ngt.SearchByID",
-				})
-			log.Warn(err)
-			attrs = trace.StatusCodeInvalidArgument(err.Error())
-		case errors.Is(err, errors.ErrNaNOrInfVector):
-			err = status.WrapWithFailedPrecondition(fmt.Sprintf("SearchByID API stored vector of %s contains NaN or Inf", req.GetId()),
-				err,
-				&errdetails.RequestInfo{
-					RequestId:   req.GetConfig().GetRequestId(),
-					ServingData: errdetails.Serialize(req),
-				},
-				&errdetails.ResourceInfo{
-					ResourceType: ngtResourceType + "/ngt.SearchByID",
-					ResourceName: req.GetId(),
-				})
-			log.Warn(err)
-			attrs = trace.StatusCodeFailedPrecondition(err.Error())
-		default:
-			err = status.WrapWithInternal("SearchByID API failed to process search request", err,
-				&errdetails.RequestInfo{
-					RequestId:   req.GetConfig().GetRequestId(),
-					ServingData: errdetails.Serialize(req),
-				},
-				s.resourceInfo(ngtResourceType+"/ngt.SearchByID"), info.Get())
-			log.Error(err)
-			attrs = trace.StatusCodeInternal(err.Error())
-		}
-		errhandler.RecordSpanAttrs(span, attrs, err)
-		return nil, err
+	if err != nil {
+		return nil, s.handleSearchError(span, vald.SearchByIDRPCName, uuid, true, req.GetConfig(), req, len(vec), err)
 	}
 	res.RequestId = req.GetConfig().GetRequestId()
 	return res, nil
 }
 
-func (s *server) StreamSearch(stream vald.Search_StreamSearchServer) (err error) {
-	ctx, span := trace.StartSpan(stream.Context(), apiName+"/"+vald.StreamSearchRPCName)
-	defer trace.End(span)
-	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
-		func(ctx context.Context, req *payload.Search_Request) (*payload.Search_StreamResponse, error) {
-			ctx, sspan := trace.StartSpan(ctx, apiName+"/"+vald.StreamSearchRPCName+"/requestID-"+req.GetConfig().GetRequestId())
-			defer trace.End(sspan)
-			res, err := s.Search(ctx, req)
-			if err != nil {
-				st, _ := status.FromError(err)
-				errhandler.RecordSpanStatus(sspan, st, err)
-				return &payload.Search_StreamResponse{
-					Payload: &payload.Search_StreamResponse_Status{
-						Status: st.Proto(),
-					},
-				}, err
-			}
-			return &payload.Search_StreamResponse{
-				Payload: &payload.Search_StreamResponse_Response{
-					Response: res,
-				},
-			}, nil
-		})
-	if err != nil {
-		st, _ := status.FromError(err)
-		errhandler.RecordSpanStatus(span, st, err)
-		return err
-	}
-	return nil
+func searchReqSpanSuffix(req *payload.Search_Request) string {
+	return "requestID-" + req.GetConfig().GetRequestId()
 }
 
-func (s *server) StreamSearchByID(stream vald.Search_StreamSearchByIDServer) (err error) {
-	ctx, span := trace.StartSpan(stream.Context(), apiName+"/"+vald.StreamSearchByIDRPCName)
-	defer trace.End(span)
-	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
-		func(ctx context.Context, req *payload.Search_IDRequest) (*payload.Search_StreamResponse, error) {
-			ctx, sspan := trace.StartSpan(ctx, apiName+"/"+vald.StreamSearchByIDRPCName+"/id-"+req.GetId())
-			defer trace.End(sspan)
-			res, err := s.SearchByID(ctx, req)
-			if err != nil {
-				st, _ := status.FromError(err)
-				errhandler.RecordSpanStatus(sspan, st, err)
-				return &payload.Search_StreamResponse{
-					Payload: &payload.Search_StreamResponse_Status{
-						Status: st.Proto(),
-					},
-				}, err
-			}
+func idReqSpanSuffix(req *payload.Search_IDRequest) string {
+	return "id-" + req.GetId()
+}
+
+func streamSearch[
+	Q proto.Message,
+	S grpc.TypedServerStream[Q, *payload.Search_StreamResponse],
+](
+	stream S,
+	rpcName string,
+	streamConcurrency int,
+	spanSuffix func(Q) string,
+	search func(context.Context, Q) (*payload.Search_Response, error),
+) error {
+	return grpc.HandleBidirectionalStream(
+		stream,
+		streamConcurrency,
+		"",
+		apiName+"/"+rpcName,
+		spanSuffix,
+		search,
+		func(res *payload.Search_Response) *payload.Search_StreamResponse {
 			return &payload.Search_StreamResponse{
-				Payload: &payload.Search_StreamResponse_Response{
-					Response: res,
-				},
-			}, nil
-		})
-	if err != nil {
-		st, _ := status.FromError(err)
-		errhandler.RecordSpanStatus(span, st, err)
-		return err
-	}
-	return nil
+				Payload: &payload.Search_StreamResponse_Response{Response: res},
+			}
+		},
+		func(st *status.Status) *payload.Search_StreamResponse {
+			return &payload.Search_StreamResponse{
+				Payload: &payload.Search_StreamResponse_Status{Status: st.Proto()},
+			}
+		},
+	)
+}
+
+func (s *server) StreamSearch(stream vald.Search_StreamSearchServer) error {
+	return streamSearch(stream, vald.StreamSearchRPCName, s.streamConcurrency, searchReqSpanSuffix, s.Search)
+}
+
+func (s *server) StreamSearchByID(stream vald.Search_StreamSearchByIDServer) error {
+	return streamSearch(stream, vald.StreamSearchByIDRPCName, s.streamConcurrency, idReqSpanSuffix, s.SearchByID)
 }
 
 func (s *server) MultiSearch(
@@ -384,8 +330,11 @@ func multiSearch[Q any](
 	reqs []Q,
 	search func(context.Context, Q) (*payload.Search_Response, error),
 ) (res *payload.Search_Responses, errs error) {
-	ctx, span := trace.StartSpan(ctx, apiName+"/"+rpcName)
-	defer trace.End(span)
+	var span trace.Span
+	if trace.Enabled() {
+		ctx, span = trace.StartSpan(ctx, apiName+"/"+rpcName)
+		defer trace.End(span)
+	}
 
 	res = &payload.Search_Responses{
 		Responses: make([]*payload.Search_Response, len(reqs)),
@@ -396,12 +345,17 @@ func multiSearch[Q any](
 	for i, req := range reqs {
 		idx, query := i, req
 		eg.Go(safety.RecoverFunc(func() error {
-			sctx, sspan := trace.StartSpan(ctx, fmt.Sprintf("%s/%s/errgroup.Go/id-%d", apiName, rpcName, idx))
-			defer trace.End(sspan)
+			sctx := ctx
+			var sspan trace.Span
+			if trace.Enabled() {
+				sctx, sspan = trace.StartSpan(ctx, fmt.Sprintf("%s/%s/errgroup.Go/id-%d", apiName, rpcName, idx))
+				defer trace.End(sspan)
+			}
 			r, err := search(sctx, query)
 			if err != nil {
-				st, _ := status.FromError(err)
-				errhandler.RecordSpanStatus(sspan, st, err)
+				if sspan != nil {
+					errhandler.RecordSpanFromError(sspan, err)
+				}
 				mu.Lock()
 				errList = append(errList, err)
 				mu.Unlock()
@@ -416,8 +370,9 @@ func multiSearch[Q any](
 	}
 	errs = errors.Join(errList...)
 	if errs != nil {
-		st, _ := status.FromError(errs)
-		errhandler.RecordSpanStatus(span, st, errs)
+		if span != nil {
+			errhandler.RecordSpanFromError(span, errs)
+		}
 		return nil, errs
 	}
 	return res, nil

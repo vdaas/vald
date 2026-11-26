@@ -23,7 +23,9 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/io"
+	"github.com/vdaas/vald/internal/net/grpc/codes"
 	_ "github.com/vdaas/vald/internal/net/grpc/logger"
+	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/atomic"
 	"github.com/vdaas/vald/internal/test/data/request"
@@ -120,6 +122,60 @@ func TestBidirectionalStream(t *testing.T) {
 				args: args{
 					insertReqs:  reqs.Requests,
 					concurrency: concurrency,
+					f:           defaultCallbackFn,
+				},
+				want: want{
+					rpcResp: request.GenObjectStreamLocation(insertCnt, name, ip),
+				},
+			}
+		}(),
+		func() test {
+			insertCnt := 1
+			reqs, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, f32VecDim, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+			return test{
+				name: "success to receive 1 message with concurrency 1",
+				args: args{
+					insertReqs:  reqs.Requests,
+					concurrency: 1,
+					f:           defaultCallbackFn,
+				},
+				want: want{
+					rpcResp: request.GenObjectStreamLocation(insertCnt, name, ip),
+				},
+			}
+		}(),
+		func() test {
+			insertCnt := 10
+			reqs, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, f32VecDim, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+			return test{
+				name: "success to receive 10 messages with concurrency 1",
+				args: args{
+					insertReqs:  reqs.Requests,
+					concurrency: 1,
+					f:           defaultCallbackFn,
+				},
+				want: want{
+					rpcResp: request.GenObjectStreamLocation(insertCnt, name, ip),
+				},
+			}
+		}(),
+		func() test {
+			insertCnt := 5
+			reqs, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertCnt, f32VecDim, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+			return test{
+				name: "success to receive 5 messages with concurrency 0",
+				args: args{
+					insertReqs:  reqs.Requests,
+					concurrency: 0,
 					f:           defaultCallbackFn,
 				},
 				want: want{
@@ -776,4 +832,246 @@ func TestBidirectionalStream_sendFailureDrain(t *testing.T) {
 		cancel()
 		t.Fatalf("BidirectionalStream deadlocked on SendMsg failure")
 	}
+}
+
+func TestHandleBidirectionalStream(t *testing.T) {
+	ctx, cancel := context.WithTimeout(t.Context(), 5*time.Second)
+	defer cancel()
+
+	var sent []*payload.Object_StreamLocation
+	var mu sync.Mutex
+	var recvIdx atomic.Int64
+	reqs := []*payload.Insert_Request{
+		{Vector: &payload.Object_Vector{Id: "ok-1"}},
+		{Vector: &payload.Object_Vector{Id: "err-2"}},
+	}
+	serverStream := &mock.StreamInsertServerMock{
+		ServerStream: &mock.ServerStreamMock{
+			ContextFunc: func() context.Context { return ctx },
+			RecvMsgFunc: func(m any) error {
+				idx := int(recvIdx.Add(1) - 1)
+				if idx >= len(reqs) {
+					return io.EOF
+				}
+				dst := m.(*payload.Insert_Request)
+				*dst = *reqs[idx]
+				return nil
+			},
+			SendMsgFunc: func(m any) error {
+				mu.Lock()
+				sent = append(sent, m.(*payload.Object_StreamLocation))
+				mu.Unlock()
+				return nil
+			},
+		},
+	}
+
+	err := HandleBidirectionalStream(
+		serverStream,
+		2,
+		"vald.v1.Insert/StreamInsert",
+		"test/StreamInsert",
+		func(req *payload.Insert_Request) string { return "id-" + req.GetVector().GetId() },
+		func(_ context.Context, req *payload.Insert_Request) (*payload.Object_Location, error) {
+			if req.GetVector().GetId() == "err-2" {
+				return nil, status.Error(codes.InvalidArgument, "bad vector")
+			}
+			return &payload.Object_Location{Uuid: req.GetVector().GetId()}, nil
+		},
+		func(res *payload.Object_Location) *payload.Object_StreamLocation {
+			return &payload.Object_StreamLocation{
+				Payload: &payload.Object_StreamLocation_Location{Location: res},
+			}
+		},
+		func(st *status.Status) *payload.Object_StreamLocation {
+			return &payload.Object_StreamLocation{
+				Payload: &payload.Object_StreamLocation_Status{Status: st.Proto()},
+			}
+		},
+	)
+	if err != nil {
+		t.Fatalf("HandleBidirectionalStream() error = %v", err)
+	}
+	if len(sent) != 2 {
+		t.Fatalf("sent len = %d, want 2", len(sent))
+	}
+}
+
+func TestBidirectionalStream_ConcurrencyOne(t *testing.T) {
+	t.Parallel()
+
+	const timeout = 3 * time.Second
+
+	t.Run("processes multiple messages serially without hanging", func(tt *testing.T) {
+		tt.Parallel()
+		defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+
+		ctx, cancel := context.WithTimeout(tt.Context(), timeout)
+		defer cancel()
+
+		const total = 8
+		var (
+			recvIdx atomic.Int64
+			active  atomic.Int64
+			overlap atomic.Bool
+			sentMu  sync.Mutex
+			sentCnt int
+		)
+		stream := &mock.StreamInsertServerMock{
+			ServerStream: &mock.ServerStreamMock{
+				ContextFunc: func() context.Context { return ctx },
+				RecvMsgFunc: func(any) error {
+					if recvIdx.Add(1) > total {
+						return io.EOF
+					}
+					return nil
+				},
+				SendMsgFunc: func(any) error {
+					sentMu.Lock()
+					sentCnt++
+					sentMu.Unlock()
+					return nil
+				},
+			},
+		}
+
+		errc := make(chan error, 1)
+		go func() {
+			errc <- BidirectionalStream(ctx, stream, 1, func(context.Context, *payload.Insert_Request) (*payload.Object_StreamLocation, error) {
+				if active.Add(1) > 1 {
+					overlap.Store(true)
+				}
+				time.Sleep(time.Millisecond)
+				active.Add(-1)
+				return &payload.Object_StreamLocation{}, nil
+			})
+		}()
+
+		select {
+		case err := <-errc:
+			if err != nil {
+				tt.Fatalf("BidirectionalStream(concurrency=1) returned error: %v", err)
+			}
+		case <-time.After(timeout):
+			cancel()
+			tt.Fatal("BidirectionalStream(concurrency=1) deadlocked")
+		}
+
+		if overlap.Load() {
+			tt.Fatal("BidirectionalStream(concurrency=1) executed handler concurrently")
+		}
+		if sentCnt != total {
+			tt.Fatalf("sent count = %d, want %d", sentCnt, total)
+		}
+	})
+
+	t.Run("context cancellation unblocks promptly", func(tt *testing.T) {
+		tt.Parallel()
+		defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+
+		ctx, cancel := context.WithCancel(tt.Context())
+		defer cancel()
+
+		var (
+			handled atomic.Int64
+			recvIdx atomic.Int64
+			unblock = make(chan struct{})
+		)
+		defer func() {
+			select {
+			case <-unblock:
+			default:
+				close(unblock)
+			}
+		}()
+
+		stream := &mock.StreamInsertServerMock{
+			ServerStream: &mock.ServerStreamMock{
+				ContextFunc: func() context.Context { return ctx },
+				RecvMsgFunc: func(any) error {
+					if recvIdx.Add(1) == 1 {
+						return nil
+					}
+					<-unblock
+					return io.EOF
+				},
+				SendMsgFunc: func(any) error { return nil },
+			},
+		}
+
+		errc := make(chan error, 1)
+		go func() {
+			errc <- BidirectionalStream(ctx, stream, 1, func(context.Context, *payload.Insert_Request) (*payload.Object_StreamLocation, error) {
+				handled.Add(1)
+				cancel()
+				return &payload.Object_StreamLocation{}, nil
+			})
+		}()
+
+		select {
+		case err := <-errc:
+			if err != nil {
+				tt.Fatalf("unexpected error after cancel: %v", err)
+			}
+		case <-time.After(timeout):
+			tt.Fatal("BidirectionalStream(concurrency=1) did not unblock after context cancellation")
+		}
+
+		if handled.Load() != 1 {
+			tt.Fatalf("handled = %d, want 1", handled.Load())
+		}
+	})
+
+	t.Run("concurrency > 1 drains buffered messages on canceled context without hanging", func(tt *testing.T) {
+		tt.Parallel()
+		defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+
+		ctx, cancel := context.WithCancel(tt.Context())
+		defer cancel()
+
+		var (
+			recvIdx atomic.Int64
+			handled atomic.Int64
+			firstIn = make(chan struct{})
+		)
+		const total = 6
+		stream := &mock.StreamInsertServerMock{
+			ServerStream: &mock.ServerStreamMock{
+				ContextFunc: func() context.Context { return ctx },
+				RecvMsgFunc: func(any) error {
+					idx := recvIdx.Add(1)
+					if idx == 1 {
+						return nil
+					}
+					if idx <= total {
+						<-firstIn
+						return nil
+					}
+					return io.EOF
+				},
+				SendMsgFunc: func(any) error { return nil },
+			},
+		}
+
+		// Pre-cancel ctx before any worker starts, while messages remain to drain.
+		cancel()
+		close(firstIn)
+
+		errc := make(chan error, 1)
+		go func() {
+			errc <- BidirectionalStream(ctx, stream, 4, func(context.Context, *payload.Insert_Request) (*payload.Object_StreamLocation, error) {
+				handled.Add(1)
+				return &payload.Object_StreamLocation{}, nil
+			})
+		}()
+
+		select {
+		case err := <-errc:
+			if err != nil {
+				tt.Fatalf("unexpected error: %v", err)
+			}
+		case <-time.After(timeout):
+			tt.Fatal("BidirectionalStream(concurrency=4) deadlocked draining on canceled context")
+		}
+	})
 }

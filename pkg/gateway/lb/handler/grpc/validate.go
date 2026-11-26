@@ -16,11 +16,14 @@ package grpc
 import (
 	"context"
 
+	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/core/algorithm"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
+	"github.com/vdaas/vald/internal/net/grpc/errhandler"
 	"github.com/vdaas/vald/internal/net/grpc/status"
+	"github.com/vdaas/vald/internal/observability/trace"
 )
 
 // validateVectorValue returns an InvalidArgument error when vec contains NaN or Inf,
@@ -45,4 +48,65 @@ func (s *server) validateVectorValue(
 					},
 				},
 			}, info.Get())...)
+}
+
+func (s *server) invalidUUIDError(
+	ctx context.Context, rpcName, errDetailsRPC, uuid string, req any,
+) error {
+	err := errors.ErrInvalidMetaDataConfig
+	return status.WrapWithInvalidArgument(rpcName+" API invalid uuid", err,
+		append(s.errDetails(ctx, errDetailsRPC, uuid, req),
+			&errdetails.BadRequest{
+				FieldViolations: []*errdetails.BadRequestFieldViolation{
+					{
+						Field:       "invalid id",
+						Description: err.Error(),
+					},
+				},
+			})...)
+}
+
+func (s *server) invalidVectorDimError(
+	ctx context.Context, rpcName, errDetailsRPC, uuid string, req any, vl int,
+) error {
+	err := errors.ErrInvalidDimensionSize(vl, 0)
+	return status.WrapWithInvalidArgument(rpcName+" API invalid vector argument", err,
+		append(s.errDetails(ctx, errDetailsRPC, uuid, req),
+			&errdetails.BadRequest{
+				FieldViolations: []*errdetails.BadRequestFieldViolation{
+					{
+						Field:       "vector dimension size",
+						Description: err.Error(),
+					},
+				},
+			}, info.Get())...)
+}
+
+func (s *server) handleExistsCheckError(
+	ctx context.Context, span trace.Span, rpcName, uuid string, req any, cerr error,
+) error {
+	var attrs trace.Attributes
+	switch {
+	case errors.Is(cerr, errGRPCClientConnNotFoundStar):
+		cerr = status.WrapWithInternal(vald.ExistsRPCName+" API for "+rpcName+" API connection not found", cerr, s.errDetails(ctx, rpcName, uuid, req)...)
+		if span != nil {
+			attrs = trace.StatusCodeInternal(cerr.Error())
+		}
+	case errors.Is(cerr, context.Canceled):
+		cerr = status.WrapWithCanceled(vald.ExistsRPCName+" API for "+rpcName+" API canceled", cerr, s.errDetails(ctx, rpcName, uuid, req)...)
+		if span != nil {
+			attrs = trace.StatusCodeCancelled(cerr.Error())
+		}
+	case errors.Is(cerr, context.DeadlineExceeded):
+		cerr = status.WrapWithDeadlineExceeded(vald.ExistsRPCName+" API for "+rpcName+" API deadline exceeded", cerr, s.errDetails(ctx, rpcName, uuid, req)...)
+		if span != nil {
+			attrs = trace.StatusCodeDeadlineExceeded(cerr.Error())
+		}
+	default:
+		return nil
+	}
+	if span != nil {
+		errhandler.RecordSpanAttrs(span, attrs, cerr)
+	}
+	return cerr
 }

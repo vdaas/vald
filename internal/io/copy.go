@@ -40,7 +40,7 @@ type Copier interface {
 }
 
 type copier struct {
-	pool    sync.Pool
+	pool    sync.Pool[*bytes.Buffer]
 	bufSize int64
 }
 
@@ -53,8 +53,8 @@ func NewCopier(size int) Copier {
 	} else {
 		atomic.StoreInt64(&c.bufSize, int64(defaultBufferSize))
 	}
-	c.pool = sync.Pool{
-		New: func() any {
+	c.pool = sync.Pool[*bytes.Buffer]{
+		New: func() *bytes.Buffer {
 			return bytes.NewBuffer(make([]byte, int(atomic.LoadInt64(&c.bufSize))))
 		},
 	}
@@ -98,8 +98,8 @@ func (c *copier) copyBuffer(
 		if l, isLimited := src.(*io.LimitedReader); isLimited && l.N >= 1 && size > l.N {
 			size = l.N
 		}
-		buf, ok = c.pool.Get().(*bytes.Buffer)
-		if !ok || buf == nil {
+		buf = c.pool.Get()
+		if buf == nil {
 			buf = bytes.NewBuffer(make([]byte, size))
 		}
 		defer func() {
@@ -129,7 +129,8 @@ func (c *copier) copyBuffer(
 			}
 		}
 		if er != nil {
-			if errors.Is(er, io.EOF) {
+			//nolint:errorlint // fast pointer identity check on io.EOF before unwrap walk
+			if er == io.EOF || errors.Is(er, io.EOF) {
 				return written, nil
 			}
 			return written, er

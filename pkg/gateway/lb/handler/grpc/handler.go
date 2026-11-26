@@ -17,18 +17,25 @@ package grpc
 import (
 	"context"
 	"fmt"
-	"maps"
 	"runtime"
-	"slices"
 	"time"
 
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
+	"github.com/vdaas/vald/internal/core/algorithm"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
+	"github.com/vdaas/vald/internal/net/grpc/errhandler"
+	"github.com/vdaas/vald/internal/net/grpc/proto"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	lbmetrics "github.com/vdaas/vald/internal/observability/metrics/gateway/lb"
+	"github.com/vdaas/vald/internal/observability/trace"
+	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/pkg/gateway/lb/service"
 )
@@ -112,19 +119,6 @@ func (s *server) errDetails(ctx context.Context, rpc, uuid string, req any) []an
 	}
 }
 
-// joinTargetErrors joins the per-agent failures sorted by target, so the leading
-// error (whose code a joined error reports) does not depend on map order.
-func joinTargetErrors(errs map[string]error) error {
-	if len(errs) == 0 {
-		return nil
-	}
-	list := make([]error, 0, len(errs))
-	for _, target := range slices.Sorted(maps.Keys(errs)) {
-		list = append(list, errs[target])
-	}
-	return errors.Join(list...)
-}
-
 // warnPartialWrite reports a write RPC that succeeded although it was applied to
 // fewer agents than intended (failed agents, or fewer agents than replicas). It is
 // the single place such partial writes are reported and counted. failed holds each
@@ -154,10 +148,10 @@ func (s *server) warnPartialWrite(
 func (s *server) partialBroadCastResult(
 	ctx context.Context, rpc, uuid string, err error, succeeded int, ferr map[string]error,
 ) error {
-	if errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) || ctx.Err() != nil {
+	if errors.Is(err, errGRPCClientConnNotFoundStar) || ctx.Err() != nil {
 		return err
 	}
-	ferrs := joinTargetErrors(ferr)
+	ferrs := errors.JoinMap(ferr)
 	if succeeded == 0 {
 		if err != nil {
 			return err
@@ -171,4 +165,182 @@ func (s *server) partialBroadCastResult(
 		s.warnPartialWrite(rpc, uuid, succeeded, ferr, ferrs)
 	}
 	return nil
+}
+
+var errGRPCClientConnNotFoundStar = errors.ErrGRPCClientConnNotFound("*")
+
+func streamLocation[Q proto.Message, S grpc.TypedServerStream[Q, *payload.Object_StreamLocation]](
+	s *server,
+	stream S,
+	svcName, rpcName string,
+	itemID func(Q) string,
+	fn func(context.Context, Q) (*payload.Object_Location, error),
+) error {
+	return grpc.HandleBidirectionalStream(
+		stream,
+		s.streamConcurrency,
+		vald.PackageName+"."+svcName+"/"+rpcName,
+		apiName+"/"+rpcName,
+		func(req Q) string { return "id-" + itemID(req) },
+		fn,
+		func(res *payload.Object_Location) *payload.Object_StreamLocation {
+			return &payload.Object_StreamLocation{
+				Payload: &payload.Object_StreamLocation_Location{Location: res},
+			}
+		},
+		func(st *status.Status) *payload.Object_StreamLocation {
+			return &payload.Object_StreamLocation{
+				Payload: &payload.Object_StreamLocation_Status{Status: st.Proto()},
+			}
+		},
+	)
+}
+
+func validateMultiVector(vec *payload.Object_Vector) (uuid, field string, err error) {
+	if vec == nil || len(vec.GetVector()) < algorithm.MinimumVectorDimensionSize {
+		return vec.GetId(), vectorField, errors.ErrInvalidDimensionSize(len(vec.GetVector()), 0)
+	}
+	if vec.GetId() == "" {
+		return "", uuidField, errors.ErrInvalidUUID("")
+	}
+	return vec.GetId(), "", nil
+}
+
+func multiWrite[Q any](
+	ctx context.Context,
+	s *server,
+	svcName, rpcName string,
+	rawReqs any,
+	reqs []Q,
+	validate func(Q) (uuid, field string, err error),
+	fn func(context.Context, Q) (*payload.Object_Location, error),
+) (locs *payload.Object_Locations, errs error) {
+	var span trace.Span
+	if trace.Enabled() {
+		ctx, span = trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+svcName+"/"+rpcName), apiName+"/"+rpcName)
+		defer trace.End(span)
+	}
+	if len(reqs) == 0 {
+		return new(payload.Object_Locations), nil
+	}
+	locs = &payload.Object_Locations{
+		Locations: make([]*payload.Object_Location, len(reqs)),
+	}
+	if len(reqs) == 1 {
+		id, field, verr := validate(reqs[0])
+		if verr == nil {
+			reqCtx := ctx
+			var sspan trace.Span
+			if trace.Enabled() {
+				reqCtx, sspan = trace.StartSpan(grpc.WrapGRPCMethod(ctx, "eg.Go"), apiName+"/"+rpcName+"/id-"+id)
+				defer trace.End(sspan)
+			}
+			res, rerr := fn(reqCtx, reqs[0])
+			if rerr != nil {
+				if sspan != nil {
+					errhandler.RecordSpanFromError(sspan, rerr)
+				}
+				errs = rerr
+			} else if res != nil && res.GetUuid() == id && res.GetIps() != nil {
+				locs.Locations[0] = res
+			}
+		} else {
+			errs = status.WrapWithInvalidArgument(rpcName+" API invalid vector argument", verr,
+				&errdetails.RequestInfo{
+					RequestId:   id,
+					ServingData: errdetails.Serialize(rawReqs),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + rpcName,
+					ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
+				},
+				&errdetails.BadRequest{
+					FieldViolations: []*errdetails.BadRequestFieldViolation{
+						{
+							Field:       field,
+							Description: verr.Error(),
+						},
+					},
+				}, info.Get())
+		}
+		if errs != nil && span != nil {
+			errhandler.RecordSpanFromError(span, errs)
+		}
+		return locs, errs
+	}
+	var (
+		errList []error
+		emu     sync.Mutex
+	)
+	eg := errgroup.NewBoundedFanOut(ctx, s.multiLimit(ctx, false))
+	// The invalid-argument details are identical for every invalid request of
+	// the batch, so serialize the whole batch and resolve Addrs once, lazily.
+	var (
+		detailsBuilt bool
+		servingData  string
+		resourceName string
+	)
+	for i, r := range reqs {
+		id, field, verr := validate(r)
+		if verr == nil {
+			idx := i
+			req := r
+			eg.Go(safety.RecoverFunc(func() error {
+				reqCtx := ctx
+				var sspan trace.Span
+				if trace.Enabled() {
+					reqCtx, sspan = trace.StartSpan(grpc.WrapGRPCMethod(ctx, "eg.Go"), apiName+"/"+rpcName+"/id-"+id)
+					defer trace.End(sspan)
+				}
+				res, rerr := fn(reqCtx, req)
+				if rerr != nil {
+					if sspan != nil {
+						errhandler.RecordSpanFromError(sspan, rerr)
+					}
+					emu.Lock()
+					errList = append(errList, rerr)
+					emu.Unlock()
+				} else if res != nil && res.GetUuid() == id && res.GetIps() != nil {
+					locs.Locations[idx] = res
+				}
+				return nil
+			}))
+		} else {
+			if !detailsBuilt {
+				servingData = errdetails.Serialize(rawReqs)
+				resourceName = fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx))
+				detailsBuilt = true
+			}
+			ierr := status.WrapWithInvalidArgument(rpcName+" API invalid vector argument", verr,
+				&errdetails.RequestInfo{
+					RequestId:   id,
+					ServingData: servingData,
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + rpcName,
+					ResourceName: resourceName,
+				},
+				&errdetails.BadRequest{
+					FieldViolations: []*errdetails.BadRequestFieldViolation{
+						{
+							Field:       field,
+							Description: verr.Error(),
+						},
+					},
+				}, info.Get())
+			emu.Lock()
+			errList = append(errList, ierr)
+			emu.Unlock()
+		}
+	}
+	if werr := eg.Wait(); werr != nil {
+		errList = append(errList, werr)
+	}
+	errs = errors.Join(errList...)
+
+	if errs != nil && span != nil {
+		errhandler.RecordSpanFromError(span, errs)
+	}
+
+	return locs, errs
 }

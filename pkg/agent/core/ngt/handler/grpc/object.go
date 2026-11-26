@@ -32,15 +32,18 @@ import (
 func (s *server) Exists(
 	ctx context.Context, uid *payload.Object_ID,
 ) (res *payload.Object_ID, err error) {
-	_, span := trace.StartSpan(ctx, apiName+"/"+vald.ExistsRPCName)
-	defer trace.End(span)
+	var span trace.Span
+	if trace.Enabled() {
+		_, span = trace.StartSpan(ctx, apiName+"/"+vald.ExistsRPCName)
+		defer trace.End(span)
+	}
 	uuid := uid.GetId()
 	if err = s.validateUUID(span, vald.ExistsRPCName, ngtResourceType+"/ngt.Exists",
 		uuid, uid); err != nil {
 		return nil, err
 	}
 	if _, ok := s.ngt.Exists(uuid); !ok {
-		err = status.New(codes.NotFound, errors.ErrObjectIDNotFound(uid.GetId()).Error()).Err()
+		err = status.New(codes.NotFound, "uuid "+uuid+"'s object id not found").Err()
 		return errhandler.HandleError[payload.Object_ID](span, codes.NotFound, err)
 	}
 	return uid, nil
@@ -49,8 +52,11 @@ func (s *server) Exists(
 func (s *server) GetObject(
 	ctx context.Context, id *payload.Object_VectorRequest,
 ) (res *payload.Object_Vector, err error) {
-	_, span := trace.StartSpan(ctx, apiName+"/"+vald.GetObjectRPCName)
-	defer trace.End(span)
+	var span trace.Span
+	if trace.Enabled() {
+		_, span = trace.StartSpan(ctx, apiName+"/"+vald.GetObjectRPCName)
+		defer trace.End(span)
+	}
 	uuid := id.GetId().GetId()
 	if err = s.validateUUID(span, vald.GetObjectRPCName, ngtResourceType+"/ngt.GetObject",
 		uuid, id); err != nil {
@@ -58,7 +64,11 @@ func (s *server) GetObject(
 	}
 	vec, ts, err := s.ngt.GetObject(uuid)
 	if err != nil || vec == nil {
-		err = status.New(codes.NotFound, errors.ErrObjectNotFound(err, uuid).Error()).Err()
+		msg := "uuid " + uuid + "'s object not found"
+		if err != nil {
+			msg += ": " + err.Error()
+		}
+		err = status.New(codes.NotFound, msg).Err()
 		return errhandler.HandleError[payload.Object_Vector](span, codes.NotFound, err)
 	}
 
@@ -70,32 +80,25 @@ func (s *server) GetObject(
 }
 
 func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) (err error) {
-	ctx, span := trace.StartSpan(stream.Context(), apiName+"/"+vald.StreamGetObjectRPCName)
-	defer trace.End(span)
-	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
-		func(ctx context.Context, req *payload.Object_VectorRequest) (*payload.Object_StreamVector, error) {
-			ctx, sspan := trace.StartSpan(ctx, apiName+"/"+vald.StreamGetObjectRPCName+"/id-"+req.GetId().GetId())
-			defer trace.End(sspan)
-			res, err := s.GetObject(ctx, req)
-			if err != nil {
-				st, _ := status.FromError(err)
-				errhandler.RecordSpanStatus(sspan, st, err)
-				return &payload.Object_StreamVector{
-					Payload: &payload.Object_StreamVector_Status{
-						Status: st.Proto(),
-					},
-				}, err
-			}
+	err = grpc.HandleBidirectionalStream(
+		stream,
+		s.streamConcurrency,
+		"",
+		apiName+"/"+vald.StreamGetObjectRPCName,
+		func(req *payload.Object_VectorRequest) string { return "id-" + req.GetId().GetId() },
+		s.GetObject,
+		func(res *payload.Object_Vector) *payload.Object_StreamVector {
 			return &payload.Object_StreamVector{
-				Payload: &payload.Object_StreamVector_Vector{
-					Vector: res,
-				},
-			}, nil
-		})
+				Payload: &payload.Object_StreamVector_Vector{Vector: res},
+			}
+		},
+		func(st *status.Status) *payload.Object_StreamVector {
+			return &payload.Object_StreamVector{
+				Payload: &payload.Object_StreamVector_Status{Status: st.Proto()},
+			}
+		},
+	)
 	if err != nil {
-		st, _ := status.FromError(err)
-		errhandler.RecordSpanStatus(span, st, err)
-
 		log.Error(err)
 		return err
 	}
@@ -105,8 +108,12 @@ func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) (err 
 func (s *server) StreamListObject(
 	_ *payload.Object_List_Request, stream vald.Object_StreamListObjectServer,
 ) (err error) {
-	ctx, span := trace.StartSpan(stream.Context(), apiName+"/"+vald.StreamListObjectRPCName)
-	defer trace.End(span)
+	ctx := stream.Context()
+	var span trace.Span
+	if trace.Enabled() {
+		ctx, span = trace.StartSpan(ctx, apiName+"/"+vald.StreamListObjectRPCName)
+		defer trace.End(span)
+	}
 
 	var (
 		mu   sync.Mutex
@@ -174,21 +181,24 @@ func (s *server) StreamListObject(
 }
 
 // GetTimestamp returns meta information of the object specified by uuid.
-// This rpc is only served in AgentServer and not served in LB. Only for internal use mainly for index correction to reduce
-// network bandwidth(because vector itself is not required for index correction logic) while processing.
+// It is used internally by components such as index correction to avoid transferring
+// the full vector payload when only the timestamp is needed.
 func (s *server) GetTimestamp(
 	ctx context.Context, id *payload.Object_TimestampRequest,
 ) (res *payload.Object_Timestamp, err error) {
-	_, span := trace.StartSpan(ctx, apiName+"/"+vald.GetTimestampRPCName)
-	defer trace.End(span)
+	var span trace.Span
+	if trace.Enabled() {
+		_, span = trace.StartSpan(ctx, apiName+"/"+vald.GetTimestampRPCName)
+		defer trace.End(span)
+	}
 	uuid := id.GetId().GetId()
 	if err = s.validateUUID(span, vald.GetTimestampRPCName, ngtResourceType+"/ngt.GetTimestamp",
 		uuid, id); err != nil {
 		return nil, err
 	}
-	_, ts, err := s.ngt.GetObject(uuid)
+	ts, err := s.ngt.GetTimestamp(uuid)
 	if err != nil {
-		err = status.New(codes.NotFound, errors.ErrObjectNotFound(err, uuid).Error()).Err()
+		err = status.New(codes.NotFound, "uuid "+uuid+"'s object not found: "+err.Error()).Err()
 		return errhandler.HandleError[payload.Object_Timestamp](span, codes.NotFound, err)
 	}
 	return &payload.Object_Timestamp{

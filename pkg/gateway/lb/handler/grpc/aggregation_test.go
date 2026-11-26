@@ -52,8 +52,8 @@ func TestCmpDist_MatchesBigFloat(t *testing.T) {
 		for _, b := range vals {
 			want := big.NewFloat(float64(a)).Cmp(big.NewFloat(float64(b)))
 			got := cmpDist(
-				&DistPayload{distance: float64(a)},
-				&DistPayload{distance: float64(b)},
+				DistPayload{distance: float64(a)},
+				DistPayload{distance: float64(b)},
 			)
 			if got != want {
 				t.Errorf("cmpDist(%v, %v) = %d, big.Float.Cmp = %d", a, b, got, want)
@@ -68,7 +68,7 @@ func TestCmpDist_MatchesBigFloat(t *testing.T) {
 
 func TestCmpDist_ZeroAlloc(t *testing.T) {
 	// not parallel: AllocsPerRun must not race with other allocating tests.
-	l, r := &DistPayload{distance: 0.25}, &DistPayload{distance: 0.5}
+	l, r := DistPayload{distance: 0.25}, DistPayload{distance: 0.5}
 	var sink int
 	if n := testing.AllocsPerRun(1000, func() { sink += cmpDist(l, r) }); n != 0 {
 		t.Errorf("cmpDist allocated %v times per run, want 0", n)
@@ -139,7 +139,6 @@ func TestAggregators_DistanceOrdering(t *testing.T) {
 			ctx, cancel := context.WithTimeout(tt.Context(), 10*time.Second)
 			defer cancel()
 			aggr := test.newFn(10, 10, 2)
-			aggr.Start(ctx)
 			aggr.Send(ctx, respA())
 			aggr.Send(ctx, respB())
 			res := aggr.Result().GetResults()
@@ -159,6 +158,46 @@ func TestAggregators_DistanceOrdering(t *testing.T) {
 			}
 			if !slices.EqualFunc(got, test.wantDists, func(a, b float32) bool { return cmp.Compare(a, b) == 0 }) {
 				tt.Errorf("distances = %v, want %v", got, test.wantDists)
+			}
+		})
+	}
+}
+
+func TestAggregators_UnboundedSearch(t *testing.T) {
+	t.Parallel()
+	resp := newDistResponse(
+		dist32("id-1", 0.1),
+		dist32("id-2", 0.2),
+		dist32("id-3", 0.3),
+	)
+	tests := []struct {
+		newFn func(num, fnum, replica int) Aggregator
+		name  string
+	}{
+		{
+			name:  "slice with num=0 retains all results",
+			newFn: newSlice,
+		},
+		{
+			name:  "pool slice with num=0 retains all results",
+			newFn: newPoolSlice,
+		},
+		{
+			name:  "pairing heap with num=0 retains all results",
+			newFn: newPairingHeap,
+		},
+	}
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			ctx, cancel := context.WithTimeout(tt.Context(), 10*time.Second)
+			defer cancel()
+			aggr := test.newFn(0, 0, 1)
+			aggr.Send(ctx, resp)
+			res := aggr.Result().GetResults()
+			if len(res) != 3 {
+				tt.Errorf("got %d results, want 3 when num == 0", len(res))
 			}
 		})
 	}
@@ -186,7 +225,6 @@ func TestAggregators_NaNDistanceSkipped(t *testing.T) {
 			ctx, cancel := context.WithTimeout(tt.Context(), 10*time.Second)
 			defer cancel()
 			aggr := test.newFn(10, 10, 2)
-			aggr.Start(ctx)
 			// NaN first, in the middle (must not stop processing of later entries) and last.
 			aggr.Send(ctx, newDistResponse(
 				dist32("nan1", nan), dist32("ok1", 0.1), dist32("nan2", nan), dist32("ok2", 0.2),
@@ -233,10 +271,10 @@ func TestSliceAggregators_SendAllocsPerResponse(t *testing.T) {
 		reset := func() {}
 		switch v := aggr.(type) {
 		case *valdSliceAggr:
-			v.result = make([]*DistPayload, 0, n)
+			v.result = make([]DistPayload, 0, n)
 			reset = func() { v.result = v.result[:0] }
 		case *valdPoolSliceAggr:
-			v.result = make([]*DistPayload, 0, n)
+			v.result = make([]DistPayload, 0, n)
 			reset = func() { v.result = v.result[:0] }
 		default:
 			t.Fatalf("%s: unexpected aggregator %T", name, aggr)
@@ -294,7 +332,6 @@ func TestBatchAggregators_CanceledSendAddsNothing(t *testing.T) {
 			canceled, cancel := context.WithCancel(t.Context())
 			cancel()
 			aggr := newAggr(4, 4, 1)
-			aggr.Start(t.Context())
 			aggr.Send(canceled, newDistResponse(dist32("a", 0.1), dist32("b", 0.2)))
 			// "b" was in the canceled Send too; the live Send must still add it.
 			aggr.Send(t.Context(), newDistResponse(dist32("b", 0.3), dist32("c", 0.4)))
@@ -379,7 +416,6 @@ func TestAggregators_DuplicateIDs(t *testing.T) {
 					ctx, cancel := context.WithTimeout(ttt.Context(), 10*time.Second)
 					defer cancel()
 					aggr := ag.newFn(test.num, 10, 2)
-					aggr.Start(ctx)
 					aggr.Send(ctx, newDistResponse(test.respA...))
 					aggr.Send(ctx, newDistResponse(test.respB...))
 					res := aggr.Result().GetResults()
@@ -400,7 +436,7 @@ func TestAggregators_DuplicateIDs(t *testing.T) {
 						}
 					}
 					if !slices.IsSortedFunc(res, func(l, r *payload.Object_Distance) int {
-						return cmpDist(&DistPayload{distance: float64(l.GetDistance())}, &DistPayload{distance: float64(r.GetDistance())})
+						return cmpDist(DistPayload{distance: float64(l.GetDistance())}, DistPayload{distance: float64(r.GetDistance())})
 					}) {
 						ttt.Errorf("results are not sorted by ascending distance: %v", res)
 					}
@@ -423,7 +459,7 @@ func TestAggregators_DuplicateIDs(t *testing.T) {
 // kept reachable through the backing array (the pooled slice is reused).
 func TestDedupSortByID_ClearsVacatedTail(t *testing.T) {
 	t.Parallel()
-	x := []*DistPayload{
+	x := []DistPayload{
 		{raw: dist32("a", 0.3), distance: float64(float32(0.3))},
 		{raw: dist32("a", 0.1), distance: float64(float32(0.1))},
 		{raw: dist32("b", 0.2), distance: float64(float32(0.2))},
@@ -434,8 +470,33 @@ func TestDedupSortByID_ClearsVacatedTail(t *testing.T) {
 		t.Errorf("dedupSortByID = %v, want [b@0.2 a@0.3 (first arrival)]", got)
 	}
 	for i, p := range x[len(got):] {
-		if p != nil {
-			t.Errorf("x[%d] = %v, want nil (vacated tail must be cleared)", len(got)+i, p)
+		if p.raw != nil {
+			t.Errorf("x[%d].raw = %v, want nil (vacated tail must be cleared)", len(got)+i, p.raw)
+		}
+	}
+}
+
+func TestAggregators_SeenPoolReuse(t *testing.T) {
+	t.Parallel()
+	ctx := t.Context()
+	// Run sequential rounds on both pairing heap and slice dedupSortByID to verify
+	// pooled visited/seen maps are cleared on Result()/return without leaking IDs.
+	for round := range 4 {
+		id := "round-" + strconv.Itoa(round)
+		ph := newPairingHeap(2, 2, 1)
+		ph.Send(ctx, newDistResponse(dist32(id, 0.1), dist32(id, 0.2)))
+		res := ph.Result().GetResults()
+		if len(res) != 1 || res[0].GetId() != id {
+			t.Fatalf("round %d pairing heap = %v, want [%s]", round, res, id)
+		}
+
+		x := []DistPayload{
+			{raw: dist32(id, 0.2), distance: 0.2},
+			{raw: dist32(id, 0.1), distance: 0.1},
+		}
+		got := dedupSortByID(x)
+		if len(got) != 1 || got[0].raw.GetId() != id {
+			t.Fatalf("round %d dedupSortByID = %v, want [%s]", round, got, id)
 		}
 	}
 }
@@ -462,7 +523,7 @@ func TestAggregators_PreallocIsCapped(t *testing.T) {
 				if !ok {
 					return nil
 				}
-				return []uint64{uint64(cap(v.dch)), uint64(cap(v.result))}
+				return []uint64{uint64(cap(v.result))}
 			},
 		},
 		{
@@ -513,7 +574,6 @@ func TestAggregators_PreallocIsCapped(t *testing.T) {
 			if got := aggr.GetNum(); got != num {
 				t.Errorf("GetNum() = %d, want %d", got, num)
 			}
-			aggr.Start(ctx)
 			aggr.Send(ctx, newDistResponse(dist32("c", 0.3), dist32("a", 0.1), dist32("b", 0.2)))
 			res := aggr.Result().GetResults()
 			got := make([]string, 0, len(res))
@@ -539,7 +599,6 @@ func TestValdStdAggr_FrontInsertKeepsCapacity(t *testing.T) {
 	ctx, cancel := context.WithTimeout(t.Context(), 10*time.Second)
 	defer cancel()
 	aggr := newStd(num, num, replica)
-	aggr.Start(ctx)
 	// Descending distances: every element after the first becomes the new minimum
 	// (the rl == 1 branch, then the pos == rl branch).
 	aggr.Send(ctx, newDistResponse(dist32("d", 0.5), dist32("c", 0.4), dist32("b", 0.3), dist32("a", 0.2)))
@@ -572,7 +631,6 @@ func TestValdStdAggr_MaxDistBound(t *testing.T) {
 	if got := math.Float64frombits(v.maxDist.Load()); got != math.MaxFloat64 {
 		t.Errorf("initial bound = %v, want MaxFloat64", got)
 	}
-	aggr.Start(ctx)
 	aggr.Send(ctx, newDistResponse(dist32("a", 0.1), dist32("b", 0.2), dist32("c", 0.3)))
 	res := aggr.Result().GetResults()
 	if len(res) != 2 || res[0].GetId() != "a" || res[1].GetId() != "b" {
@@ -599,7 +657,6 @@ func TestValdStdAggr_ConcurrentDuplicateIDs(t *testing.T) {
 		want = append(want, id)
 	}
 	aggr := newStd(num, num, senders)
-	aggr.Start(ctx)
 	done := make(chan struct{}, senders)
 	for range senders {
 		go func() {
@@ -674,7 +731,7 @@ func Test_searchAgentFailure(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
-			code, ok := searchAgentFailure(target, test.err)
+			code, ok := searchAgentFailure(test.err)
 			if ok != test.want || (ok && code != test.wantCode) {
 				t.Errorf("searchAgentFailure(%v) = (%v, %v), want (%v, %v)", test.err, code, ok, test.wantCode, test.want)
 			}
@@ -770,6 +827,127 @@ func Test_server_searchQuorum(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestPairingHeapAggr_MaxDistBound(t *testing.T) {
+	// not parallel: uses AllocsPerRun for zero-alloc pruned Send verification.
+	ctx := t.Context()
+
+	// 1. Bounded heap retains top-num across batches, updates maxDist, prunes >= fmax with 0 allocs,
+	//    and clears arena pointers on Result().
+	aggr := newPairingHeap(3, 10, 2)
+	v, ok := aggr.(*valdPairingHeapAggr)
+	if !ok {
+		t.Fatalf("newPairingHeap returned %T, want *valdPairingHeapAggr", aggr)
+	}
+	v.Send(ctx, newDistResponse(
+		dist32("d1", 0.5),
+		dist32("d2", 0.8),
+		dist32("d3", 0.9),
+	))
+	if !v.filled.Load() {
+		t.Fatal("expected filled=true once num=3 entries inserted")
+	}
+	if got := math.Float64frombits(v.maxDist.Load()); got != float64(float32(0.9)) {
+		t.Fatalf("maxDist = %v, want %v", got, float64(float32(0.9)))
+	}
+	v.Send(ctx, newDistResponse(
+		dist32("d4", 0.2),
+		dist32("d5", 0.4),
+		dist32("d6", 0.7),
+	))
+	if got := math.Float64frombits(v.maxDist.Load()); got != float64(float32(0.5)) {
+		t.Fatalf("maxDist after tighter batch = %v, want %v", got, float64(float32(0.5)))
+	}
+	pruned := newDistResponse(dist32("p1", 0.5), dist32("p2", 0.6))
+	if allocs := testing.AllocsPerRun(100, func() { v.Send(ctx, pruned) }); allocs != 0 {
+		t.Errorf("pruned Send allocated %v times, want 0", allocs)
+	}
+	res := v.Result().GetResults()
+	gotIDs := []string{res[0].GetId(), res[1].GetId(), res[2].GetId()}
+	if !slices.Equal(gotIDs, []string{"d4", "d5", "d1"}) {
+		t.Errorf("Result ids = %v, want [d4 d5 d1]", gotIDs)
+	}
+	if v.nodes != nil || v.visited != nil {
+		t.Error("expected Result() to clear arena and visited references")
+	}
+
+	// 2. Preserves +Inf when < num entries exist, and replaces +Inf once finite entries fill num.
+	aggrInf := newPairingHeap(3, 10, 1)
+	aggrInf.Send(ctx, newDistResponse(dist32("a", 0.2), dist32("inf1", float32(math.Inf(1)))))
+	resInf := aggrInf.Result().GetResults()
+	if len(resInf) != 2 || !math.IsInf(float64(resInf[1].GetDistance()), 1) {
+		t.Errorf("expected +Inf preserved when < num, got %v", resInf)
+	}
+
+	aggrRep := newPairingHeap(2, 10, 1)
+	aggrRep.Send(ctx, newDistResponse(dist32("inf1", float32(math.Inf(1))), dist32("inf2", float32(math.Inf(1)))))
+	aggrRep.Send(ctx, newDistResponse(dist32("f1", 0.1), dist32("f2", 0.3)))
+	resRep := aggrRep.Result().GetResults()
+	if len(resRep) != 2 || resRep[0].GetId() != "f1" || resRep[1].GetId() != "f2" {
+		t.Errorf("expected finite entries to replace +Inf root, got %v", resRep)
+	}
+}
+
+func TestPairingHeapAggr_TieAndLargeK(t *testing.T) {
+	t.Parallel()
+	ctx := t.Context()
+	const num = 100
+	aggr := newPairingHeap(num, num, 5)
+	nan := float32(math.NaN())
+	inf := float32(math.Inf(1))
+	for a := range 5 {
+		ds := make([]*payload.Object_Distance, 0, num+2)
+		ds = append(ds, dist32("nan-"+strconv.Itoa(a), nan))
+		for i := range num {
+			id := "id-" + strconv.Itoa((a*17+i)%150)
+			d := float32(i%25) * 0.1
+			ds = append(ds, dist32(id, d))
+		}
+		ds = append(ds, dist32("inf-"+strconv.Itoa(a), inf))
+		aggr.Send(ctx, newDistResponse(ds...))
+	}
+	res := aggr.Result().GetResults()
+	if len(res) != num {
+		t.Fatalf("len(results) = %d, want %d", len(res), num)
+	}
+	seen := make(map[string]struct{}, num)
+	for i, r := range res {
+		if math.IsNaN(float64(r.GetDistance())) {
+			t.Fatalf("unexpected NaN at index %d", i)
+		}
+		if _, dup := seen[r.GetId()]; dup {
+			t.Fatalf("duplicate id %q in result", r.GetId())
+		}
+		seen[r.GetId()] = struct{}{}
+		if i > 0 && res[i-1].GetDistance() > r.GetDistance() {
+			t.Fatalf("results not sorted ascending at %d: %v > %v", i, res[i-1].GetDistance(), r.GetDistance())
+		}
+	}
+}
+
+func TestAggregators_PoolSliceClearsPooledSlice(t *testing.T) {
+	// not parallel: inspects shared poolDist directly.
+	ctx := t.Context()
+	ps := newPoolSlice(4, 4, 2)
+	ps.Send(ctx, newDistResponse(dist32("a", 0.1), dist32("b", 0.2)))
+	res := ps.Result().GetResults()
+	if len(res) != 2 || res[0].GetId() != "a" || res[1].GetId() != "b" {
+		t.Fatalf("Result = %v, want [a b]", res)
+	}
+	pooled := poolDist.Get()
+	if pooled == nil {
+		t.Fatal("poolDist.Get() returned nil")
+	}
+	if len(pooled) != 0 {
+		t.Errorf("pooled []DistPayload len = %d, want 0", len(pooled))
+	}
+	for i, elem := range pooled[:cap(pooled)] {
+		if elem.raw != nil {
+			t.Errorf("pooled slice element %d retains pointer %v", i, elem.raw)
+		}
+	}
+	poolDist.Put(pooled)
 }
 
 // NOT IMPLEMENTED BELOW

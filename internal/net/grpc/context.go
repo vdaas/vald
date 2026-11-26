@@ -32,7 +32,7 @@ func WrapGRPCMethod(ctx context.Context, method string) context.Context {
 	if m == "" {
 		return context.WithValue(ctx, GRPCMethodContextKey, method)
 	}
-	if strings.HasSuffix(m, method) {
+	if m == method || (len(m) > len(method) && m[len(m)-len(method)-1] == '/' && strings.HasSuffix(m, method)) {
 		return ctx
 	}
 	return context.WithValue(ctx, GRPCMethodContextKey, m+"/"+method)
@@ -53,22 +53,15 @@ func FromGRPCMethod(ctx context.Context) string {
 	return ""
 }
 
-// quietErrorLogContextKey marks calls whose per-call error log is demoted to
-// Debug because the caller aggregates and reports the failures itself.
-const quietErrorLogContextKey contextKey = "quiet_error_log"
-
 // WithQuietErrorLog returns a copy of ctx whose RPC errors the client logs at
 // Debug instead of the per-code level, for fan-out callers (e.g. a search
 // broadcast) that tolerate per-target failures and log a per-request summary.
 // The backoff retry loop's per-attempt error log is demoted as well.
 func WithQuietErrorLog(ctx context.Context) context.Context {
-	return context.WithValue(backoff.WithQuietErrorLog(ctx), quietErrorLogContextKey, true)
-}
-
-// isQuietErrorLog reports whether ctx was marked by WithQuietErrorLog.
-func isQuietErrorLog(ctx context.Context) bool {
-	quiet, ok := ctx.Value(quietErrorLogContextKey).(bool)
-	return ok && quiet
+	if _, ok := ctx.Value(backoff.QuietErrorLogContextKey()).(searchBroadcastPolicy); ok {
+		return ctx
+	}
+	return backoff.WithQuietErrorLog(ctx)
 }
 
 // noResourceExhaustedRetryContextKey marks calls whose ResourceExhausted
@@ -84,8 +77,27 @@ func WithoutResourceExhaustedRetry(ctx context.Context) context.Context {
 	return context.WithValue(ctx, noResourceExhaustedRetryContextKey, true)
 }
 
-// isNoResourceExhaustedRetry reports whether ctx was marked by WithoutResourceExhaustedRetry.
+// isNoResourceExhaustedRetry reports whether ctx was marked by WithoutResourceExhaustedRetry
+// or WithSearchBroadcastPolicy.
 func isNoResourceExhaustedRetry(ctx context.Context) bool {
+	if _, ok := ctx.Value(backoff.QuietErrorLogContextKey()).(searchBroadcastPolicy); ok {
+		return true
+	}
 	no, ok := ctx.Value(noResourceExhaustedRetryContextKey).(bool)
 	return ok && no
+}
+
+type searchBroadcastPolicy uint8
+
+const searchBroadcastPolicyEnabled searchBroadcastPolicy = 1
+
+func (p searchBroadcastPolicy) QuietErrorLog() bool {
+	return p == searchBroadcastPolicyEnabled
+}
+
+// WithSearchBroadcastPolicy returns a copy of ctx carrying both the quiet error
+// log policy and the no-ResourceExhausted-retry policy in a single context value
+// allocation.
+func WithSearchBroadcastPolicy(ctx context.Context) context.Context {
+	return context.WithValue(ctx, backoff.QuietErrorLogContextKey(), searchBroadcastPolicyEnabled)
 }

@@ -19,7 +19,10 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
+	"github.com/vdaas/vald/apis/grpc/v1/vald"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/observability/trace"
 	ggrpc "google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -102,6 +105,266 @@ func TestClient_Stream_notBoundToAttemptCtx(t *testing.T) {
 				tt.Errorf("the stream ctx is done after the method returned: %v", err)
 			}
 		})
+	}
+}
+
+type recordingValdClient struct {
+	vald.Client
+	captureCtx func(context.Context)
+	idRes      *payload.Object_ID
+	searchRes  *payload.Search_Response
+	multiRes   *payload.Search_Responses
+	locRes     *payload.Object_Location
+	flushRes   *payload.Info_Index_Count
+	vecRes     *payload.Object_Vector
+	tsRes      *payload.Object_Timestamp
+	streamRes  vald.Search_StreamSearchClient
+	listRes    vald.Object_StreamListObjectClient
+}
+
+func (r *recordingValdClient) record(ctx context.Context) {
+	if r.captureCtx != nil {
+		r.captureCtx(ctx)
+	}
+}
+
+func (r *recordingValdClient) Exists(
+	ctx context.Context, _ *payload.Object_ID, _ ...grpc.CallOption,
+) (*payload.Object_ID, error) {
+	r.record(ctx)
+	return r.idRes, nil
+}
+
+func (r *recordingValdClient) Search(
+	ctx context.Context, _ *payload.Search_Request, _ ...grpc.CallOption,
+) (*payload.Search_Response, error) {
+	r.record(ctx)
+	return r.searchRes, nil
+}
+
+func (r *recordingValdClient) SearchByID(
+	ctx context.Context, _ *payload.Search_IDRequest, _ ...grpc.CallOption,
+) (*payload.Search_Response, error) {
+	r.record(ctx)
+	return r.searchRes, nil
+}
+
+func (r *recordingValdClient) MultiSearch(
+	ctx context.Context, _ *payload.Search_MultiRequest, _ ...grpc.CallOption,
+) (*payload.Search_Responses, error) {
+	r.record(ctx)
+	return r.multiRes, nil
+}
+
+func (r *recordingValdClient) LinearSearch(
+	ctx context.Context, _ *payload.Search_Request, _ ...grpc.CallOption,
+) (*payload.Search_Response, error) {
+	r.record(ctx)
+	return r.searchRes, nil
+}
+
+func (r *recordingValdClient) Insert(
+	ctx context.Context, _ *payload.Insert_Request, _ ...grpc.CallOption,
+) (*payload.Object_Location, error) {
+	r.record(ctx)
+	return r.locRes, nil
+}
+
+func (r *recordingValdClient) Update(
+	ctx context.Context, _ *payload.Update_Request, _ ...grpc.CallOption,
+) (*payload.Object_Location, error) {
+	r.record(ctx)
+	return r.locRes, nil
+}
+
+func (r *recordingValdClient) Upsert(
+	ctx context.Context, _ *payload.Upsert_Request, _ ...grpc.CallOption,
+) (*payload.Object_Location, error) {
+	r.record(ctx)
+	return r.locRes, nil
+}
+
+func (r *recordingValdClient) Remove(
+	ctx context.Context, _ *payload.Remove_Request, _ ...grpc.CallOption,
+) (*payload.Object_Location, error) {
+	r.record(ctx)
+	return r.locRes, nil
+}
+
+func (r *recordingValdClient) Flush(
+	ctx context.Context, _ *payload.Flush_Request, _ ...grpc.CallOption,
+) (*payload.Info_Index_Count, error) {
+	r.record(ctx)
+	return r.flushRes, nil
+}
+
+func (r *recordingValdClient) GetObject(
+	ctx context.Context, _ *payload.Object_VectorRequest, _ ...grpc.CallOption,
+) (*payload.Object_Vector, error) {
+	r.record(ctx)
+	return r.vecRes, nil
+}
+
+func (r *recordingValdClient) StreamSearch(
+	ctx context.Context, _ ...grpc.CallOption,
+) (vald.Search_StreamSearchClient, error) {
+	r.record(ctx)
+	return r.streamRes, nil
+}
+
+func (r *recordingValdClient) StreamListObject(
+	ctx context.Context, _ *payload.Object_List_Request, _ ...grpc.CallOption,
+) (vald.Object_StreamListObjectClient, error) {
+	r.record(ctx)
+	return r.listRes, nil
+}
+
+func (r *recordingValdClient) IndexInfo(
+	ctx context.Context, _ *payload.Empty, _ ...grpc.CallOption,
+) (*payload.Info_Index_Count, error) {
+	r.record(ctx)
+	return r.flushRes, nil
+}
+
+func (r *recordingValdClient) GetTimestamp(
+	ctx context.Context, _ *payload.Object_TimestampRequest, _ ...grpc.CallOption,
+) (*payload.Object_Timestamp, error) {
+	r.record(ctx)
+	return r.tsRes, nil
+}
+
+func Test_singleClient_skipTracingWhenDisabled(t *testing.T) {
+	t.Parallel()
+	if trace.Enabled() {
+		t.Skip("tracing is enabled in this process")
+	}
+
+	type ctxKey struct{}
+	tests := []struct {
+		call func(context.Context, *singleClient) error
+		name string
+	}{
+		{name: "Exists", call: func(ctx context.Context, c *singleClient) error {
+			_, err := c.Exists(ctx, &payload.Object_ID{})
+			return err
+		}},
+		{name: "Search", call: func(ctx context.Context, c *singleClient) error {
+			_, err := c.Search(ctx, &payload.Search_Request{})
+			return err
+		}},
+		{name: "SearchByID", call: func(ctx context.Context, c *singleClient) error {
+			_, err := c.SearchByID(ctx, &payload.Search_IDRequest{})
+			return err
+		}},
+		{name: "MultiSearch", call: func(ctx context.Context, c *singleClient) error {
+			_, err := c.MultiSearch(ctx, &payload.Search_MultiRequest{})
+			return err
+		}},
+		{name: "LinearSearch", call: func(ctx context.Context, c *singleClient) error {
+			_, err := c.LinearSearch(ctx, &payload.Search_Request{})
+			return err
+		}},
+		{name: "Insert", call: func(ctx context.Context, c *singleClient) error {
+			_, err := c.Insert(ctx, &payload.Insert_Request{})
+			return err
+		}},
+		{name: "Update", call: func(ctx context.Context, c *singleClient) error {
+			_, err := c.Update(ctx, &payload.Update_Request{})
+			return err
+		}},
+		{name: "Upsert", call: func(ctx context.Context, c *singleClient) error {
+			_, err := c.Upsert(ctx, &payload.Upsert_Request{})
+			return err
+		}},
+		{name: "Remove", call: func(ctx context.Context, c *singleClient) error {
+			_, err := c.Remove(ctx, &payload.Remove_Request{})
+			return err
+		}},
+		{name: "Flush", call: func(ctx context.Context, c *singleClient) error {
+			_, err := c.Flush(ctx, &payload.Flush_Request{})
+			return err
+		}},
+		{name: "GetObject", call: func(ctx context.Context, c *singleClient) error {
+			_, err := c.GetObject(ctx, &payload.Object_VectorRequest{})
+			return err
+		}},
+		{name: "StreamSearch", call: func(ctx context.Context, c *singleClient) error { _, err := c.StreamSearch(ctx); return err }},
+		{name: "StreamListObject", call: func(ctx context.Context, c *singleClient) error {
+			_, err := c.StreamListObject(ctx, &payload.Object_List_Request{})
+			return err
+		}},
+		{name: "IndexInfo", call: func(ctx context.Context, c *singleClient) error {
+			_, err := c.IndexInfo(ctx, &payload.Empty{})
+			return err
+		}},
+		{name: "GetTimestamp", call: func(ctx context.Context, c *singleClient) error {
+			_, err := c.GetTimestamp(ctx, &payload.Object_TimestampRequest{})
+			return err
+		}},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(tt *testing.T) {
+			tt.Parallel()
+			inCtx := context.WithValue(tt.Context(), ctxKey{}, "v")
+			var lastCtx context.Context
+			c := &singleClient{vc: &recordingValdClient{
+				captureCtx: func(ctx context.Context) { lastCtx = ctx },
+				idRes:      &payload.Object_ID{},
+				searchRes:  &payload.Search_Response{},
+				multiRes:   &payload.Search_Responses{},
+				locRes:     &payload.Object_Location{},
+				flushRes:   &payload.Info_Index_Count{},
+				vecRes:     &payload.Object_Vector{},
+				tsRes:      &payload.Object_Timestamp{},
+				streamRes:  struct{ vald.Search_StreamSearchClient }{},
+				listRes: struct {
+					vald.Object_StreamListObjectClient
+				}{},
+			}}
+			if err := tc.call(inCtx, c); err != nil {
+				tt.Fatalf("%s() error = %v", tc.name, err)
+			}
+			if lastCtx != inCtx {
+				tt.Fatalf("%s() wrapped ctx despite tracing being disabled", tc.name)
+			}
+		})
+	}
+}
+
+func Test_NewFromConn_nilSafe(t *testing.T) {
+	t.Parallel()
+	c := NewFromConn(nil)
+	if c == nil {
+		t.Fatal("NewFromConn(nil) returned nil")
+	}
+	wantErr := errors.ErrGRPCClientConnNotFound("*")
+	if _, err := c.Search(t.Context(), &payload.Search_Request{}); !errors.Is(err, wantErr) {
+		t.Fatalf("unary Search on nil conn error = %v, want %v", err, wantErr)
+	}
+	if _, err := c.StreamSearch(t.Context()); !errors.Is(err, wantErr) {
+		t.Fatalf("StreamSearch on nil conn error = %v, want %v", err, wantErr)
+	}
+}
+
+// Not parallel: AllocsPerRun changes GOMAXPROCS.
+func Test_singleClient_skipTracingWhenDisabledAllocs(t *testing.T) {
+	if trace.Enabled() {
+		t.Skip("tracing is enabled in this process")
+	}
+	rec := &recordingValdClient{
+		idRes:     &payload.Object_ID{},
+		searchRes: &payload.Search_Response{},
+	}
+	c := &singleClient{vc: rec}
+	ctx := t.Context()
+	req := &payload.Search_Request{}
+	if allocs := testing.AllocsPerRun(100, func() {
+		if _, err := c.Search(ctx, req); err != nil {
+			t.Fatal(err)
+		}
+	}); allocs != 0 {
+		t.Fatalf("singleClient.Search() allocated %v times per call when tracing disabled, want 0", allocs)
 	}
 }
 

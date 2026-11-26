@@ -2601,3 +2601,29 @@ func TestWrap_errorCallCount(t *testing.T) {
 		})
 	}
 }
+
+func TestJoinMap(t *testing.T) {
+	t.Parallel()
+	if got := JoinMap[string](nil); got != nil {
+		t.Fatalf("JoinMap(nil) = %v, want nil", got)
+	}
+	if got := JoinMap(map[string]error{}); got != nil {
+		t.Fatalf("JoinMap(empty) = %v, want nil", got)
+	}
+	if got := JoinMap(map[string]error{"a": nil, "b": nil}); got != nil {
+		t.Fatalf("JoinMap(all nil) = %v, want nil", got)
+	}
+	e1 := New("alpha")
+	e2 := New("beta")
+	got := JoinMap(map[string]error{"b": e2, "a": e1, "c": nil})
+	if got == nil {
+		t.Fatal("JoinMap() = nil, want non-nil")
+	}
+	if !Is(got, e1) || !Is(got, e2) {
+		t.Errorf("JoinMap() = %v, want errors matching e1 and e2", got)
+	}
+	wantPrefix := Join(e1, e2).Error()
+	if got.Error() != wantPrefix {
+		t.Errorf("JoinMap().Error() = %q, want %q", got.Error(), wantPrefix)
+	}
+}

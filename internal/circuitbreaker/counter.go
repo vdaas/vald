@@ -24,8 +24,11 @@ type Counter interface {
 
 type count struct {
 	ignores   atomic.Int64
+	_         [56]byte
 	successes int64
+	_         [56]byte
 	failures  int64
+	_         [56]byte
 }
 
 func (c *count) Successes() (n int64) {

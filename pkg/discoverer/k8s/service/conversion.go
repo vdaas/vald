@@ -62,7 +62,8 @@ func podsByAppName(list *k8s.PodList, namespace string) map[string][]Pod {
 	)
 
 	// skipcq: CRT-P0006
-	for _, pod := range list.Items {
+	for i := range list.Items {
+		pod := &list.Items[i]
 		if pod.GetObjectMeta().GetDeletionTimestamp() != nil ||
 			(namespace != "" && !strings.EqualFold(pod.GetNamespace(), namespace)) ||
 			pod.Status.Phase != k8s.PodRunning {
@@ -72,7 +73,8 @@ func podsByAppName(list *k8s.PodList, namespace string) map[string][]Pod {
 		memLimit = 0.0
 		cpuRequest = 0.0
 		memRequest = 0.0
-		for _, container := range pod.Spec.Containers {
+		for j := range pod.Spec.Containers {
+			container := &pod.Spec.Containers[j]
 			request := container.Resources.Requests
 			limit := container.Resources.Limits
 			cpuLimit += float64(limit.Cpu().Value())
@@ -115,7 +117,8 @@ func podsByAppName(list *k8s.PodList, namespace string) map[string][]Pod {
 // Terminating nodes are skipped.
 func toNodes(list *k8s.NodeList) []Node {
 	nodes := make([]Node, 0, len(list.Items))
-	for _, node := range list.Items {
+	for i := range list.Items {
+		node := &list.Items[i]
 		if node.GetDeletionTimestamp() != nil {
 			log.Debugf("reconcile process will be skipped for node: %s, status: %s, deletion timestamp: %s",
 				node.GetName(),
@@ -126,7 +129,8 @@ func toNodes(list *k8s.NodeList) []Node {
 		remain := node.Status.Allocatable
 		limit := node.Status.Capacity
 		var eip, iip string
-		for _, addr := range node.Status.Addresses {
+		for j := range node.Status.Addresses {
+			addr := &node.Status.Addresses[j]
 			switch addr.Type {
 			case k8s.NodeInternalIP:
 				iip = addr.Address
@@ -204,10 +208,12 @@ func toPodMetricsMap(list *k8s.PodMetricsList) map[string]PodMetrics {
 		pods     = make(map[string]PodMetrics, len(list.Items))
 	)
 
-	for _, pod := range list.Items {
+	for i := range list.Items {
+		pod := &list.Items[i]
 		cpuUsage = 0.0
 		memUsage = 0.0
-		for _, container := range pod.Containers {
+		for j := range pod.Containers {
+			container := &pod.Containers[j]
 			cpuUsage += float64(container.Usage.Cpu().Value())
 			memUsage += float64(container.Usage.Memory().Value())
 		}
