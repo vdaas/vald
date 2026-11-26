@@ -31,7 +31,7 @@ data:
     time_zone: UTC
     logging:
       format: raw
-      level: debug
+      level: info
       logger: glg
     server_config:
       servers:
@@ -381,16 +381,24 @@ data:
             initial_window_size: 1.048576e+06
             initial_connection_window_size: 2.097152e+06
             max_msg_size: 0
+            max_header_list_size: 0
+            max_call_attempts: 0
             backoff_max_delay: "120s"
             backoff_base_delay: "1s"
             backoff_multiplier: 1.6
             backoff_jitter: 0.2
             min_connection_timeout: "20s"
             enable_backoff: false
+            disable_retry: false
             insecure: true
+            shared_write_buffer: true
+            authority: ""
+            idle_timeout: ""
+            user_agent: "Vald-gRPC"
             timeout: ""
             interceptors: []
             net:
+              network: "tcp"
               dns:
                 cache_enabled: true
                 cache_expiration: 1h

@@ -732,6 +732,162 @@ func Test_backoff_Do_quietErrorLog(t *testing.T) {
 	}
 }
 
+func Test_backoff_RetryVoid(t *testing.T) {
+	t.Parallel()
+
+	t.Run("retries up to maxRetryCount and succeeds", func(t *testing.T) {
+		t.Parallel()
+		name := "Test_backoff_RetryVoid/succeeds"
+		ctx := WithQuietErrorLog(WithBackoffName(t.Context(), name))
+		bo := New(
+			WithInitialDuration("1ms"),
+			WithMaximumDuration("2ms"),
+			WithJitterLimit("1ms"),
+			WithBackOffTimeLimit("1s"),
+			WithRetryCount(3),
+			WithEnableErrorLog(),
+		).(*backoff)
+		t.Cleanup(bo.Close)
+
+		firstErr := errors.New("transient-0")
+		var calls int
+		err := bo.RetryVoid(ctx, firstErr, func(context.Context) (bool, error) {
+			calls++
+			if calls < 2 {
+				return true, errors.New("transient-retry")
+			}
+			return false, nil
+		})
+		if err != nil {
+			t.Fatalf("RetryVoid() error = %v, want nil", err)
+		}
+		if calls != 2 {
+			t.Fatalf("calls = %d, want 2", calls)
+		}
+	})
+
+	t.Run("stops on non-retryable error", func(t *testing.T) {
+		t.Parallel()
+		bo := New(
+			WithInitialDuration("1ms"),
+			WithBackOffTimeLimit("1s"),
+			WithRetryCount(5),
+		).(*backoff)
+		t.Cleanup(bo.Close)
+
+		finalErr := errors.New("permanent")
+		var calls int
+		err := bo.RetryVoid(t.Context(), errors.New("initial"), func(context.Context) (bool, error) {
+			calls++
+			return false, finalErr
+		})
+		if !errors.Is(err, finalErr) {
+			t.Fatalf("RetryVoid() error = %v, want %v", err, finalErr)
+		}
+		if calls != 1 {
+			t.Fatalf("calls = %d, want 1", calls)
+		}
+	})
+
+	t.Run("respects nested isRunning guard and maxRetryCount<=0", func(t *testing.T) {
+		t.Parallel()
+		bo := New(
+			WithInitialDuration("1ms"),
+			WithBackOffTimeLimit("1s"),
+			WithRetryCount(3),
+		).(*backoff)
+		t.Cleanup(bo.Close)
+
+		firstErr := errors.New("initial")
+		var nestedCalls int
+		err := bo.RetryVoid(t.Context(), firstErr, func(ictx context.Context) (bool, error) {
+			nestedErr := bo.RetryVoid(ictx, firstErr, func(context.Context) (bool, error) {
+				nestedCalls++
+				return false, nil
+			})
+			if !errors.Is(nestedErr, firstErr) {
+				t.Errorf("nested RetryVoid() error = %v, want %v", nestedErr, firstErr)
+			}
+			return false, nil
+		})
+		if err != nil {
+			t.Fatalf("outer RetryVoid() error = %v", err)
+		}
+		if nestedCalls != 0 {
+			t.Errorf("nested calls = %d, want 0", nestedCalls)
+		}
+
+		noRetry := &backoff{maxRetryCount: 0}
+		t.Cleanup(noRetry.Close)
+		if got := noRetry.RetryVoid(t.Context(), firstErr, func(context.Context) (bool, error) {
+			t.Fatal("should not be called when maxRetryCount == 0")
+			return false, nil
+		}); !errors.Is(got, firstErr) {
+			t.Errorf("maxRetryCount=0 RetryVoid() = %v, want %v", got, firstErr)
+		}
+	})
+
+	t.Run("respects BackoffTimeLimit deadline and cancellation", func(t *testing.T) {
+		t.Parallel()
+		bo := New(
+			WithInitialDuration("50ms"),
+			WithMaximumDuration("50ms"),
+			WithBackOffTimeLimit("5ms"),
+			WithRetryCount(5),
+		).(*backoff)
+		t.Cleanup(bo.Close)
+
+		firstErr := errors.New("still-failing")
+		err := bo.RetryVoid(t.Context(), firstErr, func(context.Context) (bool, error) {
+			return true, firstErr
+		})
+		if !errors.Is(err, errors.ErrBackoffTimeout(firstErr)) {
+			t.Fatalf("RetryVoid() error = %v, want ErrBackoffTimeout(%v)", err, firstErr)
+		}
+
+		ctx, cancel := context.WithCancel(t.Context())
+		cancel()
+		err = bo.RetryVoid(ctx, firstErr, func(context.Context) (bool, error) {
+			t.Fatal("should not execute on canceled ctx")
+			return false, nil
+		})
+		if !errors.Is(err, firstErr) {
+			t.Fatalf("canceled RetryVoid() error = %v, want %v", err, firstErr)
+		}
+	})
+}
+
+func Test_resolveBackoffName(t *testing.T) {
+	t.Parallel()
+	if got := resolveBackoffName(WithBackoffName(t.Context(), "explicit-target")); got != "explicit-target" {
+		t.Fatalf("resolveBackoffName(explicit) = %q, want %q", got, "explicit-target")
+	}
+	for _, tc := range []struct {
+		name    string
+		in      string
+		useWith bool
+	}{
+		{name: "unset"},
+		{name: "Value placeholder", in: "Value", useWith: true},
+		{name: "whitespace", in: "   ", useWith: true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			ctx := t.Context()
+			if tc.useWith {
+				ctx = WithBackoffName(ctx, tc.in)
+			}
+			got := resolveBackoffName(ctx)
+			if got == "" || got == "unknown backoff" {
+				t.Fatalf("resolveBackoffName() = %q, want caller frame", got)
+			}
+			if strings.Contains(got, "/internal/backoff.") {
+				t.Fatalf("resolveBackoffName() = %q, want internal/backoff frames skipped", got)
+			}
+		})
+	}
+}
+
 // NOT IMPLEMENTED BELOW
 //
 // func TestMetrics(t *testing.T) {
@@ -743,8 +899,8 @@ func Test_backoff_Do_quietErrorLog(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want, map[string]int64) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)

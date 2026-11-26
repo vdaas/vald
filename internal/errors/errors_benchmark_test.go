@@ -14,12 +14,15 @@
 package errors
 
 import (
-	"flag"
 	"fmt"
 	"testing"
 
+	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/test/bench"
 	"github.com/vdaas/vald/internal/test/data/strings"
 )
+
+const fastParallelism = 4
 
 var (
 	parallelism = 10000
@@ -27,6 +30,8 @@ var (
 	bigData      = map[string]error{}
 	bigDataLen   = 2 << 8
 	bigDataCount = 2 << 8
+	//nolint:gochecknoglobals // lazy benchmark dataset initialization
+	bigDataOnce sync.Once
 
 	smallData = map[string]error{
 		"string": New("aaaa"),
@@ -36,23 +41,21 @@ var (
 	}
 )
 
-func TestMain(m *testing.M) {
-	testing.Init()
-	flag.Parse()
-	if testing.Short() {
-		m.Run()
-		return
-	}
-	for range bigDataCount {
-		bigData[strings.Random(bigDataLen)] = New(strings.Random(bigDataLen))
-	}
-	m.Run()
-	bigData = nil
+func ensureBigData() {
+	bigDataOnce.Do(func() {
+		for range bigDataCount {
+			bigData[strings.Random(bigDataLen)] = New(strings.Random(bigDataLen))
+		}
+	})
 }
 
 func benchmark(b *testing.B, data map[string]error, join func(err1, err2 error) error) {
 	b.Helper()
-	b.SetParallelism(parallelism)
+	p := fastParallelism
+	if bench.Full() {
+		p = parallelism
+	}
+	b.SetParallelism(p)
 	b.ReportAllocs()
 	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {
@@ -66,6 +69,8 @@ func benchmark(b *testing.B, data map[string]error, join func(err1, err2 error) 
 }
 
 func BenchmarkWrapLongData(b *testing.B) {
+	bench.SkipUnlessFull(b)
+	ensureBigData()
 	benchmark(b, bigData,
 		func(err1, err2 error) error { return Wrap(err1, err2.Error()) })
 }
@@ -76,6 +81,8 @@ func BenchmarkWrapShortData(b *testing.B) {
 }
 
 func BenchmarkJoinLongData(b *testing.B) {
+	bench.SkipUnlessFull(b)
+	ensureBigData()
 	benchmark(b, bigData,
 		func(err1, err2 error) error { return Join(err1, err2) })
 }
@@ -86,6 +93,8 @@ func BenchmarkJoinShortData(b *testing.B) {
 }
 
 func BenchmarkStdWrapLongData(b *testing.B) {
+	bench.SkipUnlessFull(b)
+	ensureBigData()
 	benchmark(b, bigData,
 		func(err1, err2 error) error { return fmt.Errorf("%s: %w", err2.Error(), err1) })
 }
@@ -96,6 +105,8 @@ func BenchmarkStdWrapShortData(b *testing.B) {
 }
 
 func BenchmarkStdJoinLongData(b *testing.B) {
+	bench.SkipUnlessFull(b)
+	ensureBigData()
 	benchmark(b, bigData,
 		func(err1, err2 error) error { return Join(err1, err2) })
 }

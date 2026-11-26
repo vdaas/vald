@@ -15,6 +15,7 @@ package grpc
 
 import (
 	"context"
+	"slices"
 	"testing"
 	"time"
 
@@ -24,11 +25,31 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/status"
+	"github.com/vdaas/vald/internal/net/grpc/types"
+	"github.com/vdaas/vald/internal/observability/attribute"
 	lbmetrics "github.com/vdaas/vald/internal/observability/metrics/gateway/lb"
 	"github.com/vdaas/vald/internal/sync"
-	"go.opentelemetry.io/otel/attribute"
-	"google.golang.org/protobuf/types/known/wrapperspb"
 )
+
+func runTestSearch(
+	ctx context.Context,
+	s *server,
+	rpc string,
+	cfg *payload.Search_Config,
+	f func(context.Context, *payload.Search_Config, vald.Client, ...grpc.CallOption) (*payload.Search_Response, error),
+) (*payload.Search_Response, error) {
+	replica, aggr, err := s.prepareSearch(ctx, nil, cfg)
+	if err != nil {
+		return nil, err
+	}
+	fcfg := forwardSearchConfig(cfg, aggr.GetFnum())
+	res, _, err := s.aggregationSearch(ctx, rpc, replica, aggr, cfg,
+		func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
+			return f(ctx, fcfg, vc, copts...)
+		},
+	)
+	return res, err
+}
 
 // An agent that rejects the search (wrong dimension: InvalidArgument; indexing or
 // flushing: Aborted) used to be treated as a miss, so when no agent had results
@@ -83,7 +104,7 @@ func Test_server_doSearch_agentErrorCodes(t *testing.T) {
 				},
 			}
 			s := &server{gateway: gw, replica: 1, timeout: 10 * time.Second}
-			res, _, err := s.doSearch(t.Context(), vald.SearchRPCName, &payload.Search_Config{Num: 1},
+			res, err := runTestSearch(t.Context(), s, vald.SearchRPCName, &payload.Search_Config{Num: 1},
 				func(_ context.Context, _ *payload.Search_Config, vc vald.Client, _ ...grpc.CallOption) (*payload.Search_Response, error) {
 					if vc == agentA {
 						return nil, test.errA
@@ -117,6 +138,8 @@ func Test_skipSearchByIDFallback(t *testing.T) {
 	}{
 		{name: "DeadlineExceeded status skips the fallback", err: status.Error(codes.DeadlineExceeded, "timeout"), want: true},
 		{name: "Canceled status skips the fallback", err: status.Error(codes.Canceled, "canceled"), want: true},
+		{name: "raw context.DeadlineExceeded skips the fallback", err: context.DeadlineExceeded, want: true},
+		{name: "raw context.Canceled skips the fallback", err: context.Canceled, want: true},
 		{name: "done request ctx skips the fallback", canceled: true, err: status.Error(codes.Internal, "internal"), want: true},
 		{name: "NotFound still falls back", err: status.Error(codes.NotFound, "not found")},
 		{name: "Internal still falls back", err: status.Error(codes.Internal, "internal")},
@@ -398,7 +421,7 @@ func Test_server_doSearch_partialFailureMetrics(t *testing.T) {
 				timeout = 50 * time.Millisecond
 			}
 			s := &server{gateway: gw, replica: 2, timeout: timeout, searchMetrics: sm}
-			res, _, err := s.doSearch(t.Context(), test.rpc, &payload.Search_Config{Num: 1},
+			res, err := runTestSearch(t.Context(), s, test.rpc, &payload.Search_Config{Num: 1},
 				func(_ context.Context, _ *payload.Search_Config, vc vald.Client, _ ...grpc.CallOption) (*payload.Search_Response, error) {
 					target := targets[vc]
 					i := next[target]
@@ -523,6 +546,106 @@ func Test_server_Search_broadCastDoesNotMutateRequest(t *testing.T) {
 		if in.GetConfig() == cfg {
 			t.Error("the caller's config was forwarded to an agent instead of the forwarding config")
 		}
+		if in != seen[0] {
+			t.Errorf("target got request %p, want shared forwarding request %p", in, seen[0])
+		}
+	}
+}
+
+func Test_server_LinearSearch_sharesRequestAcrossTargets(t *testing.T) {
+	t.Parallel()
+	const agents = 4
+	var (
+		mu   sync.Mutex
+		seen []*payload.Search_Request
+	)
+	gw := &regGateway{
+		agents: agents,
+		broadCast: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error) error {
+			var wg sync.WaitGroup
+			errs := make([]error, agents)
+			for i := range agents {
+				wg.Go(func() {
+					errs[i] = f(ctx, "127.0.0.1:8081", &recordingLinearClient{
+						onLinear: func(in *payload.Search_Request) {
+							mu.Lock()
+							seen = append(seen, in)
+							mu.Unlock()
+						},
+					})
+				})
+			}
+			wg.Wait()
+			return errors.Join(errs...)
+		},
+	}
+	s := &server{gateway: gw, replica: 1, timeout: time.Second}
+
+	cfg := &payload.Search_Config{Num: 3}
+	req := &payload.Search_Request{Vector: []float32{1, 2, 3}, Config: cfg}
+	if _, err := s.LinearSearch(t.Context(), req); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(seen) != agents {
+		t.Fatalf("got %d agent requests, want %d", len(seen), agents)
+	}
+	for _, in := range seen {
+		if in == req || in.GetConfig() == cfg {
+			t.Error("caller's request or config was aliased")
+		}
+		if in != seen[0] {
+			t.Errorf("target got request %p, want shared forwarding request %p", in, seen[0])
+		}
+	}
+}
+
+type recordingLinearClient struct {
+	*regClient
+	onLinear func(*payload.Search_Request)
+}
+
+func (c *recordingLinearClient) LinearSearch(
+	_ context.Context, in *payload.Search_Request, _ ...grpc.CallOption,
+) (*payload.Search_Response, error) {
+	c.onLinear(in)
+	return probeResponse(), nil
+}
+
+func Test_server_doSearch_noDoubleQueryOnEmptyResult(t *testing.T) {
+	t.Parallel()
+	var mu sync.Mutex
+	var hitCalls, emptyCalls int
+	gw := &regGateway{
+		agents: 2,
+		broadCast: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error) error {
+			return errors.Join(
+				f(ctx, "empty", new(regClient)),
+				f(ctx, "hit", new(regClient)),
+			)
+		},
+	}
+	s := &server{gateway: gw, replica: 1, timeout: time.Second}
+	res, err := runTestSearch(t.Context(), s, vald.SearchRPCName, &payload.Search_Config{Num: 1},
+		func(_ context.Context, _ *payload.Search_Config, _ vald.Client, _ ...grpc.CallOption) (*payload.Search_Response, error) {
+			mu.Lock()
+			defer mu.Unlock()
+			if emptyCalls == 0 {
+				emptyCalls++
+				return &payload.Search_Response{}, nil
+			}
+			hitCalls++
+			return &payload.Search_Response{
+				Results: []*payload.Object_Distance{{Id: "hit", Distance: 0.1}},
+			}, nil
+		})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(res.GetResults()) != 1 {
+		t.Fatalf("got %d results, want 1", len(res.GetResults()))
+	}
+	if emptyCalls != 1 || hitCalls != 1 {
+		t.Errorf("calls = (empty:%d, hit:%d), want (1, 1) with no empty-result re-query", emptyCalls, hitCalls)
 	}
 }
 
@@ -538,9 +661,9 @@ func Test_server_doSearch_queriesAgentCountOnce(t *testing.T) {
 	s := &server{gateway: gw, replica: 1, timeout: time.Second}
 
 	// The broadcast finds nothing, so the search itself must fail with an empty-result error.
-	if _, _, err := s.doSearch(t.Context(), vald.SearchRPCName, &payload.Search_Config{
+	if _, err := runTestSearch(t.Context(), s, vald.SearchRPCName, &payload.Search_Config{
 		Num:   3,
-		Ratio: wrapperspb.Float(0.5),
+		Ratio: types.Float(0.5),
 	}, func(context.Context, *payload.Search_Config, vald.Client, ...grpc.CallOption) (*payload.Search_Response, error) {
 		return new(payload.Search_Response), nil
 	}); err == nil {
@@ -575,1186 +698,329 @@ func Test_server_calculateNum_zeroN(t *testing.T) {
 	}
 }
 
-// NOT IMPLEMENTED BELOW
-//
-// func Test_server_Search(t *testing.T) {
-// 	type args struct {
-// 		ctx context.Context
-// 		req *payload.Search_Request
-// 	}
-// 	type fields struct {
-// 		UnimplementedValdServer vald.UnimplementedValdServer
-// 		eg                      errgroup.Group
-// 		gateway                 service.Gateway
-// 		name                    string
-// 		ip                      string
-// 		timeout                 time.Duration
-// 		replica                 int
-// 		streamConcurrency       int
-// 		multiConcurrency        int
-// 	}
-// 	type want struct {
-// 		wantRes *payload.Search_Response
-// 		err     error
-// 	}
-// 	type test struct {
-// 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
-// 		checkFunc  func(want, *payload.Search_Response, error) error
-// 		beforeFunc func(*testing.T, args)
-// 		afterFunc  func(*testing.T, args)
-// 	}
-// 	defaultCheckFunc := func(w want, gotRes *payload.Search_Response, err error) error {
-// 		if !errors.Is(err, w.err) {
-// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-// 		}
-// 		if !reflect.DeepEqual(gotRes, w.wantRes) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
-// 		}
-// 		return nil
-// 	}
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       args: args {
-// 		           ctx:nil,
-// 		           req:nil,
-// 		       },
-// 		       fields: fields {
-// 		           UnimplementedValdServer:nil,
-// 		           eg:nil,
-// 		           gateway:nil,
-// 		           name:"",
-// 		           ip:"",
-// 		           timeout:nil,
-// 		           replica:0,
-// 		           streamConcurrency:0,
-// 		           multiConcurrency:0,
-// 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
-//
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           args: args {
-// 		           ctx:nil,
-// 		           req:nil,
-// 		           },
-// 		           fields: fields {
-// 		           UnimplementedValdServer:nil,
-// 		           eg:nil,
-// 		           gateway:nil,
-// 		           name:"",
-// 		           ip:"",
-// 		           timeout:nil,
-// 		           replica:0,
-// 		           streamConcurrency:0,
-// 		           multiConcurrency:0,
-// 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
-//
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt, test.args)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt, test.args)
-// 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
-// 			s := &server{
-// 				UnimplementedValdServer: test.fields.UnimplementedValdServer,
-// 				eg:                      test.fields.eg,
-// 				gateway:                 test.fields.gateway,
-// 				name:                    test.fields.name,
-// 				ip:                      test.fields.ip,
-// 				timeout:                 test.fields.timeout,
-// 				replica:                 test.fields.replica,
-// 				streamConcurrency:       test.fields.streamConcurrency,
-// 				multiConcurrency:        test.fields.multiConcurrency,
-// 			}
-//
-// 			gotRes, err := s.Search(test.args.ctx, test.args.req)
-// 			if err := checkFunc(test.want, gotRes, err); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
-// 		})
-// 	}
-// }
-//
-// func Test_server_SearchByID(t *testing.T) {
-// 	type args struct {
-// 		ctx context.Context
-// 		req *payload.Search_IDRequest
-// 	}
-// 	type fields struct {
-// 		UnimplementedValdServer vald.UnimplementedValdServer
-// 		eg                      errgroup.Group
-// 		gateway                 service.Gateway
-// 		name                    string
-// 		ip                      string
-// 		timeout                 time.Duration
-// 		replica                 int
-// 		streamConcurrency       int
-// 		multiConcurrency        int
-// 	}
-// 	type want struct {
-// 		wantRes *payload.Search_Response
-// 		err     error
-// 	}
-// 	type test struct {
-// 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
-// 		checkFunc  func(want, *payload.Search_Response, error) error
-// 		beforeFunc func(*testing.T, args)
-// 		afterFunc  func(*testing.T, args)
-// 	}
-// 	defaultCheckFunc := func(w want, gotRes *payload.Search_Response, err error) error {
-// 		if !errors.Is(err, w.err) {
-// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-// 		}
-// 		if !reflect.DeepEqual(gotRes, w.wantRes) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
-// 		}
-// 		return nil
-// 	}
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       args: args {
-// 		           ctx:nil,
-// 		           req:nil,
-// 		       },
-// 		       fields: fields {
-// 		           UnimplementedValdServer:nil,
-// 		           eg:nil,
-// 		           gateway:nil,
-// 		           name:"",
-// 		           ip:"",
-// 		           timeout:nil,
-// 		           replica:0,
-// 		           streamConcurrency:0,
-// 		           multiConcurrency:0,
-// 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
-//
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           args: args {
-// 		           ctx:nil,
-// 		           req:nil,
-// 		           },
-// 		           fields: fields {
-// 		           UnimplementedValdServer:nil,
-// 		           eg:nil,
-// 		           gateway:nil,
-// 		           name:"",
-// 		           ip:"",
-// 		           timeout:nil,
-// 		           replica:0,
-// 		           streamConcurrency:0,
-// 		           multiConcurrency:0,
-// 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
-//
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt, test.args)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt, test.args)
-// 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
-// 			s := &server{
-// 				UnimplementedValdServer: test.fields.UnimplementedValdServer,
-// 				eg:                      test.fields.eg,
-// 				gateway:                 test.fields.gateway,
-// 				name:                    test.fields.name,
-// 				ip:                      test.fields.ip,
-// 				timeout:                 test.fields.timeout,
-// 				replica:                 test.fields.replica,
-// 				streamConcurrency:       test.fields.streamConcurrency,
-// 				multiConcurrency:        test.fields.multiConcurrency,
-// 			}
-//
-// 			gotRes, err := s.SearchByID(test.args.ctx, test.args.req)
-// 			if err := checkFunc(test.want, gotRes, err); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
-// 		})
-// 	}
-// }
-//
-// func Test_server_calculateNum(t *testing.T) {
-// 	type args struct {
-// 		ctx   context.Context
-// 		num   uint32
-// 		ratio float32
-// 	}
-// 	type fields struct {
-// 		UnimplementedValdServer vald.UnimplementedValdServer
-// 		eg                      errgroup.Group
-// 		gateway                 service.Gateway
-// 		name                    string
-// 		ip                      string
-// 		timeout                 time.Duration
-// 		replica                 int
-// 		streamConcurrency       int
-// 		multiConcurrency        int
-// 	}
-// 	type want struct {
-// 		wantN uint32
-// 	}
-// 	type test struct {
-// 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
-// 		checkFunc  func(want, uint32) error
-// 		beforeFunc func(*testing.T, args)
-// 		afterFunc  func(*testing.T, args)
-// 	}
-// 	defaultCheckFunc := func(w want, gotN uint32) error {
-// 		if !reflect.DeepEqual(gotN, w.wantN) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotN, w.wantN)
-// 		}
-// 		return nil
-// 	}
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       args: args {
-// 		           ctx:nil,
-// 		           num:0,
-// 		           ratio:0,
-// 		       },
-// 		       fields: fields {
-// 		           UnimplementedValdServer:nil,
-// 		           eg:nil,
-// 		           gateway:nil,
-// 		           name:"",
-// 		           ip:"",
-// 		           timeout:nil,
-// 		           replica:0,
-// 		           streamConcurrency:0,
-// 		           multiConcurrency:0,
-// 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
-//
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           args: args {
-// 		           ctx:nil,
-// 		           num:0,
-// 		           ratio:0,
-// 		           },
-// 		           fields: fields {
-// 		           UnimplementedValdServer:nil,
-// 		           eg:nil,
-// 		           gateway:nil,
-// 		           name:"",
-// 		           ip:"",
-// 		           timeout:nil,
-// 		           replica:0,
-// 		           streamConcurrency:0,
-// 		           multiConcurrency:0,
-// 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
-//
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt, test.args)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt, test.args)
-// 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
-// 			s := &server{
-// 				UnimplementedValdServer: test.fields.UnimplementedValdServer,
-// 				eg:                      test.fields.eg,
-// 				gateway:                 test.fields.gateway,
-// 				name:                    test.fields.name,
-// 				ip:                      test.fields.ip,
-// 				timeout:                 test.fields.timeout,
-// 				replica:                 test.fields.replica,
-// 				streamConcurrency:       test.fields.streamConcurrency,
-// 				multiConcurrency:        test.fields.multiConcurrency,
-// 			}
-//
-// 			gotN := s.calculateNum(test.args.ctx, test.args.num, test.args.ratio)
-// 			if err := checkFunc(test.want, gotN); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
-// 		})
-// 	}
-// }
-//
-// func Test_server_doSearch(t *testing.T) {
-// 	type args struct {
-// 		ctx context.Context
-// 		cfg *payload.Search_Config
-// 		f   func(ctx context.Context, cfg *payload.Search_Config, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error)
-// 	}
-// 	type fields struct {
-// 		UnimplementedValdServer vald.UnimplementedValdServer
-// 		eg                      errgroup.Group
-// 		gateway                 service.Gateway
-// 		name                    string
-// 		ip                      string
-// 		timeout                 time.Duration
-// 		replica                 int
-// 		streamConcurrency       int
-// 		multiConcurrency        int
-// 	}
-// 	type want struct {
-// 		wantRes   *payload.Search_Response
-// 		wantAttrs []attribute.KeyValue
-// 		err       error
-// 	}
-// 	type test struct {
-// 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
-// 		checkFunc  func(want, *payload.Search_Response, []attribute.KeyValue, error) error
-// 		beforeFunc func(*testing.T, args)
-// 		afterFunc  func(*testing.T, args)
-// 	}
-// 	defaultCheckFunc := func(w want, gotRes *payload.Search_Response, gotAttrs []attribute.KeyValue, err error) error {
-// 		if !errors.Is(err, w.err) {
-// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-// 		}
-// 		if !reflect.DeepEqual(gotRes, w.wantRes) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
-// 		}
-// 		if !reflect.DeepEqual(gotAttrs, w.wantAttrs) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotAttrs, w.wantAttrs)
-// 		}
-// 		return nil
-// 	}
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       args: args {
-// 		           ctx:nil,
-// 		           cfg:nil,
-// 		           f:nil,
-// 		       },
-// 		       fields: fields {
-// 		           UnimplementedValdServer:nil,
-// 		           eg:nil,
-// 		           gateway:nil,
-// 		           name:"",
-// 		           ip:"",
-// 		           timeout:nil,
-// 		           replica:0,
-// 		           streamConcurrency:0,
-// 		           multiConcurrency:0,
-// 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
-//
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           args: args {
-// 		           ctx:nil,
-// 		           cfg:nil,
-// 		           f:nil,
-// 		           },
-// 		           fields: fields {
-// 		           UnimplementedValdServer:nil,
-// 		           eg:nil,
-// 		           gateway:nil,
-// 		           name:"",
-// 		           ip:"",
-// 		           timeout:nil,
-// 		           replica:0,
-// 		           streamConcurrency:0,
-// 		           multiConcurrency:0,
-// 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
-//
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt, test.args)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt, test.args)
-// 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
-// 			s := &server{
-// 				UnimplementedValdServer: test.fields.UnimplementedValdServer,
-// 				eg:                      test.fields.eg,
-// 				gateway:                 test.fields.gateway,
-// 				name:                    test.fields.name,
-// 				ip:                      test.fields.ip,
-// 				timeout:                 test.fields.timeout,
-// 				replica:                 test.fields.replica,
-// 				streamConcurrency:       test.fields.streamConcurrency,
-// 				multiConcurrency:        test.fields.multiConcurrency,
-// 			}
-//
-// 			gotRes, gotAttrs, err := s.doSearch(test.args.ctx, test.args.cfg, test.args.f)
-// 			if err := checkFunc(test.want, gotRes, gotAttrs, err); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
-// 		})
-// 	}
-// }
-//
-// func Test_selectAggregator(t *testing.T) {
-// 	type args struct {
-// 		algo    payload.Search_AggregationAlgorithm
-// 		num     int
-// 		fnum    int
-// 		replica int
-// 	}
-// 	type want struct {
-// 		want Aggregator
-// 	}
-// 	type test struct {
-// 		name       string
-// 		args       args
-// 		want       want
-// 		checkFunc  func(want, Aggregator) error
-// 		beforeFunc func(*testing.T, args)
-// 		afterFunc  func(*testing.T, args)
-// 	}
-// 	defaultCheckFunc := func(w want, got Aggregator) error {
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-// 		}
-// 		return nil
-// 	}
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       args: args {
-// 		           algo:nil,
-// 		           num:0,
-// 		           fnum:0,
-// 		           replica:0,
-// 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
-//
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           args: args {
-// 		           algo:nil,
-// 		           num:0,
-// 		           fnum:0,
-// 		           replica:0,
-// 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
-//
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt, test.args)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt, test.args)
-// 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
-//
-// 			got := selectAggregator(test.args.algo, test.args.num, test.args.fnum, test.args.replica)
-// 			if err := checkFunc(test.want, got); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
-// 		})
-// 	}
-// }
-//
-// func Test_server_StreamSearch(t *testing.T) {
-// 	type args struct {
-// 		stream vald.Search_StreamSearchServer
-// 	}
-// 	type fields struct {
-// 		UnimplementedValdServer vald.UnimplementedValdServer
-// 		eg                      errgroup.Group
-// 		gateway                 service.Gateway
-// 		name                    string
-// 		ip                      string
-// 		timeout                 time.Duration
-// 		replica                 int
-// 		streamConcurrency       int
-// 		multiConcurrency        int
-// 	}
-// 	type want struct {
-// 		err error
-// 	}
-// 	type test struct {
-// 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
-// 		checkFunc  func(want, error) error
-// 		beforeFunc func(*testing.T, args)
-// 		afterFunc  func(*testing.T, args)
-// 	}
-// 	defaultCheckFunc := func(w want, err error) error {
-// 		if !errors.Is(err, w.err) {
-// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-// 		}
-// 		return nil
-// 	}
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       args: args {
-// 		           stream:nil,
-// 		       },
-// 		       fields: fields {
-// 		           UnimplementedValdServer:nil,
-// 		           eg:nil,
-// 		           gateway:nil,
-// 		           name:"",
-// 		           ip:"",
-// 		           timeout:nil,
-// 		           replica:0,
-// 		           streamConcurrency:0,
-// 		           multiConcurrency:0,
-// 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
-//
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           args: args {
-// 		           stream:nil,
-// 		           },
-// 		           fields: fields {
-// 		           UnimplementedValdServer:nil,
-// 		           eg:nil,
-// 		           gateway:nil,
-// 		           name:"",
-// 		           ip:"",
-// 		           timeout:nil,
-// 		           replica:0,
-// 		           streamConcurrency:0,
-// 		           multiConcurrency:0,
-// 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
-//
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt, test.args)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt, test.args)
-// 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
-// 			s := &server{
-// 				UnimplementedValdServer: test.fields.UnimplementedValdServer,
-// 				eg:                      test.fields.eg,
-// 				gateway:                 test.fields.gateway,
-// 				name:                    test.fields.name,
-// 				ip:                      test.fields.ip,
-// 				timeout:                 test.fields.timeout,
-// 				replica:                 test.fields.replica,
-// 				streamConcurrency:       test.fields.streamConcurrency,
-// 				multiConcurrency:        test.fields.multiConcurrency,
-// 			}
-//
-// 			err := s.StreamSearch(test.args.stream)
-// 			if err := checkFunc(test.want, err); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
-// 		})
-// 	}
-// }
-//
-// func Test_server_StreamSearchByID(t *testing.T) {
-// 	type args struct {
-// 		stream vald.Search_StreamSearchByIDServer
-// 	}
-// 	type fields struct {
-// 		UnimplementedValdServer vald.UnimplementedValdServer
-// 		eg                      errgroup.Group
-// 		gateway                 service.Gateway
-// 		name                    string
-// 		ip                      string
-// 		timeout                 time.Duration
-// 		replica                 int
-// 		streamConcurrency       int
-// 		multiConcurrency        int
-// 	}
-// 	type want struct {
-// 		err error
-// 	}
-// 	type test struct {
-// 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
-// 		checkFunc  func(want, error) error
-// 		beforeFunc func(*testing.T, args)
-// 		afterFunc  func(*testing.T, args)
-// 	}
-// 	defaultCheckFunc := func(w want, err error) error {
-// 		if !errors.Is(err, w.err) {
-// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-// 		}
-// 		return nil
-// 	}
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       args: args {
-// 		           stream:nil,
-// 		       },
-// 		       fields: fields {
-// 		           UnimplementedValdServer:nil,
-// 		           eg:nil,
-// 		           gateway:nil,
-// 		           name:"",
-// 		           ip:"",
-// 		           timeout:nil,
-// 		           replica:0,
-// 		           streamConcurrency:0,
-// 		           multiConcurrency:0,
-// 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
-//
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           args: args {
-// 		           stream:nil,
-// 		           },
-// 		           fields: fields {
-// 		           UnimplementedValdServer:nil,
-// 		           eg:nil,
-// 		           gateway:nil,
-// 		           name:"",
-// 		           ip:"",
-// 		           timeout:nil,
-// 		           replica:0,
-// 		           streamConcurrency:0,
-// 		           multiConcurrency:0,
-// 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
-//
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt, test.args)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt, test.args)
-// 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
-// 			s := &server{
-// 				UnimplementedValdServer: test.fields.UnimplementedValdServer,
-// 				eg:                      test.fields.eg,
-// 				gateway:                 test.fields.gateway,
-// 				name:                    test.fields.name,
-// 				ip:                      test.fields.ip,
-// 				timeout:                 test.fields.timeout,
-// 				replica:                 test.fields.replica,
-// 				streamConcurrency:       test.fields.streamConcurrency,
-// 				multiConcurrency:        test.fields.multiConcurrency,
-// 			}
-//
-// 			err := s.StreamSearchByID(test.args.stream)
-// 			if err := checkFunc(test.want, err); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
-// 		})
-// 	}
-// }
-//
-// func Test_server_MultiSearch(t *testing.T) {
-// 	type args struct {
-// 		ctx  context.Context
-// 		reqs *payload.Search_MultiRequest
-// 	}
-// 	type fields struct {
-// 		UnimplementedValdServer vald.UnimplementedValdServer
-// 		eg                      errgroup.Group
-// 		gateway                 service.Gateway
-// 		name                    string
-// 		ip                      string
-// 		timeout                 time.Duration
-// 		replica                 int
-// 		streamConcurrency       int
-// 		multiConcurrency        int
-// 	}
-// 	type want struct {
-// 		wantRes *payload.Search_Responses
-// 		err     error
-// 	}
-// 	type test struct {
-// 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
-// 		checkFunc  func(want, *payload.Search_Responses, error) error
-// 		beforeFunc func(*testing.T, args)
-// 		afterFunc  func(*testing.T, args)
-// 	}
-// 	defaultCheckFunc := func(w want, gotRes *payload.Search_Responses, err error) error {
-// 		if !errors.Is(err, w.err) {
-// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-// 		}
-// 		if !reflect.DeepEqual(gotRes, w.wantRes) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
-// 		}
-// 		return nil
-// 	}
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       args: args {
-// 		           ctx:nil,
-// 		           reqs:nil,
-// 		       },
-// 		       fields: fields {
-// 		           UnimplementedValdServer:nil,
-// 		           eg:nil,
-// 		           gateway:nil,
-// 		           name:"",
-// 		           ip:"",
-// 		           timeout:nil,
-// 		           replica:0,
-// 		           streamConcurrency:0,
-// 		           multiConcurrency:0,
-// 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
-//
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           args: args {
-// 		           ctx:nil,
-// 		           reqs:nil,
-// 		           },
-// 		           fields: fields {
-// 		           UnimplementedValdServer:nil,
-// 		           eg:nil,
-// 		           gateway:nil,
-// 		           name:"",
-// 		           ip:"",
-// 		           timeout:nil,
-// 		           replica:0,
-// 		           streamConcurrency:0,
-// 		           multiConcurrency:0,
-// 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
-//
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt, test.args)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt, test.args)
-// 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
-// 			s := &server{
-// 				UnimplementedValdServer: test.fields.UnimplementedValdServer,
-// 				eg:                      test.fields.eg,
-// 				gateway:                 test.fields.gateway,
-// 				name:                    test.fields.name,
-// 				ip:                      test.fields.ip,
-// 				timeout:                 test.fields.timeout,
-// 				replica:                 test.fields.replica,
-// 				streamConcurrency:       test.fields.streamConcurrency,
-// 				multiConcurrency:        test.fields.multiConcurrency,
-// 			}
-//
-// 			gotRes, err := s.MultiSearch(test.args.ctx, test.args.reqs)
-// 			if err := checkFunc(test.want, gotRes, err); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
-// 		})
-// 	}
-// }
-//
-// func Test_server_MultiSearchByID(t *testing.T) {
-// 	type args struct {
-// 		ctx  context.Context
-// 		reqs *payload.Search_MultiIDRequest
-// 	}
-// 	type fields struct {
-// 		UnimplementedValdServer vald.UnimplementedValdServer
-// 		eg                      errgroup.Group
-// 		gateway                 service.Gateway
-// 		name                    string
-// 		ip                      string
-// 		timeout                 time.Duration
-// 		replica                 int
-// 		streamConcurrency       int
-// 		multiConcurrency        int
-// 	}
-// 	type want struct {
-// 		wantRes *payload.Search_Responses
-// 		err     error
-// 	}
-// 	type test struct {
-// 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
-// 		checkFunc  func(want, *payload.Search_Responses, error) error
-// 		beforeFunc func(*testing.T, args)
-// 		afterFunc  func(*testing.T, args)
-// 	}
-// 	defaultCheckFunc := func(w want, gotRes *payload.Search_Responses, err error) error {
-// 		if !errors.Is(err, w.err) {
-// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-// 		}
-// 		if !reflect.DeepEqual(gotRes, w.wantRes) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
-// 		}
-// 		return nil
-// 	}
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       args: args {
-// 		           ctx:nil,
-// 		           reqs:nil,
-// 		       },
-// 		       fields: fields {
-// 		           UnimplementedValdServer:nil,
-// 		           eg:nil,
-// 		           gateway:nil,
-// 		           name:"",
-// 		           ip:"",
-// 		           timeout:nil,
-// 		           replica:0,
-// 		           streamConcurrency:0,
-// 		           multiConcurrency:0,
-// 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
-//
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           args: args {
-// 		           ctx:nil,
-// 		           reqs:nil,
-// 		           },
-// 		           fields: fields {
-// 		           UnimplementedValdServer:nil,
-// 		           eg:nil,
-// 		           gateway:nil,
-// 		           name:"",
-// 		           ip:"",
-// 		           timeout:nil,
-// 		           replica:0,
-// 		           streamConcurrency:0,
-// 		           multiConcurrency:0,
-// 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
-//
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt, test.args)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt, test.args)
-// 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
-// 			s := &server{
-// 				UnimplementedValdServer: test.fields.UnimplementedValdServer,
-// 				eg:                      test.fields.eg,
-// 				gateway:                 test.fields.gateway,
-// 				name:                    test.fields.name,
-// 				ip:                      test.fields.ip,
-// 				timeout:                 test.fields.timeout,
-// 				replica:                 test.fields.replica,
-// 				streamConcurrency:       test.fields.streamConcurrency,
-// 				multiConcurrency:        test.fields.multiConcurrency,
-// 			}
-//
-// 			gotRes, err := s.MultiSearchByID(test.args.ctx, test.args.reqs)
-// 			if err := checkFunc(test.want, gotRes, err); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
-// 		})
-// 	}
-// }
+func Test_selectAggregator(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		checkAggr func(Aggregator) bool
+		name      string
+		algo      payload.Search_AggregationAlgorithm
+	}{
+		{
+			name: "unknown maps to std (default)",
+			algo: payload.Search_Unknown,
+			checkAggr: func(a Aggregator) bool {
+				_, ok := a.(*valdStdAggr)
+				return ok
+			},
+		},
+		{
+			name: "concurrent queue maps to std",
+			algo: payload.Search_ConcurrentQueue,
+			checkAggr: func(a Aggregator) bool {
+				_, ok := a.(*valdStdAggr)
+				return ok
+			},
+		},
+		{
+			name: "sort slice maps to slice",
+			algo: payload.Search_SortSlice,
+			checkAggr: func(a Aggregator) bool {
+				_, ok := a.(*valdSliceAggr)
+				return ok
+			},
+		},
+		{
+			name: "sort pool slice maps to pool slice",
+			algo: payload.Search_SortPoolSlice,
+			checkAggr: func(a Aggregator) bool {
+				_, ok := a.(*valdPoolSliceAggr)
+				return ok
+			},
+		},
+		{
+			name: "pairing heap maps to pairing heap",
+			algo: payload.Search_PairingHeap,
+			checkAggr: func(a Aggregator) bool {
+				_, ok := a.(*valdPairingHeapAggr)
+				return ok
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			got := selectAggregator(test.algo, 10, 10, 3)
+			if !test.checkAggr(got) {
+				tt.Errorf("selectAggregator(%v) returned unexpected type %T", test.algo, got)
+			}
+		})
+	}
+}
+
+type fallbackIDClient struct {
+	*regClient
+	onSearchID func(*payload.Search_IDRequest)
+}
+
+func (c *fallbackIDClient) SearchByID(
+	_ context.Context, in *payload.Search_IDRequest, _ ...grpc.CallOption,
+) (*payload.Search_Response, error) {
+	c.onSearchID(in)
+	return probeResponse(), nil
+}
+
+func Test_server_Search_subsetRoutingAndQuorum(t *testing.T) {
+	t.Parallel()
+	addrs := []string{"a0", "a1", "a2", "a3", "a4"}
+	vec := []float32{1, 2, 3}
+
+	t.Run("Search with searchQuorumGrace=0 uses 3/5 subset and records 0 metrics", func(t *testing.T) {
+		t.Parallel()
+		clients := make(map[string]vald.Client, len(addrs))
+		for _, addr := range addrs {
+			clients[addr] = &regClient{
+				search: func(context.Context, *payload.Search_Request) (*payload.Search_Response, error) {
+					return &payload.Search_Response{
+						Results: []*payload.Object_Distance{{Id: "id-" + addr, Distance: 0.1}},
+					}, nil
+				},
+			}
+		}
+		gw := newSubsetRegGateway(addrs, clients)
+		sm := lbmetrics.New()
+		s := &server{gateway: gw, replica: 3, timeout: time.Second, searchMetrics: sm}
+		res, err := s.Search(t.Context(), &payload.Search_Request{
+			Vector: vec,
+			Config: &payload.Search_Config{Num: 10},
+		})
+		if err != nil || len(res.GetResults()) != 3 {
+			t.Fatalf("Search = (%d, %v), want 3 results", len(res.GetResults()), err)
+		}
+		gw.mu.Lock()
+		if len(gw.waves) != 1 || gw.waves[0].count != 3 || !slices.Equal(gw.waves[0].targets, []string{"a0", "a1", "a2"}) {
+			gw.mu.Unlock()
+			t.Fatalf("waves = %+v, want single wave of 3", gw.waves)
+		}
+		gw.mu.Unlock()
+		if metrics := collectSearchMetrics(t, sm); len(metrics) != 0 {
+			t.Errorf("expected 0 failure metrics, got %v", metrics)
+		}
+	})
+
+	t.Run("Search 3/5 falls back to remaining agents on error or insufficient MinNum", func(t *testing.T) {
+		t.Parallel()
+		clients := make(map[string]vald.Client, len(addrs))
+		for i, addr := range addrs {
+			idx := i
+			clients[addr] = &regClient{
+				search: func(context.Context, *payload.Search_Request) (*payload.Search_Response, error) {
+					if idx < 3 {
+						return &payload.Search_Response{
+							Results: []*payload.Object_Distance{{Id: "dup", Distance: 0.1}},
+						}, nil
+					}
+					return &payload.Search_Response{
+						Results: []*payload.Object_Distance{{Id: "wave2", Distance: 0.2}},
+					}, nil
+				},
+			}
+		}
+		gw := newSubsetRegGateway(addrs, clients)
+		s := &server{gateway: gw, replica: 3, timeout: time.Second}
+		res, err := s.Search(t.Context(), &payload.Search_Request{
+			Vector: vec,
+			Config: &payload.Search_Config{Num: 5, MinNum: 2},
+		})
+		if err != nil || len(res.GetResults()) != 2 {
+			t.Fatalf("Search = (%v, %v), want 2 results", res.GetResults(), err)
+		}
+		gw.mu.Lock()
+		defer gw.mu.Unlock()
+		if len(gw.waves) != 2 || gw.waves[0].count != 3 || gw.waves[1].count != 2 {
+			t.Fatalf("waves = %+v, want [3, 2]", gw.waves)
+		}
+	})
+
+	t.Run("Search with Ratio uses full broadcast", func(t *testing.T) {
+		t.Parallel()
+		clients := make(map[string]vald.Client, len(addrs))
+		for _, addr := range addrs {
+			clients[addr] = &regClient{
+				search: func(context.Context, *payload.Search_Request) (*payload.Search_Response, error) {
+					return probeResponse(), nil
+				},
+			}
+		}
+		gw := newSubsetRegGateway(addrs, clients)
+		s := &server{gateway: gw, replica: 3, timeout: time.Second}
+		res, err := s.Search(t.Context(), &payload.Search_Request{
+			Vector: vec,
+			Config: &payload.Search_Config{Num: 5, Ratio: types.Float(0.5)},
+		})
+		if err != nil || len(res.GetResults()) == 0 {
+			t.Fatalf("Search = (%v, %v)", res, err)
+		}
+		gw.mu.Lock()
+		defer gw.mu.Unlock()
+		if len(gw.waves) != 0 || gw.bcCalls != 1 {
+			t.Fatalf("waves = %d, bcCalls = %d, want 0 waves and 1 full broadcast", len(gw.waves), gw.bcCalls)
+		}
+	})
+
+	t.Run("searchQuorumGrace > 0 uses BroadCast + quorum without recording cancellation failures", func(t *testing.T) {
+		t.Parallel()
+		sm := lbmetrics.New()
+		s := newStragglerServer(6, 3, time.Millisecond, 2*time.Second)
+		s.searchMetrics = sm
+		WithSearchQuorumGrace("5ms")(s)
+		res, err := s.Search(t.Context(), &payload.Search_Request{
+			Vector: vec,
+			Config: &payload.Search_Config{Num: 10, Timeout: int64(5 * time.Second)},
+		})
+		if err != nil || len(res.GetResults()) != 10 {
+			t.Fatalf("Search = (%v, %v)", res, err)
+		}
+		if metrics := collectSearchMetrics(t, sm); len(metrics) != 0 {
+			t.Errorf("expected 0 failure metrics on quorum cancellation, got %v", metrics)
+		}
+	})
+
+	t.Run("Wave 2 ErrGRPCClientConnNotFound(*) preserves Wave 1 partial results", func(t *testing.T) {
+		t.Parallel()
+		clients := make(map[string]vald.Client, len(addrs))
+		for i, addr := range addrs {
+			idx := i
+			clients[addr] = &regClient{
+				search: func(context.Context, *payload.Search_Request) (*payload.Search_Response, error) {
+					if idx < 3 {
+						return &payload.Search_Response{
+							Results: []*payload.Object_Distance{{Id: "wave1-" + addr, Distance: 0.1}},
+						}, nil
+					}
+					return nil, errGRPCClientConnNotFoundStar
+				},
+			}
+		}
+		gw := newSubsetRegGateway(addrs, clients)
+		s := &server{gateway: gw, replica: 3, timeout: time.Second}
+		res, err := s.Search(t.Context(), &payload.Search_Request{
+			Vector: vec,
+			// MinNum=5 forces Wave 2 when Wave 1 returned only 3 unique results.
+			Config: &payload.Search_Config{Num: 5, MinNum: 5},
+		})
+		if st, _ := status.FromError(err); st == nil || st.Code() != codes.NotFound {
+			t.Fatalf("err = %v, want NotFound (insufficient results) rather than search API connection not found", err)
+		}
+		_ = res
+
+		// When Wave 1 fulfills Num/MinNum after a partial Wave 1 trigger (wave 2 no conn),
+		// Wave 1 results must be returned instead of Internal.
+		clients["a2"] = &regClient{
+			search: func(context.Context, *payload.Search_Request) (*payload.Search_Response, error) {
+				return nil, status.Error(codes.Unavailable, "down")
+			},
+		}
+		res2, err2 := s.Search(t.Context(), &payload.Search_Request{
+			Vector: vec,
+			Config: &payload.Search_Config{Num: 5},
+		})
+		if err2 != nil || len(res2.GetResults()) != 2 {
+			t.Fatalf("Search = (%v, %v), want 2 Wave 1 results preserved", res2, err2)
+		}
+	})
+
+	t.Run("dedicated ReadReplica with fewer targets than primary subset skips Wave 2", func(t *testing.T) {
+		t.Parallel()
+		readTargets := []string{"rr0", "rr1"}
+		clients := make(map[string]vald.Client, len(readTargets))
+		var (
+			mu    sync.Mutex
+			calls = make(map[string]int, len(readTargets))
+		)
+		for _, target := range readTargets {
+			tgt := target
+			clients[tgt] = &regClient{
+				search: func(context.Context, *payload.Search_Request) (*payload.Search_Response, error) {
+					mu.Lock()
+					calls[tgt]++
+					mu.Unlock()
+					return &payload.Search_Response{
+						Results: []*payload.Object_Distance{{Id: "hit-" + tgt, Distance: 0.1}},
+					}, nil
+				},
+			}
+		}
+		gw := newSubsetRegGateway(addrs, clients)
+		gw.readTargets = readTargets
+		s := &server{gateway: gw, replica: 2, timeout: time.Second}
+		res, err := s.Search(t.Context(), &payload.Search_Request{
+			Vector: vec,
+			Config: &payload.Search_Config{Num: 5},
+		})
+		if err != nil || len(res.GetResults()) != 2 {
+			t.Fatalf("Search = (%v, %v), want 2 results", res, err)
+		}
+		gw.mu.Lock()
+		waveCount := len(gw.waves)
+		gw.mu.Unlock()
+		if waveCount != 1 {
+			t.Fatalf("waves = %d, want 1 (no Wave 2 resend on dedicated ReadReplica)", waveCount)
+		}
+		mu.Lock()
+		defer mu.Unlock()
+		for _, target := range readTargets {
+			if calls[target] != 1 {
+				t.Errorf("target %s called %d times, want 1", target, calls[target])
+			}
+		}
+	})
+}
+
+func Test_server_SearchByID_fallbackSharesIDRequest(t *testing.T) {
+	t.Parallel()
+	const agents = 4
+	var (
+		mu   sync.Mutex
+		seen []*payload.Search_IDRequest
+	)
+	gw := &regGateway{
+		agents: agents,
+		broadCast: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error) error {
+			errs := make([]error, 0, agents)
+			for range agents {
+				errs = append(errs, f(ctx, "127.0.0.1:8081", &fallbackIDClient{
+					regClient: &regClient{
+						getObject: func(context.Context, *payload.Object_VectorRequest) (*payload.Object_Vector, error) {
+							return nil, status.Error(codes.NotFound, "miss")
+						},
+					},
+					onSearchID: func(in *payload.Search_IDRequest) {
+						mu.Lock()
+						seen = append(seen, in)
+						mu.Unlock()
+					},
+				}))
+			}
+			return errors.Join(errs...)
+		},
+	}
+	s := &server{gateway: gw, replica: 1, timeout: time.Second}
+	cfg := &payload.Search_Config{Num: 3, MinNum: 1}
+	res, err := s.SearchByID(t.Context(), &payload.Search_IDRequest{Id: "uuid-fb", Config: cfg})
+	if err != nil || len(res.GetResults()) == 0 {
+		t.Fatalf("SearchByID = (%v, %v)", res, err)
+	}
+	if len(seen) != agents {
+		t.Fatalf("got %d SearchByID calls, want %d", len(seen), agents)
+	}
+	for _, in := range seen {
+		if in != seen[0] {
+			t.Errorf("target got %p, want shared hoisted Search_IDRequest %p", in, seen[0])
+		}
+		if in.GetConfig() == cfg || in.GetConfig().GetMinNum() != 0 {
+			t.Errorf("forwarding config not cloned/sanitized: %+v", in.GetConfig())
+		}
+	}
+}

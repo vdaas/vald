@@ -14,7 +14,19 @@
 
 package types
 
-import "google.golang.org/protobuf/types/known/anypb"
+import (
+	"google.golang.org/protobuf/types/known/anypb"
+	"google.golang.org/protobuf/types/known/wrapperspb"
+)
 
-// Any is a type alias of anypb.Any representing a serialized protocol buffer message.
-type Any = anypb.Any
+type (
+	// Any is a type alias of anypb.Any representing a serialized protocol buffer message.
+	Any = anypb.Any
+	// FloatValue is a type alias of wrapperspb.FloatValue representing a wrapped float32 value.
+	FloatValue = wrapperspb.FloatValue
+)
+
+// Float returns a wrapped FloatValue containing v.
+func Float(v float32) *FloatValue {
+	return wrapperspb.Float(v)
+}

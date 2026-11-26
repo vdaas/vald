@@ -128,6 +128,39 @@ func (g *benchGateway) BroadCast(
 	return nil
 }
 
+func (g *benchGateway) NextRotateOffset(total int) int {
+	if total <= 1 {
+		return 0
+	}
+	return 0
+}
+
+func (g *benchGateway) BroadCastSlice(
+	ctx context.Context,
+	_ service.BroadCastKind,
+	addrs []string,
+	offset int,
+	count int,
+	f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error,
+) (bool, error) {
+	n := len(addrs)
+	if n == 0 || count <= 0 {
+		return true, nil
+	}
+	for i := range min(count, n) {
+		addr := addrs[(offset+i)%n]
+		for j, ga := range g.addrs {
+			if ga == addr {
+				if err := f(ctx, addr, g.agents[j]); err != nil {
+					return true, err
+				}
+				break
+			}
+		}
+	}
+	return true, nil
+}
+
 func newBenchServer(b *testing.B) vald.Server {
 	b.Helper()
 	eg, _ := errgroup.New(b.Context())

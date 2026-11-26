@@ -19,8 +19,6 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/log"
-	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/errhandler"
@@ -33,8 +31,11 @@ import (
 func (s *server) Upsert(
 	ctx context.Context, req *payload.Upsert_Request,
 ) (loc *payload.Object_Location, err error) {
-	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.UpsertRPCName)
-	defer trace.End(span)
+	var span trace.Span
+	if trace.Enabled() {
+		_, span = trace.StartSpan(ctx, apiName+"/"+vald.UpsertRPCName)
+		defer trace.End(span)
+	}
 	vec := req.GetVector()
 	if err = s.validateVectorDimension(span, vald.UpsertRPCName, ngtResourceType+"/ngt.Upsert",
 		vec.GetId(), req, len(vec.GetVector()), s.ngt.GetDimensionSize()); err != nil {
@@ -55,7 +56,7 @@ func (s *server) Upsert(
 	rtName := "/ngt.Upsert"
 	_, exists := s.ngt.Exists(req.GetVector().GetId())
 	if exists {
-		loc, err = s.Update(ctx, &payload.Update_Request{
+		loc, err = s.updateValidated(span, &payload.Update_Request{
 			Vector: req.GetVector(),
 			Config: &payload.Update_Config{
 				Timestamp:            req.GetConfig().GetTimestamp(),
@@ -64,7 +65,7 @@ func (s *server) Upsert(
 		})
 		rtName += "/ngt.Update"
 	} else {
-		loc, err = s.Insert(ctx, &payload.Insert_Request{
+		loc, err = s.insertValidated(span, &payload.Insert_Request{
 			Vector: req.GetVector(),
 			Config: &payload.Insert_Config{
 				Timestamp:            req.GetConfig().GetTimestamp(),
@@ -80,7 +81,7 @@ func (s *server) Upsert(
 				ServingData: errdetails.Serialize(req),
 			},
 			s.resourceInfo(ngtResourceType+rtName))
-		if span != nil {
+		if span != nil && span.IsRecording() {
 			span.RecordError(err)
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
 			span.SetStatus(trace.StatusError, err.Error())
@@ -91,41 +92,19 @@ func (s *server) Upsert(
 }
 
 func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) (err error) {
-	ctx, span := trace.StartSpan(stream.Context(), apiName+"/"+vald.StreamUpsertRPCName)
-	defer trace.End(span)
-	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
-		func(ctx context.Context, req *payload.Upsert_Request) (*payload.Object_StreamLocation, error) {
-			ctx, sspan := trace.StartSpan(ctx, apiName+"/"+vald.StreamUpsertRPCName+"/id-"+req.GetVector().GetId())
-			defer trace.End(sspan)
-			res, err := s.Upsert(ctx, req)
-			if err != nil {
-				st, _ := status.FromError(err)
-				errhandler.RecordSpanStatus(sspan, st, err)
-				return &payload.Object_StreamLocation{
-					Payload: &payload.Object_StreamLocation_Status{
-						Status: st.Proto(),
-					},
-				}, err
-			}
-			return &payload.Object_StreamLocation{
-				Payload: &payload.Object_StreamLocation_Location{
-					Location: res,
-				},
-			}, nil
-		})
-	if err != nil {
-		st, _ := status.FromError(err)
-		errhandler.RecordSpanStatus(span, st, err)
-		return err
-	}
-	return nil
+	return streamLocation(s, stream, vald.StreamUpsertRPCName, func(req *payload.Upsert_Request) string {
+		return req.GetVector().GetId()
+	}, s.Upsert)
 }
 
 func (s *server) MultiUpsert(
 	ctx context.Context, reqs *payload.Upsert_MultiRequest,
 ) (res *payload.Object_Locations, err error) {
-	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.MultiUpsertRPCName)
-	defer trace.End(span)
+	var span trace.Span
+	if trace.Enabled() {
+		_, span = trace.StartSpan(ctx, apiName+"/"+vald.MultiUpsertRPCName)
+		defer trace.End(span)
+	}
 
 	insertReqs := make([]*payload.Insert_Request, 0, len(reqs.GetRequests()))
 	updateReqs := make([]*payload.Update_Request, 0, len(reqs.GetRequests()))
@@ -133,25 +112,9 @@ func (s *server) MultiUpsert(
 	ids := make([]string, 0, len(reqs.GetRequests()))
 	for _, req := range reqs.GetRequests() {
 		vec := req.GetVector()
-		if len(vec.GetVector()) != s.ngt.GetDimensionSize() {
-			err = errors.ErrIncompatibleDimensionSize(len(vec.GetVector()), int(s.ngt.GetDimensionSize()))
-			err = status.WrapWithInvalidArgument("MultiUpsert API Incompatible Dimension Size detected",
-				err,
-				&errdetails.RequestInfo{
-					RequestId:   vec.GetId(),
-					ServingData: errdetails.Serialize(req),
-				},
-				&errdetails.BadRequest{
-					FieldViolations: []*errdetails.BadRequestFieldViolation{
-						{
-							Field:       "vector dimension size",
-							Description: err.Error(),
-						},
-					},
-				},
-				s.resourceInfo(ngtResourceType+"/ngt.MultiUpsert"))
-			log.Warn(err)
-			return errhandler.HandleError[payload.Object_Locations](span, codes.InvalidArgument, err)
+		if err = s.validateVectorDimension(span, vald.MultiUpsertRPCName, ngtResourceType+"/ngt.MultiUpsert",
+			vec.GetId(), req, len(vec.GetVector()), s.ngt.GetDimensionSize()); err != nil {
+			return nil, err
 		}
 		if err = s.validateVectorValue(span, vald.MultiUpsertRPCName, ngtResourceType+"/ngt.MultiUpsert",
 			vec.GetId(), req, vec.GetVector()); err != nil {
@@ -239,8 +202,7 @@ func (s *server) MultiUpsert(
 
 	}
 	if err != nil {
-		st, _ := status.FromError(err)
-		errhandler.RecordSpanStatus(span, st, err)
+		errhandler.RecordSpanFromError(span, err)
 		return nil, err
 	}
 	return res, nil

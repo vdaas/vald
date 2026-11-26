@@ -131,10 +131,9 @@ func Test_server_Insert(t *testing.T) {
 					* AlreadyExists error will be returned.
 				- case 1.2: Insert duplicated request success when SkipStrictExistCheck is false (duplicated vector)
 				- case 1.3: Insert duplicated request fail when SkipStrictExistCheck is false (duplicated ID & vector)
-				- case 2.1: Insert duplicated request fail when SkipStrictExistCheck is true (duplicated ID)
-					* SkipStrictExistCheck flag is not used in agent handler, so the result is same as case 1.
+				- case 2.1: Insert duplicated request success when SkipStrictExistCheck is true (duplicated ID)
 				- case 2.2: Insert duplicated request success when SkipStrictExistCheck is true (duplicated vector)
-				- case 2.3: Insert duplicated request fail when SkipStrictExistCheck is true (duplicated ID & vector)
+				- case 2.3: Insert duplicated request success when SkipStrictExistCheck is true (duplicated ID & vector)
 	*/
 	tests := []test{
 		// Equivalence Class Testing
@@ -1336,7 +1335,7 @@ func Test_server_Insert(t *testing.T) {
 			}
 
 			return test{
-				name: "Decision Table Testing case 2.1: Insert duplicated request fail when SkipStrictExistCheck is true (duplicated ID)",
+				name: "Decision Table Testing case 2.1: Insert duplicated request success when SkipStrictExistCheck is true (duplicated ID)",
 				args: args{
 					req: req,
 				},
@@ -1359,15 +1358,11 @@ func Test_server_Insert(t *testing.T) {
 					s.ngt.Insert(id, bVec[0])
 				},
 				want: want{
-					err: status.WrapWithAlreadyExists(fmt.Sprintf("Insert API uuid %s already exists", id), errors.ErrUUIDAlreadyExists(id),
-						&errdetails.RequestInfo{
-							RequestId:   req.GetVector().GetId(),
-							ServingData: errdetails.Serialize(req),
-						},
-						&errdetails.ResourceInfo{
-							ResourceType: ngtResourceType + "/ngt.Insert",
-							ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
-						}),
+					wantRes: &payload.Object_Location{
+						Name: name,
+						Uuid: id,
+						Ips:  []string{ip},
+					},
 				},
 			}
 		}(),
@@ -1428,7 +1423,7 @@ func Test_server_Insert(t *testing.T) {
 			}
 
 			return test{
-				name: "Decision Table Testing case 2.3: Insert duplicated request fail when SkipStrictExistCheck is true (duplicated ID & vector)",
+				name: "Decision Table Testing case 2.3: Insert duplicated request success when SkipStrictExistCheck is true (duplicated ID & vector)",
 				args: args{
 					req: req,
 				},
@@ -1451,15 +1446,11 @@ func Test_server_Insert(t *testing.T) {
 					s.ngt.Insert(id, intVec)
 				},
 				want: want{
-					err: status.WrapWithAlreadyExists(fmt.Sprintf("Insert API uuid %s already exists", id), errors.ErrUUIDAlreadyExists(id),
-						&errdetails.RequestInfo{
-							RequestId:   req.GetVector().GetId(),
-							ServingData: errdetails.Serialize(req),
-						},
-						&errdetails.ResourceInfo{
-							ResourceType: ngtResourceType + "/ngt.Insert",
-							ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, name, ip),
-						}),
+					wantRes: &payload.Object_Location{
+						Name: name,
+						Uuid: id,
+						Ips:  []string{ip},
+					},
 				},
 			}
 		}(),
@@ -1644,13 +1635,13 @@ func Test_server_StreamInsert(t *testing.T) {
 			// existed in NGT test cases
 			- existed ID (with 100 insert request in a single StreamInsert connection)
 				- case 4.1: Fail to StreamInsert with existed ID when SkipStrictExistCheck is false
-				- case 4.2: Fail to StreamInsert with existed ID when SkipStrictExistCheck is true
+				- case 4.2: Success to StreamInsert with existed ID when SkipStrictExistCheck is true
 			- existed vector (with 100 insert request in a single StreamInsert connection)
 				- case 5.1: Success to StreamInsert with existed vector when SkipStrictExistCheck is false
 				- case 5.2: Success to StreamInsert with existed vector when SkipStrictExistCheck is true
 			- existed ID & existed vector (with 100 insert request in a single StreamInsert connection)
 				- case 6.1: Fail to StreamInsert with existed ID & vector when SkipStrictExistCheck is false
-				- case 6.2: Fail to StreamInsert with existed ID & vector when SkipStrictExistCheck is true
+				- case 6.2: Success to StreamInsert with existed ID & vector when SkipStrictExistCheck is true
 	*/
 	tests := []test{
 		func() test {
@@ -2550,7 +2541,7 @@ func Test_server_StreamInsert(t *testing.T) {
 			}
 
 			return test{
-				name: "Decision Table Testing case 4.2: Fail to StreamInsert with existed ID when SkipStrictExistCheck is true",
+				name: "Decision Table Testing case 4.2: Success to StreamInsert with existed ID when SkipStrictExistCheck is true",
 				args: args{
 					insertReqs: reqs.Requests,
 				},
@@ -2583,12 +2574,7 @@ func Test_server_StreamInsert(t *testing.T) {
 					}
 				},
 				want: want{
-					errCode: codes.AlreadyExists,
-					rpcResp: func() []*payload.Object_StreamLocation {
-						l := request.GenObjectStreamLocation(insertCnt, name, ip)
-						l[0] = genObjectStreamLoc(codes.AlreadyExists)
-						return l
-					}(),
+					rpcResp: request.GenObjectStreamLocation(insertCnt, name, ip),
 				},
 			}
 		}(),
@@ -2728,7 +2714,7 @@ func Test_server_StreamInsert(t *testing.T) {
 			}
 
 			return test{
-				name: "Decision Table Testing case 6.2: Fail to StreamInsert with existed ID & vector when SkipStrictExistCheck is true",
+				name: "Decision Table Testing case 6.2: Success to StreamInsert with existed ID & vector when SkipStrictExistCheck is true",
 				args: args{
 					insertReqs: reqs.Requests,
 				},
@@ -2757,12 +2743,7 @@ func Test_server_StreamInsert(t *testing.T) {
 					}
 				},
 				want: want{
-					errCode: codes.AlreadyExists,
-					rpcResp: func() []*payload.Object_StreamLocation {
-						l := request.GenObjectStreamLocation(insertCnt, name, ip)
-						l[0] = genObjectStreamLoc(codes.AlreadyExists)
-						return l
-					}(),
+					rpcResp: request.GenObjectStreamLocation(insertCnt, name, ip),
 				},
 			}
 		}(),
@@ -5731,6 +5712,47 @@ func Test_server_MultiInsert(t *testing.T) {
 				},
 			}
 		}(),
+		func() test {
+			insertNum := 10
+			req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, insertNum, f32VecDim, &payload.Insert_Config{
+				SkipStrictExistCheck: true,
+			})
+			if err != nil {
+				t.Error(err)
+			}
+
+			return test{
+				name: "Decision Table Testing case 6.5: Success to MultiInsert with existed ID when req SkipStrictExistCheck is true",
+				args: args{
+					reqs: req,
+				},
+				fields: fields{
+					name:    name,
+					ip:      ip,
+					svcCfg:  defaultF32SvcCfg,
+					svcOpts: defaultSvcOpts,
+				},
+				beforeFunc: func(t *testing.T, ctx context.Context, s *server) {
+					t.Helper()
+					for i := range 2 {
+						ir := &payload.Insert_Request{
+							Vector: req.Requests[i].Vector,
+						}
+						if _, err := s.Insert(ctx, ir); err != nil {
+							t.Fatal(err)
+						}
+					}
+					if _, err := s.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
+						PoolSize: 2,
+					}); err != nil {
+						t.Fatal(err)
+					}
+				},
+				want: want{
+					wantRes: request.GenObjectLocations(insertNum, name, ip),
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
@@ -5778,6 +5800,99 @@ func Test_server_MultiInsert(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_server_MultiInsert_MixedSkipStrictExistCheck(t *testing.T) {
+	t.Parallel()
+
+	ctx := t.Context()
+	cfg := &config.NGT{
+		Dimension:          4,
+		DistanceType:       ngt.L2.String(),
+		ObjectType:         ngt.Float.String(),
+		CreationEdgeSize:   20,
+		SearchEdgeSize:     10,
+		EnableInMemoryMode: true,
+		KVSDB:              &config.KVSDB{Concurrency: 1},
+		VQueue: &config.VQueue{
+			InsertBufferPoolSize: 100,
+			DeleteBufferPoolSize: 100,
+		},
+	}
+	eg, _ := errgroup.New(ctx)
+	svc, err := service.New(cfg.Bind(), service.WithErrGroup(eg))
+	if err != nil {
+		t.Fatalf("service.New() error = %v", err)
+	}
+	t.Cleanup(func() {
+		if cerr := svc.Close(context.WithoutCancel(ctx)); cerr != nil {
+			t.Errorf("svc.Close() error = %v", cerr)
+		}
+	})
+	s, err := New(WithErrGroup(eg), WithNGT(svc))
+	if err != nil {
+		t.Fatalf("New() error = %v", err)
+	}
+
+	t.Run("mixed batch shares timestamp when unset and last entry wins on duplicate uuid", func(t *testing.T) {
+		locs, merr := s.MultiInsert(ctx, &payload.Insert_MultiRequest{
+			Requests: []*payload.Insert_Request{
+				{
+					Vector: &payload.Object_Vector{Id: "u-strict", Vector: []float32{1, 0, 0, 0}},
+					Config: &payload.Insert_Config{SkipStrictExistCheck: false},
+				},
+				{
+					Vector: &payload.Object_Vector{Id: "u-dup", Vector: []float32{2, 0, 0, 0}},
+					Config: &payload.Insert_Config{SkipStrictExistCheck: false},
+				},
+				{
+					Vector: &payload.Object_Vector{Id: "u-skip", Vector: []float32{3, 0, 0, 0}},
+					Config: &payload.Insert_Config{SkipStrictExistCheck: true},
+				},
+				{
+					Vector: &payload.Object_Vector{Id: "u-dup", Vector: []float32{4, 0, 0, 0}},
+					Config: &payload.Insert_Config{SkipStrictExistCheck: true},
+				},
+			},
+		})
+		if merr != nil {
+			t.Fatalf("MultiInsert() error = %v", merr)
+		}
+		if len(locs.GetLocations()) != 4 {
+			t.Fatalf("locations = %d, want 4", len(locs.GetLocations()))
+		}
+		tsStrict, err1 := svc.GetTimestamp("u-strict")
+		tsSkip, err2 := svc.GetTimestamp("u-skip")
+		if err1 != nil || err2 != nil || tsStrict == 0 || tsStrict != tsSkip {
+			t.Fatalf("timestamps = (%d/%v, %d/%v), want non-zero equal timestamp", tsStrict, err1, tsSkip, err2)
+		}
+		dupVec, _, derr := svc.GetObject("u-dup")
+		if derr != nil || len(dupVec) != 4 || dupVec[0] != 4 {
+			t.Fatalf("u-dup vector = (%v, %v), want [4 0 0 0]", dupVec, derr)
+		}
+	})
+
+	t.Run("mixed batch skips skipMap when strictInsert fails", func(t *testing.T) {
+		_, merr := s.MultiInsert(ctx, &payload.Insert_MultiRequest{
+			Requests: []*payload.Insert_Request{
+				{
+					// u-strict already exists from subtest above, so strictInsert must fail.
+					Vector: &payload.Object_Vector{Id: "u-strict", Vector: []float32{5, 0, 0, 0}},
+					Config: &payload.Insert_Config{SkipStrictExistCheck: false},
+				},
+				{
+					Vector: &payload.Object_Vector{Id: "u-skip-not-inserted", Vector: []float32{6, 0, 0, 0}},
+					Config: &payload.Insert_Config{SkipStrictExistCheck: true},
+				},
+			},
+		})
+		if merr == nil {
+			t.Fatal("expected error for existing strict UUID")
+		}
+		if _, _, oerr := svc.GetObject("u-skip-not-inserted"); !errors.Is(oerr, errors.ErrObjectIDNotFound("u-skip-not-inserted")) {
+			t.Fatalf("GetObject(u-skip-not-inserted) = %v, want ErrObjectIDNotFound when strict half failed", oerr)
+		}
+	})
 }
 
 // NOT IMPLEMENTED BELOW

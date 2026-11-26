@@ -23,6 +23,7 @@ import (
 	"github.com/vdaas/vald/internal/observability/attribute"
 	"github.com/vdaas/vald/internal/observability/exporter"
 	"github.com/vdaas/vald/internal/observability/metrics"
+	vtrace "github.com/vdaas/vald/internal/observability/trace"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
@@ -139,6 +140,7 @@ func (e *exp) Start(ctx context.Context) error {
 		propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}),
 	)
 	otel.SetMeterProvider(e.meterProvider)
+	vtrace.Enable()
 	return nil
 }
 

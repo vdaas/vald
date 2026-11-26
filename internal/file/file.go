@@ -461,8 +461,12 @@ func AbsolutePath(path string) string {
 }
 
 // Exists returns file existence.
-func Exists(path string) (e bool) {
-	e, _, _ = ExistsWithDetail(path)
+func Exists(path string) bool {
+	e, _, err := ExistsWithDetail(path)
+	if err != nil {
+		log.Debugf("failed to check file existence for %s: %v", path, err)
+		return false
+	}
 	return e
 }
 

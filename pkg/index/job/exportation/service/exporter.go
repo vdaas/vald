@@ -29,7 +29,7 @@ import (
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/log"
-	igrpc "github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
@@ -37,7 +37,6 @@ import (
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/errgroup"
-	"google.golang.org/grpc"
 )
 
 const (
@@ -135,7 +134,7 @@ func (e *export) Start(ctx context.Context) error {
 }
 
 func (e *export) doExportIndex(ctx context.Context) (err error) {
-	ctx, span := trace.StartSpan(igrpc.WrapGRPCMethod(ctx, grpcMethodName), apiName+"/service/index.doExportIndex")
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, grpcMethodName), apiName+"/service/index.doExportIndex")
 	defer func() {
 		if span != nil {
 			span.End()

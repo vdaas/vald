@@ -316,37 +316,52 @@ servers:
     socket_path: {{ default .default.servers.grpc.server.socket_path .Values.servers.grpc.server.socket_path | quote }}
     grpc:
       {{- if .Values.servers.grpc.server.grpc }}
-      max_receive_message_size: {{ default .default.servers.grpc.server.grpc.max_receive_message_size .Values.servers.grpc.server.grpc.max_receive_message_size }}
-      max_send_message_size: {{ default .default.servers.grpc.server.grpc.max_send_message_size .Values.servers.grpc.server.grpc.max_send_message_size }}
-      initial_window_size: {{ default .default.servers.grpc.server.grpc.initial_window_size .Values.servers.grpc.server.grpc.initial_window_size }}
-      initial_conn_window_size: {{ default .default.servers.grpc.server.grpc.initial_conn_window_size .Values.servers.grpc.server.grpc.initial_conn_window_size }}
+      {{- $vgrpc := .Values.servers.grpc.server.grpc }}
+      {{- $dgrpc := .default.servers.grpc.server.grpc }}
+      bidirectional_stream_concurrency: {{ if hasKey $vgrpc "bidirectional_stream_concurrency" }}{{ $vgrpc.bidirectional_stream_concurrency }}{{ else }}{{ $dgrpc.bidirectional_stream_concurrency }}{{ end }}
+      max_receive_message_size: {{ if hasKey $vgrpc "max_receive_message_size" }}{{ $vgrpc.max_receive_message_size }}{{ else }}{{ $dgrpc.max_receive_message_size }}{{ end }}
+      max_send_message_size: {{ if hasKey $vgrpc "max_send_message_size" }}{{ $vgrpc.max_send_message_size }}{{ else }}{{ $dgrpc.max_send_message_size }}{{ end }}
+      initial_window_size: {{ if hasKey $vgrpc "initial_window_size" }}{{ $vgrpc.initial_window_size }}{{ else }}{{ $dgrpc.initial_window_size }}{{ end }}
+      initial_conn_window_size: {{ if hasKey $vgrpc "initial_conn_window_size" }}{{ $vgrpc.initial_conn_window_size }}{{ else }}{{ $dgrpc.initial_conn_window_size }}{{ end }}
       keepalive:
-        {{- if .Values.servers.grpc.server.grpc.keepalive }}
-        max_conn_idle: {{ default .default.servers.grpc.server.grpc.keepalive.max_conn_idle .Values.servers.grpc.server.grpc.keepalive.max_conn_idle | quote }}
-        max_conn_age: {{ default .default.servers.grpc.server.grpc.keepalive.max_conn_age .Values.servers.grpc.server.grpc.keepalive.max_conn_age | quote }}
-        max_conn_age_grace: {{ default .default.servers.grpc.server.grpc.keepalive.max_conn_age_grace .Values.servers.grpc.server.grpc.keepalive.max_conn_age_grace | quote }}
-        time: {{ default .default.servers.grpc.server.grpc.keepalive.time .Values.servers.grpc.server.grpc.keepalive.time | quote }}
-        timeout: {{ default .default.servers.grpc.server.grpc.keepalive.timeout .Values.servers.grpc.server.grpc.keepalive.timeout | quote }}
-        min_time: {{ default .default.servers.grpc.server.grpc.keepalive.min_time .Values.servers.grpc.server.grpc.keepalive.min_time | quote }}
-        permit_without_stream: {{ default .default.servers.grpc.server.grpc.keepalive.permit_without_stream .Values.servers.grpc.server.grpc.keepalive.permit_without_stream | quote }}
+        {{- if $vgrpc.keepalive }}
+        {{- $vka := $vgrpc.keepalive }}
+        {{- $dka := $dgrpc.keepalive }}
+        max_conn_idle: {{ if hasKey $vka "max_conn_idle" }}{{ $vka.max_conn_idle | quote }}{{ else }}{{ $dka.max_conn_idle | quote }}{{ end }}
+        max_conn_age: {{ if hasKey $vka "max_conn_age" }}{{ $vka.max_conn_age | quote }}{{ else }}{{ $dka.max_conn_age | quote }}{{ end }}
+        max_conn_age_grace: {{ if hasKey $vka "max_conn_age_grace" }}{{ $vka.max_conn_age_grace | quote }}{{ else }}{{ $dka.max_conn_age_grace | quote }}{{ end }}
+        time: {{ if hasKey $vka "time" }}{{ $vka.time | quote }}{{ else }}{{ $dka.time | quote }}{{ end }}
+        timeout: {{ if hasKey $vka "timeout" }}{{ $vka.timeout | quote }}{{ else }}{{ $dka.timeout | quote }}{{ end }}
+        min_time: {{ if hasKey $vka "min_time" }}{{ $vka.min_time | quote }}{{ else }}{{ $dka.min_time | quote }}{{ end }}
+        permit_without_stream: {{ if hasKey $vka "permit_without_stream" }}{{ $vka.permit_without_stream }}{{ else }}{{ $dka.permit_without_stream }}{{ end }}
         {{- else }}
-        {{- toYaml .default.servers.grpc.server.grpc.keepalive | nindent 8 }}
+        {{- toYaml $dgrpc.keepalive | nindent 8 }}
         {{- end }}
-      write_buffer_size: {{ default .default.servers.grpc.server.grpc.write_buffer_size .Values.servers.grpc.server.grpc.write_buffer_size }}
-      read_buffer_size: {{ default .default.servers.grpc.server.grpc.read_buffer_size .Values.servers.grpc.server.grpc.read_buffer_size }}
-      connection_timeout: {{ default .default.servers.grpc.server.grpc.connection_timeout .Values.servers.grpc.server.grpc.connection_timeout | quote }}
-      max_header_list_size: {{ default .default.servers.grpc.server.grpc.max_header_list_size .Values.servers.grpc.server.grpc.max_header_list_size }}
-      header_table_size: {{ default .default.servers.grpc.server.grpc.header_table_size .Values.servers.grpc.server.grpc.header_table_size }}
-      {{- if .Values.servers.grpc.server.grpc.interceptors }}
+      write_buffer_size: {{ if hasKey $vgrpc "write_buffer_size" }}{{ $vgrpc.write_buffer_size }}{{ else }}{{ $dgrpc.write_buffer_size }}{{ end }}
+      read_buffer_size: {{ if hasKey $vgrpc "read_buffer_size" }}{{ $vgrpc.read_buffer_size }}{{ else }}{{ $dgrpc.read_buffer_size }}{{ end }}
+      connection_timeout: {{ if hasKey $vgrpc "connection_timeout" }}{{ $vgrpc.connection_timeout | quote }}{{ else }}{{ $dgrpc.connection_timeout | quote }}{{ end }}
+      max_header_list_size: {{ if hasKey $vgrpc "max_header_list_size" }}{{ $vgrpc.max_header_list_size }}{{ else }}{{ $dgrpc.max_header_list_size }}{{ end }}
+      header_table_size: {{ if hasKey $vgrpc "header_table_size" }}{{ $vgrpc.header_table_size }}{{ else }}{{ $dgrpc.header_table_size }}{{ end }}
+      max_concurrent_streams: {{ if hasKey $vgrpc "max_concurrent_streams" }}{{ $vgrpc.max_concurrent_streams }}{{ else }}{{ $dgrpc.max_concurrent_streams }}{{ end }}
+      num_stream_workers: {{ if hasKey $vgrpc "num_stream_workers" }}{{ $vgrpc.num_stream_workers }}{{ else }}{{ $dgrpc.num_stream_workers }}{{ end }}
+      {{- if hasKey $vgrpc "interceptors" }}
+      {{- if $vgrpc.interceptors }}
       interceptors:
-        {{- toYaml .Values.servers.grpc.server.grpc.interceptors | nindent 8 }}
-      {{- else if .default.servers.grpc.server.grpc.interceptors }}
-      interceptors:
-        {{- toYaml .default.servers.grpc.server.grpc.interceptors | nindent 8 }}
+        {{- toYaml $vgrpc.interceptors | nindent 8 }}
       {{- else }}
       interceptors: []
       {{- end }}
-      enable_reflection: {{ default .default.servers.grpc.server.grpc.enable_reflection .Values.servers.grpc.server.grpc.enable_reflection }}
+      {{- else if $dgrpc.interceptors }}
+      interceptors:
+        {{- toYaml $dgrpc.interceptors | nindent 8 }}
+      {{- else }}
+      interceptors: []
+      {{- end }}
+      shared_write_buffer: {{ if hasKey $vgrpc "shared_write_buffer" }}{{ $vgrpc.shared_write_buffer }}{{ else }}{{ $dgrpc.shared_write_buffer }}{{ end }}
+      wait_for_handlers: {{ if hasKey $vgrpc "wait_for_handlers" }}{{ $vgrpc.wait_for_handlers }}{{ else }}{{ $dgrpc.wait_for_handlers }}{{ end }}
+      enable_reflection: {{ if hasKey $vgrpc "enable_reflection" }}{{ $vgrpc.enable_reflection }}{{ else }}{{ $dgrpc.enable_reflection }}{{ end }}
+      enable_admin: {{ if hasKey $vgrpc "enable_admin" }}{{ $vgrpc.enable_admin }}{{ else }}{{ $dgrpc.enable_admin }}{{ end }}
+      enable_channelz: {{ if hasKey $vgrpc "enable_channelz" }}{{ $vgrpc.enable_channelz }}{{ else }}{{ $dgrpc.enable_channelz }}{{ end }}
       {{- else }}
       {{- toYaml .default.servers.grpc.server.grpc | nindent 6 }}
       {{- end }}
@@ -507,139 +522,181 @@ addrs: []
 gRPC client configuration
 */}}
 {{- define "vald.grpc.client" -}}
-health_check_duration: {{ default .default.health_check_duration .Values.health_check_duration | quote }}
+health_check_duration: {{ if hasKey .Values "health_check_duration" }}{{ .Values.health_check_duration | quote }}{{ else }}{{ .default.health_check_duration | quote }}{{ end }}
 connection_pool:
   {{- if .Values.connection_pool }}
-  enable_dns_resolver: {{ default .default.connection_pool.enable_dns_resolver .Values.connection_pool.enable_dns_resolver }}
-  enable_rebalance: {{ default .default.connection_pool.enable_rebalance .Values.connection_pool.enable_rebalance }}
-  rebalance_duration: {{ default .default.connection_pool.rebalance_duration .Values.connection_pool.rebalance_duration | quote }}
-  size: {{ default .default.connection_pool.size .Values.connection_pool.size }}
-  old_conn_close_duration: {{ default .default.connection_pool.old_conn_close_duration .Values.connection_pool.old_conn_close_duration }}
+  {{- $vcp := .Values.connection_pool }}
+  {{- $dcp := .default.connection_pool }}
+  enable_dns_resolver: {{ if hasKey $vcp "enable_dns_resolver" }}{{ $vcp.enable_dns_resolver }}{{ else }}{{ $dcp.enable_dns_resolver }}{{ end }}
+  enable_rebalance: {{ if hasKey $vcp "enable_rebalance" }}{{ $vcp.enable_rebalance }}{{ else }}{{ $dcp.enable_rebalance }}{{ end }}
+  rebalance_duration: {{ if hasKey $vcp "rebalance_duration" }}{{ $vcp.rebalance_duration | quote }}{{ else }}{{ $dcp.rebalance_duration | quote }}{{ end }}
+  size: {{ if hasKey $vcp "size" }}{{ $vcp.size }}{{ else }}{{ $dcp.size }}{{ end }}
+  old_conn_close_duration: {{ if hasKey $vcp "old_conn_close_duration" }}{{ $vcp.old_conn_close_duration | quote }}{{ else }}{{ $dcp.old_conn_close_duration | quote }}{{ end }}
+  enable_metrics: {{ if hasKey $vcp "enable_metrics" }}{{ $vcp.enable_metrics }}{{ else }}{{ $dcp.enable_metrics }}{{ end }}
   {{- else }}
   {{- toYaml .default.connection_pool | nindent 2 }}
   {{- end }}
 backoff:
   {{- if .Values.backoff }}
-  initial_duration: {{ default .default.backoff.initial_duration .Values.backoff.initial_duration | quote }}
-  backoff_time_limit: {{ default .default.backoff.backoff_time_limit .Values.backoff.backoff_time_limit | quote }}
-  maximum_duration: {{ default .default.backoff.maximum_duration .Values.backoff.maximum_duration | quote }}
-  jitter_limit: {{ default .default.backoff.jitter_limit .Values.backoff.jitter_limit | quote }}
-  backoff_factor: {{ default .default.backoff.backoff_factor .Values.backoff.backoff_factor }}
-  retry_count: {{ default .default.backoff.retry_count .Values.backoff.retry_count }}
-  enable_error_log: {{ default .default.backoff.enable_error_log .Values.backoff.enable_error_log }}
+  {{- $vbo := .Values.backoff }}
+  {{- $dbo := .default.backoff }}
+  initial_duration: {{ if hasKey $vbo "initial_duration" }}{{ $vbo.initial_duration | quote }}{{ else }}{{ $dbo.initial_duration | quote }}{{ end }}
+  backoff_time_limit: {{ if hasKey $vbo "backoff_time_limit" }}{{ $vbo.backoff_time_limit | quote }}{{ else }}{{ $dbo.backoff_time_limit | quote }}{{ end }}
+  maximum_duration: {{ if hasKey $vbo "maximum_duration" }}{{ $vbo.maximum_duration | quote }}{{ else }}{{ $dbo.maximum_duration | quote }}{{ end }}
+  jitter_limit: {{ if hasKey $vbo "jitter_limit" }}{{ $vbo.jitter_limit | quote }}{{ else }}{{ $dbo.jitter_limit | quote }}{{ end }}
+  backoff_factor: {{ if hasKey $vbo "backoff_factor" }}{{ $vbo.backoff_factor }}{{ else }}{{ $dbo.backoff_factor }}{{ end }}
+  retry_count: {{ if hasKey $vbo "retry_count" }}{{ $vbo.retry_count }}{{ else }}{{ $dbo.retry_count }}{{ end }}
+  enable_error_log: {{ if hasKey $vbo "enable_error_log" }}{{ $vbo.enable_error_log }}{{ else }}{{ $dbo.enable_error_log }}{{ end }}
   {{- else }}
   {{- toYaml .default.backoff | nindent 2 }}
   {{- end }}
 circuit_breaker:
   {{- if .Values.circuit_breaker }}
-  closed_error_rate: {{ default .default.circuit_breaker.closed_error_rate .Values.circuit_breaker.closed_error_rate }}
-  half_open_error_rate: {{ default .default.circuit_breaker.half_open_error_rate .Values.circuit_breaker.half_open_error_rate }}
-  min_samples: {{ default .default.circuit_breaker.min_samples .Values.circuit_breaker.min_samples | quote }}
-  open_timeout: {{ default .default.circuit_breaker.open_timeout .Values.circuit_breaker.open_timeout | quote }}
-  closed_refresh_timeout: {{ default .default.circuit_breaker.closed_refresh_timeout .Values.circuit_breaker.closed_refresh_timeout | quote }}
+  {{- $vcb := .Values.circuit_breaker }}
+  {{- $dcb := .default.circuit_breaker }}
+  closed_error_rate: {{ if hasKey $vcb "closed_error_rate" }}{{ $vcb.closed_error_rate }}{{ else }}{{ $dcb.closed_error_rate }}{{ end }}
+  half_open_error_rate: {{ if hasKey $vcb "half_open_error_rate" }}{{ $vcb.half_open_error_rate }}{{ else }}{{ $dcb.half_open_error_rate }}{{ end }}
+  min_samples: {{ if hasKey $vcb "min_samples" }}{{ $vcb.min_samples }}{{ else }}{{ $dcb.min_samples }}{{ end }}
+  open_timeout: {{ if hasKey $vcb "open_timeout" }}{{ $vcb.open_timeout | quote }}{{ else }}{{ $dcb.open_timeout | quote }}{{ end }}
+  closed_refresh_timeout: {{ if hasKey $vcb "closed_refresh_timeout" }}{{ $vcb.closed_refresh_timeout | quote }}{{ else }}{{ $dcb.closed_refresh_timeout | quote }}{{ end }}
   {{- else }}
   {{- toYaml .default.circuit_breaker | nindent 2 }}
   {{- end }}
 call_option:
   {{- if .Values.call_option }}
-  wait_for_ready: {{ default .default.call_option.wait_for_ready .Values.call_option.wait_for_ready }}
-  max_retry_rpc_buffer_size: {{ default .default.call_option.max_retry_rpc_buffer_size .Values.call_option.max_retry_rpc_buffer_size }}
-  max_recv_msg_size: {{ default .default.call_option.max_recv_msg_size .Values.call_option.max_recv_msg_size }}
-  max_send_msg_size: {{ default .default.call_option.max_send_msg_size .Values.call_option.max_send_msg_size }}
+  {{- $vco := .Values.call_option }}
+  {{- $dco := .default.call_option }}
+  wait_for_ready: {{ if hasKey $vco "wait_for_ready" }}{{ $vco.wait_for_ready }}{{ else }}{{ $dco.wait_for_ready }}{{ end }}
+  max_retry_rpc_buffer_size: {{ if hasKey $vco "max_retry_rpc_buffer_size" }}{{ $vco.max_retry_rpc_buffer_size }}{{ else }}{{ $dco.max_retry_rpc_buffer_size }}{{ end }}
+  max_recv_msg_size: {{ if hasKey $vco "max_recv_msg_size" }}{{ $vco.max_recv_msg_size }}{{ else }}{{ $dco.max_recv_msg_size }}{{ end }}
+  max_send_msg_size: {{ if hasKey $vco "max_send_msg_size" }}{{ $vco.max_send_msg_size }}{{ else }}{{ $dco.max_send_msg_size }}{{ end }}
+  content_subtype: {{ if hasKey $vco "content_subtype" }}{{ $vco.content_subtype | quote }}{{ else }}{{ $dco.content_subtype | quote }}{{ end }}
   {{- else }}
   {{- toYaml .default.call_option | nindent 2 }}
   {{- end }}
 dial_option:
   {{- if .Values.dial_option }}
-  write_buffer_size: {{ default .default.dial_option.write_buffer_size .Values.dial_option.write_buffer_size }}
-  read_buffer_size: {{ default .default.dial_option.read_buffer_size .Values.dial_option.read_buffer_size }}
-  initial_window_size: {{ default .default.dial_option.initial_window_size .Values.dial_option.initial_window_size }}
-  initial_connection_window_size: {{ default .default.dial_option.initial_connection_window_size .Values.dial_option.initial_connection_window_size }}
-  max_msg_size: {{ default .default.dial_option.max_msg_size .Values.dial_option.max_msg_size }}
-  backoff_max_delay: {{ default .default.dial_option.backoff_max_delay .Values.dial_option.backoff_max_delay | quote }}
-  backoff_base_delay: {{ default .default.dial_option.backoff_base_delay .Values.dial_option.backoff_base_delay | quote }}
-  backoff_multiplier: {{ default .default.dial_option.backoff_multiplier .Values.dial_option.backoff_multiplier }}
-  backoff_jitter: {{ default .default.dial_option.backoff_jitter .Values.dial_option.backoff_jitter }}
-  min_connection_timeout: {{ default .default.dial_option.min_connection_timeout .Values.dial_option.min_connection_timeout | quote }}
-  enable_backoff: {{ default .default.dial_option.enable_backoff .Values.dial_option.enable_backoff }}
-  insecure: {{ default .default.dial_option.insecure .Values.dial_option.insecure }}
-  timeout: {{ default .default.dial_option.timeout .Values.dial_option.timeout | quote }}
-  {{- if .Values.dial_option.interceptors }}
+  {{- $vdo := .Values.dial_option }}
+  {{- $ddo := .default.dial_option }}
+  write_buffer_size: {{ if hasKey $vdo "write_buffer_size" }}{{ $vdo.write_buffer_size }}{{ else }}{{ $ddo.write_buffer_size }}{{ end }}
+  read_buffer_size: {{ if hasKey $vdo "read_buffer_size" }}{{ $vdo.read_buffer_size }}{{ else }}{{ $ddo.read_buffer_size }}{{ end }}
+  initial_window_size: {{ if hasKey $vdo "initial_window_size" }}{{ $vdo.initial_window_size }}{{ else }}{{ $ddo.initial_window_size }}{{ end }}
+  initial_connection_window_size: {{ if hasKey $vdo "initial_connection_window_size" }}{{ $vdo.initial_connection_window_size }}{{ else }}{{ $ddo.initial_connection_window_size }}{{ end }}
+  max_msg_size: {{ if hasKey $vdo "max_msg_size" }}{{ $vdo.max_msg_size }}{{ else }}{{ $ddo.max_msg_size }}{{ end }}
+  max_header_list_size: {{ if hasKey $vdo "max_header_list_size" }}{{ $vdo.max_header_list_size }}{{ else }}{{ $ddo.max_header_list_size }}{{ end }}
+  max_call_attempts: {{ if hasKey $vdo "max_call_attempts" }}{{ $vdo.max_call_attempts }}{{ else }}{{ $ddo.max_call_attempts }}{{ end }}
+  backoff_max_delay: {{ if hasKey $vdo "backoff_max_delay" }}{{ $vdo.backoff_max_delay | quote }}{{ else }}{{ $ddo.backoff_max_delay | quote }}{{ end }}
+  backoff_base_delay: {{ if hasKey $vdo "backoff_base_delay" }}{{ $vdo.backoff_base_delay | quote }}{{ else }}{{ $ddo.backoff_base_delay | quote }}{{ end }}
+  backoff_multiplier: {{ if hasKey $vdo "backoff_multiplier" }}{{ $vdo.backoff_multiplier }}{{ else }}{{ $ddo.backoff_multiplier }}{{ end }}
+  backoff_jitter: {{ if hasKey $vdo "backoff_jitter" }}{{ $vdo.backoff_jitter }}{{ else }}{{ $ddo.backoff_jitter }}{{ end }}
+  min_connection_timeout: {{ if hasKey $vdo "min_connection_timeout" }}{{ $vdo.min_connection_timeout | quote }}{{ else }}{{ $ddo.min_connection_timeout | quote }}{{ end }}
+  enable_backoff: {{ if hasKey $vdo "enable_backoff" }}{{ $vdo.enable_backoff }}{{ else }}{{ $ddo.enable_backoff }}{{ end }}
+  disable_retry: {{ if hasKey $vdo "disable_retry" }}{{ $vdo.disable_retry }}{{ else }}{{ $ddo.disable_retry }}{{ end }}
+  insecure: {{ if hasKey $vdo "insecure" }}{{ $vdo.insecure }}{{ else }}{{ $ddo.insecure }}{{ end }}
+  shared_write_buffer: {{ if hasKey $vdo "shared_write_buffer" }}{{ $vdo.shared_write_buffer }}{{ else }}{{ $ddo.shared_write_buffer }}{{ end }}
+  authority: {{ if hasKey $vdo "authority" }}{{ $vdo.authority | quote }}{{ else }}{{ $ddo.authority | quote }}{{ end }}
+  idle_timeout: {{ if hasKey $vdo "idle_timeout" }}{{ $vdo.idle_timeout | quote }}{{ else }}{{ $ddo.idle_timeout | quote }}{{ end }}
+  user_agent: {{ if hasKey $vdo "user_agent" }}{{ $vdo.user_agent | quote }}{{ else }}{{ $ddo.user_agent | quote }}{{ end }}
+  timeout: {{ if hasKey $vdo "timeout" }}{{ $vdo.timeout | quote }}{{ else }}{{ $ddo.timeout | quote }}{{ end }}
+  {{- if hasKey $vdo "interceptors" }}
+  {{- if $vdo.interceptors }}
   interceptors:
-    {{- toYaml .Values.dial_option.interceptors | nindent 4 }}
-  {{- else if .default.dial_option.interceptors }}
+    {{- toYaml $vdo.interceptors | nindent 4 }}
+  {{- else }}
+  interceptors: []
+  {{- end }}
+  {{- else if $ddo.interceptors }}
   interceptors:
-    {{- toYaml .default.dial_option.interceptors | nindent 4 }}
+    {{- toYaml $ddo.interceptors | nindent 4 }}
   {{- else }}
   interceptors: []
   {{- end }}
   net:
-    {{- if .Values.dial_option.net }}
+    {{- if $vdo.net }}
+    {{- $vnet := $vdo.net }}
+    {{- $dnet := $ddo.net }}
+    network: {{ if hasKey $vnet "network" }}{{ $vnet.network | quote }}{{ else }}{{ $dnet.network | quote }}{{ end }}
     dns:
-      {{- if .Values.dial_option.net.dns }}
-      cache_enabled: {{ default .default.dial_option.net.dns.cache_enabled .Values.dial_option.net.dns.cache_enabled }}
-      refresh_duration: {{ default .default.dial_option.net.dns.refresh_duration .Values.dial_option.net.dns.refresh_duration | quote }}
-      cache_expiration: {{ default .default.dial_option.net.dns.cache_expiration .Values.dial_option.net.dns.cache_expiration | quote }}
+      {{- if $vnet.dns }}
+      {{- $vdns := $vnet.dns }}
+      {{- $ddns := $dnet.dns }}
+      cache_enabled: {{ if hasKey $vdns "cache_enabled" }}{{ $vdns.cache_enabled }}{{ else }}{{ $ddns.cache_enabled }}{{ end }}
+      refresh_duration: {{ if hasKey $vdns "refresh_duration" }}{{ $vdns.refresh_duration | quote }}{{ else }}{{ $ddns.refresh_duration | quote }}{{ end }}
+      cache_expiration: {{ if hasKey $vdns "cache_expiration" }}{{ $vdns.cache_expiration | quote }}{{ else }}{{ $ddns.cache_expiration | quote }}{{ end }}
       {{- else }}
-      {{- toYaml .default.dial_option.net.dns | nindent 6 }}
+      {{- toYaml $dnet.dns | nindent 6 }}
       {{- end }}
     dialer:
-      {{- if .Values.dial_option.net.dialer }}
-      timeout: {{ default .default.dial_option.net.dialer.timeout .Values.dial_option.net.dialer.timeout | quote }}
-      keepalive: {{ default .default.dial_option.net.dialer.keepalive .Values.dial_option.net.dialer.keepalive | quote }}
-      dual_stack_enabled: {{ default .default.dial_option.net.dialer.dual_stack_enabled .Values.dial_option.net.dialer.dual_stack_enabled }}
+      {{- if $vnet.dialer }}
+      {{- $vdialer := $vnet.dialer }}
+      {{- $ddialer := $dnet.dialer }}
+      timeout: {{ if hasKey $vdialer "timeout" }}{{ $vdialer.timeout | quote }}{{ else }}{{ $ddialer.timeout | quote }}{{ end }}
+      keepalive: {{ if hasKey $vdialer "keepalive" }}{{ $vdialer.keepalive | quote }}{{ else }}{{ $ddialer.keepalive | quote }}{{ end }}
+      dual_stack_enabled: {{ if hasKey $vdialer "dual_stack_enabled" }}{{ $vdialer.dual_stack_enabled }}{{ else }}{{ $ddialer.dual_stack_enabled }}{{ end }}
       {{- else }}
-      {{- toYaml .default.dial_option.net.dialer | nindent 6 }}
+      {{- toYaml $dnet.dialer | nindent 6 }}
       {{- end }}
     tls:
-      {{- if .Values.dial_option.net.tls }}
-      enabled: {{ default .default.dial_option.net.tls.enabled .Values.dial_option.net.tls.enabled }}
-      cert: {{ default .default.dial_option.net.tls.cert .Values.dial_option.net.tls.cert | quote }}
-      key: {{ default .default.dial_option.net.tls.key .Values.dial_option.net.tls.key | quote }}
-      ca: {{ default .default.dial_option.net.tls.ca .Values.dial_option.net.tls.ca | quote }}
-      crl: {{ default .default.dial_option.net.tls.crl .Values.dial_option.net.tls.crl | quote }}
-      insecure_skip_verify: {{ default .default.dial_option.net.tls.insecure_skip_verify .Values.dial_option.net.tls.insecure_skip_verify }}
-      hot_reload: {{ default .default.dial_option.net.tls.hot_reload .Values.dial_option.net.tls.hot_reload }}
+      {{- if $vnet.tls }}
+      {{- $vtls := $vnet.tls }}
+      {{- $dtls := $dnet.tls }}
+      enabled: {{ if hasKey $vtls "enabled" }}{{ $vtls.enabled }}{{ else }}{{ $dtls.enabled }}{{ end }}
+      cert: {{ if hasKey $vtls "cert" }}{{ $vtls.cert | quote }}{{ else }}{{ $dtls.cert | quote }}{{ end }}
+      key: {{ if hasKey $vtls "key" }}{{ $vtls.key | quote }}{{ else }}{{ $dtls.key | quote }}{{ end }}
+      ca: {{ if hasKey $vtls "ca" }}{{ $vtls.ca | quote }}{{ else }}{{ $dtls.ca | quote }}{{ end }}
+      crl: {{ if hasKey $vtls "crl" }}{{ $vtls.crl | quote }}{{ else }}{{ $dtls.crl | quote }}{{ end }}
+      insecure_skip_verify: {{ if hasKey $vtls "insecure_skip_verify" }}{{ $vtls.insecure_skip_verify }}{{ else }}{{ $dtls.insecure_skip_verify }}{{ end }}
+      hot_reload: {{ if hasKey $vtls "hot_reload" }}{{ $vtls.hot_reload }}{{ else }}{{ $dtls.hot_reload }}{{ end }}
+      server_name: {{ if hasKey $vtls "server_name" }}{{ $vtls.server_name | quote }}{{ else }}{{ $dtls.server_name | quote }}{{ end }}
+      client_auth: {{ if hasKey $vtls "client_auth" }}{{ $vtls.client_auth | quote }}{{ else }}{{ $dtls.client_auth | quote }}{{ end }}
       {{- else }}
-      {{- toYaml .default.dial_option.net.tls | nindent 6 }}
+      {{- toYaml $dnet.tls | nindent 6 }}
       {{- end }}
     socket_option:
-      {{- if .Values.dial_option.net.socket_option }}
-      reuse_port: {{ default .default.dial_option.net.socket_option.reuse_port .Values.dial_option.net.socket_option.reuse_port }}
-      reuse_addr: {{ default .default.dial_option.net.socket_option.reuse_addr .Values.dial_option.net.socket_option.reuse_addr }}
-      tcp_fast_open: {{ default .default.dial_option.net.socket_option.tcp_fast_open .Values.dial_option.net.socket_option.tcp_fast_open }}
-      tcp_no_delay: {{ default .default.dial_option.net.socket_option.tcp_no_delay .Values.dial_option.net.socket_option.tcp_no_delay }}
-      tcp_cork: {{ default .default.dial_option.net.socket_option.tcp_cork .Values.dial_option.net.socket_option.tcp_cork }}
-      tcp_quick_ack: {{ default .default.dial_option.net.socket_option.tcp_quick_ack .Values.dial_option.net.socket_option.tcp_quick_ack }}
-      tcp_defer_accept: {{ default .default.dial_option.net.socket_option.tcp_defer_accept .Values.dial_option.net.socket_option.tcp_defer_accept }}
-      ip_transparent: {{ default .default.dial_option.net.socket_option.ip_transparent .Values.dial_option.net.socket_option.ip_transparent }}
-      ip_recover_destination_addr: {{ default .default.dial_option.net.socket_option.ip_recover_destination_addr .Values.dial_option.net.socket_option.ip_recover_destination_addr }}
+      {{- if $vnet.socket_option }}
+      {{- $vso := $vnet.socket_option }}
+      {{- $dso := $dnet.socket_option }}
+      reuse_port: {{ if hasKey $vso "reuse_port" }}{{ $vso.reuse_port }}{{ else }}{{ $dso.reuse_port }}{{ end }}
+      reuse_addr: {{ if hasKey $vso "reuse_addr" }}{{ $vso.reuse_addr }}{{ else }}{{ $dso.reuse_addr }}{{ end }}
+      tcp_fast_open: {{ if hasKey $vso "tcp_fast_open" }}{{ $vso.tcp_fast_open }}{{ else }}{{ $dso.tcp_fast_open }}{{ end }}
+      tcp_no_delay: {{ if hasKey $vso "tcp_no_delay" }}{{ $vso.tcp_no_delay }}{{ else }}{{ $dso.tcp_no_delay }}{{ end }}
+      tcp_cork: {{ if hasKey $vso "tcp_cork" }}{{ $vso.tcp_cork }}{{ else }}{{ $dso.tcp_cork }}{{ end }}
+      tcp_quick_ack: {{ if hasKey $vso "tcp_quick_ack" }}{{ $vso.tcp_quick_ack }}{{ else }}{{ $dso.tcp_quick_ack }}{{ end }}
+      tcp_defer_accept: {{ if hasKey $vso "tcp_defer_accept" }}{{ $vso.tcp_defer_accept }}{{ else }}{{ $dso.tcp_defer_accept }}{{ end }}
+      ip_transparent: {{ if hasKey $vso "ip_transparent" }}{{ $vso.ip_transparent }}{{ else }}{{ $dso.ip_transparent }}{{ end }}
+      ip_recover_destination_addr: {{ if hasKey $vso "ip_recover_destination_addr" }}{{ $vso.ip_recover_destination_addr }}{{ else }}{{ $dso.ip_recover_destination_addr }}{{ end }}
       {{- else }}
-      {{- toYaml .default.dial_option.net.socket_option | nindent 6 }}
+      {{- toYaml $dnet.socket_option | nindent 6 }}
       {{- end }}
     {{- else }}
-    {{- toYaml .default.dial_option.net | nindent 4 }}
+    {{- toYaml $ddo.net | nindent 4 }}
     {{- end }}
   keepalive:
-    {{- if .Values.dial_option.keepalive }}
-    time: {{ default .default.dial_option.keepalive.time .Values.dial_option.keepalive.time | quote }}
-    timeout: {{ default .default.dial_option.keepalive.timeout .Values.dial_option.keepalive.timeout | quote }}
-    permit_without_stream: {{ default .default.dial_option.keepalive.permit_without_stream .Values.dial_option.keepalive.permit_without_stream }}
+    {{- if $vdo.keepalive }}
+    {{- $vka := $vdo.keepalive }}
+    {{- $dka := $ddo.keepalive }}
+    time: {{ if hasKey $vka "time" }}{{ $vka.time | quote }}{{ else }}{{ $dka.time | quote }}{{ end }}
+    timeout: {{ if hasKey $vka "timeout" }}{{ $vka.timeout | quote }}{{ else }}{{ $dka.timeout | quote }}{{ end }}
+    permit_without_stream: {{ if hasKey $vka "permit_without_stream" }}{{ $vka.permit_without_stream }}{{ else }}{{ $dka.permit_without_stream }}{{ end }}
     {{- else }}
-    {{- toYaml .default.dial_option.keepalive | nindent 4 }}
+    {{- toYaml $ddo.keepalive | nindent 4 }}
     {{- end }}
   {{- else }}
   {{- toYaml .default.dial_option | nindent 2 }}
   {{- end }}
 tls:
   {{- if .Values.tls }}
-  enabled: {{ default .default.tls.enabled .Values.tls.enabled }}
-  cert: {{ default .default.tls.cert .Values.tls.cert | quote }}
-  key: {{ default .default.tls.key .Values.tls.key | quote }}
-  ca: {{ default .default.tls.ca .Values.tls.ca | quote }}
-  crl: {{ default .default.tls.crl .Values.tls.crl | quote }}
-  insecure_skip_verify: {{ default .default.tls.insecure_skip_verify .Values.tls.insecure_skip_verify }}
-  hot_reload: {{ default .default.tls.hot_reload .Values.tls.hot_reload }}
+  {{- $vtls := .Values.tls }}
+  {{- $dtls := .default.tls }}
+  enabled: {{ if hasKey $vtls "enabled" }}{{ $vtls.enabled }}{{ else }}{{ $dtls.enabled }}{{ end }}
+  cert: {{ if hasKey $vtls "cert" }}{{ $vtls.cert | quote }}{{ else }}{{ $dtls.cert | quote }}{{ end }}
+  key: {{ if hasKey $vtls "key" }}{{ $vtls.key | quote }}{{ else }}{{ $dtls.key | quote }}{{ end }}
+  ca: {{ if hasKey $vtls "ca" }}{{ $vtls.ca | quote }}{{ else }}{{ $dtls.ca | quote }}{{ end }}
+  crl: {{ if hasKey $vtls "crl" }}{{ $vtls.crl | quote }}{{ else }}{{ $dtls.crl | quote }}{{ end }}
+  insecure_skip_verify: {{ if hasKey $vtls "insecure_skip_verify" }}{{ $vtls.insecure_skip_verify }}{{ else }}{{ $dtls.insecure_skip_verify }}{{ end }}
+  hot_reload: {{ if hasKey $vtls "hot_reload" }}{{ $vtls.hot_reload }}{{ else }}{{ $dtls.hot_reload }}{{ end }}
+  server_name: {{ if hasKey $vtls "server_name" }}{{ $vtls.server_name | quote }}{{ else }}{{ $dtls.server_name | quote }}{{ end }}
+  client_auth: {{ if hasKey $vtls "client_auth" }}{{ $vtls.client_auth | quote }}{{ else }}{{ $dtls.client_auth | quote }}{{ end }}
   {{- else }}
   {{- toYaml .default.tls | nindent 2 }}
   {{- end }}

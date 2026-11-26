@@ -18,7 +18,13 @@ import "go.opentelemetry.io/otel/attribute"
 type (
 	KeyValue = attribute.KeyValue
 	Key      = attribute.Key
+	Distinct = attribute.Distinct
+	Set      = attribute.Set
 )
+
+func NewSet(kvs ...KeyValue) Set {
+	return attribute.NewSet(kvs...)
+}
 
 func Bool(k string, v bool) KeyValue {
 	return attribute.Bool(k, v)

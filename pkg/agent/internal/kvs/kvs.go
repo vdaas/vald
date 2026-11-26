@@ -17,13 +17,13 @@ package kvs
 import (
 	"context"
 
-	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/hash"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/atomic"
 	"github.com/vdaas/vald/internal/sync/errgroup"
-	"github.com/zeebo/xxh3"
+	"golang.org/x/sys/cpu"
 )
 
 // BidiMap represents an interface for operating kvs.
@@ -49,9 +49,21 @@ type ValueStructUo struct {
 	timestamp int64
 }
 
+type ouShard struct {
+	m  map[uint32]valueStructOu
+	mu sync.RWMutex
+	_  cpu.CacheLinePad
+}
+
+type uoShard struct {
+	m  map[string]ValueStructUo
+	mu sync.RWMutex
+	_  cpu.CacheLinePad
+}
+
 type bidi struct {
-	ou          [slen]*sync.Map[uint32, valueStructOu]
-	uo          [slen]*sync.Map[string, ValueStructUo]
+	ou          [slen]*ouShard
+	uo          [slen]*uoShard
 	concurrency int
 	l           uint64
 }
@@ -76,9 +88,11 @@ func New(opts ...Option) BidiMap {
 	for _, opt := range append(defaultOptions, opts...) {
 		opt(b)
 	}
-	for i := range b.ou {
-		b.ou[i] = new(sync.Map[uint32, valueStructOu])
-		b.uo[i] = new(sync.Map[string, ValueStructUo])
+	ouBuf := make([]ouShard, slen)
+	uoBuf := make([]uoShard, slen)
+	for i := range slen {
+		b.ou[i] = &ouBuf[i]
+		b.uo[i] = &uoBuf[i]
 	}
 
 	return b
@@ -87,7 +101,10 @@ func New(opts ...Option) BidiMap {
 // Get returns the value and boolean from the given key.
 // If the value does not exist, it returns nil and false.
 func (b *bidi) Get(key string) (oid uint32, timestamp int64, exists bool) {
-	vs, ok := b.uo[getShardID(key)].Load(key)
+	s := b.uo[getShardID(key)]
+	s.mu.RLock()
+	vs, ok := s.m[key]
+	s.mu.RUnlock()
 	if !ok {
 		return 0, 0, false
 	}
@@ -97,7 +114,10 @@ func (b *bidi) Get(key string) (oid uint32, timestamp int64, exists bool) {
 // GetInverse returns the key and the boolean from the given val.
 // If the key does not exist, it returns nil and false.
 func (b *bidi) GetInverse(val uint32) (string, int64, bool) {
-	vs, ok := b.ou[val&mask].Load(val)
+	s := b.ou[val&mask]
+	s.mu.RLock()
+	vs, ok := s.m[val]
+	s.mu.RUnlock()
 	if !ok {
 		return "", 0, false
 	}
@@ -107,52 +127,80 @@ func (b *bidi) GetInverse(val uint32) (string, int64, bool) {
 
 // Set sets the key and val to the bidi.
 func (b *bidi) Set(key string, val uint32, ts int64) {
-	id := getShardID(key)
-	// Swap reads the old pair and writes the new one in one step, so a concurrent
-	// Delete cannot be undone by a second Store and the overwrite costs one lookup.
-	vs, loaded := b.uo[id].Swap(key, ValueStructUo{value: val, timestamp: ts})
+	uo := b.uo[getShardID(key)]
+	uo.mu.Lock()
+	if uo.m == nil {
+		uo.m = make(map[string]ValueStructUo)
+	}
+	vs, loaded := uo.m[key]
+	uo.m[key] = ValueStructUo{value: val, timestamp: ts}
+	uo.mu.Unlock()
+
 	if loaded {
-		b.ou[vs.value&mask].Delete(vs.value) // delete paired map value using old value_key
-	} else { // increase the count only if the key is not exists before
+		if vs.value != val {
+			oldOu := b.ou[vs.value&mask]
+			oldOu.mu.Lock()
+			if cur, ok := oldOu.m[vs.value]; ok && cur.value == key {
+				delete(oldOu.m, vs.value)
+			}
+			oldOu.mu.Unlock()
+		}
+	} else { // increase the count only if the key did not exist before
 		atomic.AddUint64(&b.l, 1)
 	}
-	b.ou[val&mask].Store(val, valueStructOu{value: key, timestamp: ts}) // store anytime
+
+	ou := b.ou[val&mask]
+	ou.mu.Lock()
+	if ou.m == nil {
+		ou.m = make(map[uint32]valueStructOu)
+	}
+	ou.m[val] = valueStructOu{value: key, timestamp: ts}
+	ou.mu.Unlock()
 }
 
 // SetTimestamp sets the timestamp of key to ts only while key is mapped to val, and reports
 // whether it did. Unlike Set it never re-creates a pair removed by a concurrent Delete nor
-// overwrites a pair repointed by a concurrent Set; a concurrent timestamp change is retried.
+// overwrites a pair repointed by a concurrent Set.
 func (b *bidi) SetTimestamp(key string, val uint32, ts int64) bool {
 	uo := b.uo[getShardID(key)]
-	for {
-		vs, ok := uo.Load(key)
-		if !ok || vs.value != val {
-			return false
-		}
-		if uo.CompareAndSwap(key, vs, ValueStructUo{value: val, timestamp: ts}) {
-			break
-		}
+	uo.mu.Lock()
+	vs, ok := uo.m[key]
+	if !ok || vs.value != val {
+		uo.mu.Unlock()
+		return false
 	}
+	uo.m[key] = ValueStructUo{value: val, timestamp: ts}
+	uo.mu.Unlock()
+
 	ou := b.ou[val&mask]
-	for {
-		vs, ok := ou.Load(val)
-		if !ok || vs.value != key {
-			// a concurrent Delete or Set already dropped the inverse pair.
-			return true
-		}
-		if ou.CompareAndSwap(val, vs, valueStructOu{value: key, timestamp: ts}) {
-			return true
-		}
+	ou.mu.Lock()
+	ovs, ok := ou.m[val]
+	if ok && ovs.value == key {
+		ou.m[val] = valueStructOu{value: key, timestamp: ts}
 	}
+	ou.mu.Unlock()
+	return true
 }
 
 // Delete deletes the key and the value from the bidi by the given key and returns val and true.
 // If the value for the key does not exist, it returns nil and false.
 func (b *bidi) Delete(key string) (val uint32, ok bool) {
-	vs, ok := b.uo[getShardID(key)].LoadAndDelete(key)
+	uo := b.uo[getShardID(key)]
+	uo.mu.Lock()
+	vs, ok := uo.m[key]
+	if ok {
+		delete(uo.m, key)
+	}
+	uo.mu.Unlock()
+
 	val = vs.value
 	if ok {
-		b.ou[val&mask].Delete(val)
+		ou := b.ou[val&mask]
+		ou.mu.Lock()
+		if cur, ok2 := ou.m[val]; ok2 && cur.value == key {
+			delete(ou.m, val)
+		}
+		ou.mu.Unlock()
 		atomic.AddUint64(&b.l, ^uint64(0))
 	}
 	return val, ok
@@ -161,10 +209,22 @@ func (b *bidi) Delete(key string) (val uint32, ok bool) {
 // DeleteInverse deletes the key and the value from the bidi by the given val and returns the key and true.
 // If the key for the val does not exist, it returns nil and false.
 func (b *bidi) DeleteInverse(val uint32) (key string, ok bool) {
-	vs, ok := b.ou[val&mask].LoadAndDelete(val)
+	ou := b.ou[val&mask]
+	ou.mu.Lock()
+	vs, ok := ou.m[val]
+	if ok {
+		delete(ou.m, val)
+	}
+	ou.mu.Unlock()
+
 	key = vs.value
 	if ok {
-		b.uo[getShardID(key)].LoadAndDelete(key)
+		uo := b.uo[getShardID(key)]
+		uo.mu.Lock()
+		if cur, ok2 := uo.m[key]; ok2 && cur.value == val {
+			delete(uo.m, key)
+		}
+		uo.mu.Unlock()
 		atomic.AddUint64(&b.l, ^uint64(0))
 	}
 	return key, ok
@@ -172,6 +232,10 @@ func (b *bidi) DeleteInverse(val uint32) (key string, ok bool) {
 
 // Range retrieves all set keys and values and calls the callback function f.
 func (b *bidi) Range(ctx context.Context, f func(string, uint32, int64) bool) {
+	type entry struct {
+		key string
+		val ValueStructUo
+	}
 	eg, ctx := errgroup.New(ctx)
 	if b.concurrency > 0 {
 		eg.SetLimit(b.concurrency)
@@ -179,18 +243,27 @@ func (b *bidi) Range(ctx context.Context, f func(string, uint32, int64) bool) {
 	for i := range b.uo {
 		idx := i
 		eg.Go(safety.RecoverFunc(func() (err error) {
-			b.uo[idx].Range(func(uuid string, val ValueStructUo) bool {
+			shard := b.uo[idx]
+			shard.mu.RLock()
+			if len(shard.m) == 0 {
+				shard.mu.RUnlock()
+				return nil
+			}
+			snapshot := make([]entry, 0, len(shard.m))
+			for k, v := range shard.m {
+				snapshot = append(snapshot, entry{key: k, val: v})
+			}
+			shard.mu.RUnlock()
+
+			for _, e := range snapshot {
 				select {
 				case <-ctx.Done():
-					err = ctx.Err()
-					return false
+					return ctx.Err()
 				default:
-					return f(uuid, val.value, val.timestamp)
+					if !f(e.key, e.val.value, e.val.timestamp) {
+						return nil
+					}
 				}
-			})
-			if err != nil &&
-				(errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded)) {
-				return err
 			}
 			return nil
 		}))
@@ -215,7 +288,7 @@ func (b *bidi) Close() error {
 
 func getShardID(key string) (id uint64) {
 	if len(key) > maxHashKeyLength {
-		return xxh3.HashString(key[:maxHashKeyLength]) & mask
+		return hash.String(key[:maxHashKeyLength]) & mask
 	}
-	return xxh3.HashString(key) & mask
+	return hash.String(key) & mask
 }

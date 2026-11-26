@@ -67,5 +67,84 @@ func BenchmarkSearch(b *testing.B) {
 				}
 			}
 		})
+		b.Run("validated/k="+strconv.Itoa(k), func(b *testing.B) {
+			b.ResetTimer()
+			for i := range b.N {
+				res, err := n.SearchValidated(b.Context(), queries[i%len(queries)], k, 0, 0, 50)
+				if err != nil {
+					b.Fatal(err)
+				}
+				if len(res) != k {
+					b.Fatalf("SearchValidated() returned %d results, want %d", len(res), k)
+				}
+			}
+		})
 	}
+}
+
+func BenchmarkLinearSearchAndValidated(b *testing.B) {
+	log.Init(log.WithLoggerType("nop"))
+	const (
+		dim = 128
+		num = 5000
+	)
+	n, err := New(
+		WithDimension(dim),
+		WithObjectType(Float),
+		WithDistanceType(L2),
+		WithCreationEdgeSize(50),
+		WithSearchEdgeSize(50),
+		WithDefaultPoolSize(16),
+	)
+	if err != nil {
+		b.Fatal(err)
+	}
+	b.Cleanup(n.Close)
+	vecs := vector.GaussianDistributedFloat32VectorGenerator(num, dim)
+	for _, v := range vecs {
+		if _, err := n.Insert(v); err != nil {
+			b.Fatal(err)
+		}
+	}
+	if err := n.CreateIndex(16); err != nil {
+		b.Fatal(err)
+	}
+	queries := vector.GaussianDistributedFloat32VectorGenerator(256, dim)
+	b.Run("LinearSearch", func(b *testing.B) {
+		b.ResetTimer()
+		for i := range b.N {
+			res, err := n.LinearSearch(b.Context(), queries[i%len(queries)], 10)
+			if err != nil || len(res) != 10 {
+				b.Fatalf("LinearSearch() = (%d, %v)", len(res), err)
+			}
+		}
+	})
+	b.Run("LinearSearchValidated", func(b *testing.B) {
+		b.ResetTimer()
+		for i := range b.N {
+			res, err := n.LinearSearchValidated(b.Context(), queries[i%len(queries)], 10)
+			if err != nil || len(res) != 10 {
+				b.Fatalf("LinearSearchValidated() = (%d, %v)", len(res), err)
+			}
+		}
+	})
+	b.Run("GetVector", func(b *testing.B) {
+		b.ResetTimer()
+		for i := range b.N {
+			v, err := n.GetVector(uint(i%num) + 1)
+			if err != nil || len(v) != dim {
+				b.Fatalf("GetVector() = (%d, %v)", len(v), err)
+			}
+		}
+	})
+	b.Run("GetVectorInto", func(b *testing.B) {
+		dst := make([]float32, 0, dim)
+		b.ResetTimer()
+		for i := range b.N {
+			v, err := n.GetVectorInto(uint(i%num)+1, dst)
+			if err != nil || len(v) != dim {
+				b.Fatalf("GetVectorInto() = (%d, %v)", len(v), err)
+			}
+		}
+	})
 }

@@ -50,7 +50,7 @@ jobs:
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: LanguageTool
-        uses: reviewdog/action-languagetool@afd06e9b0f782c9562c92efffb66a49c09b2b4f4 # v1.23.0
+        uses: reviewdog/action-languagetool@7d3a8b5e6ca46585fc7cdbf9fee76ad359216953 # v1.24.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
@@ -75,7 +75,7 @@ jobs:
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: LanguageTool
-        uses: reviewdog/action-languagetool@afd06e9b0f782c9562c92efffb66a49c09b2b4f4 # v1.23.0
+        uses: reviewdog/action-languagetool@7d3a8b5e6ca46585fc7cdbf9fee76ad359216953 # v1.24.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review

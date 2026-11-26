@@ -15,156 +15,36 @@ package grpc
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
-	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/info"
-	"github.com/vdaas/vald/internal/log"
-	"github.com/vdaas/vald/internal/net/grpc"
-	"github.com/vdaas/vald/internal/net/grpc/codes"
-	"github.com/vdaas/vald/internal/net/grpc/errdetails"
-	"github.com/vdaas/vald/internal/net/grpc/errhandler"
-	"github.com/vdaas/vald/internal/net/grpc/status"
-	"github.com/vdaas/vald/internal/observability/attribute"
 	"github.com/vdaas/vald/internal/observability/trace"
-	"github.com/vdaas/vald/internal/strings"
 )
 
 func (s *server) LinearSearch(
 	ctx context.Context, req *payload.Search_Request,
 ) (res *payload.Search_Response, err error) {
-	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.LinearSearchRPCName)
-	defer trace.End(span)
-	if len(req.GetVector()) != s.ngt.GetDimensionSize() {
-		err = errors.ErrIncompatibleDimensionSize(len(req.GetVector()), int(s.ngt.GetDimensionSize()))
-		err = status.WrapWithInvalidArgument("LinearSearch API Incompatible Dimension Size detected",
-			err,
-			&errdetails.RequestInfo{
-				RequestId:   req.GetConfig().GetRequestId(),
-				ServingData: errdetails.Serialize(req),
-			},
-			&errdetails.BadRequest{
-				FieldViolations: []*errdetails.BadRequestFieldViolation{
-					{
-						Field:       "vector dimension size",
-						Description: err.Error(),
-					},
-				},
-			},
-			&errdetails.ResourceInfo{
-				ResourceType: ngtResourceType + "/ngt.LinearSearch",
-			})
-		log.Warn(err)
-		return errhandler.HandleError[payload.Search_Response](span, codes.InvalidArgument, err)
+	var span trace.Span
+	if trace.Enabled() {
+		ctx, span = trace.StartSpan(ctx, apiName+"/"+vald.LinearSearchRPCName)
+		defer trace.End(span)
+	}
+	if err = s.validateVectorDimension(span, vald.LinearSearchRPCName, ngtResourceType+"/ngt.LinearSearch",
+		req.GetConfig().GetRequestId(), req, len(req.GetVector()), s.ngt.GetDimensionSize()); err != nil {
+		return nil, err
 	}
 	if err = s.validateVectorValue(span, vald.LinearSearchRPCName, ngtResourceType+"/ngt.LinearSearch",
 		req.GetConfig().GetRequestId(), req, req.GetVector()); err != nil {
 		return nil, err
 	}
-	res, err = s.ngt.LinearSearch(ctx,
+	res, err = s.ngt.LinearSearchValidated(ctx,
 		req.GetVector(),
 		req.GetConfig().GetNum())
 	if err == nil && res == nil {
 		return nil, nil
 	}
-	if err != nil || res == nil {
-		var attrs []attribute.KeyValue
-		// errors.As writes to its target, so it must be local to stay race-free across concurrent requests.
-		var errNGT errors.NGTError
-		switch {
-		case errors.Is(err, errors.ErrCreateIndexingIsInProgress):
-			err = status.WrapWithAborted("LinearSearch API aborted to process search request due to creating indices is in progress", err,
-				&errdetails.RequestInfo{
-					RequestId:   req.GetConfig().GetRequestId(),
-					ServingData: errdetails.Serialize(req),
-				},
-				s.resourceInfo(ngtResourceType+"/ngt.LinearSearch"))
-			log.Debug(err)
-			attrs = trace.StatusCodeAborted(err.Error())
-		case errors.Is(err, errors.ErrFlushingIsInProgress):
-			err = status.WrapWithAborted("LinearSearch API aborted to process search request due to flushing indices is in progress", err,
-				&errdetails.RequestInfo{
-					RequestId:   req.GetConfig().GetRequestId(),
-					ServingData: errdetails.Serialize(req),
-				},
-				s.resourceInfo(ngtResourceType+"/ngt.Search"))
-			log.Debug(err)
-			attrs = trace.StatusCodeAborted(err.Error())
-		case errors.Is(err, errors.ErrEmptySearchResult),
-			err == nil && res == nil,
-			0 < req.GetConfig().GetMinNum() && len(res.GetResults()) < int(req.GetConfig().GetMinNum()):
-			err = status.WrapWithNotFound(fmt.Sprintf("LinearSearch API requestID %s's search result not found", req.GetConfig().GetRequestId()), err,
-				&errdetails.RequestInfo{
-					RequestId:   req.GetConfig().GetRequestId(),
-					ServingData: errdetails.Serialize(req),
-				},
-				s.resourceInfo(ngtResourceType+"/ngt.LinearSearch"))
-			log.Debug(err)
-			attrs = trace.StatusCodeNotFound(err.Error())
-		case errors.As(err, &errNGT):
-			log.Errorf("ngt core process returned error: %v", err)
-			err = status.WrapWithInternal("LinearSearch API failed to process search request due to ngt core process returned error", err,
-				&errdetails.RequestInfo{
-					RequestId:   req.GetConfig().GetRequestId(),
-					ServingData: errdetails.Serialize(req),
-				},
-				s.resourceInfo(ngtResourceType+"/ngt.LinearSearch/core.ngt"), info.Get())
-			log.Error(err)
-			attrs = trace.StatusCodeInternal(err.Error())
-		case errors.Is(err, errors.ErrIncompatibleDimensionSize(len(req.GetVector()), int(s.ngt.GetDimensionSize()))):
-			err = status.WrapWithInvalidArgument("LinearSearch API Incompatible Dimension Size detected",
-				err,
-				&errdetails.RequestInfo{
-					RequestId:   req.GetConfig().GetRequestId(),
-					ServingData: errdetails.Serialize(req),
-				},
-				&errdetails.BadRequest{
-					FieldViolations: []*errdetails.BadRequestFieldViolation{
-						{
-							Field:       "vector dimension size",
-							Description: err.Error(),
-						},
-					},
-				},
-				&errdetails.ResourceInfo{
-					ResourceType: ngtResourceType + "/ngt.LinearSearch",
-				})
-			log.Warn(err)
-			attrs = trace.StatusCodeInvalidArgument(err.Error())
-		case errors.Is(err, errors.ErrNaNOrInfVector):
-			err = status.WrapWithInvalidArgument("LinearSearch API vector with NaN or Inf value detected",
-				err,
-				&errdetails.RequestInfo{
-					RequestId:   req.GetConfig().GetRequestId(),
-					ServingData: errdetails.Serialize(req),
-				},
-				&errdetails.BadRequest{
-					FieldViolations: []*errdetails.BadRequestFieldViolation{
-						{
-							Field:       vectorField,
-							Description: err.Error(),
-						},
-					},
-				},
-				&errdetails.ResourceInfo{
-					ResourceType: ngtResourceType + "/ngt.LinearSearch",
-				})
-			log.Warn(err)
-			attrs = trace.StatusCodeInvalidArgument(err.Error())
-		default:
-			err = status.WrapWithInternal("LinearSearch API failed to process search request", err,
-				&errdetails.RequestInfo{
-					RequestId:   req.GetConfig().GetRequestId(),
-					ServingData: errdetails.Serialize(req),
-				},
-				s.resourceInfo(ngtResourceType+"/ngt.LinearSearch"), info.Get())
-			log.Error(err)
-			attrs = trace.StatusCodeInternal(err.Error())
-		}
-		errhandler.RecordSpanAttrs(span, attrs, err)
-		return nil, err
+	if err != nil {
+		return nil, s.handleSearchError(span, vald.LinearSearchRPCName, "", false, req.GetConfig(), req, len(req.GetVector()), err)
 	}
 	res.RequestId = req.GetConfig().GetRequestId()
 	return res, nil
@@ -173,8 +53,11 @@ func (s *server) LinearSearch(
 func (s *server) LinearSearchByID(
 	ctx context.Context, req *payload.Search_IDRequest,
 ) (res *payload.Search_Response, err error) {
-	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.LinearSearchByIDRPCName)
-	defer trace.End(span)
+	var span trace.Span
+	if trace.Enabled() {
+		ctx, span = trace.StartSpan(ctx, apiName+"/"+vald.LinearSearchByIDRPCName)
+		defer trace.End(span)
+	}
 	uuid := req.GetId()
 	if err = s.validateUUID(span, vald.LinearSearchByIDRPCName, ngtResourceType+"/ngt.LinearSearchByID",
 		uuid, req); err != nil {
@@ -186,172 +69,19 @@ func (s *server) LinearSearchByID(
 	if err == nil && res == nil {
 		return nil, nil
 	}
-	if err != nil || res == nil {
-		var attrs []attribute.KeyValue
-		// errors.As writes to its target, so it must be local to stay race-free across concurrent requests.
-		var errNGT errors.NGTError
-		switch {
-		case errors.Is(err, errors.ErrCreateIndexingIsInProgress):
-			err = status.WrapWithAborted("LinearSearchByID API aborted to process search request due to creating indices is in progress", err,
-				&errdetails.RequestInfo{
-					RequestId:   req.GetConfig().GetRequestId(),
-					ServingData: errdetails.Serialize(req),
-				},
-				s.resourceInfo(ngtResourceType+"/ngt.LinearSearchByID"))
-			log.Debug(err)
-			attrs = trace.StatusCodeAborted(err.Error())
-		case errors.Is(err, errors.ErrFlushingIsInProgress):
-			err = status.WrapWithAborted("LinearSearchByID API aborted to process search request due to flushing indices is in progress", err,
-				&errdetails.RequestInfo{
-					RequestId:   req.GetConfig().GetRequestId(),
-					ServingData: errdetails.Serialize(req),
-				},
-				s.resourceInfo(ngtResourceType+"/ngt.LinearSearchByID"))
-			log.Debug(err)
-			attrs = trace.StatusCodeAborted(err.Error())
-		case errors.Is(err, errors.ErrEmptySearchResult),
-			err == nil && res == nil,
-			0 < req.GetConfig().GetMinNum() && len(res.GetResults()) < int(req.GetConfig().GetMinNum()):
-			err = status.WrapWithNotFound(fmt.Sprintf("LinearSearchByID API uuid %s's search result not found", req.GetId()), err,
-				&errdetails.RequestInfo{
-					RequestId:   req.GetConfig().GetRequestId(),
-					ServingData: errdetails.Serialize(req),
-				},
-				s.resourceInfo(ngtResourceType+"/ngt.LinearSearchByID"))
-			log.Debug(err)
-			attrs = trace.StatusCodeNotFound(err.Error())
-		case errors.Is(err, errors.ErrObjectIDNotFound(req.GetId())),
-			strings.Contains(err.Error(), fmt.Sprintf("ngt uuid %s's object not found", req.GetId())):
-			err = status.WrapWithNotFound(fmt.Sprintf("LinearSearchByID API uuid %s's object not found", req.GetId()), err,
-				&errdetails.RequestInfo{
-					RequestId:   req.GetConfig().GetRequestId(),
-					ServingData: errdetails.Serialize(req),
-				},
-				s.resourceInfo(ngtResourceType+"/ngt.LinearSearchByID"))
-			log.Debug(err)
-			attrs = trace.StatusCodeNotFound(err.Error())
-		case errors.As(err, &errNGT):
-			log.Errorf("ngt core process returned error: %v", err)
-			err = status.WrapWithInternal("LinearSearchByID API failed to process search request due to ngt core process returned error", err,
-				&errdetails.RequestInfo{
-					RequestId:   req.GetConfig().GetRequestId(),
-					ServingData: errdetails.Serialize(req),
-				},
-				s.resourceInfo(ngtResourceType+"/ngt.LinearSearchByID/core.ngt"), info.Get())
-			log.Error(err)
-			attrs = trace.StatusCodeInternal(err.Error())
-		case errors.Is(err, errors.ErrIncompatibleDimensionSize(len(vec), int(s.ngt.GetDimensionSize()))):
-			err = status.WrapWithInvalidArgument("LinearSearchByID API Incompatible Dimension Size detected",
-				err,
-				&errdetails.RequestInfo{
-					RequestId:   req.GetConfig().GetRequestId(),
-					ServingData: errdetails.Serialize(req),
-				},
-				&errdetails.BadRequest{
-					FieldViolations: []*errdetails.BadRequestFieldViolation{
-						{
-							Field:       "vector dimension size",
-							Description: err.Error(),
-						},
-					},
-				},
-				&errdetails.ResourceInfo{
-					ResourceType: ngtResourceType + "/ngt.LinearSearchByID",
-				})
-			log.Warn(err)
-			attrs = trace.StatusCodeInvalidArgument(err.Error())
-		case errors.Is(err, errors.ErrNaNOrInfVector):
-			err = status.WrapWithFailedPrecondition(fmt.Sprintf("LinearSearchByID API stored vector of %s contains NaN or Inf", req.GetId()),
-				err,
-				&errdetails.RequestInfo{
-					RequestId:   req.GetConfig().GetRequestId(),
-					ServingData: errdetails.Serialize(req),
-				},
-				&errdetails.ResourceInfo{
-					ResourceType: ngtResourceType + "/ngt.LinearSearchByID",
-					ResourceName: req.GetId(),
-				})
-			log.Warn(err)
-			attrs = trace.StatusCodeFailedPrecondition(err.Error())
-		default:
-			err = status.WrapWithInternal("LinearSearchByID API failed to process search request", err,
-				&errdetails.RequestInfo{
-					RequestId:   req.GetConfig().GetRequestId(),
-					ServingData: errdetails.Serialize(req),
-				},
-				s.resourceInfo(ngtResourceType+"/ngt.LinearSearchByID"), info.Get())
-			log.Error(err)
-			attrs = trace.StatusCodeInternal(err.Error())
-		}
-		errhandler.RecordSpanAttrs(span, attrs, err)
-		return nil, err
+	if err != nil {
+		return nil, s.handleSearchError(span, vald.LinearSearchByIDRPCName, uuid, true, req.GetConfig(), req, len(vec), err)
 	}
 	res.RequestId = req.GetConfig().GetRequestId()
 	return res, nil
 }
 
-func (s *server) StreamLinearSearch(stream vald.Search_StreamLinearSearchServer) (err error) {
-	ctx, span := trace.StartSpan(stream.Context(), apiName+"/"+vald.StreamLinearSearchRPCName)
-	defer trace.End(span)
-	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
-		func(ctx context.Context, req *payload.Search_Request) (*payload.Search_StreamResponse, error) {
-			ctx, sspan := trace.StartSpan(ctx, apiName+"/"+vald.StreamLinearSearchRPCName+"/requestID-"+req.GetConfig().GetRequestId())
-			defer trace.End(sspan)
-			res, err := s.LinearSearch(ctx, req)
-			if err != nil {
-				st, _ := status.FromError(err)
-				errhandler.RecordSpanStatus(sspan, st, err)
-				return &payload.Search_StreamResponse{
-					Payload: &payload.Search_StreamResponse_Status{
-						Status: st.Proto(),
-					},
-				}, err
-			}
-			return &payload.Search_StreamResponse{
-				Payload: &payload.Search_StreamResponse_Response{
-					Response: res,
-				},
-			}, nil
-		})
-	if err != nil {
-		st, _ := status.FromError(err)
-		errhandler.RecordSpanStatus(span, st, err)
-		return err
-	}
-	return nil
+func (s *server) StreamLinearSearch(stream vald.Search_StreamLinearSearchServer) error {
+	return streamSearch(stream, vald.StreamLinearSearchRPCName, s.streamConcurrency, searchReqSpanSuffix, s.LinearSearch)
 }
 
-func (s *server) StreamLinearSearchByID(
-	stream vald.Search_StreamLinearSearchByIDServer,
-) (err error) {
-	ctx, span := trace.StartSpan(stream.Context(), apiName+"/"+vald.StreamLinearSearchByIDRPCName)
-	defer trace.End(span)
-	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
-		func(ctx context.Context, req *payload.Search_IDRequest) (*payload.Search_StreamResponse, error) {
-			ctx, sspan := trace.StartSpan(ctx, apiName+"/"+vald.StreamLinearSearchByIDRPCName+"/id-"+req.GetId())
-			defer trace.End(sspan)
-			res, err := s.LinearSearchByID(ctx, req)
-			if err != nil {
-				st, _ := status.FromError(err)
-				errhandler.RecordSpanStatus(sspan, st, err)
-				return &payload.Search_StreamResponse{
-					Payload: &payload.Search_StreamResponse_Status{
-						Status: st.Proto(),
-					},
-				}, err
-			}
-			return &payload.Search_StreamResponse{
-				Payload: &payload.Search_StreamResponse_Response{
-					Response: res,
-				},
-			}, nil
-		})
-	if err != nil {
-		st, _ := status.FromError(err)
-		errhandler.RecordSpanStatus(span, st, err)
-		return err
-	}
-	return nil
+func (s *server) StreamLinearSearchByID(stream vald.Search_StreamLinearSearchByIDServer) error {
+	return streamSearch(stream, vald.StreamLinearSearchByIDRPCName, s.streamConcurrency, idReqSpanSuffix, s.LinearSearchByID)
 }
 
 func (s *server) MultiLinearSearch(

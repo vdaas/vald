@@ -340,8 +340,13 @@ func TestGo(t *testing.T) {
 				},
 				beforeFunc: func(t *testing.T, _ args) {
 					t.Helper()
+					instance, once = nil, sync.Once{}
 					g := new(group)
 					instance = g
+				},
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
+					instance, once = nil, sync.Once{}
 				},
 				checkFunc: func(got Group) error {
 					if err := got.Wait(); err != nil {
@@ -683,6 +688,7 @@ func Test_group_doCancel(t *testing.T) {
 	}
 }
 
+// Not parallel: it mutates the package-level instance.
 func TestWait(t *testing.T) {
 	type want struct {
 		err error
@@ -705,11 +711,12 @@ func TestWait(t *testing.T) {
 			name: "returns nil when Wait returns nil",
 			beforeFunc: func(t *testing.T) {
 				t.Helper()
+				instance, once = nil, sync.Once{}
 				instance, _ = New(t.Context())
 			},
 			afterFunc: func(t *testing.T) {
 				t.Helper()
-				instance = nil
+				instance, once = nil, sync.Once{}
 			},
 		},
 	}
@@ -717,7 +724,6 @@ func TestWait(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt)
 			}

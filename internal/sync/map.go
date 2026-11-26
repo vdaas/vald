@@ -15,6 +15,4 @@ package sync
 
 import gache "github.com/kpango/gache/v2"
 
-type Map[K, V comparable] struct {
-	gache.Map[K, V]
-}
+type Map[K comparable, V any] = gache.Map[K, V]

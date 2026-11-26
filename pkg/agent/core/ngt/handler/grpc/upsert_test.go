@@ -49,9 +49,13 @@ func (n *upsertNGT) UpdateMultipleWithTime(map[string][]float32, int64) error { 
 
 func (*upsertNGT) InsertWithTime(string, []float32, int64) error { return nil }
 
+func (*upsertNGT) InsertWithConfig(string, []float32, int64, bool) error { return nil }
+
 func (*upsertNGT) InsertMultiple(map[string][]float32) error { return nil }
 
 func (*upsertNGT) InsertMultipleWithTime(map[string][]float32, int64) error { return nil }
+
+func (*upsertNGT) InsertMultipleWithConfig(map[string][]float32, int64, bool) error { return nil }
 
 // Test_server_update_invalidTimestamp pins that the service's rejection of a
 // MaxInt64 timestamp reaches the client as InvalidArgument, as the LB gateway

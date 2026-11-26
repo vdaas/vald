@@ -18,6 +18,7 @@ package pool
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strconv"
 	"time"
 
@@ -25,12 +26,12 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
+	"github.com/vdaas/vald/internal/net/grpc/connectivity"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/atomic"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/connectivity"
 )
 
 // Alias types for clarity.
@@ -116,6 +117,21 @@ func (pc *poolConn) getState() connectivity.State {
 // It periodically checks the connection state until either the connection is closed or the delay elapses.
 func (pc *poolConn) Close(ctx context.Context, delay time.Duration) error {
 	pc.state.Store(int32(connectivity.Shutdown) + 1)
+	log.Debugf("Closing connection for %s with delay %s", pc.addr, delay)
+	// Try a synchronous close before allocating a polling ticker and timeout
+	// context: Close() normally transitions the conn to Shutdown right away.
+	switch pc.conn.GetState() {
+	case connectivity.Idle, connectivity.Connecting, connectivity.Ready, connectivity.TransientFailure:
+		if err := pc.conn.Close(); err != nil {
+			log.Errorf("failed to close gRPC pool connection for %s, error: %v", pc.addr, err)
+		}
+		if pc.conn.GetState() == connectivity.Shutdown {
+			return nil
+		}
+	case connectivity.Shutdown:
+		return nil
+	}
+
 	// Determine the ticker interval (at least 5ms, at most 5s).
 	interval := delay / 10
 	if interval < 5*time.Millisecond {
@@ -130,32 +146,25 @@ func (pc *poolConn) Close(ctx context.Context, delay time.Duration) error {
 	ctx, cancel := context.WithTimeout(ctx, delay)
 	defer cancel()
 
-	log.Debugf("Closing connection for %s with delay %s", pc.addr, delay)
 	for {
-		switch pc.conn.GetState() {
-		case connectivity.Idle, connectivity.Connecting, connectivity.Ready, connectivity.TransientFailure:
-			err := pc.conn.Close()
-			if err != nil {
-				log.Errorf("failed to close gRPC pool connection for %s, error: %v", pc.addr, err)
-			}
-			// Close() transitions the conn to Shutdown synchronously, so re-check
-			// right away and return instead of waiting a full ticker interval;
-			// otherwise serial Disconnect is O(slots * interval) (~48s for a
-			// 4-slot pool at the default 2m delay), exceeding typical shutdown
-			// grace periods. Fall through to the ticker only if it is somehow
-			// not yet Shutdown, so this can never busy-loop.
-			if pc.conn.GetState() == connectivity.Shutdown {
-				return nil
-			}
-		case connectivity.Shutdown:
-			return nil
-		}
 		select {
 		case <-ctx.Done():
 			// ctx.Err() is always Canceled or DeadlineExceeded, which mean "stop
 			// waiting", not a failure to close.
 			return nil
 		case <-ticker.C:
+		}
+		switch pc.conn.GetState() {
+		case connectivity.Idle, connectivity.Connecting, connectivity.Ready, connectivity.TransientFailure:
+			err := pc.conn.Close()
+			if err != nil {
+				log.Errorf("failed to close gRPC pool connection for %s, error: %v", pc.addr, err)
+			}
+			if pc.conn.GetState() == connectivity.Shutdown {
+				return nil
+			}
+		case connectivity.Shutdown:
+			return nil
 		}
 	}
 }
@@ -181,8 +190,6 @@ type pool struct {
 	oldConnCloseDelay time.Duration
 	// poolSize is the configured number of connections in the pool.
 	poolSize atomic.Uint64
-	// currentIndex tracks the current index for round-robin connection selection.
-	currentIndex atomic.Uint64
 	// dialTimeout is the timeout duration for establishing a new connection.
 	dialTimeout time.Duration
 	// closing indicates whether the pool is currently being closed.
@@ -203,6 +210,10 @@ type pool struct {
 	isIPAddr bool
 	// enableMetrics enables connection pool metrics
 	enableMetrics bool // Whether to enable metrics collection.
+	_             [56]byte
+	// currentIndex tracks the current index for round-robin connection selection, isolated on its own cache line.
+	currentIndex atomic.Uint64
+	_            [56]byte
 }
 
 // Default pool size.
@@ -375,13 +386,14 @@ func slotAt(slots []atomic.Pointer[poolConn], idx uint64) (ridx uint64, pc *pool
 	return idx, slots[idx].Load()
 }
 
-// loadFrom reads idx from the caller's slots snapshot and falls back to the
-// current slots only when the snapshot was empty.
+// loadFrom reads idx from the caller's slots snapshot and falls back to
+// p.load(idx) whenever idx is out of bounds for that snapshot (for example
+// an empty snapshot or one concurrently outgrown by grow).
 func (p *pool) loadFrom(slots []atomic.Pointer[poolConn], idx uint64) (ridx uint64, pc *poolConn) {
-	if len(slots) == 0 {
-		return p.load(idx)
+	if idx < uint64(len(slots)) {
+		return idx, slots[idx].Load()
 	}
-	return slotAt(slots, idx)
+	return p.load(idx)
 }
 
 // casStore atomically replaces the connection at idx of slots only if the slot
@@ -411,7 +423,7 @@ func (p *pool) loop(
 	if slen == 0 {
 		return errors.ErrGRPCPoolConnectionNotFound
 	}
-	for idx := uint64(0); idx < p.poolSize.Load(); idx++ {
+	for idx := range slen {
 		select {
 		case <-ctx.Done():
 			// ctx.Err() is always Canceled or DeadlineExceeded: stop without an error.
@@ -748,23 +760,37 @@ func (p *pool) getHealthyConn(ctx context.Context) (pc *poolConn, ok bool) {
 	if p == nil || p.closing.Load() {
 		return nil, false
 	}
-	sz := p.Size()
+	slots := p.getSlots()
+	sz := uint64(len(slots))
 	if sz == 0 {
-		return nil, false
+		sz = p.Size()
+		if sz == 0 {
+			return nil, false
+		}
 	}
-	slots := *p.connSlots.Load()
-
-	start := (p.currentIndex.Add(1) - 1) % sz
+	var start uint64
+	if sz > 1 {
+		start = (p.currentIndex.Add(1) - 1) % sz
+	}
 	for i := range sz {
 		idx := start + i
 		if idx >= sz {
 			idx -= sz
 		}
 
-		_, pc = p.loadFrom(slots, idx)
+		if idx < uint64(len(slots)) {
+			pc = slots[idx].Load()
+		} else {
+			_, pc = p.loadFrom(slots, idx)
+		}
 
 		if pc != nil && pc.conn != nil {
-			state := pc.getState()
+			var state connectivity.State
+			if v := pc.state.Load(); v != 0 {
+				state = connectivity.State(v - 1)
+			} else {
+				state = pc.conn.GetState()
+			}
 			switch state {
 			case connectivity.Ready,
 				connectivity.Connecting:
@@ -839,7 +865,7 @@ func (p *pool) getHealthyConn(ctx context.Context) (pc *poolConn, ok bool) {
 	// have swapped to a different backing array since the entry snapshot.
 	// Reading the stale array here would miss the connections we just refreshed
 	// and spuriously return not-found.
-	slots = *p.connSlots.Load()
+	slots = p.getSlots()
 
 	// Third pass return connected pool conn
 	for _, idx := range rc {
@@ -990,7 +1016,7 @@ func (p *pool) lookupIPAddr(ctx context.Context) ([]string, error) {
 	if len(ips) == 0 {
 		return nil, errors.ErrGRPCLookupIPAddrNotFound(p.host)
 	}
-	// Sorting can be added here if needed.
+	slices.Sort(ips)
 	return ips, nil
 }
 

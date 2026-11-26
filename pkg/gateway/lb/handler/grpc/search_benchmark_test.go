@@ -16,7 +16,6 @@ package grpc
 import (
 	"cmp"
 	"context"
-	"flag"
 	"fmt"
 	"math/rand/v2"
 	"runtime"
@@ -28,44 +27,45 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/errgroup"
+	"github.com/vdaas/vald/internal/test/bench"
 	"github.com/vdaas/vald/internal/test/data/strings"
 )
 
 const (
-	dataVariation = 10000
-	dataLength    = 10000
+	fastDataVariation = 64
+	fullDataVariation = 10000
+	dataLength        = 10000
 )
 
 var (
 	datas  []*payload.Search_Response
 	delays []time.Duration
+	//nolint:gochecknoglobals // lazy benchmark dataset cache
+	benchDataOnce sync.Once
 )
 
-func TestMain(m *testing.M) {
-	testing.Init()
-	flag.Parse()
-	if testing.Short() {
-		m.Run()
-		return
-	}
-	var mu sync.Mutex
-	var wg sync.WaitGroup
-	datas = make([]*payload.Search_Response, 0, dataVariation)
-	delays = make([]time.Duration, 0, dataVariation)
-	for range dataVariation {
-		wg.Go(func() {
-			rr := newRandomResponse()
-			delay := time.Duration(rand.N(uint32(time.Millisecond * 2)))
-			mu.Lock()
-			datas = append(datas, rr)
-			delays = append(delays, delay)
-			mu.Unlock()
-		})
-	}
-	wg.Wait()
-	m.Run()
-	datas = nil
-	delays = nil
+func ensureBenchData(full bool) {
+	benchDataOnce.Do(func() {
+		variation := fastDataVariation
+		if full {
+			variation = fullDataVariation
+		}
+		var mu sync.Mutex
+		var wg sync.WaitGroup
+		datas = make([]*payload.Search_Response, 0, variation)
+		delays = make([]time.Duration, 0, variation)
+		for range variation {
+			wg.Go(func() {
+				rr := newRandomResponse()
+				delay := time.Duration(rand.N(uint32(time.Millisecond * 2))) //nolint:gosec // synthetic benchmark jitter does not require crypto/rand
+				mu.Lock()
+				datas = append(datas, rr)
+				delays = append(delays, delay)
+				mu.Unlock()
+			})
+		}
+		wg.Wait()
+	})
 }
 
 func newRandomResponse() (res *payload.Search_Response) {
@@ -84,13 +84,35 @@ func newRandomResponse() (res *payload.Search_Response) {
 	return res
 }
 
-func benchmark(
-	b *testing.B, results []*payload.Search_Response, anew func(n, f, r int) Aggregator,
-) {
+func fastParallelisms() []int {
+	pMax := min(8, runtime.NumCPU())
+	if pMax <= 2 {
+		return []int{2}
+	}
+	return []int{2, pMax}
+}
+
+func benchmark(b *testing.B, anew func(n, f, r int) Aggregator) {
+	b.Helper()
+	full := bench.Full()
+	ensureBenchData(full)
+	results := datas
 	l := len(results)
-	for k := 10; k < dataLength; k *= 10 {
-		for replica := 5; replica <= dataVariation; replica *= 10 {
-			for parallelism := 2; parallelism <= runtime.NumCPU(); parallelism *= 2 {
+	ks := []int{10, 100}
+	replicas := []int{5, 50}
+	var parallelisms []int
+	if full {
+		ks = []int{10, 100, 1000}
+		replicas = []int{5, 50, 500, 5000}
+		for parallelism := 2; parallelism <= runtime.NumCPU(); parallelism *= 2 {
+			parallelisms = append(parallelisms, parallelism)
+		}
+	} else {
+		parallelisms = fastParallelisms()
+	}
+	for _, k := range ks {
+		for _, replica := range replicas {
+			for _, parallelism := range parallelisms {
 				b.Run(fmt.Sprintf("Top-K:%d/Replica:%d/Parallelism:%d/Thread:", k, replica, parallelism), func(bb *testing.B) {
 					bb.Helper()
 					bb.SetParallelism(parallelism)
@@ -99,11 +121,13 @@ func benchmark(
 					bb.RunParallel(func(pb *testing.PB) {
 						for pb.Next() {
 							var cnt atomic.Uint64
-							_, _ = doSearchWithAggregator(bb.Context(), k, replica, anew, func(ctx context.Context) (res *payload.Search_Response) {
+							if _, err := doSearchWithAggregator(bb.Context(), k, replica, anew, func(ctx context.Context) (res *payload.Search_Response) {
 								idx := cnt.Add(1) % uint64(l)
 								time.Sleep(delays[idx])
 								return results[idx]
-							})
+							}); err != nil {
+								bb.Errorf("doSearchWithAggregator() error = %v", err)
+							}
 						}
 					})
 				})
@@ -121,7 +145,6 @@ func doSearchWithAggregator(
 	eg, ectx := errgroup.New(ctx)
 	eg.SetLimit(concurrency)
 	aggr := anew(k, k, concurrency)
-	aggr.Start(ectx)
 	for range concurrency {
 		eg.Go(func() error {
 			r := f(ectx)
@@ -136,17 +159,17 @@ func doSearchWithAggregator(
 }
 
 func BenchmarkStandard(b *testing.B) {
-	benchmark(b, datas, newStd)
+	benchmark(b, newStd)
 }
 
 func BenchmarkPairingHeap(b *testing.B) {
-	benchmark(b, datas, newPairingHeap)
+	benchmark(b, newPairingHeap)
 }
 
 func BenchmarkSortSlice(b *testing.B) {
-	benchmark(b, datas, newSlice)
+	benchmark(b, newSlice)
 }
 
 func BenchmarkSortPoolSlice(b *testing.B) {
-	benchmark(b, datas, newPoolSlice)
+	benchmark(b, newPoolSlice)
 }

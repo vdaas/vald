@@ -37,6 +37,8 @@ import (
 	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
+var emptyPayload = new(payload.Empty) //nolint:gochecknoglobals // shared immutable empty protobuf request
+
 type Indexer interface {
 	Start(ctx context.Context) (<-chan error, error)
 	NumberOfUUIDs() uint32
@@ -49,6 +51,8 @@ type Indexer interface {
 type index struct {
 	eg                     errgroup.Group
 	client                 discoverer.Client
+	vcCache                vald.ConnCache
+	agentCache             sync.Map[*grpc.ClientConn, agent.Client]
 	shouldSaveList         sync.Map[string, bool]
 	indexInfos             sync.Map[string, *payload.Info_Index_Count]
 	createIndexConcurrency int
@@ -63,6 +67,16 @@ type index struct {
 	minUncommitted         uint32
 	uuidsCount             atomic.Uint32
 	uncommittedUUIDsCount  atomic.Uint32
+}
+
+func (idx *index) getAgentClient(conn *grpc.ClientConn) agent.Client {
+	if cli, ok := idx.agentCache.Load(conn); ok {
+		return cli
+	}
+	cli, _ := idx.agentCache.LoadOrCompute(conn, func() agent.Client {
+		return agent.NewAgentClient(conn)
+	})
+	return cli
 }
 
 func New(opts ...Option) (idx Indexer, err error) {
@@ -128,7 +142,12 @@ func (idx *index) Start(ctx context.Context) (<-chan error, error) {
 			select {
 			case <-ctx.Done():
 				return finalize()
-			case err = <-dech:
+			case derr, ok := <-dech:
+				if !ok {
+					dech = nil
+					continue
+				}
+				err = derr
 			case <-it.C: // index duration ticker
 				// execute CreateIndex. This execution ignores low index agent.
 				err = idx.createIndex(grpc.WithGRPCMethod(ctx, "core.v1.Agent/CreateIndex"), true)
@@ -205,17 +224,19 @@ func (idx *index) saveOnTick(
 }
 
 func (idx *index) createIndex(ctx context.Context, enableLowIndexSkip bool) (err error) {
-	ctx, span := trace.StartSpan(ctx, "vald/manager-index/service/Indexer.execute")
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	if trace.Enabled() {
+		var span trace.Span
+		ctx, span = trace.StartSpan(ctx, "vald/manager-index/service/Indexer.execute")
+		defer func() {
+			if span != nil {
+				span.End()
+			}
+		}()
+	}
 
-	if idx.indexing.Load() {
+	if !idx.indexing.CompareAndSwap(false, true) {
 		return nil
 	}
-	idx.indexing.Store(true)
 	defer idx.indexing.Store(false)
 	// The skip decision below needs the agents' current uncommitted counts; the snapshot taken
 	// after the previous run only reflects what was left right after that run's CreateIndex.
@@ -231,7 +252,7 @@ func (idx *index) createIndex(ctx context.Context, enableLowIndexSkip bool) (err
 			if ok && (info.GetUncommitted() == 0 || (enableLowIndexSkip && info.GetUncommitted() < idx.minUncommitted)) {
 				return nil
 			}
-			_, err = agent.NewAgentClient(conn).CreateIndex(ctx, &payload.Control_CreateIndexRequest{
+			_, err = idx.getAgentClient(conn).CreateIndex(ctx, &payload.Control_CreateIndexRequest{
 				PoolSize: idx.creationPoolSize,
 			}, copts...)
 			if err != nil {
@@ -257,17 +278,19 @@ func (idx *index) createIndex(ctx context.Context, enableLowIndexSkip bool) (err
 }
 
 func (idx *index) saveIndex(ctx context.Context, force bool) (err error) {
-	ctx, span := trace.StartSpan(ctx, "vald/manager-index/service/Indexer.saveIndex")
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	if trace.Enabled() {
+		var span trace.Span
+		ctx, span = trace.StartSpan(ctx, "vald/manager-index/service/Indexer.saveIndex")
+		defer func() {
+			if span != nil {
+				span.End()
+			}
+		}()
+	}
 
-	if idx.saving.Load() {
+	if !idx.saving.CompareAndSwap(false, true) {
 		return nil
 	}
-	idx.saving.Store(true)
 	defer idx.saving.Store(false)
 	return idx.client.GetClient().OrderedRangeConcurrent(ctx, idx.client.GetAddrs(ctx),
 		idx.saveIndexConcurrency,
@@ -278,7 +301,7 @@ func (idx *index) saveIndex(ctx context.Context, force bool) (err error) {
 			if !queued && !force {
 				return nil
 			}
-			_, err = agent.NewAgentClient(conn).SaveIndex(ctx, new(payload.Empty), copts...)
+			_, err = idx.getAgentClient(conn).SaveIndex(ctx, emptyPayload, copts...)
 			if err != nil {
 				st, ok := status.FromError(err)
 				if ok && st != nil && st.Code() == codes.FailedPrecondition {
@@ -297,16 +320,28 @@ func (idx *index) saveIndex(ctx context.Context, force bool) (err error) {
 }
 
 func (idx *index) loadInfos(ctx context.Context) (err error) {
-	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, "core.v1.Agent/IndexInfo"), "vald/manager-index/service/Indexer.loadInfos")
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	ctx = grpc.WithGRPCMethod(ctx, "core.v1.Agent/IndexInfo")
+	if trace.Enabled() {
+		var span trace.Span
+		ctx, span = trace.StartSpan(ctx, "vald/manager-index/service/Indexer.loadInfos")
+		defer func() {
+			if span != nil {
+				span.End()
+			}
+		}()
+	}
+
+	addrs := idx.client.GetAddrs(ctx)
+	if len(addrs) == 0 {
+		idx.uuidsCount.Store(0)
+		idx.uncommittedUUIDsCount.Store(0)
+		idx.indexInfos.Clear()
+		return nil
+	}
 
 	var u, ucu uint32
 	var infoMap sync.Map[string, *payload.Info_Index_Count]
-	err = idx.client.GetClient().RangeConcurrent(ctx, len(idx.client.GetAddrs(ctx)),
+	err = idx.client.GetClient().RangeConcurrent(ctx, len(addrs),
 		func(ctx context.Context,
 			addr string, conn *grpc.ClientConn, copts ...grpc.CallOption,
 		) (err error) {
@@ -314,7 +349,7 @@ func (idx *index) loadInfos(ctx context.Context) (err error) {
 			case <-ctx.Done():
 				return nil
 			default:
-				info, err := vald.NewFromConn(conn).IndexInfo(ctx, new(payload.Empty), copts...)
+				info, err := idx.vcCache.Get(conn).IndexInfo(ctx, emptyPayload, copts...)
 				if err != nil {
 					log.Warnf("an error occurred while calling IndexInfo of %s: %s", addr, err)
 					return nil

@@ -175,7 +175,7 @@ type SearchQuery struct {
 	K               uint32                              `yaml:"k,omitempty"         json:"k,omitempty"`
 	Radius          float32                             `yaml:"radius,omitempty"    json:"radius,omitempty"`
 	Epsilon         float32                             `yaml:"epsilon,omitempty"   json:"epsilon,omitempty"`
-	AlgorithmString string                              `yaml:"algorithm,omitempty" json:"algorithm_string,omitempty"`
+	AlgorithmString string                              `yaml:"algorithm,omitempty" json:"algorithm,omitempty"`
 	MinNum          uint32                              `yaml:"min_num,omitempty"   json:"min_num,omitempty"`
 	Ratio           float32                             `yaml:"ratio,omitempty"     json:"ratio,omitempty"`
 	Nprobe          uint32                              `yaml:"nprobe,omitempty"    json:"nprobe,omitempty"`
@@ -1409,7 +1409,10 @@ func (e Execution) GetRepeats() *Repeats {
 
 // Equals compares StatusCode with a given string ignoring case.
 func (sc StatusCode) Equals(c string) bool {
-	bound, _ := sc.Bind() // error ignored as Bind never errors
+	bound, err := sc.Bind()
+	if err != nil {
+		return false
+	}
 	return strings.EqualFold(bound.String(), c)
 }
 
@@ -1460,7 +1463,10 @@ func (sc StatusCode) String() string {
 
 // Port returns the numeric value of the Port.
 func (p Port) Port() uint16 {
-	bp, _ := p.Bind() // error ignored as Bind never errors
+	bp, err := p.Bind()
+	if err != nil || bp == nil {
+		return 0
+	}
 	port, err := strconv.ParseUint(string(*bp), 10, 16)
 	if err != nil {
 		return 0

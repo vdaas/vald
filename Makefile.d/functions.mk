@@ -366,7 +366,7 @@ define run-v2-e2e-crud-test
 	E2E_BULK_SIZE="$(E2E_BULK_SIZE)" \
 	E2E_EXPECTED_INDEX="$(E2E_EXPECTED_INDEX)" \
 	go test \
-	-race \
+	$(E2E_RACE) \
 	-v \
 	-mod=readonly \
 	$1 \
