@@ -14,586 +14,104 @@
 package grpc
 
 import (
-	"cmp"
 	"fmt"
 	"math/rand/v2"
+	"slices"
 	"testing"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
-	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/test/data/strings"
-	"github.com/vdaas/vald/internal/test/goleak"
 )
 
-func TestPairingHeap(t *testing.T) {
-	type test struct {
-		checkFunc func([]*DistPayload) error
-		name      string
-		args      []*DistPayload
+func TestPairingHeapNodes_EdgeCasesAndOrdering(t *testing.T) {
+	t.Parallel()
+
+	if got := mergeMinNodes(nil, pairingNull, 0); got != 0 {
+		t.Errorf("mergeMinNodes(pairingNull, 0) = %d, want 0", got)
 	}
-	defaultCheckFunc := func(got []*DistPayload) error {
-		last := got[0].distance
-		for i, current := range got {
-			c := cmp.Compare(last, current.distance)
-			if c > 0 {
-				gids := make([]string, 0, len(got))
-				for i, dp := range got {
-					gids = append(gids, fmt.Sprintf("%d:%s:%f", i, dp.raw.GetId(), dp.raw.GetDistance()))
-				}
-				return errors.Errorf(
-					"unsorted return detected cmp: %d, last: %v, current: %v, got: idx=%d,\tid=%s,\traw[\"%#v\"]",
-					c,
-					last,
-					current.distance,
-					i,
-					got[i].raw.GetId(),
-					gids,
-				)
-			}
-			last = current.distance
-		}
-		return nil
+	if got := mergeMinNodes(nil, 2, pairingNull); got != 2 {
+		t.Errorf("mergeMinNodes(2, pairingNull) = %d, want 2", got)
 	}
-	tests := []test{
-		func() test {
-			dl := 100
-			ods := make([]*payload.Object_Distance, 0, dl)
-			for range dl {
-				ods = append(ods, &payload.Object_Distance{
-					Id:       strings.Random(12),
-					Distance: rand.Float32(),
-				})
-			}
-			dps := make([]*DistPayload, 0, dl) // random DistPayload arguments for heap insert data
-			for _, dist := range ods {
-				dps = append(dps, &DistPayload{raw: dist, distance: float64(dist.GetDistance())})
-			}
-			return test{
-				name:      "check ExtractMin results are sorted",
-				args:      dps,
-				checkFunc: defaultCheckFunc,
-			}
-		}(),
+	if got := mergeMaxNodes(nil, pairingNull, 1); got != 1 {
+		t.Errorf("mergeMaxNodes(pairingNull, 1) = %d, want 1", got)
+	}
+	if got := mergeMaxNodes(nil, 3, pairingNull); got != 3 {
+		t.Errorf("mergeMaxNodes(3, pairingNull) = %d, want 3", got)
+	}
+	if got := mergePairsMinNodes(nil, pairingNull); got != pairingNull {
+		t.Errorf("mergePairsMinNodes(pairingNull) = %d, want %d", got, pairingNull)
+	}
+	if got := mergePairsMaxNodes(nil, pairingNull); got != pairingNull {
+		t.Errorf("mergePairsMaxNodes(pairingNull) = %d, want %d", got, pairingNull)
 	}
 
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
+	for _, count := range []int{1, 2, 3, 1000} {
+		t.Run(fmt.Sprintf("extract_count_%d", count), func(t *testing.T) {
+			t.Parallel()
+			rng := rand.New(rand.NewPCG(42, uint64(count))) //nolint:gosec // deterministic test seed
+			minNodes := make([]pairingNode, count)
+			maxNodes := make([]pairingNode, count)
+			minRoot := pairingNull
+			maxRoot := pairingNull
+			wantAsc := make([]float64, count)
+			for i := range count {
+				d := rng.Float64()
+				wantAsc[i] = d
+				dp := DistPayload{
+					raw:      dist32(fmt.Sprintf("id-%d", i), float32(d)),
+					distance: d,
+				}
+				minNodes[i] = pairingNode{dp: dp, child: pairingNull, sibling: pairingNull}
+				maxNodes[i] = pairingNode{dp: dp, child: pairingNull, sibling: pairingNull}
+				idx := int32(i) //nolint:gosec // test count bounded to 1000
+				minRoot = mergeMinNodes(minNodes, minRoot, idx)
+				maxRoot = mergeMaxNodes(maxNodes, maxRoot, idx)
 			}
-			ph := new(PairingHeap)
-			for _, dp := range test.args {
-				ph = ph.Insert(dp)
+			slices.Sort(wantAsc)
+
+			gotMin := make([]float64, 0, count)
+			for minRoot != pairingNull {
+				gotMin = append(gotMin, minNodes[minRoot].dp.distance)
+				minRoot = mergePairsMinNodes(minNodes, minNodes[minRoot].child)
 			}
-			result := make([]*DistPayload, 0, len(test.args))
-			for !ph.IsEmpty() {
-				var min *DistPayload
-				min, ph = ph.ExtractMin()
-				result = append(result, min)
+			if !slices.Equal(gotMin, wantAsc) {
+				t.Errorf("min-heap sequence mismatch for count=%d", count)
 			}
-			if err := checkFunc(result); err != nil {
-				tt.Errorf("error = %v", err)
+
+			gotMax := make([]float64, 0, count)
+			for maxRoot != pairingNull {
+				gotMax = append(gotMax, maxNodes[maxRoot].dp.distance)
+				maxRoot = mergePairsMaxNodes(maxNodes, maxNodes[maxRoot].child)
+			}
+			slices.Reverse(gotMax)
+			if !slices.Equal(gotMax, wantAsc) {
+				t.Errorf("max-heap sequence mismatch for count=%d", count)
 			}
 		})
 	}
 }
 
-// NOT IMPLEMENTED BELOW
-//
-// func TestPairingHeap_IsEmpty(t *testing.T) {
-// 	type fields struct {
-// 		DistPayload *DistPayload
-// 		Children    []*PairingHeap
-// 	}
-// 	type want struct {
-// 		want bool
-// 	}
-// 	type test struct {
-// 		name       string
-// 		fields     fields
-// 		want       want
-// 		checkFunc  func(want, bool) error
-// 		beforeFunc func(*testing.T)
-// 		afterFunc  func(*testing.T)
-// 	}
-// 	defaultCheckFunc := func(w want, got bool) error {
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-// 		}
-// 		return nil
-// 	}
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       fields: fields {
-// 		           DistPayload:DistPayload{},
-// 		           Children:nil,
-// 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T,) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T,) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
-//
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           fields: fields {
-// 		           DistPayload:DistPayload{},
-// 		           Children:nil,
-// 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T,) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T,) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
-//
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt)
-// 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
-// 			ph := &PairingHeap{
-// 				DistPayload: test.fields.DistPayload,
-// 				Children:    test.fields.Children,
-// 			}
-//
-// 			got := ph.IsEmpty()
-// 			if err := checkFunc(test.want, got); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
-// 		})
-// 	}
-// }
-//
-// func TestPairingHeap_Insert(t *testing.T) {
-// 	type args struct {
-// 		dp *DistPayload
-// 	}
-// 	type fields struct {
-// 		DistPayload *DistPayload
-// 		Children    []*PairingHeap
-// 	}
-// 	type want struct {
-// 		want *PairingHeap
-// 	}
-// 	type test struct {
-// 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
-// 		checkFunc  func(want, *PairingHeap) error
-// 		beforeFunc func(*testing.T, args)
-// 		afterFunc  func(*testing.T, args)
-// 	}
-// 	defaultCheckFunc := func(w want, got *PairingHeap) error {
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-// 		}
-// 		return nil
-// 	}
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       args: args {
-// 		           dp:DistPayload{},
-// 		       },
-// 		       fields: fields {
-// 		           DistPayload:DistPayload{},
-// 		           Children:nil,
-// 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
-//
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           args: args {
-// 		           dp:DistPayload{},
-// 		           },
-// 		           fields: fields {
-// 		           DistPayload:DistPayload{},
-// 		           Children:nil,
-// 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
-//
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt, test.args)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt, test.args)
-// 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
-// 			ph := &PairingHeap{
-// 				DistPayload: test.fields.DistPayload,
-// 				Children:    test.fields.Children,
-// 			}
-//
-// 			got := ph.Insert(test.args.dp)
-// 			if err := checkFunc(test.want, got); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
-// 		})
-// 	}
-// }
-//
-// func TestPairingHeap_Merge(t *testing.T) {
-// 	type args struct {
-// 		h2 *PairingHeap
-// 	}
-// 	type fields struct {
-// 		DistPayload *DistPayload
-// 		Children    []*PairingHeap
-// 	}
-// 	type want struct {
-// 		want *PairingHeap
-// 	}
-// 	type test struct {
-// 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
-// 		checkFunc  func(want, *PairingHeap) error
-// 		beforeFunc func(*testing.T, args)
-// 		afterFunc  func(*testing.T, args)
-// 	}
-// 	defaultCheckFunc := func(w want, got *PairingHeap) error {
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-// 		}
-// 		return nil
-// 	}
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       args: args {
-// 		           h2:PairingHeap{},
-// 		       },
-// 		       fields: fields {
-// 		           DistPayload:DistPayload{},
-// 		           Children:nil,
-// 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
-//
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           args: args {
-// 		           h2:PairingHeap{},
-// 		           },
-// 		           fields: fields {
-// 		           DistPayload:DistPayload{},
-// 		           Children:nil,
-// 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
-//
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt, test.args)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt, test.args)
-// 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
-// 			ph := &PairingHeap{
-// 				DistPayload: test.fields.DistPayload,
-// 				Children:    test.fields.Children,
-// 			}
-//
-// 			got := ph.Merge(test.args.h2)
-// 			if err := checkFunc(test.want, got); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
-// 		})
-// 	}
-// }
-//
-// func TestPairingHeap_ExtractMin(t *testing.T) {
-// 	type fields struct {
-// 		DistPayload *DistPayload
-// 		Children    []*PairingHeap
-// 	}
-// 	type want struct {
-// 		want  *DistPayload
-// 		want1 *PairingHeap
-// 	}
-// 	type test struct {
-// 		name       string
-// 		fields     fields
-// 		want       want
-// 		checkFunc  func(want, *DistPayload, *PairingHeap) error
-// 		beforeFunc func(*testing.T)
-// 		afterFunc  func(*testing.T)
-// 	}
-// 	defaultCheckFunc := func(w want, got *DistPayload, got1 *PairingHeap) error {
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-// 		}
-// 		if !reflect.DeepEqual(got1, w.want1) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got1, w.want1)
-// 		}
-// 		return nil
-// 	}
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       fields: fields {
-// 		           DistPayload:DistPayload{},
-// 		           Children:nil,
-// 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T,) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T,) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
-//
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           fields: fields {
-// 		           DistPayload:DistPayload{},
-// 		           Children:nil,
-// 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T,) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T,) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
-//
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt)
-// 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
-// 			ph := &PairingHeap{
-// 				DistPayload: test.fields.DistPayload,
-// 				Children:    test.fields.Children,
-// 			}
-//
-// 			got, got1 := ph.ExtractMin()
-// 			if err := checkFunc(test.want, got, got1); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
-// 		})
-// 	}
-// }
-//
-// func TestPairingHeap_mergePairs(t *testing.T) {
-// 	type args struct {
-// 		pairs []*PairingHeap
-// 	}
-// 	type fields struct {
-// 		DistPayload *DistPayload
-// 		Children    []*PairingHeap
-// 	}
-// 	type want struct {
-// 		want *PairingHeap
-// 	}
-// 	type test struct {
-// 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
-// 		checkFunc  func(want, *PairingHeap) error
-// 		beforeFunc func(*testing.T, args)
-// 		afterFunc  func(*testing.T, args)
-// 	}
-// 	defaultCheckFunc := func(w want, got *PairingHeap) error {
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-// 		}
-// 		return nil
-// 	}
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       args: args {
-// 		           pairs:nil,
-// 		       },
-// 		       fields: fields {
-// 		           DistPayload:DistPayload{},
-// 		           Children:nil,
-// 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
-//
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           args: args {
-// 		           pairs:nil,
-// 		           },
-// 		           fields: fields {
-// 		           DistPayload:DistPayload{},
-// 		           Children:nil,
-// 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
-//
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt, test.args)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt, test.args)
-// 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
-// 			ph := &PairingHeap{
-// 				DistPayload: test.fields.DistPayload,
-// 				Children:    test.fields.Children,
-// 			}
-//
-// 			got := ph.mergePairs(test.args.pairs)
-// 			if err := checkFunc(test.want, got); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
-// 		})
-// 	}
-// }
+func TestPairingHeapAggr_UnboundedSort(t *testing.T) {
+	t.Parallel()
+	const count = 100
+	rng := rand.New(rand.NewPCG(7, count)) //nolint:gosec // deterministic test seed
+	ds := make([]*payload.Object_Distance, count)
+	want := make([]float32, count)
+	for i := range count {
+		d := rng.Float32()
+		ds[i] = dist32(fmt.Sprintf("id-%d", i), d)
+		want[i] = d
+	}
+	slices.Sort(want)
+
+	aggr := newPairingHeap(0, 0, 1)
+	aggr.Send(t.Context(), newDistResponse(ds...))
+	res := aggr.Result().GetResults()
+	if len(res) != count {
+		t.Fatalf("len(results) = %d, want %d", len(res), count)
+	}
+	for i, r := range res {
+		if r.GetDistance() != want[i] {
+			t.Fatalf("res[%d].Distance = %v, want %v", i, r.GetDistance(), want[i])
+		}
+	}
+}

@@ -95,7 +95,7 @@ func Test_broadcastFirst(t *testing.T) {
 			eg.SetLimit(1)
 			s := &server{gateway: test.gw(), eg: eg}
 			req := &payload.Object_ID{Id: "a"}
-			got, ok, err := broadcastFirst(ctx, s, "exists",
+			got, ok, err := broadcastFirst(ctx, s, "exists", false,
 				func(oid *payload.Object_ID) bool { return oid.GetId() != "" },
 				func(ctx context.Context, _ trace.Span, _ string, vc vald.Client, copts ...grpc.CallOption) (*payload.Object_ID, error) {
 					return vc.Exists(ctx, req, copts...)
@@ -130,7 +130,7 @@ func Test_server_objectReads_shareRequestAcrossTargets(t *testing.T) {
 					return &payload.Object_ID{}, nil
 				}}
 				s := &server{gateway: seqGateway(c, c, c)}
-				s.eg, _ = errgroup.New(ctx)
+				s.eg, ctx = errgroup.New(ctx)
 				_, err := s.exists(ctx, uuid)
 				return err
 			},
@@ -143,7 +143,7 @@ func Test_server_objectReads_shareRequestAcrossTargets(t *testing.T) {
 					return &payload.Object_Vector{}, nil
 				}}
 				s := &server{gateway: seqGateway(c, c, c)}
-				s.eg, _ = errgroup.New(ctx)
+				s.eg, ctx = errgroup.New(ctx)
 				_, err := s.getObject(ctx, uuid)
 				return err
 			},
@@ -156,7 +156,7 @@ func Test_server_objectReads_shareRequestAcrossTargets(t *testing.T) {
 					return &payload.Object_Timestamp{}, nil
 				}}
 				s := &server{gateway: seqGateway(c, c, c)}
-				s.eg, _ = errgroup.New(ctx)
+				s.eg, ctx = errgroup.New(ctx)
 				_, err := s.GetTimestamp(ctx, &payload.Object_TimestampRequest{Id: &payload.Object_ID{Id: uuid}})
 				return err
 			},
@@ -635,6 +635,323 @@ func Test_server_existsAndGetObject_cancelDerivedContext(t *testing.T) {
 			return err
 		})
 	})
+}
+
+func Test_server_existsCheck(t *testing.T) {
+	t.Parallel()
+	const uuid = "uuid-check"
+	t.Run("miss returns false and nil error", func(t *testing.T) {
+		t.Parallel()
+		c := &regClient{exists: func(context.Context, *payload.Object_ID) (*payload.Object_ID, error) {
+			return &payload.Object_ID{}, nil
+		}}
+		eg, _ := errgroup.New(t.Context())
+		s := &server{gateway: syncGateway(c), replica: 1, eg: eg}
+		ok, err := s.existsCheck(t.Context(), uuid)
+		if err != nil || ok {
+			t.Fatalf("existsCheck() = (%v, %v), want (false, nil)", ok, err)
+		}
+	})
+	t.Run("hit returns true and nil error", func(t *testing.T) {
+		t.Parallel()
+		c := &regClient{exists: func(context.Context, *payload.Object_ID) (*payload.Object_ID, error) {
+			return &payload.Object_ID{Id: uuid}, nil
+		}}
+		eg, _ := errgroup.New(t.Context())
+		s := &server{gateway: syncGateway(c), replica: 1, eg: eg}
+		ok, err := s.existsCheck(t.Context(), uuid)
+		if err != nil || !ok {
+			t.Fatalf("existsCheck() = (%v, %v), want (true, nil)", ok, err)
+		}
+	})
+	t.Run("connection error is propagated", func(t *testing.T) {
+		t.Parallel()
+		gw := &regGateway{
+			broadCast: func(context.Context, func(context.Context, string, vald.Client, ...grpc.CallOption) error) error {
+				return errors.ErrGRPCClientConnNotFound("*")
+			},
+		}
+		eg, _ := errgroup.New(t.Context())
+		s := &server{gateway: gw, replica: 1, eg: eg}
+		ok, err := s.existsCheck(t.Context(), uuid)
+		if ok || !errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) {
+			t.Fatalf("existsCheck() = (%v, %v), want (false, ErrGRPCClientConnNotFound)", ok, err)
+		}
+	})
+}
+
+const probeCoverUUID = "uuid-cover"
+
+func newSubsetProbeClients(addrs []string, wave2Hit bool, wave1Err error) map[string]vald.Client {
+	nf := status.Error(codes.NotFound, "not found")
+	vec := []float32{1, 2, 3}
+	m := make(map[string]vald.Client, len(addrs))
+	for i, addr := range addrs {
+		inWave1 := i < 3
+		hasObj := (inWave1 && !wave2Hit) || (i == 4 && wave2Hit)
+		hasErr := inWave1 && wave1Err != nil
+		m[addr] = &regClient{
+			exists: func(context.Context, *payload.Object_ID) (*payload.Object_ID, error) {
+				if hasErr {
+					return nil, wave1Err
+				}
+				if hasObj {
+					return &payload.Object_ID{Id: probeCoverUUID}, nil
+				}
+				return nil, nf
+			},
+			getObject: func(context.Context, *payload.Object_VectorRequest) (*payload.Object_Vector, error) {
+				if hasErr {
+					return nil, wave1Err
+				}
+				if hasObj {
+					return &payload.Object_Vector{Id: probeCoverUUID, Vector: vec}, nil
+				}
+				return nil, nf
+			},
+			getTS: func(context.Context, *payload.Object_TimestampRequest) (*payload.Object_Timestamp, error) {
+				if hasErr {
+					return nil, wave1Err
+				}
+				if hasObj {
+					return &payload.Object_Timestamp{Id: probeCoverUUID, Timestamp: 42}, nil
+				}
+				return nil, nf
+			},
+			search: func(context.Context, *payload.Search_Request) (*payload.Search_Response, error) {
+				return probeResponse(), nil
+			},
+		}
+	}
+	return m
+}
+
+func Test_server_subsetReplicaCoverProbing(t *testing.T) {
+	t.Parallel()
+	const uuid = probeCoverUUID
+	addrs := []string{"a0", "a1", "a2", "a3", "a4"}
+
+	for _, tc := range []struct {
+		call func(*server) error
+		name string
+	}{
+		{name: "Exists", call: func(s *server) error {
+			res, err := s.Exists(t.Context(), &payload.Object_ID{Id: uuid})
+			if err == nil && res.GetId() != uuid {
+				return fmt.Errorf("got id %q", res.GetId())
+			}
+			return err
+		}},
+		{name: "GetObject", call: func(s *server) error {
+			res, err := s.GetObject(t.Context(), &payload.Object_VectorRequest{Id: &payload.Object_ID{Id: uuid}})
+			if err == nil && res.GetId() != uuid {
+				return fmt.Errorf("got id %q", res.GetId())
+			}
+			return err
+		}},
+		{name: "GetTimestamp", call: func(s *server) error {
+			res, err := s.GetTimestamp(t.Context(), &payload.Object_TimestampRequest{Id: &payload.Object_ID{Id: uuid}})
+			if err == nil && res.GetId() != uuid {
+				return fmt.Errorf("got id %q", res.GetId())
+			}
+			return err
+		}},
+		{name: "SearchByID", call: func(s *server) error {
+			res, err := s.SearchByID(t.Context(), &payload.Search_IDRequest{
+				Id:     uuid,
+				Config: &payload.Search_Config{Num: 1},
+			})
+			if err == nil && len(res.GetResults()) == 0 {
+				return errors.New("empty search results")
+			}
+			return err
+		}},
+		{name: "LinearSearchByID", call: func(s *server) error {
+			clients := newSubsetProbeClients(addrs, false, nil)
+			for k, v := range clients {
+				clients[k] = &linearClient{regClient: v.(*regClient)}
+			}
+			gw := newSubsetRegGateway(addrs, clients)
+			eg, _ := errgroup.New(t.Context())
+			ls := &server{gateway: gw, replica: 3, timeout: time.Second, eg: eg}
+			res, err := ls.LinearSearchByID(t.Context(), &payload.Search_IDRequest{
+				Id:     uuid,
+				Config: &payload.Search_Config{Num: 1},
+			})
+			if err != nil {
+				return err
+			}
+			if len(res.GetResults()) == 0 {
+				return errors.New("empty linear search results")
+			}
+			gw.mu.Lock()
+			defer gw.mu.Unlock()
+			if len(gw.waves) != 2 || gw.waves[0].count != 3 || gw.waves[1].count != 3 {
+				return fmt.Errorf("unexpected waves: %+v", gw.waves)
+			}
+			return nil
+		}},
+	} {
+		t.Run("Wave 1 hit/"+tc.name, func(t *testing.T) {
+			t.Parallel()
+			gw := newSubsetRegGateway(addrs, newSubsetProbeClients(addrs, false, nil))
+			eg, _ := errgroup.New(t.Context())
+			s := &server{gateway: gw, replica: 3, timeout: time.Second, eg: eg}
+			if err := tc.call(s); err != nil {
+				t.Fatalf("call error = %v", err)
+			}
+			if tc.name == "LinearSearchByID" {
+				return
+			}
+			gw.mu.Lock()
+			defer gw.mu.Unlock()
+			if tc.name == "SearchByID" {
+				if len(gw.waves) != 2 || gw.waves[0].count != 3 || gw.waves[1].count != 3 {
+					t.Fatalf("SearchByID waves = %+v, want [3, 3]", gw.waves)
+				}
+				return
+			}
+			if len(gw.waves) != 1 || gw.waves[0].count != 3 || gw.bcCalls != 0 {
+				t.Fatalf("waves = %+v, bcCalls = %d, want 1 wave of 3 and 0 full broadcasts", gw.waves, gw.bcCalls)
+			}
+		})
+	}
+}
+
+func Test_server_subsetReplicaCoverFallbackAndExistsCheck(t *testing.T) {
+	t.Parallel()
+	const uuid = probeCoverUUID
+	addrs := []string{"a0", "a1", "a2", "a3", "a4"}
+	internalErr := status.Error(codes.Internal, "agent failure")
+
+	t.Run("partial write on Wave 2 triggers remaining 2 agents and succeeds", func(t *testing.T) {
+		t.Parallel()
+		gw := newSubsetRegGateway(addrs, newSubsetProbeClients(addrs, true, nil))
+		eg, _ := errgroup.New(t.Context())
+		s := &server{gateway: gw, replica: 3, timeout: time.Second, eg: eg}
+		got, err := s.GetObject(t.Context(), &payload.Object_VectorRequest{Id: &payload.Object_ID{Id: uuid}})
+		if err != nil || got.GetId() != uuid {
+			t.Fatalf("GetObject = (%v, %v), want id %q", got, err, uuid)
+		}
+		gw.mu.Lock()
+		defer gw.mu.Unlock()
+		if len(gw.waves) != 2 || gw.waves[0].count != 3 || gw.waves[1].count != 2 {
+			t.Fatalf("waves = %+v, want [3, 2]", gw.waves)
+		}
+	})
+
+	t.Run("Wave 1 error with Wave 2 hit succeeds", func(t *testing.T) {
+		t.Parallel()
+		gw := newSubsetRegGateway(addrs, newSubsetProbeClients(addrs, true, internalErr))
+		eg, _ := errgroup.New(t.Context())
+		s := &server{gateway: gw, replica: 3, timeout: time.Second, eg: eg}
+		got, err := s.Exists(t.Context(), &payload.Object_ID{Id: uuid})
+		if err != nil || got.GetId() != uuid {
+			t.Fatalf("Exists = (%v, %v), want id %q", got, err, uuid)
+		}
+		gw.mu.Lock()
+		defer gw.mu.Unlock()
+		if len(gw.waves) != 2 {
+			t.Fatalf("waves = %+v, want 2 waves", gw.waves)
+		}
+	})
+
+	t.Run("Wave 1 error with Wave 2 miss preserves Wave 1 error instead of NotFound", func(t *testing.T) {
+		t.Parallel()
+		gw := newSubsetRegGateway(addrs, newSubsetProbeClients(addrs, false, internalErr))
+		eg, _ := errgroup.New(t.Context())
+		s := &server{gateway: gw, replica: 3, timeout: time.Second, eg: eg}
+		_, err := s.GetObject(t.Context(), &payload.Object_VectorRequest{Id: &payload.Object_ID{Id: uuid}})
+		if st, _ := status.FromError(err); st == nil || st.Code() != codes.Internal {
+			t.Fatalf("GetObject err = %v (code %v), want Internal", err, st.Code())
+		}
+	})
+
+	t.Run("existsCheck uses 1-RTT full broadcast without 2-wave probing", func(t *testing.T) {
+		t.Parallel()
+		gw := newSubsetRegGateway(addrs, newSubsetProbeClients(addrs, false, nil))
+		eg, _ := errgroup.New(t.Context())
+		s := &server{gateway: gw, replica: 3, timeout: time.Second, eg: eg}
+		ok, err := s.existsCheck(t.Context(), uuid)
+		if err != nil || !ok {
+			t.Fatalf("existsCheck = (%v, %v), want (true, nil)", ok, err)
+		}
+		gw.mu.Lock()
+		defer gw.mu.Unlock()
+		if len(gw.waves) != 0 || gw.bcCalls != 1 {
+			t.Fatalf("waves = %d, bcCalls = %d, want 0 waves and 1 full broadcast", len(gw.waves), gw.bcCalls)
+		}
+	})
+
+	t.Run("dedicated ReadReplica miss skips Wave 2", func(t *testing.T) {
+		t.Parallel()
+		readTargets := []string{"rr0", "rr1"}
+		clients := make(map[string]vald.Client, len(readTargets))
+		var (
+			mu    sync.Mutex
+			calls = make(map[string]int, len(readTargets))
+		)
+		for _, target := range readTargets {
+			tgt := target
+			clients[tgt] = &regClient{
+				exists: func(context.Context, *payload.Object_ID) (*payload.Object_ID, error) {
+					mu.Lock()
+					calls[tgt]++
+					mu.Unlock()
+					return nil, status.Error(codes.NotFound, "miss")
+				},
+			}
+		}
+		gw := newSubsetRegGateway(addrs, clients)
+		gw.readTargets = readTargets
+		eg, _ := errgroup.New(t.Context())
+		s := &server{gateway: gw, replica: 3, timeout: time.Second, eg: eg}
+		if _, err := s.Exists(t.Context(), &payload.Object_ID{Id: uuid}); func() codes.Code { st, _ := status.FromError(err); return st.Code() }() != codes.NotFound {
+			t.Fatalf("Exists err = %v, want NotFound", err)
+		}
+		gw.mu.Lock()
+		waveCount := len(gw.waves)
+		gw.mu.Unlock()
+		if waveCount != 1 {
+			t.Fatalf("waves = %d, want 1 (no Wave 2 resend on dedicated ReadReplica)", waveCount)
+		}
+		mu.Lock()
+		defer mu.Unlock()
+		for _, target := range readTargets {
+			if calls[target] != 1 {
+				t.Errorf("target %s called %d times, want 1", target, calls[target])
+			}
+		}
+	})
+}
+
+func Test_server_objectReads_emptyUUIDInvalidArgument(t *testing.T) {
+	t.Parallel()
+	var called atomic.Bool
+	gw := &regGateway{
+		agents: 1,
+		broadCast: func(context.Context, func(context.Context, string, vald.Client, ...grpc.CallOption) error) error {
+			called.Store(true)
+			return nil
+		},
+	}
+	s := &server{gateway: gw, replica: 1, timeout: time.Second}
+
+	if _, err := s.GetObject(t.Context(), &payload.Object_VectorRequest{}); func() bool {
+		st, _ := status.FromError(err)
+		return st == nil || st.Code() != codes.InvalidArgument
+	}() {
+		t.Fatalf("GetObject(\"\") err = %v, want InvalidArgument", err)
+	}
+	if _, err := s.GetTimestamp(t.Context(), &payload.Object_TimestampRequest{}); func() bool {
+		st, _ := status.FromError(err)
+		return st == nil || st.Code() != codes.InvalidArgument
+	}() {
+		t.Fatalf("GetTimestamp(\"\") err = %v, want InvalidArgument", err)
+	}
+	if called.Load() {
+		t.Fatal("BroadCast was called for empty uuid")
+	}
 }
 
 // NOT IMPLEMENTED BELOW

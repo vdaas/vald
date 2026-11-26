@@ -23,7 +23,6 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/sync/atomic"
-	"google.golang.org/grpc/metadata"
 )
 
 // fallbackGRPCClient fails every Do with doErr and counts RoundRobin calls.
@@ -81,7 +80,7 @@ func Test_gateway_Do_noFallbackForProxiedRequest(t *testing.T) {
 			g := &gateway{client: &fallbackMirrorClient{gc: gc}, podName: "mirror-a"}
 			ctx := tt.Context()
 			if test.forwardedBy != "" {
-				ctx = metadata.NewIncomingContext(ctx, metadata.MD{forwardedContextKey: []string{test.forwardedBy}})
+				ctx = grpc.NewIncomingContext(ctx, grpc.MD{forwardedContextKey: []string{test.forwardedBy}})
 			}
 			_, err := g.Do(ctx, "vald-lb", func(context.Context, string, MirrorClient, ...grpc.CallOption) (any, error) {
 				return "own", nil

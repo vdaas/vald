@@ -810,6 +810,7 @@ hack/tools/kvsdb/main.go
 internal/algorithm/recall/recall.go
 internal/algorithm/recall/recall_test.go
 internal/backoff/backoff.go
+internal/backoff/backoff_bench_test.go
 internal/backoff/backoff_test.go
 internal/backoff/context.go
 internal/backoff/context_test.go
@@ -830,6 +831,7 @@ internal/cache/gache/option_test.go
 internal/cache/option.go
 internal/cache/option_test.go
 internal/circuitbreaker/breaker.go
+internal/circuitbreaker/breaker_bench_test.go
 internal/circuitbreaker/breaker_test.go
 internal/circuitbreaker/counter.go
 internal/circuitbreaker/counter_test.go
@@ -871,6 +873,8 @@ internal/client/v1/client/mirror/mirror.go
 internal/client/v1/client/mirror/mirror_test.go
 internal/client/v1/client/mirror/option.go
 internal/client/v1/client/mirror/option_test.go
+internal/client/v1/client/vald/cache.go
+internal/client/v1/client/vald/cache_test.go
 internal/client/v1/client/vald/doc.go
 internal/client/v1/client/vald/option.go
 internal/client/v1/client/vald/option_test.go
@@ -1348,6 +1352,9 @@ internal/net/grpc/admin/admin.go
 internal/net/grpc/admin/doc.go
 internal/net/grpc/benchmark_test.go
 internal/net/grpc/client.go
+internal/net/grpc/client_fan_out_alloc_test.go
+internal/net/grpc/client_fan_out_test.go
+internal/net/grpc/client_policy_bench_test.go
 internal/net/grpc/client_retry_bench_test.go
 internal/net/grpc/client_test.go
 internal/net/grpc/codec.go
@@ -1355,6 +1362,8 @@ internal/net/grpc/codec_bench_test.go
 internal/net/grpc/codec_test.go
 internal/net/grpc/codes/codes.go
 internal/net/grpc/codes/doc.go
+internal/net/grpc/connectivity/connectivity.go
+internal/net/grpc/connectivity/doc.go
 internal/net/grpc/context.go
 internal/net/grpc/context_test.go
 internal/net/grpc/credentials/credentials.go
@@ -1498,6 +1507,8 @@ internal/observability/metrics/backoff/doc.go
 internal/observability/metrics/circuitbreaker/circuitbreaker.go
 internal/observability/metrics/circuitbreaker/circuitbreaker_test.go
 internal/observability/metrics/circuitbreaker/doc.go
+internal/observability/metrics/collect.go
+internal/observability/metrics/collect_test.go
 internal/observability/metrics/doc.go
 internal/observability/metrics/gateway/lb/doc.go
 internal/observability/metrics/gateway/lb/lb.go
@@ -1595,7 +1606,16 @@ internal/sync/errgroup/doc.go
 internal/sync/errgroup/errgroup_test.go
 internal/sync/errgroup/group.go
 internal/sync/errgroup/group_test.go
+internal/sync/errgroup/worker.go
+internal/sync/errgroup/worker_test.go
 internal/sync/map.go
+internal/sync/pool.go
+internal/sync/pool_fast.go
+internal/sync/pool_gc_test.go
+internal/sync/pool_no_race_hooks.go
+internal/sync/pool_race_hooks.go
+internal/sync/pool_test.go
+internal/sync/poolqueue.go
 internal/sync/semaphore/doc.go
 internal/sync/semaphore/semaphore.go
 internal/sync/semaphore/semaphore_bench_test.go
@@ -1606,6 +1626,8 @@ internal/sync/singleflight/singleflight.go
 internal/sync/singleflight/singleflight_test.go
 internal/test/alias.go
 internal/test/alias_test.go
+internal/test/bench/bench.go
+internal/test/bench/bench_test.go
 internal/test/capability/capability.go
 internal/test/capability/capability_test.go
 internal/test/capability/node.go
@@ -1932,6 +1954,7 @@ pkg/agent/core/ngt/service/doc.go
 pkg/agent/core/ngt/service/export_test.go
 pkg/agent/core/ngt/service/ngt.go
 pkg/agent/core/ngt/service/ngt_bench_test.go
+pkg/agent/core/ngt/service/ngt_fastpath_test.go
 pkg/agent/core/ngt/service/ngt_parallel_test.go
 pkg/agent/core/ngt/service/ngt_stateful_test.go
 pkg/agent/core/ngt/service/ngt_test.go
@@ -2065,6 +2088,7 @@ pkg/gateway/lb/config/config_test.go
 pkg/gateway/lb/config/doc.go
 pkg/gateway/lb/handler/doc.go
 pkg/gateway/lb/handler/grpc/aggregation.go
+pkg/gateway/lb/handler/grpc/aggregation_alloc_test.go
 pkg/gateway/lb/handler/grpc/aggregation_std_bench_test.go
 pkg/gateway/lb/handler/grpc/aggregation_test.go
 pkg/gateway/lb/handler/grpc/doc.go

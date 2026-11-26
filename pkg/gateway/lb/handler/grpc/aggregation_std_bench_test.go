@@ -45,7 +45,6 @@ func BenchmarkStdAggregator_Agents(b *testing.B) {
 			b.ResetTimer()
 			for range b.N {
 				aggr := newStd(num, num, agents)
-				aggr.Start(b.Context())
 				for _, res := range resps {
 					aggr.Send(b.Context(), res)
 				}
@@ -54,5 +53,55 @@ func BenchmarkStdAggregator_Agents(b *testing.B) {
 				}
 			}
 		})
+	}
+}
+
+// BenchmarkAggregators_Agents compares all 4 gateway aggregators under realistic
+// replica=3 overlapping IDs for 5, 10, and 50 agents.
+func BenchmarkAggregators_Agents(b *testing.B) {
+	const (
+		num     = 10
+		replica = 3
+	)
+	algos := []struct {
+		newFn func(num, fnum, replica int) Aggregator
+		name  string
+	}{
+		{name: "Std", newFn: newStd},
+		{name: "Slice", newFn: newSlice},
+		{name: "PoolSlice", newFn: newPoolSlice},
+		{name: "PairingHeap", newFn: newPairingHeap},
+	}
+	for _, agents := range []int{5, 10, 50} {
+		r := rand.New(rand.NewPCG(7, uint64(agents))) //nolint:gosec // deterministic benchmark data, not security sensitive
+		totalUnique := agents * num / replica
+		pool := make([]*payload.Object_Distance, totalUnique)
+		for i := range pool {
+			pool[i] = &payload.Object_Distance{Id: "id-" + strconv.Itoa(i), Distance: r.Float32()}
+		}
+		resps := make([]*payload.Search_Response, agents)
+		for a := range resps {
+			res := make([]*payload.Object_Distance, num)
+			for i := range res {
+				res[i] = pool[(a*num/replica+i)%totalUnique]
+			}
+			slices.SortFunc(res, func(x, y *payload.Object_Distance) int { return cmp.Compare(x.GetDistance(), y.GetDistance()) })
+			resps[a] = &payload.Search_Response{Results: res}
+		}
+		for _, algo := range algos {
+			b.Run("algo="+algo.name+"/agents="+strconv.Itoa(agents), func(b *testing.B) {
+				b.ReportAllocs()
+				b.ResetTimer()
+				for range b.N {
+					aggr := algo.newFn(num, num, replica)
+					for _, res := range resps {
+						aggr.Send(b.Context(), res)
+					}
+					if got := len(aggr.Result().GetResults()); got != num {
+						b.Fatalf("%s Result() returned %d results, want %d", algo.name, got, num)
+					}
+				}
+			})
+		}
 	}
 }

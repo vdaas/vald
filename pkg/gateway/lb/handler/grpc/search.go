@@ -27,6 +27,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/errhandler"
+	"github.com/vdaas/vald/internal/net/grpc/proto"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/attribute"
 	"github.com/vdaas/vald/internal/observability/trace"
@@ -37,13 +38,31 @@ import (
 
 func (s *server) Search(
 	ctx context.Context, req *payload.Search_Request,
-) (res *payload.Search_Response, err error) {
-	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.SearchRPCName), apiName+"/"+vald.SearchRPCName)
-	defer trace.End(span)
+) (*payload.Search_Response, error) {
+	return s.searchVector(ctx, vald.SearchRPCName, req, vald.Client.Search)
+}
+
+func (s *server) SearchByID(
+	ctx context.Context, req *payload.Search_IDRequest,
+) (*payload.Search_Response, error) {
+	return s.searchByID(ctx, vald.SearchByIDRPCName, vald.SearchRPCName, req, vald.Client.SearchByID, vald.Client.Search)
+}
+
+func (s *server) searchVector(
+	ctx context.Context,
+	rpcName string,
+	req *payload.Search_Request,
+	fn func(vc vald.Client, ctx context.Context, req *payload.Search_Request, copts ...grpc.CallOption) (*payload.Search_Response, error),
+) (*payload.Search_Response, error) {
+	var span trace.Span
+	if trace.Enabled() {
+		ctx, span = trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+rpcName), apiName+"/"+rpcName)
+		defer trace.End(span)
+	}
 	vl := len(req.GetVector())
 	if vl < algorithm.MinimumVectorDimensionSize {
-		err = errors.ErrInvalidDimensionSize(vl, 0)
-		err = status.WrapWithInvalidArgument(vald.SearchRPCName+" API invalid vector argument", err,
+		err := errors.ErrInvalidDimensionSize(vl, 0)
+		err = status.WrapWithInvalidArgument(rpcName+" API invalid vector argument", err,
 			&errdetails.RequestInfo{
 				RequestId:   req.GetConfig().GetRequestId(),
 				ServingData: errdetails.Serialize(req),
@@ -58,98 +77,91 @@ func (s *server) Search(
 			})
 		return errhandler.HandleError[payload.Search_Response](span, codes.InvalidArgument, err)
 	}
-	res, attrs, err := s.doSearch(
-		ctx,
-		vald.SearchRPCName,
-		req.GetConfig(),
-		func(ctx context.Context, fcfg *payload.Search_Config, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
-			return vc.Search(ctx, &payload.Search_Request{Vector: req.GetVector(), Config: fcfg}, copts...)
-		},
-	)
+	cfg := req.GetConfig()
+	res, attrs, err := doSearch(ctx, s, rpcName, cfg,
+		func(fcfg *payload.Search_Config) *payload.Search_Request {
+			return &payload.Search_Request{Vector: req.GetVector(), Config: fcfg}
+		}, fn)
 	if err != nil {
-		if attrs != nil && span != nil {
-			span.RecordError(err)
-			span.SetAttributes(attrs...)
-			span.SetStatus(trace.StatusError, err.Error())
+		if span != nil {
+			errhandler.RecordSpanAttrs(span, attrs, err)
 		}
 		return nil, err
 	}
 	return res, nil
 }
 
-func (s *server) SearchByID(
-	ctx context.Context, req *payload.Search_IDRequest,
-) (res *payload.Search_Response, err error) {
-	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.SearchByIDRPCName), apiName+"/"+vald.SearchByIDRPCName)
-	defer trace.End(span)
+func (s *server) searchByID(
+	ctx context.Context,
+	idRPCName, vecRPCName string,
+	req *payload.Search_IDRequest,
+	idFn func(vc vald.Client, ctx context.Context, req *payload.Search_IDRequest, copts ...grpc.CallOption) (*payload.Search_Response, error),
+	vecFn func(vc vald.Client, ctx context.Context, req *payload.Search_Request, copts ...grpc.CallOption) (*payload.Search_Response, error),
+) (*payload.Search_Response, error) {
+	var span trace.Span
+	if trace.Enabled() {
+		ctx, span = trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+idRPCName), apiName+"/"+idRPCName)
+		defer trace.End(span)
+	}
 	uuid := req.GetId()
 	if len(uuid) == 0 {
-		err = errors.ErrInvalidMetaDataConfig
-		err = status.WrapWithInvalidArgument(vald.SearchByIDRPCName+" API invalid uuid", err, append(s.errDetails(ctx, vald.SearchByIDRPCName, uuid, req),
-			&errdetails.BadRequest{
-				FieldViolations: []*errdetails.BadRequestFieldViolation{
-					{
-						Field:       "invalid id",
-						Description: err.Error(),
-					},
-				},
-			})...)
-		return errhandler.HandleError[payload.Search_Response](span, codes.InvalidArgument, err)
+		return errhandler.HandleError[payload.Search_Response](span, codes.InvalidArgument, s.invalidUUIDError(ctx, idRPCName, idRPCName, uuid, req))
 	}
-	vec, err := s.GetObject(ctx, &payload.Object_VectorRequest{
-		Id: &payload.Object_ID{
-			Id: uuid,
-		},
-	})
+	buildIDReq := func(fcfg *payload.Search_Config) *payload.Search_IDRequest {
+		return &payload.Search_IDRequest{Id: uuid, Config: fcfg}
+	}
+	vec, err := s.getObject(ctx, uuid)
 	if err != nil {
-		st, _ := status.FromError(err)
-		if span != nil && st != nil && st.Code() != codes.NotFound {
-			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
 		if skipSearchByIDFallback(ctx, err) {
-			return nil, err
+			return nil, s.wrapObjectReadError(ctx, span, idRPCName, uuid, req, "object not found", err)
+		}
+		if span != nil {
+			if st, _ := status.FromError(err); st != nil && st.Code() != codes.NotFound {
+				errhandler.RecordSpanStatus(span, st, err)
+			}
 		}
 		// try search by using agent's SearchByID method this operation is emergency fallback, the search quality is not same as usual SearchByID operation.
-		var attrs []attribute.KeyValue
-		res, attrs, err = s.doSearch(
-			ctx,
-			vald.SearchByIDRPCName,
-			req.GetConfig(),
-			func(ctx context.Context, fcfg *payload.Search_Config, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
-				return vc.SearchByID(ctx, &payload.Search_IDRequest{Id: req.GetId(), Config: fcfg}, copts...)
-			},
+		var (
+			res   *payload.Search_Response
+			attrs []attribute.KeyValue
 		)
+		res, attrs, err = doSearch(ctx, s, idRPCName, req.GetConfig(), buildIDReq, idFn)
 		if err == nil {
 			return res, nil
 		}
-		if st != nil && span != nil {
-			span.RecordError(err)
-			span.SetAttributes(attrs...)
-			span.SetStatus(trace.StatusError, err.Error())
+		if span != nil {
+			errhandler.RecordSpanAttrs(span, attrs, err)
 		}
 		return nil, err
 	}
-	res, err = s.Search(ctx, &payload.Search_Request{
-		Vector: vec.GetVector(),
-		Config: req.GetConfig(),
-	})
+	var (
+		res   *payload.Search_Response
+		attrs []attribute.KeyValue
+	)
+	if vl := len(vec.GetVector()); vl < algorithm.MinimumVectorDimensionSize {
+		err = status.WrapWithInvalidArgument(vecRPCName+" API invalid vector argument", errors.ErrInvalidDimensionSize(vl, 0),
+			&errdetails.RequestInfo{
+				RequestId:   req.GetConfig().GetRequestId(),
+				ServingData: errdetails.Serialize(req),
+			})
+	} else {
+		res, attrs, err = doSearch(ctx, s, vecRPCName, req.GetConfig(),
+			func(fcfg *payload.Search_Config) *payload.Search_Request {
+				return &payload.Search_Request{Vector: vec.GetVector(), Config: fcfg}
+			}, vecFn)
+	}
 	if err != nil {
 		if skipSearchByIDFallback(ctx, err) {
+			if span != nil {
+				errhandler.RecordSpanAttrs(span, attrs, err)
+			}
 			return nil, err
 		}
-		var attrs []attribute.KeyValue
-		res, attrs, err = s.doSearch(
-			ctx,
-			vald.SearchByIDRPCName,
-			req.GetConfig(),
-			func(ctx context.Context, fcfg *payload.Search_Config, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
-				return vc.SearchByID(ctx, &payload.Search_IDRequest{Id: req.GetId(), Config: fcfg}, copts...)
-			},
-		)
+		res, attrs, err = doSearch(ctx, s, idRPCName, req.GetConfig(), buildIDReq, idFn)
 		if err != nil {
-			errhandler.RecordSpanAttrs(span, attrs, err)
+			if span != nil {
+				errhandler.RecordSpanAttrs(span, attrs, err)
+			}
 			return nil, err
 		}
 	}
@@ -161,7 +173,7 @@ func (s *server) SearchByID(
 // or the failed call already used up the per-request search timeout, which the
 // fallback broadcast would only wait out a second time.
 func skipSearchByIDFallback(ctx context.Context, err error) bool {
-	if ctx.Err() != nil {
+	if ctx.Err() != nil || errors.IsAny(err, context.Canceled, context.DeadlineExceeded) {
 		return true
 	}
 	st, ok := status.FromError(err)
@@ -183,17 +195,9 @@ func (s *server) calculateNum(num uint32, ratio float32, agents int) (n uint32) 
 	return n - 1
 }
 
-// doSearch broadcasts the search to every agent and aggregates the results. rpc
-// is the agent RPC name f calls; it labels the partial-failure metrics.
-func (s *server) doSearch(
-	ctx context.Context,
-	rpc string,
-	cfg *payload.Search_Config,
-	f func(ctx context.Context, cfg *payload.Search_Config, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error),
-) (res *payload.Search_Response, attrs []attribute.KeyValue, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "doSearch"), apiName+"/doSearch")
-	defer trace.End(span)
-
+func (s *server) prepareSearch(
+	ctx context.Context, span trace.Span, cfg *payload.Search_Config,
+) (replica int, aggr Aggregator, err error) {
 	if cfg == nil {
 		err = errors.ErrInvalidSearchConfig("search config is nil in doSearch")
 		err = status.WrapWithInvalidArgument(apiName+"/doSearch", err,
@@ -210,14 +214,14 @@ func (s *server) doSearch(
 				},
 			})
 		errhandler.RecordSpanError(span, codes.InvalidArgument, err)
-		return nil, nil, err
+		return 0, nil, err
 	}
 
 	var (
-		num     = int(cfg.GetNum())
-		fnum    int
-		replica = s.gateway.GetAgentCount(ctx)
+		num  = int(cfg.GetNum())
+		fnum int
 	)
+	replica = s.gateway.GetAgentCount(ctx)
 
 	if cfg.GetRatio() != nil {
 		fnum = int(s.calculateNum(cfg.GetNum(), cfg.GetRatio().GetValue(), replica))
@@ -226,11 +230,42 @@ func (s *server) doSearch(
 		fnum = num
 	}
 
-	return s.aggregationSearch(ctx, rpc, replica, selectAggregator(cfg.GetAggregationAlgorithm(), num, fnum, replica), cfg, f)
+	return replica, selectAggregator(cfg.GetAggregationAlgorithm(), num, fnum, replica), nil
+}
+
+// doSearch prepares the aggregator, constructs the forwarding request once, and
+// broadcasts it to every agent before aggregating the results.
+func doSearch[Q any](
+	ctx context.Context,
+	s *server,
+	rpc string,
+	cfg *payload.Search_Config,
+	buildReq func(fcfg *payload.Search_Config) Q,
+	f func(vc vald.Client, ctx context.Context, req Q, copts ...grpc.CallOption) (*payload.Search_Response, error),
+) (res *payload.Search_Response, attrs []attribute.KeyValue, err error) {
+	var span trace.Span
+	if trace.Enabled() {
+		ctx, span = trace.StartSpan(grpc.WrapGRPCMethod(ctx, "doSearch"), apiName+"/doSearch")
+		defer trace.End(span)
+	}
+
+	replica, aggr, err := s.prepareSearch(ctx, span, cfg)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	sreq := buildReq(forwardSearchConfig(cfg, aggr.GetFnum()))
+	return s.aggregationSearch(ctx, rpc, replica, aggr, cfg,
+		func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
+			return f(vc, ctx, sreq, copts...)
+		},
+	)
 }
 
 func selectAggregator(algo payload.Search_AggregationAlgorithm, num, fnum, replica int) Aggregator {
 	switch algo {
+	case payload.Search_Unknown, payload.Search_ConcurrentQueue:
+		return newStd(num, fnum, replica)
 	case payload.Search_SortSlice:
 		return newSlice(num, fnum, replica)
 	case payload.Search_SortPoolSlice:
@@ -242,87 +277,58 @@ func selectAggregator(algo payload.Search_AggregationAlgorithm, num, fnum, repli
 	}
 }
 
-func (s *server) StreamSearch(stream vald.Search_StreamSearchServer) (err error) {
-	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(stream.Context(), vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.StreamSearchRPCName), apiName+"/"+vald.StreamSearchRPCName)
-	defer trace.End(span)
-	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
-		func(ctx context.Context, req *payload.Search_Request) (*payload.Search_StreamResponse, error) {
-			ctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BidirectionalStream"), apiName+"/"+vald.StreamSearchRPCName+"/requestID-"+req.GetConfig().GetRequestId())
-			defer trace.End(sspan)
-			res, err := s.Search(ctx, req)
-			if err != nil {
-				st, _ := status.FromError(err)
-				errhandler.RecordSpanStatus(sspan, st, err)
-				return &payload.Search_StreamResponse{
-					Payload: &payload.Search_StreamResponse_Status{
-						Status: st.Proto(),
-					},
-				}, err
-			}
+func streamSearch[Q proto.Message, S grpc.TypedServerStream[Q, *payload.Search_StreamResponse]](
+	s *server,
+	stream S,
+	rpcName string,
+	itemSpan func(Q) string,
+	search func(context.Context, Q) (*payload.Search_Response, error),
+) error {
+	return grpc.HandleBidirectionalStream(
+		stream,
+		s.streamConcurrency,
+		vald.PackageName+"."+vald.SearchRPCServiceName+"/"+rpcName,
+		apiName+"/"+rpcName,
+		itemSpan,
+		search,
+		func(res *payload.Search_Response) *payload.Search_StreamResponse {
 			return &payload.Search_StreamResponse{
-				Payload: &payload.Search_StreamResponse_Response{
-					Response: res,
-				},
-			}, nil
-		})
-	if err != nil {
-		st, _ := status.FromError(err)
-		errhandler.RecordSpanStatus(span, st, err)
-		return err
-	}
-	return nil
+				Payload: &payload.Search_StreamResponse_Response{Response: res},
+			}
+		},
+		func(st *status.Status) *payload.Search_StreamResponse {
+			return &payload.Search_StreamResponse{
+				Payload: &payload.Search_StreamResponse_Status{Status: st.Proto()},
+			}
+		},
+	)
 }
 
-func (s *server) StreamSearchByID(stream vald.Search_StreamSearchByIDServer) (err error) {
-	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(stream.Context(), vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.StreamSearchByIDRPCName), apiName+"/"+vald.StreamSearchByIDRPCName)
-	defer trace.End(span)
-	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
-		func(ctx context.Context, req *payload.Search_IDRequest) (*payload.Search_StreamResponse, error) {
-			ctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BidirectionalStream"), apiName+"/"+vald.StreamSearchByIDRPCName+"/id-"+req.GetId())
-			defer trace.End(sspan)
-			res, err := s.SearchByID(ctx, req)
-			if err != nil {
-				st, _ := status.FromError(err)
-				errhandler.RecordSpanStatus(sspan, st, err)
-				return &payload.Search_StreamResponse{
-					Payload: &payload.Search_StreamResponse_Status{
-						Status: st.Proto(),
-					},
-				}, err
-			}
-			return &payload.Search_StreamResponse{
-				Payload: &payload.Search_StreamResponse_Response{
-					Response: res,
-				},
-			}, nil
-		})
-	if err != nil {
-		st, _ := status.FromError(err)
-		errhandler.RecordSpanStatus(span, st, err)
-		return err
-	}
-	return nil
+func (s *server) StreamSearch(stream vald.Search_StreamSearchServer) error {
+	return streamSearch(s, stream, vald.StreamSearchRPCName, func(req *payload.Search_Request) string {
+		return "requestID-" + req.GetConfig().GetRequestId()
+	}, s.Search)
+}
+
+func (s *server) StreamSearchByID(stream vald.Search_StreamSearchByIDServer) error {
+	return streamSearch(s, stream, vald.StreamSearchByIDRPCName, func(req *payload.Search_IDRequest) string {
+		return "id-" + req.GetId()
+	}, s.SearchByID)
 }
 
 func (s *server) MultiSearch(
 	ctx context.Context, reqs *payload.Search_MultiRequest,
-) (res *payload.Search_Responses, errs error) {
-	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.MultiSearchRPCName), apiName+"/"+vald.MultiSearchRPCName)
-	defer trace.End(span)
-	res, errs = multiSearch(ctx, s, vald.MultiSearchRPCName, reqs.GetRequests(), s.Search)
-	if errs != nil {
-		st, _ := status.FromError(errs)
-		errhandler.RecordSpanStatus(span, st, errs)
-	}
-	return res, errs
+) (*payload.Search_Responses, error) {
+	return multiSearch(ctx, s, vald.MultiSearchRPCName, reqs.GetRequests(), s.Search)
 }
 
 // multiSearch is the shared fan-out of MultiSearch, MultiSearchByID,
-// MultiLinearSearch and MultiLinearSearchByID: it runs search for each request
-// under the multi-request concurrency limit, records each failure on a per-item
-// child span of rpcName, and returns the positional responses together with the
-// joined errors. Each goroutine writes its own index of the pre-sized slice and
-// eg.Wait orders those writes before the return, so only errList needs a lock.
+// MultiLinearSearch and MultiLinearSearchByID: it opens the root trace span,
+// runs search for each request under the multi-request concurrency limit,
+// records each failure on a per-item child span of rpcName, and returns the
+// positional responses together with the joined errors. Each goroutine writes
+// its own index of the pre-sized slice and eg.Wait orders those writes before
+// the return, so only errList needs a lock.
 func multiSearch[Q any](
 	ctx context.Context,
 	s *server,
@@ -330,8 +336,37 @@ func multiSearch[Q any](
 	reqs []Q,
 	search func(context.Context, Q) (*payload.Search_Response, error),
 ) (*payload.Search_Responses, error) {
+	var span trace.Span
+	if trace.Enabled() {
+		ctx, span = trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+rpcName), apiName+"/"+rpcName)
+		defer trace.End(span)
+	}
 	res := &payload.Search_Responses{
 		Responses: make([]*payload.Search_Response, len(reqs)),
+	}
+	if len(reqs) == 0 {
+		return res, nil
+	}
+	if len(reqs) == 1 {
+		sctx := ctx
+		var sspan trace.Span
+		if trace.Enabled() {
+			const ti = "errgroup.Go/id-0"
+			sctx, sspan = trace.StartSpan(grpc.WrapGRPCMethod(ctx, ti), apiName+"/"+rpcName+"/"+ti)
+			defer trace.End(sspan)
+		}
+		r, err := search(sctx, reqs[0])
+		if err != nil {
+			if sspan != nil {
+				errhandler.RecordSpanFromError(sspan, err)
+			}
+			if span != nil {
+				errhandler.RecordSpanFromError(span, err)
+			}
+			return res, err
+		}
+		res.Responses[0] = r
+		return res, nil
 	}
 	eg := errgroup.NewBoundedFanOut(ctx, s.multiLimit(ctx, true))
 	var emu sync.Mutex
@@ -339,13 +374,18 @@ func multiSearch[Q any](
 	for i, req := range reqs {
 		idx, query := i, req
 		eg.Go(safety.RecoverFunc(func() error {
-			ti := "errgroup.Go/id-" + strconv.Itoa(idx)
-			sctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, ti), apiName+"/"+rpcName+"/"+ti)
-			defer trace.End(sspan)
+			sctx := ctx
+			var sspan trace.Span
+			if trace.Enabled() {
+				ti := "errgroup.Go/id-" + strconv.Itoa(idx)
+				sctx, sspan = trace.StartSpan(grpc.WrapGRPCMethod(ctx, ti), apiName+"/"+rpcName+"/"+ti)
+				defer trace.End(sspan)
+			}
 			r, err := search(sctx, query)
 			if err != nil {
-				st, _ := status.FromError(err)
-				errhandler.RecordSpanStatus(sspan, st, err)
+				if sspan != nil {
+					errhandler.RecordSpanFromError(sspan, err)
+				}
 				emu.Lock()
 				errList = append(errList, err)
 				emu.Unlock()
@@ -358,18 +398,15 @@ func multiSearch[Q any](
 	if err := eg.Wait(); err != nil {
 		errList = append(errList, err)
 	}
-	return res, errors.Join(errList...)
+	errs := errors.Join(errList...)
+	if errs != nil && span != nil {
+		errhandler.RecordSpanFromError(span, errs)
+	}
+	return res, errs
 }
 
 func (s *server) MultiSearchByID(
 	ctx context.Context, reqs *payload.Search_MultiIDRequest,
-) (res *payload.Search_Responses, errs error) {
-	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.MultiSearchByIDRPCName), apiName+"/"+vald.MultiSearchByIDRPCName)
-	defer trace.End(span)
-	res, errs = multiSearch(ctx, s, vald.MultiSearchByIDRPCName, reqs.GetRequests(), s.SearchByID)
-	if errs != nil {
-		st, _ := status.FromError(errs)
-		errhandler.RecordSpanStatus(span, st, errs)
-	}
-	return res, errs
+) (*payload.Search_Responses, error) {
+	return multiSearch(ctx, s, vald.MultiSearchByIDRPCName, reqs.GetRequests(), s.SearchByID)
 }

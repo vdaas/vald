@@ -324,8 +324,8 @@ func Test_copier_Copy(t *testing.T) {
 			c := &copier{
 				bufSize: test.fields.bufSize,
 			}
-			c.pool = sync.Pool{
-				New: func() any {
+			c.pool = sync.Pool[*bytes.Buffer]{
+				New: func() *bytes.Buffer {
 					return bytes.NewBuffer(make([]byte, int(atomic.LoadInt64(&c.bufSize))))
 				},
 			}

@@ -19,7 +19,9 @@ package config
 import (
 	"testing"
 
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/k8s"
 	"github.com/vdaas/vald/tests/v2/e2e/metrics"
 )
 
@@ -175,6 +177,54 @@ func TestMetrics_Opts_TDigestPartialConfig(t *testing.T) {
 			}
 			if _, err := metrics.NewCollector(m.Opts()...); err != nil {
 				t.Errorf("NewCollector(Opts()) error: %v", err)
+			}
+		})
+	}
+}
+
+// TestSearchQuery_UnmarshalYAML_Algorithm ensures the YAML algorithm field is properly
+// unmarshaled into SearchQuery (guarding against yaml vs json tag discrepancy).
+func TestSearchQuery_UnmarshalYAML_Algorithm(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name     string
+		yaml     string
+		wantAlgo payload.Search_AggregationAlgorithm
+	}{
+		{
+			name:     "concurrentqueue abbreviation",
+			yaml:     "algorithm: cq\n",
+			wantAlgo: payload.Search_ConcurrentQueue,
+		},
+		{
+			name:     "sortslice abbreviation",
+			yaml:     "algorithm: ss\n",
+			wantAlgo: payload.Search_SortSlice,
+		},
+		{
+			name:     "sortpoolslice abbreviation",
+			yaml:     "algorithm: ps\n",
+			wantAlgo: payload.Search_SortPoolSlice,
+		},
+		{
+			name:     "pairingheap abbreviation",
+			yaml:     "algorithm: ph\n",
+			wantAlgo: payload.Search_PairingHeap,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			var sq SearchQuery
+			if err := k8s.YAMLUnmarshal([]byte(tt.yaml), &sq); err != nil {
+				t.Fatalf("YAMLUnmarshal error: %v", err)
+			}
+			got, err := sq.Bind()
+			if err != nil {
+				t.Fatalf("Bind error: %v", err)
+			}
+			if got.Algorithm != tt.wantAlgo {
+				t.Errorf("Algorithm = %v, want %v", got.Algorithm, tt.wantAlgo)
 			}
 		})
 	}

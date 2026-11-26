@@ -150,6 +150,21 @@ func (c *ClientInternal) OrderedRangeConcurrent(
 	return args.Error(0)
 }
 
+func (c *ClientInternal) RangeSliceConcurrent(
+	ctx context.Context,
+	addrs []string,
+	offset int,
+	count int,
+	concurrency int,
+	f func(ctx context.Context,
+		addr string,
+		conn *ClientConn,
+		copts ...CallOption) error,
+) error {
+	args := c.Called(ctx, addrs, offset, count, concurrency, f)
+	return args.Error(0)
+}
+
 func (c *ClientInternal) Do(
 	ctx context.Context,
 	addr string,

@@ -31,7 +31,7 @@ data:
     time_zone: UTC
     logging:
       format: raw
-      level: debug
+      level: info
       logger: glg
     server_config:
       servers:
@@ -248,8 +248,8 @@ data:
       auto_save_index_duration: 35m
       broken_index_history_limit: 0
       bulk_insert_chunk_size: 10
-      creation_edge_size: 50
-      default_epsilon: 0.05
+      creation_edge_size: 35
+      default_epsilon: 0.04
       default_pool_size: 16
       default_radius: -1
       dimension: 784
@@ -260,7 +260,7 @@ data:
       enable_proactive_gc: false
       enable_statistics: true
       epsilon_for_creation: 0.05
-      error_buffer_limit: 10
+      error_buffer_limit: 64
       export_index_info_duration: 1m
       index_path: ""
       initial_delay_max_duration: 3m
@@ -272,7 +272,7 @@ data:
       namespace: _MY_POD_NAMESPACE_
       object_type: float
       pod_name: _MY_POD_NAME_
-      search_edge_size: 50
+      search_edge_size: 35
       vqueue:
         delete_buffer_pool_size: 5000
         insert_buffer_pool_size: 10000

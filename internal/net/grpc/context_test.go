@@ -17,6 +17,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/vdaas/vald/internal/backoff"
 	_ "github.com/vdaas/vald/internal/net/grpc/logger"
 )
 
@@ -53,8 +54,59 @@ func TestWithQuietErrorLog(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			if got := isQuietErrorLog(tc.ctx()); got != tc.want {
-				t.Errorf("isQuietErrorLog() = %v, want %v", got, tc.want)
+			if got := backoff.IsQuietErrorLog(tc.ctx()); got != tc.want {
+				t.Errorf("backoff.IsQuietErrorLog() = %v, want %v", got, tc.want)
+			}
+		})
+	}
+}
+
+func TestWithSearchBroadcastPolicy(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		ctx         func() context.Context
+		name        string
+		wantQuiet   bool
+		wantNoRetry bool
+	}{
+		{
+			name: "unmarked context",
+			ctx:  context.Background,
+		},
+		{
+			name:        "WithSearchBroadcastPolicy sets both policies",
+			ctx:         func() context.Context { return WithSearchBroadcastPolicy(context.Background()) },
+			wantQuiet:   true,
+			wantNoRetry: true,
+		},
+		{
+			name: "derived context keeps both policies",
+			ctx: func() context.Context {
+				ctx, cancel := context.WithCancel(WithSearchBroadcastPolicy(context.Background()))
+				t.Cleanup(cancel)
+				return WrapGRPCMethod(ctx, "BroadCast/agent-0")
+			},
+			wantQuiet:   true,
+			wantNoRetry: true,
+		},
+		{
+			name: "WithQuietErrorLog preserves WithSearchBroadcastPolicy",
+			ctx: func() context.Context {
+				return WithQuietErrorLog(WithSearchBroadcastPolicy(context.Background()))
+			},
+			wantQuiet:   true,
+			wantNoRetry: true,
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			ctx := tc.ctx()
+			if got := backoff.IsQuietErrorLog(ctx); got != tc.wantQuiet {
+				t.Errorf("backoff.IsQuietErrorLog() = %v, want %v", got, tc.wantQuiet)
+			}
+			if got := isNoResourceExhaustedRetry(ctx); got != tc.wantNoRetry {
+				t.Errorf("isNoResourceExhaustedRetry() = %v, want %v", got, tc.wantNoRetry)
 			}
 		})
 	}

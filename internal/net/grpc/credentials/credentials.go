@@ -17,9 +17,18 @@ package credentials
 import (
 	"github.com/vdaas/vald/internal/tls"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
+// TransportCredentials defines the common interface for all supported gRPC transport security protocols.
+type TransportCredentials = credentials.TransportCredentials
+
 // NewTLS returns the TLS credentials.
-func NewTLS(c *tls.Config) credentials.TransportCredentials {
+func NewTLS(c *tls.Config) TransportCredentials {
 	return credentials.NewTLS(c)
+}
+
+// NewInsecure returns credentials that disable transport security for testing or local connections.
+func NewInsecure() TransportCredentials {
+	return insecure.NewCredentials()
 }

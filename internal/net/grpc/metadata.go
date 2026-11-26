@@ -33,3 +33,8 @@ func NewOutgoingContext(ctx context.Context, md MD) context.Context {
 func FromIncomingContext(ctx context.Context) (metadata.MD, bool) {
 	return metadata.FromIncomingContext(ctx)
 }
+
+// NewIncomingContext returns a new context with incoming md attached.
+func NewIncomingContext(ctx context.Context, md MD) context.Context {
+	return metadata.NewIncomingContext(ctx, md)
+}

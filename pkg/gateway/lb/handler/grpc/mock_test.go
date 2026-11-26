@@ -16,6 +16,7 @@ package grpc
 
 import (
 	"context"
+	"slices"
 	"testing"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
@@ -24,13 +25,12 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/status"
+	"github.com/vdaas/vald/internal/observability/attribute"
+	"github.com/vdaas/vald/internal/observability/metrics"
 	lbmetrics "github.com/vdaas/vald/internal/observability/metrics/gateway/lb"
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/atomic"
 	"github.com/vdaas/vald/pkg/gateway/lb/service"
-	"go.opentelemetry.io/otel/attribute"
-	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
-	"go.opentelemetry.io/otel/sdk/metric/metricdata"
 )
 
 // Fixture values shared by the handler tests of this package.
@@ -77,6 +77,127 @@ func (g *regGateway) DoMulti(
 	f func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error,
 ) error {
 	return g.doMulti(ctx, num, f)
+}
+
+type subsetWave struct {
+	targets []string
+	offset  int
+	count   int
+}
+
+// subsetRegGateway implements service.Gateway with round-robin subset routing
+// for unit tests of replica-cover probing and subset search routing.
+type subsetRegGateway struct {
+	*regGateway
+	clients     map[string]vald.Client
+	skipped     map[string]bool // simulates open circuit breaker / unreached target
+	readTargets []string        // optional dedicated ReadReplica targets (smaller than primary subset)
+	waves       []subsetWave
+	mu          sync.Mutex
+	bcCalls     int
+	rrOffset    atomic.Int64
+}
+
+func newSubsetRegGateway(addrs []string, clients map[string]vald.Client) *subsetRegGateway {
+	g := &subsetRegGateway{
+		clients: clients,
+	}
+	g.regGateway = &regGateway{
+		addrs:  addrs,
+		agents: len(addrs),
+		broadCast: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error) error {
+			g.mu.Lock()
+			g.bcCalls++
+			g.mu.Unlock()
+			var errs []error
+			for _, addr := range addrs {
+				if g.skipped[addr] {
+					continue
+				}
+				if err := f(ctx, addr, clients[addr]); err != nil {
+					errs = append(errs, err)
+				}
+			}
+			return errors.Join(errs...)
+		},
+	}
+	return g
+}
+
+func (g *subsetRegGateway) NextRotateOffset(total int) int {
+	if total <= 1 {
+		return 0
+	}
+	return int((g.rrOffset.Add(1) - 1) % int64(total))
+}
+
+func (g *subsetRegGateway) BroadCastSlice(
+	ctx context.Context,
+	kind service.BroadCastKind,
+	addrs []string,
+	offset int,
+	count int,
+	f func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error,
+) (bool, error) {
+	if kind == service.READ && len(g.readTargets) > 0 {
+		g.mu.Lock()
+		g.waves = append(g.waves, subsetWave{
+			targets: slices.Clone(g.readTargets),
+			count:   len(g.readTargets),
+		})
+		g.mu.Unlock()
+		var errs []error
+		for _, addr := range g.readTargets {
+			if ctx.Err() != nil {
+				break
+			}
+			if g.skipped[addr] {
+				continue
+			}
+			if err := f(ctx, addr, g.clients[addr]); err != nil {
+				errs = append(errs, err)
+			}
+		}
+		return false, errors.Join(errs...)
+	}
+	n := len(addrs)
+	if n == 0 {
+		return false, errors.ErrGRPCClientConnNotFound("*")
+	}
+	if count <= 0 {
+		return true, nil
+	}
+	if count > n {
+		count = n
+	}
+	offset %= n
+	if offset < 0 {
+		offset += n
+	}
+	targets := make([]string, 0, count)
+	for i := range count {
+		targets = append(targets, addrs[(offset+i)%n])
+	}
+	g.mu.Lock()
+	g.waves = append(g.waves, subsetWave{
+		targets: targets,
+		offset:  offset,
+		count:   count,
+	})
+	g.mu.Unlock()
+	var errs []error
+	for _, addr := range targets {
+		if ctx.Err() != nil {
+			break
+		}
+		if g.skipped[addr] {
+			continue
+		}
+		if err := f(ctx, addr, g.clients[addr]); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	return true, errors.Join(errs...)
 }
 
 // regClient is a minimal vald.Client stub.
@@ -365,43 +486,9 @@ func collectSearchMetrics(
 	t *testing.T, sm *lbmetrics.SearchMetrics,
 ) map[string]map[attribute.Distinct]int64 {
 	t.Helper()
-	views, err := sm.View()
+	got, err := metrics.CollectInt64Sums(t.Context(), sm)
 	if err != nil {
-		t.Fatalf("View() error = %v", err)
-	}
-	reader := sdkmetric.NewManualReader()
-	opts := make([]sdkmetric.Option, 0, len(views)+1)
-	opts = append(opts, sdkmetric.WithReader(reader))
-	for _, vw := range views {
-		opts = append(opts, sdkmetric.WithView(vw))
-	}
-	mp := sdkmetric.NewMeterProvider(opts...)
-	t.Cleanup(func() {
-		if err := mp.Shutdown(context.WithoutCancel(t.Context())); err != nil {
-			t.Errorf("Shutdown() error = %v", err)
-		}
-	})
-	if err := sm.Register(mp.Meter("test")); err != nil {
-		t.Fatalf("Register() error = %v", err)
-	}
-	var rm metricdata.ResourceMetrics
-	if err := reader.Collect(t.Context(), &rm); err != nil {
-		t.Fatalf("Collect() error = %v", err)
-	}
-	got := make(map[string]map[attribute.Distinct]int64)
-	for _, scm := range rm.ScopeMetrics {
-		for _, m := range scm.Metrics {
-			s, ok := m.Data.(metricdata.Sum[int64])
-			if !ok {
-				t.Errorf("%s: data = %T, want metricdata.Sum[int64]", m.Name, m.Data)
-				continue
-			}
-			pts := make(map[attribute.Distinct]int64, len(s.DataPoints))
-			for _, dp := range s.DataPoints {
-				pts[dp.Attributes.Equivalent()] = dp.Value
-			}
-			got[m.Name] = pts
-		}
+		t.Fatalf("CollectInt64Sums() error = %v", err)
 	}
 	return got
 }

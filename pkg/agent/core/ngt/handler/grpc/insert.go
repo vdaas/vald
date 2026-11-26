@@ -16,13 +16,13 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
-	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/errhandler"
@@ -36,8 +36,11 @@ import (
 func (s *server) Insert(
 	ctx context.Context, req *payload.Insert_Request,
 ) (res *payload.Object_Location, err error) {
-	_, span := trace.StartSpan(ctx, apiName+"/"+vald.InsertRPCName)
-	defer trace.End(span)
+	var span trace.Span
+	if trace.Enabled() {
+		_, span = trace.StartSpan(ctx, apiName+"/"+vald.InsertRPCName)
+		defer trace.End(span)
+	}
 	vec := req.GetVector()
 	if err = s.validateVectorDimension(span, vald.InsertRPCName, ngtResourceType+"/ngt.Insert",
 		vec.GetId(), req, len(vec.GetVector()), s.ngt.GetDimensionSize()); err != nil {
@@ -47,12 +50,25 @@ func (s *server) Insert(
 		vec.GetId(), req, vec.GetVector()); err != nil {
 		return nil, err
 	}
+	return s.insertValidated(span, req)
+}
+
+func (s *server) insertValidated(
+	span trace.Span, req *payload.Insert_Request,
+) (res *payload.Object_Location, err error) {
+	vec := req.GetVector()
 
 	ts := vec.GetTimestamp()
 	if ts == 0 {
 		ts = req.GetConfig().GetTimestamp()
 	}
-	err = s.ngt.InsertWithTime(vec.GetId(), vec.GetVector(), ts)
+	if req.GetConfig().GetSkipStrictExistCheck() {
+		err = s.ngt.InsertWithConfig(vec.GetId(), vec.GetVector(), ts, true)
+	} else if ts != 0 {
+		err = s.ngt.InsertWithTime(vec.GetId(), vec.GetVector(), ts)
+	} else {
+		err = s.ngt.Insert(vec.GetId(), vec.GetVector())
+	}
 	if err != nil {
 		var attrs []attribute.KeyValue
 		if errors.Is(err, errors.ErrFlushingIsInProgress) {
@@ -63,7 +79,9 @@ func (s *server) Insert(
 				},
 				s.resourceInfo(ngtResourceType+"/ngt.Insert"))
 			log.Warn(err)
-			attrs = trace.StatusCodeAborted(err.Error())
+			if span != nil {
+				attrs = trace.StatusCodeAborted(err.Error())
+			}
 		} else if errors.Is(err, errors.ErrUUIDAlreadyExists(vec.GetId())) {
 			err = status.WrapWithAlreadyExists(fmt.Sprintf("Insert API uuid %s already exists", vec.GetId()), err,
 				&errdetails.RequestInfo{
@@ -72,7 +90,9 @@ func (s *server) Insert(
 				},
 				s.resourceInfo(ngtResourceType+"/ngt.Insert"))
 			log.Warn(err)
-			attrs = trace.StatusCodeAlreadyExists(err.Error())
+			if span != nil {
+				attrs = trace.StatusCodeAlreadyExists(err.Error())
+			}
 		} else if errors.Is(err, errors.ErrUUIDNotFound(0)) {
 			err = status.WrapWithInvalidArgument(fmt.Sprintf("Insert API invalid id: \"%s\" or vector: %v was given", vec.GetId(), vec.GetVector()), err,
 				&errdetails.RequestInfo{
@@ -89,7 +109,9 @@ func (s *server) Insert(
 				},
 				s.resourceInfo(ngtResourceType+"/ngt.Insert"))
 			log.Warn(err)
-			attrs = trace.StatusCodeInvalidArgument(err.Error())
+			if span != nil {
+				attrs = trace.StatusCodeInvalidArgument(err.Error())
+			}
 		} else {
 			var (
 				st  *status.Status
@@ -102,53 +124,39 @@ func (s *server) Insert(
 					ServingData: errdetails.Serialize(req),
 				},
 				s.resourceInfo(ngtResourceType+"/ngt.Insert"), info.Get())
-			attrs = trace.FromGRPCStatus(st.Code(), msg)
+			if span != nil {
+				attrs = trace.FromGRPCStatus(st.Code(), msg)
+			}
 		}
-		errhandler.RecordSpanAttrs(span, attrs, err)
+		if span != nil {
+			errhandler.RecordSpanAttrs(span, attrs, err)
+		}
 		return nil, err
 	}
 	return s.newLocation(vec.GetId()), nil
 }
 
 func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) (err error) {
-	ctx, span := trace.StartSpan(stream.Context(), apiName+"/"+vald.StreamInsertRPCName)
-	defer trace.End(span)
-	err = grpc.BidirectionalStream(ctx, stream, s.streamConcurrency,
-		func(ctx context.Context, req *payload.Insert_Request) (*payload.Object_StreamLocation, error) {
-			ctx, sspan := trace.StartSpan(ctx, apiName+"/"+vald.StreamInsertRPCName+"/id-"+req.GetVector().GetId())
-			defer trace.End(sspan)
-			res, err := s.Insert(ctx, req)
-			if err != nil {
-				st, _ := status.FromError(err)
-				errhandler.RecordSpanStatus(sspan, st, err)
-				return &payload.Object_StreamLocation{
-					Payload: &payload.Object_StreamLocation_Status{
-						Status: st.Proto(),
-					},
-				}, err
-			}
-			return &payload.Object_StreamLocation{
-				Payload: &payload.Object_StreamLocation_Location{
-					Location: res,
-				},
-			}, nil
-		})
-	if err != nil {
-		st, _ := status.FromError(err)
-		errhandler.RecordSpanStatus(span, st, err)
-		return err
-	}
-	return nil
+	return streamLocation(s, stream, vald.StreamInsertRPCName, func(req *payload.Insert_Request) string {
+		return req.GetVector().GetId()
+	}, s.Insert)
 }
 
 func (s *server) MultiInsert(
 	ctx context.Context, reqs *payload.Insert_MultiRequest,
 ) (res *payload.Object_Locations, err error) {
-	_, span := trace.StartSpan(ctx, apiName+"/"+vald.MultiInsertRPCName)
-	defer trace.End(span)
-	uuids := make([]string, 0, len(reqs.GetRequests()))
-	vmap := make(map[string][]float32, len(reqs.GetRequests()))
-	var ts int64
+	var span trace.Span
+	if trace.Enabled() {
+		_, span = trace.StartSpan(ctx, apiName+"/"+vald.MultiInsertRPCName)
+		defer trace.End(span)
+	}
+	nReqs := len(reqs.GetRequests())
+	uuids := make([]string, 0, nReqs)
+	var (
+		strictMap map[string][]float32
+		skipMap   map[string][]float32
+		ts        int64
+	)
 	for i, req := range reqs.GetRequests() {
 		vec := req.GetVector()
 		if i == 0 {
@@ -157,37 +165,48 @@ func (s *server) MultiInsert(
 				ts = req.GetConfig().GetTimestamp()
 			}
 		}
-		if len(vec.GetVector()) != s.ngt.GetDimensionSize() {
-			err = errors.ErrIncompatibleDimensionSize(len(vec.GetVector()), int(s.ngt.GetDimensionSize()))
-			err = status.WrapWithInvalidArgument("MultiInsert API Incompatible Dimension Size detected",
-				err,
-				&errdetails.RequestInfo{
-					RequestId:   vec.GetId(),
-					ServingData: errdetails.Serialize(req),
-				},
-				&errdetails.BadRequest{
-					FieldViolations: []*errdetails.BadRequestFieldViolation{
-						{
-							Field:       "vector dimension size",
-							Description: err.Error(),
-						},
-					},
-				},
-				s.resourceInfo(ngtResourceType+"/ngt.MultiInsert"))
-			log.Warn(err)
-			return errhandler.HandleError[payload.Object_Locations](span, codes.InvalidArgument, err)
+		if err = s.validateVectorDimension(span, vald.MultiInsertRPCName, ngtResourceType+"/ngt.MultiInsert",
+			vec.GetId(), req, len(vec.GetVector()), s.ngt.GetDimensionSize()); err != nil {
+			return nil, err
 		}
 		if err = s.validateVectorValue(span, vald.MultiInsertRPCName, ngtResourceType+"/ngt.MultiInsert",
 			vec.GetId(), req, vec.GetVector()); err != nil {
 			return nil, err
 		}
-		vmap[vec.GetId()] = vec.GetVector()
-		uuids = append(uuids, vec.GetId())
+		id := vec.GetId()
+		if req.GetConfig().GetSkipStrictExistCheck() {
+			if skipMap == nil {
+				skipMap = make(map[string][]float32, nReqs)
+			}
+			skipMap[id] = vec.GetVector()
+			delete(strictMap, id)
+		} else {
+			if strictMap == nil {
+				strictMap = make(map[string][]float32, nReqs)
+			}
+			strictMap[id] = vec.GetVector()
+			delete(skipMap, id)
+		}
+		uuids = append(uuids, id)
 	}
-	if ts != 0 {
-		err = s.ngt.InsertMultipleWithTime(vmap, ts)
-	} else {
-		err = s.ngt.InsertMultiple(vmap)
+	strictInsert := func(m map[string][]float32) error {
+		if ts != 0 {
+			return s.ngt.InsertMultipleWithTime(m, ts)
+		}
+		return s.ngt.InsertMultiple(m)
+	}
+	switch {
+	case len(skipMap) == 0:
+		err = strictInsert(strictMap)
+	case len(strictMap) == 0:
+		err = s.ngt.InsertMultipleWithConfig(skipMap, ts, true)
+	default:
+		if ts == 0 {
+			ts = time.Now().UnixNano()
+		}
+		if err = strictInsert(strictMap); err == nil {
+			err = s.ngt.InsertMultipleWithConfig(skipMap, ts, true)
+		}
 	}
 	if err != nil {
 		var attrs []attribute.KeyValue
@@ -200,7 +219,9 @@ func (s *server) MultiInsert(
 				},
 				s.resourceInfo(ngtResourceType+"/ngt.MultiInsert"))
 			log.Warn(err)
-			attrs = trace.StatusCodeAborted(err.Error())
+			if span != nil {
+				attrs = trace.StatusCodeAborted(err.Error())
+			}
 		} else if alreadyExistsIDs := func() []string {
 			aids := make([]string, 0, len(uuids))
 			for _, id := range uuids {
@@ -217,7 +238,9 @@ func (s *server) MultiInsert(
 				},
 				s.resourceInfo(ngtResourceType+"/ngt.MultiInsert"))
 			log.Warn(err)
-			attrs = trace.StatusCodeAlreadyExists(err.Error())
+			if span != nil {
+				attrs = trace.StatusCodeAlreadyExists(err.Error())
+			}
 		} else if errors.Is(err, errors.ErrUUIDNotFound(0)) {
 			err = status.WrapWithInvalidArgument(fmt.Sprintf("MultiInsert API invalid uuids \"%v\" detected", uuids), err,
 				&errdetails.RequestInfo{
@@ -234,7 +257,9 @@ func (s *server) MultiInsert(
 				},
 				s.resourceInfo(ngtResourceType+"/ngt.MultiInsert"))
 			log.Warn(err)
-			attrs = trace.StatusCodeInvalidArgument(err.Error())
+			if span != nil {
+				attrs = trace.StatusCodeInvalidArgument(err.Error())
+			}
 		} else {
 			err = status.WrapWithInternal("MultiInsert API failed", err,
 				&errdetails.RequestInfo{
@@ -243,7 +268,9 @@ func (s *server) MultiInsert(
 				},
 				s.resourceInfo(ngtResourceType+"/ngt.MultiInsert"), info.Get())
 			log.Error(err)
-			attrs = trace.StatusCodeInternal(err.Error())
+			if span != nil {
+				attrs = trace.StatusCodeInternal(err.Error())
+			}
 		}
 		if span != nil {
 			span.RecordError(err)

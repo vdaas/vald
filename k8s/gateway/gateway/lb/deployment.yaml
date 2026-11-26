@@ -46,7 +46,7 @@ spec:
         app.kubernetes.io/instance: release-name
         app.kubernetes.io/component: gateway-lb
       annotations:
-        checksum/configmap: 7d777dcea8a1776b7d10eb050562fb526e6019cec5752d6a4e0b934cd918e8f9
+        checksum/configmap: aa537132bc082f1133a51bde9bb90a241daf3f89d185c38aae8a09b2f111f824
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-lb-gateway
@@ -148,8 +148,8 @@ spec:
               containerPort: 6060
           resources:
             limits:
-              cpu: 2000m
-              memory: 700Mi
+              cpu: 4000m
+              memory: 2Gi
             requests:
               cpu: 100m
               memory: 50Mi
