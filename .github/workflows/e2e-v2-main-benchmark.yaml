@@ -1,0 +1,73 @@
+#
+# Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+name: "Run E2E V2 Main Benchmark"
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+concurrency:
+  group: e2e-v2-main-benchmark-${{ github.sha }}
+  cancel-in-progress: false
+defaults:
+  run:
+    shell: bash
+jobs:
+  dump-contexts-to-log:
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    runs-on: ubuntu-slim
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/dump-context
+  benchmark:
+    permissions:
+      contents: read
+    uses: ./.github/workflows/_e2e-v2.yaml
+    with:
+      mode: main
+      channels_json: '["main"]'
+      benchmarks_branch: benchmarks
+    secrets:
+      PACKAGE_USER: ${{ secrets.PACKAGE_USER }}
+      PACKAGE_TOKEN: ${{ secrets.PACKAGE_TOKEN }}
+      DISPATCH_USER: ${{ secrets.DISPATCH_USER }}
+      DISPATCH_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+  publish:
+    if: ${{ !cancelled() && (needs.benchmark.result == 'success' || needs.benchmark.result == 'failure') }}
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    needs: [benchmark]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Publish main results to benchmarks branch
+        uses: ./.github/actions/publish-benchmarks
+        with:
+          branch: benchmarks
+          github_user: ${{ secrets.DISPATCH_USER }}
+          github_token: ${{ secrets.DISPATCH_TOKEN }}
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          benchmark_result: ${{ needs.benchmark.result }}
+          commit_message: ":robot: Archive E2E V2 main (${{ github.sha }}) benchmark results and profiles"
+          mappings: |
+            main:e2e/v2/commits/${{ github.sha }}

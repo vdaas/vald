@@ -1,0 +1,223 @@
+#
+# Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+name: "Publish benchmarks to benchmarks branch"
+description: "Archive collected E2E V2 benchmark metrics and pprof profiles to the benchmarks branch via sparse checkout"
+inputs:
+  branch:
+    description: "Target branch storing benchmark metrics and profiles"
+    required: false
+    default: "benchmarks"
+  github_user:
+    description: "GitHub username used to authenticate pushes"
+    required: true
+  github_token:
+    description: "GitHub token used to authenticate pushes"
+    required: true
+  gpg_private_key:
+    description: "GPG private key used to sign commits"
+    required: true
+  mappings:
+    description: "Newline-separated <source_channel>:<target_rel_dir> mappings"
+    required: true
+  commit_message:
+    description: "Commit message for the benchmark publish commit"
+    required: true
+  metrics_dir:
+    description: "Directory containing downloaded per-channel benchmark metrics"
+    required: false
+    default: "collected-metrics"
+  profiles_dir:
+    description: "Directory containing downloaded per-channel pprof profiles"
+    required: false
+    default: "collected-profiles"
+  benchmark_result:
+    description: "Upstream benchmark job outcome (success or failure)"
+    required: false
+    default: "success"
+  download_artifacts:
+    description: "Whether to download e2e-metrics-* and e2e-profiles-* workflow artifacts before publishing"
+    required: false
+    default: "true"
+  metrics_artifact_pattern:
+    description: "Artifact name pattern passed to actions/download-artifact for benchmark metrics"
+    required: false
+    default: "e2e-metrics-*"
+  profiles_artifact_pattern:
+    description: "Artifact name pattern passed to actions/download-artifact for pprof profiles"
+    required: false
+    default: "e2e-profiles-*"
+  max_retries:
+    description: "Maximum push retry attempts on concurrent update conflicts"
+    required: false
+    default: "5"
+runs:
+  using: "composite"
+  steps:
+    - name: Download benchmark metrics artifacts
+      if: ${{ inputs.download_artifacts == 'true' }}
+      uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+      with:
+        pattern: ${{ inputs.metrics_artifact_pattern }}
+        merge-multiple: true
+        path: ${{ inputs.metrics_dir }}
+    - name: Download profile artifacts
+      if: ${{ inputs.download_artifacts == 'true' }}
+      uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+      with:
+        pattern: ${{ inputs.profiles_artifact_pattern }}
+        merge-multiple: true
+        path: ${{ inputs.profiles_dir }}
+    - uses: crazy-max/ghaction-import-gpg@2dc316deee8e90f13e1a351ab510b4d5bc0c82cd # v7.0.0
+      with:
+        gpg_private_key: ${{ inputs.gpg_private_key }}
+        git_config_global: true
+        git_user_signingkey: true
+        git_commit_gpgsign: true
+    - name: Publish benchmark artifacts
+      shell: bash
+      env:
+        BENCHMARKS_BRANCH: ${{ inputs.branch }}
+        GITHUB_USER: ${{ inputs.github_user }}
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+        MAPPINGS: ${{ inputs.mappings }}
+        COMMIT_MESSAGE: ${{ inputs.commit_message }}
+        METRICS_DIR: ${{ inputs.metrics_dir }}
+        PROFILES_DIR: ${{ inputs.profiles_dir }}
+        BENCHMARK_RESULT: ${{ inputs.benchmark_result }}
+        MAX_RETRIES: ${{ inputs.max_retries }}
+      run: |
+        if [ "${BENCHMARK_RESULT}" = "failure" ]; then
+          echo "::warning::Some E2E V2 benchmark scenarios failed; publishing partial results from completed scenarios only."
+        fi
+        if [ -z "${GITHUB_USER}" ] || [ -z "${GITHUB_TOKEN}" ]; then
+          echo "::error::github_user and github_token are required to publish benchmarks."
+          exit 1
+        fi
+
+        src_channels=()
+        target_dirs=()
+        sparse_patterns=()
+        while IFS= read -r line || [ -n "${line}" ]; do
+          line="${line#"${line%%[![:space:]]*}"}"
+          line="${line%"${line##*[![:space:]]}"}"
+          [ -n "${line}" ] || continue
+          if [[ "${line}" != *:* ]]; then
+            echo "::error::Invalid mapping entry '${line}' (expected <source_channel>:<target_rel_dir>)."
+            exit 1
+          fi
+          src_channel="${line%%:*}"
+          target_rel_dir="${line#*:}"
+          src_channel="${src_channel%"${src_channel##*[![:space:]]}"}"
+          target_rel_dir="${target_rel_dir#"${target_rel_dir%%[![:space:]]*}"}"
+          target_rel_dir="${target_rel_dir%/}"
+          if [ -z "${src_channel}" ] || [[ "${target_rel_dir}" != e2e/v2/* ]] || [[ "${target_rel_dir}" == *".."* ]] || [[ "${target_rel_dir}" =~ [[:space:]] ]]; then
+            echo "::error::Invalid mapping entry '${line}'."
+            exit 1
+          fi
+          src_channels+=("${src_channel}")
+          target_dirs+=("${target_rel_dir}")
+          sparse_patterns+=("/${target_rel_dir}/**")
+        done <<< "${MAPPINGS}"
+
+        if [ "${#src_channels[@]}" -eq 0 ]; then
+          echo "::error::No benchmark publish mappings were provided."
+          exit 1
+        fi
+
+        auth_header="AUTHORIZATION: basic $(printf '%s:%s' "${GITHUB_USER}" "${GITHUB_TOKEN}" | base64 | tr -d '\r\n')"
+        echo "::add-mask::${auth_header}"
+        remote_url="https://github.com/${GITHUB_REPOSITORY}.git"
+        git_auth() {
+          git -c "http.https://github.com/.extraheader=${auth_header}" "$@"
+        }
+
+        BENCH_DIR="$(mktemp -d)"
+        trap 'rm -rf "${BENCH_DIR}"' EXIT
+
+        git_auth clone --depth 1 --filter=blob:none --no-checkout --branch "${BENCHMARKS_BRANCH}" \
+          "${remote_url}" \
+          "${BENCH_DIR}"
+        git -C "${BENCH_DIR}" sparse-checkout init --no-cone
+        git -C "${BENCH_DIR}" sparse-checkout set "${sparse_patterns[@]}"
+        git -C "${BENCH_DIR}" checkout
+
+        for attempt in $(seq 1 "${MAX_RETRIES}"); do
+          if [ "${attempt}" -gt 1 ]; then
+            sleep $(( (attempt - 1) * 3 ))
+            if ! git_auth -C "${BENCH_DIR}" fetch --depth 1 origin "${BENCHMARKS_BRANCH}"; then
+              if [ "${attempt}" -lt "${MAX_RETRIES}" ]; then
+                echo "::warning::git fetch failed on attempt ${attempt}; retrying..."
+              else
+                echo "::warning::git fetch failed on final attempt ${attempt}."
+              fi
+              continue
+            fi
+            git -C "${BENCH_DIR}" reset --hard FETCH_HEAD
+            git -C "${BENCH_DIR}" clean -fd
+          fi
+
+          populated_dirs=()
+          for i in "${!src_channels[@]}"; do
+            src_channel="${src_channels[$i]}"
+            target_rel_dir="${target_dirs[$i]}"
+            copied=0
+            if [ -d "${METRICS_DIR}/${src_channel}" ]; then
+              for json_file in "${METRICS_DIR}/${src_channel}"/*.json; do
+                if [ -s "${json_file}" ]; then
+                  mkdir -p "${BENCH_DIR}/${target_rel_dir}"
+                  cp -f "${json_file}" "${BENCH_DIR}/${target_rel_dir}/"
+                  copied=1
+                fi
+              done
+            fi
+            if [ -d "${PROFILES_DIR}/${src_channel}" ]; then
+              for pb_file in "${PROFILES_DIR}/${src_channel}"/*.pb; do
+                if [ -s "${pb_file}" ]; then
+                  mkdir -p "${BENCH_DIR}/${target_rel_dir}/profiles"
+                  cp -f "${pb_file}" "${BENCH_DIR}/${target_rel_dir}/profiles/"
+                  copied=1
+                fi
+              done
+            fi
+            if [ "${copied}" -eq 1 ]; then
+              populated_dirs+=("${target_rel_dir}")
+            fi
+          done
+
+          if [ "${#populated_dirs[@]}" -eq 0 ]; then
+            echo "::warning::No benchmark metrics or profiles found to publish on ${BENCHMARKS_BRANCH} branch."
+            exit 0
+          fi
+
+          git -C "${BENCH_DIR}" add -- "${populated_dirs[@]}"
+          if git -C "${BENCH_DIR}" diff --cached --quiet; then
+            echo "No changes to publish on ${BENCHMARKS_BRANCH} branch."
+            exit 0
+          fi
+
+          git -C "${BENCH_DIR}" commit -S --signoff -m "${COMMIT_MESSAGE}"
+
+          if git_auth -C "${BENCH_DIR}" push origin "HEAD:refs/heads/${BENCHMARKS_BRANCH}"; then
+            echo "Successfully published benchmarks to ${BENCHMARKS_BRANCH} on attempt ${attempt}."
+            exit 0
+          fi
+          if [ "${attempt}" -lt "${MAX_RETRIES}" ]; then
+            echo "::warning::git push failed on attempt ${attempt}; fetching latest ${BENCHMARKS_BRANCH} and retrying..."
+          fi
+        done
+
+        echo "::error::Failed to push benchmarks to ${BENCHMARKS_BRANCH} after ${MAX_RETRIES} attempts."
+        exit 1

@@ -21,7 +21,7 @@ test: \
 	ngt/install \
 	hdf5/install \
 	certs/gen
-	$(call go-test,$(ROOTDIR)/cmd/... $(ROOTDIR)/internal/... $(ROOTDIR)/pkg/...)
+	$(call go-test,$(ROOTDIR)/cmd/... $(ROOTDIR)/internal/... $(ROOTDIR)/pkg/... $(ROOTDIR)/tests/v2/e2e/metrics/...)
 	$(MAKE) certs/clean
 
 .PHONY: test/tparse
@@ -31,7 +31,7 @@ test/tparse: \
 	hdf5/install \
 	certs/gen \
 	tparse/install
-	$(call go-test-tparse,$(ROOTDIR)/cmd/... $(ROOTDIR)/internal/... $(ROOTDIR)/pkg/...,$@)
+	$(call go-test-tparse,$(ROOTDIR)/cmd/... $(ROOTDIR)/internal/... $(ROOTDIR)/pkg/... $(ROOTDIR)/tests/v2/e2e/metrics/...,$@)
 	$(MAKE) certs/clean
 
 .PHONY: test/cmd/tparse
@@ -92,7 +92,7 @@ test/gotestfmt: \
 	hdf5/install \
 	certs/gen \
 	gotestfmt/install
-	$(call go-test-gotestfmt,$(ROOTDIR)/cmd/... $(ROOTDIR)/internal/... $(ROOTDIR)/pkg/...,$@,-showteststatus)
+	$(call go-test-gotestfmt,$(ROOTDIR)/cmd/... $(ROOTDIR)/internal/... $(ROOTDIR)/pkg/... $(ROOTDIR)/tests/v2/e2e/metrics/...,$@,-showteststatus)
 	$(MAKE) certs/clean
 
 .PHONY: test/cmd/gotestfmt
@@ -339,3 +339,22 @@ test/operator/vald:
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
 	go test -shuffle=on -race -mod=readonly -timeout 20m $(ROOTDIR)/pkg/operator/...
+
+.PHONY: test/e2e/metrics
+## run tests for tests/v2/e2e/metrics
+test/e2e/metrics:
+	$(call go-base,test,,,$(GO_TEST_LDFLAGS),,,$(ROOTDIR)/tests/v2/e2e/metrics/...)
+
+.PHONY: test/e2e/metrics/gotestfmt
+## run tests for tests/v2/e2e/metrics and format with gotestfmt
+test/e2e/metrics/gotestfmt: \
+	gotestfmt/install
+	$(SHELL_STRICT); \
+	rm -rf "$(TEST_RESULT_DIR)/$$(echo $@ | sed -e 's%/%-%g')-result.json"; \
+	$(call go-base,test,GODEBUG=$(GODEBUG),-json,$(GO_TEST_LDFLAGS),,,$(ROOTDIR)/tests/v2/e2e/metrics/...,| tee "$(TEST_RESULT_DIR)/$$(echo $@ | sed -e 's%/%-%g')-result.json" | gotestfmt -showteststatus)
+
+.PHONY: test/e2e/crud
+## run unit tests for tests/v2/e2e/crud (-tags e2e)
+test/e2e/crud: \
+	hdf5/install
+	$(call go-base,test,CGO_LDFLAGS="$(TEST_LDFLAGS)",,$(GO_TEST_LDFLAGS),e2e,,$(ROOTDIR)/tests/v2/e2e/crud)

@@ -20,6 +20,18 @@ inputs:
     description: "image names"
     required: false
     default: "vdaas/vald-agent-ngt vdaas/vald-agent-faiss vdaas/vald-agent-sidecar vdaas/vald-discoverer-k8s vdaas/vald-lb-gateway vdaas/vald-filter-gateway vdaas/vald-mirror-gateway vdaas/vald-manager-index vdaas/vald-index-operator vdaas/vald-readreplica-rotate"
+  tag:
+    description: "Docker image tag to wait for (defaults to versions/VALD_VERSION)"
+    required: false
+    default: ""
+  poll_interval:
+    description: "Polling interval in seconds"
+    required: false
+    default: "2"
+  timeout_minutes:
+    description: "Maximum wait time in minutes (0 disables timeout)"
+    required: false
+    default: "0"
 outputs: {}
 runs:
   using: "composite"
@@ -28,14 +40,48 @@ runs:
       shell: bash
       id: wait_for_images
       run: |
-        tag=$(cat versions/VALD_VERSION)
-        for image in ${IMAGES}
-        do
-          echo "searching ${image}:${tag}"
-          until curl -s "https://registry.hub.docker.com/v2/repositories/${image}/tags/${tag}" | jq '.name' | grep -v "null"; do
-            echo "waiting for ${image}:${tag} to be uploaded..."
-            sleep 2
+        tag="${TAG:-$(cat versions/VALD_VERSION)}"
+        deadline=0
+        if [ "${TIMEOUT_MINUTES}" -gt 0 ]; then
+          deadline=$((SECONDS + TIMEOUT_MINUTES * 60))
+        fi
+        tmpdir="$(mktemp -d)"
+        trap 'rm -rf "${tmpdir}"' EXIT
+        read -r -a remaining <<< "${IMAGES//$'\n'/ }"
+        while [ "${#remaining[@]}" -gt 0 ]; do
+          rm -f "${tmpdir}"/*
+          for idx in "${!remaining[@]}"; do
+            image="${remaining[$idx]}"
+            (
+              if curl -fsS --max-time 15 "https://registry.hub.docker.com/v2/repositories/${image}/tags/${tag}" | jq -e '.name != null' >/dev/null 2>&1; then
+                : > "${tmpdir}/${idx}"
+              fi
+            ) &
           done
+          wait || true
+
+          next_remaining=()
+          for idx in "${!remaining[@]}"; do
+            image="${remaining[$idx]}"
+            if [ -f "${tmpdir}/${idx}" ]; then
+              echo "found ${image}:${tag}"
+            else
+              next_remaining+=("${image}")
+            fi
+          done
+          remaining=("${next_remaining[@]}")
+          if [ "${#remaining[@]}" -eq 0 ]; then
+            break
+          fi
+          if [ "${deadline}" -gt 0 ] && [ "${SECONDS}" -ge "${deadline}" ]; then
+            echo "::error::Timed out waiting for Docker images (tag=${tag}): ${remaining[*]}"
+            exit 1
+          fi
+          echo "waiting for ${#remaining[@]} image(s) with tag ${tag}: ${remaining[*]}"
+          sleep "${POLL_INTERVAL}"
         done
       env:
         IMAGES: ${{ inputs.images }}
+        TAG: ${{ inputs.tag }}
+        POLL_INTERVAL: ${{ inputs.poll_interval }}
+        TIMEOUT_MINUTES: ${{ inputs.timeout_minutes }}

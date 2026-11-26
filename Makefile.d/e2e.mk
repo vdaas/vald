@@ -34,6 +34,20 @@ e2e/v2/bench: E2E_RACE := $(E2E_BENCH_RACE)
 e2e/v2/bench:
 	$(call run-v2-e2e-crud-test,-run '^$$' -bench BenchmarkE2EStrategy -benchtime $(E2E_BENCH_TIME))
 
+.PHONY: e2e/v2/diff
+## generate E2E V2 benchmark diff markdown from PR and Daily baseline reports
+e2e/v2/diff:
+	test -n "$(strip $(E2E_BENCH_DIFF_OUTPUT))" || { echo "E2E_BENCH_DIFF_OUTPUT is required" >&2; exit 1; }
+	GOPRIVATE=$(GOPRIVATE) \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
+	CGO_ENABLED=0 \
+	E2E_BENCH_DIFF_OUTPUT="$(abspath $(strip $(E2E_BENCH_DIFF_OUTPUT)))" \
+	$(if $(strip $(E2E_PR_METRICS_DIR)),E2E_PR_METRICS_DIR="$(abspath $(strip $(E2E_PR_METRICS_DIR)))") \
+	$(if $(strip $(E2E_LATEST_METRICS_DIR)),E2E_LATEST_METRICS_DIR="$(abspath $(strip $(E2E_LATEST_METRICS_DIR)))") \
+	$(if $(strip $(E2E_NIGHTLY_METRICS_DIR)),E2E_NIGHTLY_METRICS_DIR="$(abspath $(strip $(E2E_NIGHTLY_METRICS_DIR)))") \
+	go test -mod=readonly -count=1 -run '^TestGenerateBenchmarkDiff$$' $(ROOTDIR)/tests/v2/e2e/metrics
+
 .PHONY: e2e/v2/operator
 ## run e2e/v2 for vald-operator
 e2e/v2/operator:

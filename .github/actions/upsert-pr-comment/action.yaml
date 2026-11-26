@@ -1,0 +1,94 @@
+#
+# Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+name: "Upsert PR comment"
+description: "Create or update a PR comment identified by an HTML marker"
+inputs:
+  marker:
+    description: "HTML comment marker string used to match an existing comment"
+    required: true
+  body_path:
+    description: "Path to the Markdown file containing the comment body"
+    required: true
+  github_token:
+    description: "GitHub token used to list and upsert PR comments"
+    required: false
+    default: ${{ github.token }}
+  author:
+    description: "Optional expected GitHub login of the comment publisher (used when a custom token cannot query /user)"
+    required: false
+    default: ""
+runs:
+  using: "composite"
+  steps:
+    - name: Upsert PR comment
+      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+      env:
+        COMMENT_MARKER: ${{ inputs.marker }}
+        BODY_PATH: ${{ inputs.body_path }}
+        IS_DEFAULT_TOKEN: ${{ inputs.github_token == github.token }}
+        COMMENT_AUTHOR: ${{ inputs.author }}
+      with:
+        github-token: ${{ inputs.github_token }}
+        script: |
+          const fs = require("fs");
+          const marker = process.env.COMMENT_MARKER;
+          const body = fs.readFileSync(process.env.BODY_PATH, "utf8");
+          const owner = context.repo.owner;
+          const repo = context.repo.repo;
+          const issue_number = context.issue.number;
+
+          const explicitAuthor = (process.env.COMMENT_AUTHOR || "").trim();
+          let expectedLogin = "";
+          if (explicitAuthor) {
+            expectedLogin = explicitAuthor;
+          } else if (process.env.IS_DEFAULT_TOKEN === "true") {
+            expectedLogin = "github-actions[bot]";
+          } else {
+            const { data: viewer } = await github.rest.users.getAuthenticated();
+            if (!viewer || !viewer.login) {
+              throw new Error(
+                "Unable to determine comment publisher login from custom github_token; pass the 'author' input explicitly."
+              );
+            }
+            expectedLogin = viewer.login;
+          }
+
+          const comments = await github.paginate(github.rest.issues.listComments, {
+            owner,
+            repo,
+            issue_number,
+            per_page: 100
+          });
+          const existing = comments.find(
+            (c) => c.user && c.user.login === expectedLogin && typeof c.body === "string" && c.body.includes(marker)
+          );
+          if (existing) {
+            await github.rest.issues.updateComment({
+              owner,
+              repo,
+              comment_id: existing.id,
+              body
+            });
+            core.info(`Updated existing comment id=${existing.id} (${marker})`);
+          } else {
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number,
+              body
+            });
+            core.info(`Created new comment (${marker})`);
+          }

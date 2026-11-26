@@ -27,6 +27,7 @@ on:
       - "internal/**"
       - "pkg/**"
       - "cmd/**"
+      - "tests/v2/e2e/metrics/**"
       - "Makefile.d/test.mk"
   pull_request:
     paths:
@@ -36,6 +37,7 @@ on:
       - "internal/**"
       - "pkg/**"
       - "cmd/**"
+      - "tests/v2/e2e/metrics/**"
       - "Makefile.d/test.mk"
 defaults:
   run:
@@ -130,3 +132,28 @@ jobs:
       - name: Print tparse result
         run: |
           tparse -notests -smallscreen -sort cover -format markdown -file "${GITHUB_WORKSPACE}/test-pkg-gotestfmt-result.json"
+  test-e2e-metrics:
+    timeout-minutes: 60
+    permissions:
+      contents: read
+    name: Run tests for tests/v2/e2e/metrics
+    runs-on: ubuntu-latest
+    needs: [detect-ci-container]
+    container:
+      image: ghcr.io/vdaas/vald/vald-dev-container:${{ needs.detect-ci-container.outputs.TAG }}
+      credentials:
+        username: ${{ secrets.PACKAGE_USER }}
+        password: ${{ secrets.PACKAGE_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set Git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
+      - name: Run tests for tests/v2/e2e/metrics / gotestfmt
+        run: |
+          TEST_RESULT_DIR=${GITHUB_WORKSPACE} make test/e2e/metrics/gotestfmt
+      - name: Print tparse result
+        run: |
+          tparse -notests -smallscreen -sort cover -format markdown -file "${GITHUB_WORKSPACE}/test-e2e-metrics-gotestfmt-result.json"

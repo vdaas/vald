@@ -38,6 +38,7 @@ const (
 	MaxGRPCCodes = 20
 
 	percentMultiplier = 100
+	quantileP99       = 0.99
 )
 
 // GetRequestResult returns a RequestResult from the pool.
@@ -480,6 +481,43 @@ func (c *collector) IncCounter(name string, val int64) {
 	}
 }
 
+// CountersSnapshot returns a snapshot of all non-zero custom counters.
+func (c *collector) CountersSnapshot() map[string]int64 {
+	if c == nil {
+		return nil
+	}
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.countersSnapshotLocked()
+}
+
+func (c *collector) countersSnapshotLocked() map[string]int64 {
+	var res map[string]int64
+	for name, h := range c.counters {
+		if v := h.Value(); v > 0 {
+			if res == nil {
+				res = make(map[string]int64, len(c.counters))
+			}
+			res[name] = clampUint64ToInt64(v)
+		}
+	}
+	return res
+}
+
+func clampUint64ToInt64(v uint64) int64 {
+	if v > math.MaxInt64 {
+		return math.MaxInt64
+	}
+	return int64(v)
+}
+
+func saturateAddInt64(a, b int64) int64 {
+	if b > 0 && a > math.MaxInt64-b {
+		return math.MaxInt64
+	}
+	return a + b
+}
+
 // Clone returns a deep copy of the collector.
 // It creates a new independent collector with copied data, suitable for snapshotting or isolation.
 func (c *collector) Clone() (Collector, error) {
@@ -625,6 +663,7 @@ func (c *collector) GlobalSnapshot() *GlobalSnapshot {
 		ExemplarDetails: exDetails,
 		Codes:           codesMap,
 		ErrorDetails:    errorDetails,
+		CustomCounters:  c.countersSnapshotLocked(),
 	}
 
 	if snap.Latencies != nil && snap.ExemplarDetails != nil {
@@ -784,6 +823,15 @@ func MergeSnapshots(snapshots ...*GlobalSnapshot) (*GlobalSnapshot, error) {
 		for msg, val := range s.ErrorDetails {
 			merged.ErrorDetails[msg] += val
 		}
+		for name, val := range s.CustomCounters {
+			if val <= 0 {
+				continue
+			}
+			if merged.CustomCounters == nil {
+				merged.CustomCounters = make(map[string]int64)
+			}
+			merged.CustomCounters[name] = saturateAddInt64(merged.CustomCounters[name], val)
+		}
 	}
 
 	return merged, nil
@@ -802,6 +850,7 @@ type GlobalSnapshot struct {
 	ExemplarDetails *ExemplarDetails      `json:"exemplar_details,omitempty"`
 	Codes           map[codes.Code]uint64 `json:"codes"`
 	ErrorDetails    map[string]uint64     `json:"error_details,omitempty"`
+	CustomCounters  map[string]int64      `json:"custom_counters,omitempty"  yaml:"custom_counters,omitempty"`
 	SchemaVersion   string                `json:"schema_version"`
 	SketchKind      string                `json:"sketch_kind"`
 	Exemplars       []*ExemplarItem       `json:"exemplars"`
@@ -848,6 +897,154 @@ func (s *GlobalSnapshot) UnmarshalJSON(data []byte) error {
 // String implements the fmt.Stringer interface.
 func (s *GlobalSnapshot) String() string {
 	return NewSnapshotPresenter(s).AsString()
+}
+
+func finiteValue(v float64) (float64, bool) {
+	if math.IsNaN(v) || math.IsInf(v, 0) {
+		return 0, false
+	}
+	return v, true
+}
+
+// durationSec distinguishes an unrecorded/invalid duration (ok == false, rendered as N/A)
+// from a measured 0s interval where timestamps were recorded (ok == true, sec == 0).
+func (s *GlobalSnapshot) durationSec() (float64, bool) {
+	if s == nil || s.Total == 0 || s.StartTime.IsZero() || s.LastUpdated.IsZero() {
+		return 0, false
+	}
+	d := s.LastUpdated.Sub(s.StartTime)
+	if d < 0 {
+		return 0, false
+	}
+	return d.Seconds(), true
+}
+
+// Duration returns the elapsed duration between StartTime and LastUpdated, or 0 if unavailable.
+func (s *GlobalSnapshot) Duration() time.Duration {
+	if s == nil || s.Total == 0 || s.StartTime.IsZero() || s.LastUpdated.IsZero() {
+		return 0
+	}
+	d := s.LastUpdated.Sub(s.StartTime)
+	if d <= 0 {
+		return 0
+	}
+	return d
+}
+
+func (s *GlobalSnapshot) qps() (float64, bool) {
+	sec, ok := s.durationSec()
+	if !ok || sec <= 0 {
+		return 0, false
+	}
+	return finiteValue(float64(s.Total) / sec)
+}
+
+// QPS returns requests per second for the snapshot, or 0 if total or duration is non-positive.
+func (s *GlobalSnapshot) QPS() float64 {
+	if v, ok := s.qps(); ok {
+		return v
+	}
+	return 0
+}
+
+func (s *GlobalSnapshot) hasLatencies() bool {
+	return s != nil && s.Latencies != nil && s.Latencies.Total > 0
+}
+
+// hasLatPercentiles checks for at least one positive-weight centroid so an empty
+// TDigest instance is reported as unavailable rather than a measured 0ns quantile.
+func (s *GlobalSnapshot) hasLatPercentiles() bool {
+	if s == nil || s.LatPercentiles == nil {
+		return false
+	}
+	hasData := false
+	s.LatPercentiles.ForEachCentroid(func(_, weight float64) bool {
+		if weight > 0 {
+			hasData = true
+			return false
+		}
+		return true
+	})
+	return hasData
+}
+
+func (s *GlobalSnapshot) latencyMinNS() (float64, bool) {
+	if !s.hasLatencies() {
+		return 0, false
+	}
+	return finiteValue(s.Latencies.Min)
+}
+
+// LatencyMinNS returns the minimum latency in nanoseconds, or 0 if unavailable.
+func (s *GlobalSnapshot) LatencyMinNS() float64 {
+	if v, ok := s.latencyMinNS(); ok {
+		return v
+	}
+	return 0
+}
+
+func (s *GlobalSnapshot) latencyMeanNS() (float64, bool) {
+	if !s.hasLatencies() {
+		return 0, false
+	}
+	return finiteValue(s.Latencies.Mean)
+}
+
+// LatencyMeanNS returns the mean latency in nanoseconds, or 0 if unavailable.
+func (s *GlobalSnapshot) LatencyMeanNS() float64 {
+	if v, ok := s.latencyMeanNS(); ok {
+		return v
+	}
+	return 0
+}
+
+func (s *GlobalSnapshot) latencyMaxNS() (float64, bool) {
+	if !s.hasLatencies() {
+		return 0, false
+	}
+	return finiteValue(s.Latencies.Max)
+}
+
+// LatencyMaxNS returns the maximum latency in nanoseconds, or 0 if unavailable.
+func (s *GlobalSnapshot) LatencyMaxNS() float64 {
+	if v, ok := s.latencyMaxNS(); ok {
+		return v
+	}
+	return 0
+}
+
+// latencyQuantileNS returns the quantile estimate from LatPercentiles, falling back
+// to histogram mean only for a single sample (Total == 1) when the digest is empty.
+func (s *GlobalSnapshot) latencyQuantileNS(q float64) (float64, bool) {
+	if s == nil {
+		return 0, false
+	}
+	if s.hasLatPercentiles() {
+		if v, ok := finiteValue(s.LatPercentiles.Quantile(q)); ok {
+			return v, true
+		}
+	}
+	if s.Total == 1 && s.hasLatencies() {
+		return s.latencyMeanNS()
+	}
+	return 0, false
+}
+
+// LatencyQuantileNS returns the latency at quantile q in nanoseconds, or 0 if unavailable.
+func (s *GlobalSnapshot) LatencyQuantileNS(q float64) float64 {
+	if v, ok := s.latencyQuantileNS(q); ok {
+		return v
+	}
+	return 0
+}
+
+func (s *GlobalSnapshot) latencyP99NS() (float64, bool) {
+	return s.latencyQuantileNS(quantileP99)
+}
+
+// LatencyP99NS returns the 99th percentile latency in nanoseconds.
+func (s *GlobalSnapshot) LatencyP99NS() float64 {
+	return s.LatencyQuantileNS(quantileP99)
 }
 
 // ScaleSnapshot contains the aggregated metrics for a set of windows (slots).

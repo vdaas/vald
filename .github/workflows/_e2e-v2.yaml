@@ -1,0 +1,650 @@
+#
+# Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+name: "Run E2E V2 Reusable"
+on:
+  workflow_call:
+    inputs:
+      mode:
+        description: "Execution mode: standard, daily, pr, or main"
+        required: true
+        type: string
+      channels_json:
+        description: 'JSON array of channels to cross with scenarios (e.g. ["latest","nightly"], ["pr"], ["main"], or [] for standard)'
+        required: false
+        type: string
+        default: "[]"
+      label_prefix:
+        description: "Optional PR label prefix for scenario filtering (e.g. actions/e2e-v2/)"
+        required: false
+        type: string
+        default: ""
+      benchmarks_branch:
+        description: "Branch storing Daily benchmark and profile baselines"
+        required: false
+        type: string
+        default: "benchmarks"
+      max_noise_retries:
+        description: "Maximum attempts per scenario (1-3) when noise detection requests retry in daily mode"
+        required: false
+        type: number
+        default: 3
+      dataset:
+        description: "E2E dataset filename"
+        required: false
+        type: string
+        default: "fashion-mnist-784-euclidean.hdf5"
+      required_pr_images:
+        description: "Space-separated Docker images built for the PR head that must resolve to pr-<number> without falling back to nightly"
+        required: false
+        type: string
+        default: ""
+      pr_base_sha:
+        description: "Merge-base commit SHA of the PR head on the base branch; unchanged components in PR mode are pinned to its commit-hash image"
+        required: false
+        type: string
+        default: ""
+    secrets:
+      PACKAGE_USER:
+        required: true
+      PACKAGE_TOKEN:
+        required: true
+      DISPATCH_USER:
+        required: false
+      DISPATCH_TOKEN:
+        required: false
+defaults:
+  run:
+    shell: bash
+jobs:
+  detect-ci-container:
+    permissions:
+      contents: read
+    uses: ./.github/workflows/_detect-ci-container.yaml
+  build-matrix:
+    timeout-minutes: 15
+    runs-on: ubuntu-slim
+    permissions:
+      contents: read
+    outputs:
+      result: ${{ steps.build-matrix.outputs.result }}
+    steps:
+      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        id: build-matrix
+        env:
+          CHANNELS_JSON: ${{ inputs.channels_json }}
+          LABEL_PREFIX: ${{ inputs.label_prefix }}
+        with:
+          result-encoding: string
+          # TODO: Fix the issue the readreplica returns 0 indices and add this case
+          # - scenario: readreplica
+          #   deployment: helm-chart
+          #   cluster: kind
+          #   environment: "null"
+          script: |
+            // Build a stable include-only matrix for strategy.matrix
+            const baseInclude = [
+              { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "null" },
+              { scenario: "unary_crud", deployment: "helm-chart", cluster: "k3d", environment: "null" },
+              { scenario: "multi_crud", deployment: "helm-chart", cluster: "k3d", environment: "null" },
+              { scenario: "rollout", deployment: "helm-chart", cluster: "k3d", environment: "null" },
+              { scenario: "faiss_crud", deployment: "helm-chart", cluster: "k3d", environment: "faiss" },
+              { scenario: "stream_crud", deployment: "helm-operator", cluster: "k3d", environment: "null" },
+              { scenario: "index_correction", deployment: "helm-chart", cluster: "k3d", environment: "management" },
+              { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "management" },
+              { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "mirror" },
+              { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "profile" },
+              { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "failure" },
+              { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "kill" },
+              { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "partition" },
+              { scenario: "stream_crud", deployment: "helm-chart", cluster: "k3d", environment: "bandwidth" }
+            ];
+
+            const channels = JSON.parse(process.env.CHANNELS_JSON || "[]");
+            const prefix = process.env.LABEL_PREFIX || "";
+
+            function combo(o) {
+              return o.scenario + "-" + o.deployment + "-" + o.cluster + "-" + (o.environment === null ? "null" : String(o.environment));
+            }
+
+            let filtered = baseInclude;
+            if (prefix) {
+              const action = (context && context.payload && context.payload.action) ? context.payload.action : "";
+              const label = (context && context.payload && context.payload.label && context.payload.label.name) ? context.payload.label.name : "";
+              let suffix = "";
+              if (action === "labeled" && label.startsWith(prefix)) {
+                suffix = label.slice(prefix.length);
+              }
+              core.info("Label: " + label);
+              core.info("Suffix: " + (suffix || "<none>"));
+              if (suffix) {
+                filtered = baseInclude.filter(function (o) {
+                  return combo(o).indexOf(suffix) !== -1;
+                });
+              }
+              if (filtered.length === 0) {
+                core.warning("No include matched '" + suffix + "'. Falling back to base include (" + baseInclude.length + " jobs).");
+                filtered = baseInclude;
+              } else {
+                core.info("Matched " + filtered.length + " job(s).");
+              }
+            }
+
+            let include = [];
+            if (Array.isArray(channels) && channels.length > 0) {
+              for (const ch of channels) {
+                for (const entry of filtered) {
+                  include.push(Object.assign({}, entry, { channel: ch }));
+                }
+              }
+            } else {
+              include = filtered.map(function (entry) {
+                return Object.assign({}, entry, { channel: "" });
+              });
+            }
+
+            const matrix = { include: include };
+            core.info("Generated matrix (" + include.length + " jobs):\n" + JSON.stringify(matrix, null, 2));
+            return JSON.stringify(matrix);
+  # Freshness gate: block the e2e container start until the dev-container image
+  # that detect-ci-container resolved actually carries the target ref's toolchain
+  # fingerprint. Without this, the e2e job races the (separately triggered)
+  # dev-container rebuild and can pull a stale image built from an older
+  # toolchain (e.g. an older Go), which fails the in-container build with
+  # "compile: version does not match go tool version". Keyed on a toolchain
+  # fingerprint (not the commit sha) so ordinary PRs or pushes that do not touch
+  # the toolchain match on the first poll and wait zero time; only a toolchain-
+  # changing update waits for its rebuild. Fails open when the label is absent
+  # (an image built before this gate existed) so it never blocks e2e spuriously.
+  wait-dev-container:
+    if: ${{ github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/main') }}
+    timeout-minutes: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') && 60 || 30 }}
+    permissions:
+      contents: read
+    needs: [detect-ci-container]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          # Match the ref the dev-container build labels the image from
+          # (_docker-image.yaml checks out github.event.pull_request.head.sha),
+          # so the fingerprint computed here equals the image label. The default
+          # pull_request checkout is the merge ref, which would diverge whenever
+          # the base branch changes a toolchain file and the PR does not.
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Wait until the dev-container image matches the target ref toolchain
+        env:
+          TAG: ${{ needs.detect-ci-container.outputs.TAG }}
+          WAIT_MINUTES: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') && '55' || '25' }}
+        run: |
+          image="ghcr.io/vdaas/vald/vald-dev-container:${TAG}"
+          label_key="org.vdaas.vald.dev-container.toolchain-fingerprint"
+          expected="$(make -s docker/dev-container/toolchain-fingerprint)"
+          echo "target image:  ${image}"
+          echo "expected fingerprint: ${expected}"
+          deadline=$((SECONDS + WAIT_MINUTES * 60))
+          interval=20
+          while :; do
+            if raw="$(docker buildx imagetools inspect "${image}" --format '{{json .Image}}' 2>/dev/null)"; then
+              actual="$(printf '%s' "${raw}" | jq -r --arg k "${label_key}" '[.. | objects | (.Labels? // {}) | .[$k]? // empty] | map(select(. != "")) | first // empty' 2>/dev/null || true)"
+              if [ -z "${actual}" ]; then
+                echo "::warning::${image} exists but has no ${label_key} label (image predates this gate); proceeding without freshness enforcement."
+                exit 0
+              fi
+              if [ "${actual}" = "${expected}" ]; then
+                echo "dev-container image matches the target ref toolchain fingerprint; proceeding."
+                exit 0
+              fi
+              echo "dev-container not fresh yet: expected=${expected} actual=${actual}; retrying in ${interval}s"
+            else
+              echo "dev-container image ${image} not resolvable on ghcr yet (rebuild still pushing or transient error); retrying in ${interval}s"
+            fi
+            if [ "${SECONDS}" -ge "${deadline}" ]; then
+              echo "::error::${image} did not converge to the target ref toolchain fingerprint before the timeout."
+              echo "::error::expected=${expected} actual=${actual:-<unresolved>}"
+              echo "::error::A dev-container rebuild from the target ref is required. Confirm the 'Build docker image: dev-container' workflow ran for this PR (actions/e2e-v2 or actions/build label) or main push and finished pushing, then re-run e2e."
+              exit 1
+            fi
+            sleep "${interval}"
+          done
+  detect-image-tags:
+    if: ${{ inputs.mode != 'daily' }}
+    timeout-minutes: ${{ (inputs.mode == 'main' || startsWith(github.ref, 'refs/tags/')) && 90 || 15 }}
+    permissions:
+      contents: read
+    runs-on: ${{ inputs.mode == 'pr' && 'ubuntu-latest' || 'ubuntu-slim' }}
+    env:
+      SHARED_IMAGES: "vdaas/vald-agent-sidecar vdaas/vald-discoverer-k8s vdaas/vald-lb-gateway vdaas/vald-filter-gateway vdaas/vald-mirror-gateway vdaas/vald-manager-index vdaas/vald-index-operator vdaas/vald-readreplica-rotate vdaas/vald-index-correction vdaas/vald-index-creation vdaas/vald-index-deletion"
+      STANDARD_WAIT_IMAGES: "vdaas/vald-agent-ngt vdaas/vald-agent-faiss vdaas/vald-agent-sidecar vdaas/vald-discoverer-k8s vdaas/vald-lb-gateway vdaas/vald-filter-gateway vdaas/vald-mirror-gateway vdaas/vald-manager-index vdaas/vald-index-operator vdaas/vald-readreplica-rotate"
+      NGT_IMAGE: "vdaas/vald-agent-ngt"
+      FAISS_IMAGE: "vdaas/vald-agent-faiss"
+      OPERATOR_IMAGE: "vdaas/vald-helm-operator"
+    outputs:
+      commit_tag: ${{ steps.commit_tag.outputs.tag }}
+      shared_helm_extra_options: ${{ inputs.mode == 'pr' && steps.pr_images.outputs.shared_helm_extra_options || steps.shared.outputs.HELM_EXTRA_OPTIONS }}
+      shared_image_tags: ${{ inputs.mode == 'pr' && steps.pr_images.outputs.shared_image_tags || steps.shared.outputs.IMAGE_TAGS }}
+      ngt_helm_extra_options: ${{ inputs.mode == 'pr' && steps.pr_images.outputs.ngt_helm_extra_options || steps.ngt.outputs.HELM_EXTRA_OPTIONS }}
+      ngt_image_tags: ${{ inputs.mode == 'pr' && steps.pr_images.outputs.ngt_image_tags || steps.ngt.outputs.IMAGE_TAGS }}
+      faiss_helm_extra_options: ${{ inputs.mode == 'pr' && steps.pr_images.outputs.faiss_helm_extra_options || steps.faiss.outputs.HELM_EXTRA_OPTIONS }}
+      faiss_image_tags: ${{ inputs.mode == 'pr' && steps.pr_images.outputs.faiss_image_tags || steps.faiss.outputs.IMAGE_TAGS }}
+      operator_helm_extra_options: ${{ inputs.mode == 'pr' && steps.pr_images.outputs.operator_helm_extra_options || steps.operator.outputs.HELM_EXTRA_OPTIONS }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Resolve commit hash tag
+        id: commit_tag
+        if: ${{ inputs.mode == 'main' }}
+        run: |
+          echo "tag=${GITHUB_SHA::8}" >> "$GITHUB_OUTPUT"
+      - name: Wait for target Docker images
+        if: ${{ startsWith(github.ref, 'refs/tags/') || inputs.mode == 'main' }}
+        uses: ./.github/actions/wait-for-docker-image
+        with:
+          images: ${{ inputs.mode == 'main' && format('{0} {1} {2} {3}', env.NGT_IMAGE, env.FAISS_IMAGE, env.SHARED_IMAGES, env.OPERATOR_IMAGE) || env.STANDARD_WAIT_IMAGES }}
+          tag: ${{ inputs.mode == 'main' && steps.commit_tag.outputs.tag || '' }}
+          poll_interval: ${{ inputs.mode == 'main' && '30' || '2' }}
+          timeout_minutes: ${{ inputs.mode == 'main' && '80' || '0' }}
+      - name: Determine Docker image tag
+        if: ${{ inputs.mode == 'standard' }}
+        id: determine_tag_name
+        uses: ./.github/actions/determine-docker-image-tag
+      - name: Detect shared image tags
+        if: ${{ inputs.mode == 'standard' }}
+        id: shared
+        uses: ./.github/actions/detect-docker-image-tags
+        with:
+          tags: ${{ steps.determine_tag_name.outputs.TAGS }}
+          images: ${{ env.SHARED_IMAGES }}
+      - name: Detect NGT agent image tag
+        if: ${{ inputs.mode == 'standard' }}
+        id: ngt
+        uses: ./.github/actions/detect-docker-image-tags
+        with:
+          tags: ${{ steps.determine_tag_name.outputs.TAGS }}
+          images: ${{ env.NGT_IMAGE }}
+      - name: Detect FAISS agent image tag
+        if: ${{ inputs.mode == 'standard' }}
+        id: faiss
+        uses: ./.github/actions/detect-docker-image-tags
+        with:
+          tags: ${{ steps.determine_tag_name.outputs.TAGS }}
+          images: ${{ env.FAISS_IMAGE }}
+      - name: Detect Helm operator image tag
+        if: ${{ inputs.mode == 'standard' }}
+        id: operator
+        uses: ./.github/actions/detect-docker-image-tags
+        with:
+          tags: ${{ steps.determine_tag_name.outputs.TAGS }}
+          images: ${{ env.OPERATOR_IMAGE }}
+      - name: Resolve and verify PR benchmark images
+        id: pr_images
+        if: ${{ inputs.mode == 'pr' }}
+        env:
+          REQUIRED_PR_IMAGES: ${{ inputs.required_pr_images }}
+          PR_TAG: pr-${{ github.event.pull_request.number }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_BASE_SHA: ${{ inputs.pr_base_sha }}
+        run: |
+          if [ -z "${PR_HEAD_SHA}" ] || [ -z "${PR_BASE_SHA}" ]; then
+            echo "::error::Both PR_HEAD_SHA and PR_BASE_SHA are required in pr mode."
+            exit 1
+          fi
+
+          declare -A helm_keys=(
+            ["vdaas/vald-agent-ngt"]="agent.image.tag"
+            ["vdaas/vald-agent-faiss"]="agent.image.tag"
+            ["vdaas/vald-agent-sidecar"]="agent.sidecar.image.tag"
+            ["vdaas/vald-discoverer-k8s"]="discoverer.image.tag"
+            ["vdaas/vald-lb-gateway"]="gateway.lb.image.tag"
+            ["vdaas/vald-filter-gateway"]="gateway.filter.image.tag"
+            ["vdaas/vald-mirror-gateway"]="gateway.mirror.image.tag"
+            ["vdaas/vald-manager-index"]="manager.index.image.tag"
+            ["vdaas/vald-index-creation"]="manager.index.creator.image.tag"
+            ["vdaas/vald-index-deletion"]="manager.index.deleter.image.tag"
+            ["vdaas/vald-readreplica-rotate"]="manager.index.readreplica.rotator.image.tag"
+            ["vdaas/vald-helm-operator"]="image.tag"
+            ["vdaas/vald-index-operator"]="manager.index.operator.image.tag"
+            ["vdaas/vald-index-correction"]="manager.index.corrector.image.tag"
+          )
+
+          declare -A is_required=()
+          read -r -a req_images <<< "${REQUIRED_PR_IMAGES//$'\n'/ }"
+          for img in "${req_images[@]}"; do
+            [ -n "${img}" ] || continue
+            if [ -z "${helm_keys[${img}]:-}" ]; then
+              echo "::error::Unknown PR image '${img}' in required_pr_images."
+              exit 1
+            fi
+            is_required["${img}"]=1
+          done
+
+          inspect_with_retry() {
+            local ref="$1"
+            local fmt="$2"
+            local out=""
+            for attempt in 1 2 3 4 5; do
+              if out="$(docker buildx imagetools inspect "${ref}" --format "${fmt}" 2>/dev/null)" && [ -n "${out}" ]; then
+                printf '%s' "${out}"
+                return 0
+              fi
+              if [ "${attempt}" -lt 5 ]; then
+                sleep $((attempt * 2))
+              fi
+            done
+            return 1
+          }
+
+          resolve_verified_digest_tag() {
+            local img="$1"
+            local tag="$2"
+            local expected_rev="$3"
+            local tag_ref="docker.io/${img}:${tag}"
+            local manifest_json digest digest_ref image_json revision
+
+            manifest_json="$(inspect_with_retry "${tag_ref}" '{{json .Manifest}}')" || {
+              echo "::error::Failed to inspect image manifest for ${tag_ref}." >&2
+              return 1
+            }
+            digest="$(printf '%s' "${manifest_json}" | jq -r '.digest // empty')"
+            if [ -z "${digest}" ]; then
+              echo "::error::Missing manifest digest for ${tag_ref}." >&2
+              return 1
+            fi
+
+            digest_ref="docker.io/${img}@${digest}"
+            image_json="$(inspect_with_retry "${digest_ref}" '{{json .Image}}')" || {
+              echo "::error::Failed to inspect image config for resolved digest ${digest_ref}." >&2
+              return 1
+            }
+            revision="$(printf '%s' "${image_json}" | jq -r '[.. | objects | (.Labels? // {}) | .["org.opencontainers.image.revision"]? // empty] | map(select(. != "")) | first // empty')"
+            if [ -z "${revision}" ] || [ "${revision}" != "${expected_rev}" ]; then
+              echo "::error::Image ${digest_ref} (from ${tag_ref}) revision '${revision:-<missing>}' does not match expected commit ${expected_rev}." >&2
+              return 1
+            fi
+
+            printf '%s@%s' "${tag}" "${digest}"
+          }
+
+          shared_opts=""
+          shared_tags=""
+          ngt_opts=""
+          ngt_tags=""
+          faiss_opts=""
+          faiss_tags=""
+          operator_opts=""
+
+          tmp_dir="$(mktemp -d)"
+          trap 'rm -rf "${tmp_dir}"' EXIT
+
+          # Resolve all 14 images concurrently: PR-changed components must resolve to
+          # pr-<number> whose digest carries PR_HEAD_SHA, while unchanged components
+          # pin by digest to the merge-base tag PR_BASE_SHA.
+          base_tag="${PR_BASE_SHA::8}"
+          all_images="${NGT_IMAGE} ${FAISS_IMAGE} ${SHARED_IMAGES} ${OPERATOR_IMAGE}"
+          read -r -a all_arr <<< "${all_images}"
+          pids=()
+          for i in "${!all_arr[@]}"; do
+            img="${all_arr[$i]}"
+            if [ "${is_required[${img}]:-0}" -eq 1 ]; then
+              target_tag="${PR_TAG}"
+              expected_rev="${PR_HEAD_SHA}"
+              rev_kind="PR head"
+            else
+              target_tag="${base_tag}"
+              expected_rev="${PR_BASE_SHA}"
+              rev_kind="merge-base"
+            fi
+            (
+              if resolved_tag="$(resolve_verified_digest_tag "${img}" "${target_tag}" "${expected_rev}" 2>"${tmp_dir}/${i}.err")"; then
+                printf '%s' "${resolved_tag}" > "${tmp_dir}/${i}.tag"
+                printf 'Verified %s %s -> %s (revision=%s)\n' "${rev_kind}" "${img}" "${resolved_tag}" "${expected_rev}" > "${tmp_dir}/${i}.log"
+              else
+                exit 1
+              fi
+            ) &
+            pids+=("$!")
+          done
+
+          failed=0
+          for i in "${!pids[@]}"; do
+            if ! wait "${pids[$i]}"; then
+              failed=1
+            fi
+            if [ -s "${tmp_dir}/${i}.log" ]; then
+              cat "${tmp_dir}/${i}.log"
+            fi
+            if [ -s "${tmp_dir}/${i}.err" ]; then
+              cat "${tmp_dir}/${i}.err" >&2
+            fi
+          done
+          if [ "${failed}" -ne 0 ]; then
+            exit 1
+          fi
+
+          for i in "${!all_arr[@]}"; do
+            img="${all_arr[$i]}"
+            key="${helm_keys[${img}]}"
+            resolved_tag="$(<"${tmp_dir}/${i}.tag")"
+            case "${img}" in
+              "${NGT_IMAGE}")
+                ngt_opts="${ngt_opts} --set ${key}=${resolved_tag}"
+                ngt_tags="${ngt_tags} ${key}=\"${resolved_tag}\""
+                ;;
+              "${FAISS_IMAGE}")
+                faiss_opts="${faiss_opts} --set ${key}=${resolved_tag}"
+                faiss_tags="${faiss_tags} ${key}=\"${resolved_tag}\""
+                ;;
+              "${OPERATOR_IMAGE}")
+                operator_opts="${operator_opts} --set ${key}=${resolved_tag}"
+                ;;
+              *)
+                shared_opts="${shared_opts} --set ${key}=${resolved_tag}"
+                shared_tags="${shared_tags} ${key}=\"${resolved_tag}\""
+                ;;
+            esac
+          done
+
+          {
+            echo "shared_helm_extra_options=${shared_opts}"
+            echo "shared_image_tags=${shared_tags}"
+            echo "ngt_helm_extra_options=${ngt_opts}"
+            echo "ngt_image_tags=${ngt_tags}"
+            echo "faiss_helm_extra_options=${faiss_opts}"
+            echo "faiss_image_tags=${faiss_tags}"
+            echo "operator_helm_extra_options=${operator_opts}"
+          } >> "$GITHUB_OUTPUT"
+  e2e:
+    if: ${{ !failure() && !cancelled() && needs.detect-ci-container.result == 'success' && needs.build-matrix.result == 'success' && (needs.wait-dev-container.result == 'success' || needs.wait-dev-container.result == 'skipped') && (needs.detect-image-tags.result == 'success' || needs.detect-image-tags.result == 'skipped') }}
+    timeout-minutes: ${{ inputs.mode == 'daily' && 90 || 60 }}
+    permissions:
+      contents: read
+    needs:
+      [detect-ci-container, build-matrix, wait-dev-container, detect-image-tags]
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.build-matrix.outputs.result) }}
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/vdaas/vald/vald-dev-container:${{ needs.detect-ci-container.outputs.TAG }}
+      credentials:
+        username: ${{ secrets.PACKAGE_USER }}
+        password: ${{ secrets.PACKAGE_TOKEN }}
+      options: "--add-host host.docker.internal:host-gateway"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set Git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
+      - name: Fetch benchmarks baseline
+        id: fetch_baselines
+        if: ${{ inputs.mode == 'daily' }}
+        uses: ./.github/actions/fetch-benchmarks-baseline
+        with:
+          branch: ${{ inputs.benchmarks_branch }}
+          dest: ${{ runner.temp }}/benchmarks-baseline
+          sparse_paths: "e2e/v2/${{ matrix.channel }}/${{ matrix.scenario }}-${{ matrix.deployment }}-${{ matrix.cluster }}-${{ matrix.environment }}.json"
+      - name: Setup E2E environment
+        id: setup_e2e
+        uses: ./.github/actions/setup-e2e
+        with:
+          detect_tags: "false"
+          require_k3d: ${{ matrix.cluster == 'k3d' }}
+          require_kind: ${{ matrix.cluster == 'kind' }}
+          require_k0s: ${{ matrix.cluster == 'k0s' }}
+      - name: Resolve Helm options and scenario metadata
+        id: scenario_opts
+        env:
+          MODE: ${{ inputs.mode }}
+          CHANNEL: ${{ matrix.channel }}
+          SCENARIO: ${{ matrix.scenario }}
+          DEPLOYMENT: ${{ matrix.deployment }}
+          CLUSTER: ${{ matrix.cluster }}
+          ENVIRONMENT: ${{ matrix.environment }}
+          DATASET: ${{ inputs.dataset }}
+          COMMIT_TAG: ${{ needs.detect-image-tags.outputs.commit_tag }}
+          SHARED_HELM_EXTRA_OPTIONS: ${{ needs.detect-image-tags.outputs.shared_helm_extra_options }}
+          SHARED_IMAGE_TAGS: ${{ needs.detect-image-tags.outputs.shared_image_tags }}
+          NGT_HELM_EXTRA_OPTIONS: ${{ needs.detect-image-tags.outputs.ngt_helm_extra_options }}
+          NGT_IMAGE_TAGS: ${{ needs.detect-image-tags.outputs.ngt_image_tags }}
+          FAISS_HELM_EXTRA_OPTIONS: ${{ needs.detect-image-tags.outputs.faiss_helm_extra_options }}
+          FAISS_IMAGE_TAGS: ${{ needs.detect-image-tags.outputs.faiss_image_tags }}
+          OPERATOR_SETUP_HELM_EXTRA_OPTIONS: ${{ needs.detect-image-tags.outputs.operator_helm_extra_options }}
+        run: |
+          version_override=""
+          pinned_tag=""
+          if [ "${MODE}" = "daily" ] && [ -n "${CHANNEL}" ]; then
+            pinned_tag="${CHANNEL}"
+          elif [ "${MODE}" = "main" ] && [ -n "${COMMIT_TAG}" ]; then
+            pinned_tag="${COMMIT_TAG}"
+          fi
+          if [ -n "${pinned_tag}" ]; then
+            version_override="${pinned_tag}"
+            echo "VERSION=${pinned_tag}" >> "$GITHUB_ENV"
+            extra_opts="--set defaults.image.tag=${pinned_tag}"
+            image_tags=""
+            operator_extra_opts="--set image.tag=${pinned_tag}"
+          else
+            if [ "${ENVIRONMENT}" = "faiss" ]; then
+              extra_opts="${FAISS_HELM_EXTRA_OPTIONS} ${SHARED_HELM_EXTRA_OPTIONS}"
+              image_tags="${FAISS_IMAGE_TAGS} ${SHARED_IMAGE_TAGS}"
+            else
+              extra_opts="${NGT_HELM_EXTRA_OPTIONS} ${SHARED_HELM_EXTRA_OPTIONS}"
+              image_tags="${NGT_IMAGE_TAGS} ${SHARED_IMAGE_TAGS}"
+            fi
+            operator_extra_opts="${OPERATOR_SETUP_HELM_EXTRA_OPTIONS}"
+          fi
+
+          if [ "${ENVIRONMENT}" = "management" ]; then
+            extra_opts="${extra_opts} --values .github/helm/values/values-index-management-jobs.yaml"
+          fi
+          if [ "${ENVIRONMENT}" = "faiss" ]; then
+            extra_opts="${extra_opts} --set agent.image.repository=vdaas/vald-agent-faiss"
+          fi
+
+          extra_opts="$(echo "${extra_opts}" | tr -s '[:space:]' ' ' | sed 's/^ //; s/ $//')"
+          image_tags="$(echo "${image_tags}" | tr -s '[:space:]' ' ' | sed 's/^ //; s/ $//')"
+          operator_extra_opts="$(echo "${operator_extra_opts}" | tr -s '[:space:]' ' ' | sed 's/^ //; s/ $//')"
+
+          scenario_key="${SCENARIO}-${DEPLOYMENT}-${CLUSTER}-${ENVIRONMENT}"
+          if [ "${MODE}" != "standard" ] && [ -n "${CHANNEL}" ]; then
+            metrics_output="${GITHUB_WORKSPACE}/bench-metrics/${CHANNEL}/${scenario_key}.json"
+          else
+            metrics_output=""
+          fi
+          if [ "${MODE}" = "daily" ] && [ -n "${CHANNEL}" ]; then
+            metrics_baseline="${RUNNER_TEMP}/benchmarks-baseline/e2e/v2/${CHANNEL}/${scenario_key}.json"
+          else
+            metrics_baseline=""
+          fi
+
+          {
+            echo "E2E_DATASET=${DATASET}"
+            echo "E2E_HELM_EXTRA_OPTIONS=${extra_opts}"
+            echo "E2E_IMAGE_TAGS=${image_tags}"
+            echo "E2E_OPERATOR_HELM_EXTRA_OPTIONS=${operator_extra_opts}"
+            echo "E2E_VERSION_OVERRIDE=${version_override}"
+            echo "E2E_SCENARIO_NAME=${scenario_key}"
+            echo "E2E_METRICS_OUTPUT=${metrics_output}"
+            echo "E2E_METRICS_BASELINE=${metrics_baseline}"
+          } >> "$GITHUB_ENV"
+      - name: Run E2E scenario (attempt 1)
+        id: attempt_1
+        uses: ./.github/actions/e2e-run-scenario
+        with:
+          scenario: ${{ matrix.scenario }}
+          deployment: ${{ matrix.deployment }}
+          cluster: ${{ matrix.cluster }}
+          environment: ${{ matrix.environment }}
+          reset_cluster: "false"
+      - name: Run E2E scenario (attempt 2)
+        id: attempt_2
+        if: ${{ inputs.mode == 'daily' && inputs.max_noise_retries >= 2 && steps.attempt_1.outputs.retry == 'true' }}
+        uses: ./.github/actions/e2e-run-scenario
+        with:
+          scenario: ${{ matrix.scenario }}
+          deployment: ${{ matrix.deployment }}
+          cluster: ${{ matrix.cluster }}
+          environment: ${{ matrix.environment }}
+          reset_cluster: "true"
+      - name: Run E2E scenario (attempt 3)
+        id: attempt_3
+        if: ${{ inputs.mode == 'daily' && inputs.max_noise_retries >= 3 && steps.attempt_2.outputs.retry == 'true' }}
+        uses: ./.github/actions/e2e-run-scenario
+        with:
+          scenario: ${{ matrix.scenario }}
+          deployment: ${{ matrix.deployment }}
+          cluster: ${{ matrix.cluster }}
+          environment: ${{ matrix.environment }}
+          reset_cluster: "true"
+      - uses: ./.github/actions/e2e-profile
+        if: ${{ matrix.environment == 'profile' }}
+        with:
+          dispatch_user: ${{ secrets.DISPATCH_USER }}
+          dispatch_token: ${{ secrets.DISPATCH_TOKEN }}
+          post_comment: ${{ (inputs.mode == 'standard' || inputs.mode == 'pr') && 'true' || 'false' }}
+          benchmarks_branch: ${{ inputs.benchmarks_branch }}
+          output_profiles_dir: ${{ inputs.mode != 'standard' && format('{0}/bench-profiles/{1}', github.workspace, matrix.channel) || '' }}
+      - name: Upload E2E benchmark metrics
+        if: ${{ inputs.mode != 'standard' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: e2e-metrics-${{ matrix.channel }}-${{ matrix.scenario }}-${{ matrix.deployment }}-${{ matrix.cluster }}-${{ matrix.environment }}
+          path: bench-metrics/
+          if-no-files-found: error
+      - name: Upload E2E benchmark profiles
+        if: ${{ inputs.mode != 'standard' && matrix.environment == 'profile' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: e2e-profiles-${{ matrix.channel }}
+          path: bench-profiles/
+          if-no-files-found: warn
+      - name: Debug
+        if: ${{ always() }}
+        run: |
+          kubectl get nodes || true
+          kubectl get pods || true
+          kubectl describe pods || true
+          kubectl describe pvc || true
+          # Agents have been observed crash-looping with exit code 139
+          # (SIGSEGV); --previous captures the crashed container's Go runtime
+          # stack trace, which describe/get cannot show.
+          for pod in $(kubectl get pods -l app=vald-agent -o name 2>/dev/null || true); do
+            echo "=== ${pod} (previous container log tail) ==="
+            kubectl logs "${pod}" --previous --tail=200 || true
+          done

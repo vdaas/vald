@@ -20,124 +20,330 @@ inputs:
     required: true
   dispatch_token:
     required: true
+  post_comment:
+    description: "Whether to post/update PR comment with Profile Report and Profile Diff"
+    required: false
+    default: "true"
+  upload_images:
+    description: "Whether to push generated graphs to vdaas-ci/vald-ci-images (defaults to post_comment on pull_request)"
+    required: false
+    default: ""
+  benchmarks_branch:
+    description: "Branch storing Daily benchmark and profile baselines"
+    required: false
+    default: "benchmarks"
+  benchmarks_dir:
+    description: "Optional pre-cloned directory containing benchmarks branch checkout"
+    required: false
+    default: ""
+  output_profiles_dir:
+    description: "Optional directory to copy collected non-empty .pb profile files into"
+    required: false
+    default: ""
+  services:
+    description: "Space-separated list of Vald services to profile"
+    required: false
+    default: "vald-agent-ngt vald-lb-gateway vald-discoverer vald-manager-index"
+  profile_types:
+    description: "Space-separated list of pprof profile types to collect and diff"
+    required: false
+    default: "heap cpu goroutine threadcreate"
+  graph_types:
+    description: "Space-separated list of profile types to embed as graphs in PR comments"
+    required: false
+    default: "cpu heap"
 # profefe needs to be deployed
 runs:
   using: "composite"
   steps:
     - name: Get profiles
       shell: bash
+      env:
+        OUTPUT_PROFILES_DIR: ${{ inputs.output_profiles_dir }}
+        SERVICES_STR: ${{ inputs.services }}
+        PROFILE_TYPES_STR: ${{ inputs.profile_types }}
       run: |
+        read -r -a SERVICES <<< "${SERVICES_STR}"
+        read -r -a PROFILE_TYPES <<< "${PROFILE_TYPES_STR}"
         mkdir -p profiles
         kubectl port-forward deployment/profefe 10100:10100 &
         PF_PID=$!
-        sleep 3
-        # Ensure the port-forward is killed when this step exits
-        trap "kill $PF_PID" EXIT
-        for svc in vald-agent-ngt vald-lb-gateway vald-discoverer vald-manager-index
-        do
-          for t in heap cpu goroutine threadcreate
-          do
-            curl "http://localhost:10100/api/0/profiles/merge?service=${svc}&type=${t}&from=2021-07-01T00:00:00&to=2030-07-01T00:00:00" \
-              --output profiles/${svc}-${t}.pb
-          done
+        trap 'kill "$PF_PID" 2>/dev/null || true' EXIT
+        for _ in $(seq 1 15); do
+          if curl -sf "http://localhost:10100/api/0/healthz" >/dev/null 2>&1 || curl -sf "http://localhost:10100/" >/dev/null 2>&1; then
+            break
+          fi
+          sleep 1
         done
-    - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-      with:
-        name: profiles
-        path: profiles/*
-    - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-      id: cache
-      with:
-        path: ./profiles-main
-        key: ${{ runner.os }}-profiles-main-${{ github.sha }}
-        restore-keys: ${{ runner.os }}-profiles-main-
-    - name: Update cache
-      shell: bash
-      if: startsWith(github.ref, 'refs/tags/')
-      run: |
-        mkdir -p profiles-main
-        cp -f profiles/* profiles-main/
-        cp -f versions/VALD_VERSION profiles-main/
-    - name: Generate graphs
-      shell: bash
-      run: |
-        tag="unknown"
-        if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-          tag="pr-${{ github.event.pull_request.number }}"
-        elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-          tag="main-${{ github.sha }}"
-        elif [[ "${{ github.ref }}" == refs/heads/release/* ]]; then
-          version=$(echo ${{ github.ref }} | sed 's/refs\/heads\/release\///')
-          tag="v${version}-${{ github.sha }}"
-        elif [[ -f profiles-main/VALD_VERSION && -s profiles-main/VALD_VERSION ]]; then
-          tag=$(cat profiles-main/VALD_VERSION)
-        fi
 
-        mkdir -p graphs
-        for svc in vald-agent-ngt vald-lb-gateway vald-discoverer vald-manager-index
-        do
-          for t in heap cpu goroutine threadcreate
-          do
-            echo "generating: graphs/${svc}-${t}-${GITHUB_SHA::6}.svg"
-            go tool pprof --svg profiles/${svc}-${t}.pb > graphs/${svc}-${t}-${GITHUB_SHA::6}.svg
-            echo "generating: graphs/${svc}-${t}-${GITHUB_SHA::6}.png"
-            go tool pprof --png profiles/${svc}-${t}.pb > graphs/${svc}-${t}-${GITHUB_SHA::6}.png
-            if [ -f profiles-main/${svc}-${t}.pb ]; then
-              echo "generating: graphs/${svc}-${t}-main-${GITHUB_SHA::6}.svg"
-              go tool pprof --svg -base=profiles-main/${svc}-${t}.pb profiles/${svc}-${t}.pb > graphs/${svc}-${t}-diff-${tag}-${GITHUB_SHA::6}.svg
-              echo "generating: graphs/${svc}-${t}-main-${GITHUB_SHA::6}.png"
-              go tool pprof --png -base=profiles-main/${svc}-${t}.pb profiles/${svc}-${t}.pb > graphs/${svc}-${t}-diff-${tag}-${GITHUB_SHA::6}.png
-            else
-              echo "skipping: profiles-main/${svc}-${t}.pb does not exist."
+        max_jobs="$(nproc 2>/dev/null || echo 4)"
+        dl_pids=()
+        for svc in "${SERVICES[@]}"; do
+          for t in "${PROFILE_TYPES[@]}"; do
+            (
+              pb="profiles/${svc}-${t}.pb"
+              curl -fsSL "http://localhost:10100/api/0/profiles/merge?service=${svc}&type=${t}&from=2021-07-01T00:00:00&to=2030-07-01T00:00:00" \
+                --output "${pb}" || rm -f "${pb}"
+              if [ ! -s "${pb}" ]; then
+                echo "Skipping empty or missing profile: ${pb}"
+                rm -f "${pb}"
+              fi
+            ) &
+            dl_pids+=("$!")
+            if [ "${#dl_pids[@]}" -ge "${max_jobs}" ]; then
+              for pid in "${dl_pids[@]}"; do
+                wait "${pid}" || true
+              done
+              dl_pids=()
             fi
           done
         done
+        for pid in "${dl_pids[@]}"; do
+          wait "${pid}" || true
+        done
+
+        if [ -n "${OUTPUT_PROFILES_DIR}" ]; then
+          mkdir -p "${OUTPUT_PROFILES_DIR}"
+          for f in profiles/*.pb; do
+            if [ -s "$f" ]; then
+              cp -f "$f" "${OUTPUT_PROFILES_DIR}/"
+            fi
+          done
+        fi
     - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      if: ${{ inputs.post_comment == 'true' }}
+      with:
+        name: profiles
+        path: profiles/*
+        if-no-files-found: ignore
+    - name: Fetch benchmarks baselines
+      id: fetch_baselines
+      if: ${{ inputs.post_comment == 'true' || inputs.upload_images == 'true' }}
+      uses: ./.github/actions/fetch-benchmarks-baseline
+      with:
+        branch: ${{ inputs.benchmarks_branch }}
+        dest: ${{ runner.temp }}/benchmarks-profile-baseline
+        existing_dir: ${{ inputs.benchmarks_dir }}
+        sparse_paths: "e2e/v2/latest/profiles/** e2e/v2/nightly/profiles/**"
+    - name: Generate graphs and profile diff summary
+      id: generate_graphs
+      if: ${{ inputs.post_comment == 'true' || inputs.upload_images == 'true' }}
+      shell: bash
+      env:
+        BASE_DIR: ${{ steps.fetch_baselines.outputs.dir }}
+        SERVICES_STR: ${{ inputs.services }}
+        PROFILE_TYPES_STR: ${{ inputs.profile_types }}
+      run: |
+        read -r -a SERVICES <<< "${SERVICES_STR}"
+        read -r -a PROFILE_TYPES <<< "${PROFILE_TYPES_STR}"
+        latest_dir="${BASE_DIR}/e2e/v2/latest/profiles"
+        nightly_dir="${BASE_DIR}/e2e/v2/nightly/profiles"
+        render_pprof() {
+          local out="$1"
+          shift
+          echo "generating: ${out}"
+          go tool pprof "$@" > "${out}" || rm -f "${out}"
+          [ -s "${out}" ] || rm -f "${out}"
+        }
+
+        mkdir -p graphs
+        rm -rf profile-diff-blocks
+        mkdir -p profile-diff-blocks
+        sha6="${GITHUB_SHA::6}"
+        max_jobs="$(nproc 2>/dev/null || echo 4)"
+        active=0
+        for svc_i in "${!SERVICES[@]}"; do
+          svc="${SERVICES[$svc_i]}"
+          for type_i in "${!PROFILE_TYPES[@]}"; do
+            t="${PROFILE_TYPES[$type_i]}"
+            curr_pb="profiles/${svc}-${t}.pb"
+            if [ ! -f "${curr_pb}" ] || [ ! -s "${curr_pb}" ]; then
+              echo "skipping ${curr_pb}: missing or empty"
+              continue
+            fi
+            (
+              render_pprof "graphs/${svc}-${t}-${sha6}.svg" --svg "${curr_pb}"
+              render_pprof "graphs/${svc}-${t}-${sha6}.png" --png "${curr_pb}"
+              channels=(latest nightly)
+              for ch_i in "${!channels[@]}"; do
+                channel="${channels[$ch_i]}"
+                if [ "${channel}" = "latest" ]; then
+                  base_dir="${latest_dir}"
+                else
+                  base_dir="${nightly_dir}"
+                fi
+                base_pb="${base_dir}/${svc}-${t}.pb"
+                if [ -f "${base_pb}" ] && [ -s "${base_pb}" ]; then
+                  render_pprof "graphs/${svc}-${t}-diff-${channel}-${sha6}.svg" --svg -base="${base_pb}" "${curr_pb}"
+                  render_pprof "graphs/${svc}-${t}-diff-${channel}-${sha6}.png" --png -base="${base_pb}" "${curr_pb}"
+
+                  block_file="$(printf 'profile-diff-blocks/%02d_%02d_%02d_%s_%s_%s.md' "${svc_i}" "${type_i}" "${ch_i}" "${svc}" "${t}" "${channel}")"
+                  {
+                    printf '<details>\n<summary><code>%s</code> (%s) vs <code>%s</code></summary>\n\n' "${svc}" "${t}" "${channel}"
+                    if top_out="$(go tool pprof -top -nodecount=15 -base="${base_pb}" "${curr_pb}" 2>&1)"; then
+                      top_out="$(printf '%s' "${top_out}" | sed -e 's/^[[:space:]]*$//' | awk 'NF{p=1} p')"
+                      [ -n "${top_out}" ] || top_out="(no diff output)"
+                      fence='```'
+                      case "${top_out}" in
+                        *'```'*) fence='````' ;;
+                      esac
+                      printf '%stext\n%s\n%s\n\n' "${fence}" "${top_out}" "${fence}"
+                    else
+                      err_msg="$(printf '%s' "${top_out}" | tr '\r\n' '  ' | sed -e 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g; s/`/\\`/g; s/[[:space:]]\+/ /g; s/^ //; s/ $//')"
+                      printf '_Skipped/Error: %s_\n\n' "${err_msg}"
+                    fi
+                    printf '</details>\n\n'
+                  } > "${block_file}"
+                else
+                  echo "skipping: ${base_pb} does not exist or is empty."
+                fi
+              done
+            ) &
+            active=$((active + 1))
+            if [ "${active}" -ge "${max_jobs}" ]; then
+              wait -n 2>/dev/null || true
+              active=$((active - 1))
+            fi
+          done
+        done
+        wait || true
+
+        {
+          echo "<!-- e2e-v2-profile-diff -->"
+          echo ""
+          echo "## E2E V2 Profile Diff Summary"
+          echo ""
+        } > profile-diff.md
+        if compgen -G "profile-diff-blocks/*.md" >/dev/null; then
+          for block_file in profile-diff-blocks/*.md; do
+            cat "${block_file}" >> profile-diff.md
+          done
+        else
+          echo "_No profile diffs available._" >> profile-diff.md
+        fi
+    - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      if: ${{ inputs.post_comment == 'true' }}
       with:
         name: graphs
-        path: graphs/*
+        path: |
+          graphs/*
+          profile-diff.md
+        if-no-files-found: ignore
     - name: Upload to vald-ci-images repository
+      if: ${{ inputs.upload_images == 'true' || (inputs.upload_images == '' && inputs.post_comment == 'true' && github.event_name == 'pull_request') }}
       shell: bash
       run: |
         CLONE_DIR=$(mktemp -d)
-        git clone --depth 1 https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/vdaas-ci/vald-ci-images.git $CLONE_DIR
-        cp -r graphs $CLONE_DIR/${GITHUB_SHA::6}
-        cd $CLONE_DIR
+        trap 'rm -rf "$CLONE_DIR"' EXIT
+        git clone --depth 1 "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/vdaas-ci/vald-ci-images.git" "$CLONE_DIR"
+        rm -rf "$CLONE_DIR/${GITHUB_SHA::6}"
+        cp -r graphs "$CLONE_DIR/${GITHUB_SHA::6}"
+        cd "$CLONE_DIR"
         git config user.email "vald@vdaas.org"
         git config user.name "vdaas-ci"
         git add .
-        git commit -m ":robot: Add ${GITHUB_SHA::6}"
-        git push https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/vdaas-ci/vald-ci-images.git --set-upstream main
+        if [ -n "$(git status --porcelain)" ]; then
+          git commit -m ":robot: Add ${GITHUB_SHA::6}"
+          git push "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/vdaas-ci/vald-ci-images.git" --set-upstream main
+        fi
       env:
         GITHUB_USER: ${{ inputs.dispatch_user }}
         GITHUB_TOKEN: ${{ inputs.dispatch_token }}
-    - name: Comment
+    - name: Build PR profile comment
+      if: ${{ inputs.post_comment == 'true' && github.event_name == 'pull_request' && github.event.pull_request.comments_url != '' }}
       shell: bash
-      run: |
-        base="https://raw.githubusercontent.com/vdaas-ci/vald-ci-images/main/${GITHUB_SHA::6}"
-        body="<table><tr><th>type</th>"
-        for svc in vald-agent-ngt vald-lb-gateway vald-discoverer vald-manager-index
-        do
-          body="$body<th>$svc</th>"
-        done
-        body="$body</tr>"
-        for t in cpu heap
-        do
-          body="$body<tr><td>${t}</td>"
-          for svc in vald-agent-ngt vald-lb-gateway vald-discoverer vald-manager-index
-          do
-            body="$body<td><img src=\\\"$base/${svc}-${t}-${GITHUB_SHA::6}.png\\\" width=\\\"100%\\\"></td>"
-          done
-          body="$body</tr>"
-        done
-        body="$body</table>"
-        curl --include --verbose --fail \
-        -H "Accept: application/json" \
-        -H "Content-Type:application/json" \
-        -H "Authorization: token ${GITHUB_TOKEN}" \
-        --request POST \
-        --data "{\"body\": \"# Profile Report\n$body\n<a href=\\\"https://github.com/vdaas-ci/vald-ci-images/tree/main/${GITHUB_SHA::6}\\\">other images</a>\"}" \
-        $API_URL
       env:
-        GITHUB_TOKEN: ${{ inputs.dispatch_token }}
-        API_URL: ${{ github.event.pull_request.comments_url }}
+        SERVICES_STR: ${{ inputs.services }}
+        GRAPH_TYPES_STR: ${{ inputs.graph_types }}
+      run: |
+        read -r -a SERVICES <<< "${SERVICES_STR}"
+        read -r -a GRAPH_TYPES <<< "${GRAPH_TYPES_STR}"
+        sha6="${GITHUB_SHA::6}"
+        base="https://raw.githubusercontent.com/vdaas-ci/vald-ci-images/main/${sha6}"
+
+        render_table_header() {
+          local first_col="$1"
+          printf '<table><tr><th>%s</th>' "${first_col}"
+          for svc in "${SERVICES[@]}"; do
+            printf '<th>%s</th>' "${svc}"
+          done
+          printf '</tr>\n'
+        }
+
+        render_table_row() {
+          local label="$1"
+          local suffix="$2"
+          printf '<tr><td>%s</td>' "${label}"
+          for svc in "${SERVICES[@]}"; do
+            if [ -s "graphs/${svc}-${suffix}.png" ]; then
+              printf '<td><img src="%s/%s-%s.png" width="100%%"></td>' "${base}" "${svc}" "${suffix}"
+            else
+              printf '<td>N/A</td>'
+            fi
+          done
+          printf '</tr>\n'
+        }
+
+        {
+          echo "<!-- e2e-v2-profile-diff -->"
+          echo "# Profile Report"
+          echo ""
+          render_table_header "type"
+          for t in "${GRAPH_TYPES[@]}"; do
+            render_table_row "${t}" "${t}-${sha6}"
+          done
+          printf '</table>\n\n'
+
+          echo "## Profile Diff Graphs (vs Daily latest & nightly)"
+          echo ""
+          render_table_header "type / baseline"
+          for channel in latest nightly; do
+            for t in "${GRAPH_TYPES[@]}"; do
+              render_table_row "${t} (${channel})" "${t}-diff-${channel}-${sha6}"
+            done
+          done
+          printf '</table>\n\n'
+
+          printf '<a href="https://github.com/vdaas-ci/vald-ci-images/tree/main/%s">other images</a>\n\n' "${sha6}"
+        } > comment.md
+
+        max_bytes=61440
+        notice=$'\n> ... (truncated to fit GitHub PR comment limit; see workflow artifacts for the full report)\n'
+        notice_bytes=${#notice}
+        hdr=$'## E2E V2 Profile Diff Summary\n\n'
+        hdr_bytes=${#hdr}
+        cur_bytes=$(wc -c < comment.md)
+        if compgen -G "profile-diff-blocks/*.md" >/dev/null; then
+          if [ $((cur_bytes + hdr_bytes + notice_bytes)) -le "${max_bytes}" ]; then
+            printf '%s' "${hdr}" >> comment.md
+            cur_bytes=$((cur_bytes + hdr_bytes))
+            for blk in profile-diff-blocks/*.md; do
+              blk_bytes=$(wc -c < "${blk}")
+              if [ $((cur_bytes + blk_bytes + notice_bytes)) -le "${max_bytes}" ]; then
+                cat "${blk}" >> comment.md
+                cur_bytes=$((cur_bytes + blk_bytes))
+              else
+                printf '%s' "${notice}" >> comment.md
+                break
+              fi
+            done
+          else
+            printf '%s' "${notice}" >> comment.md
+          fi
+        else
+          empty_msg=$'_No profile diffs available._\n'
+          empty_bytes=$((hdr_bytes + ${#empty_msg}))
+          if [ $((cur_bytes + empty_bytes)) -le "${max_bytes}" ]; then
+            printf '%s%s' "${hdr}" "${empty_msg}" >> comment.md
+          else
+            printf '%s' "${notice}" >> comment.md
+          fi
+        fi
+    - name: Upsert PR profile comment
+      if: ${{ inputs.post_comment == 'true' && github.event_name == 'pull_request' && github.event.pull_request.comments_url != '' }}
+      uses: ./.github/actions/upsert-pr-comment
+      with:
+        github_token: ${{ inputs.dispatch_token }}
+        author: ${{ inputs.dispatch_user }}
+        marker: "<!-- e2e-v2-profile-diff -->"
+        body_path: comment.md

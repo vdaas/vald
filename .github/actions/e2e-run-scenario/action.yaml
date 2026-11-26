@@ -1,0 +1,239 @@
+#
+# Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+name: "Run E2E V2 scenario attempt"
+description: "Deploy Vald stack (optionally resetting cluster) and execute a single E2E V2 scenario attempt"
+inputs:
+  scenario:
+    description: "E2E scenario name (maps to tests/v2/e2e/assets/<scenario>.yaml)"
+    required: true
+  deployment:
+    description: "Deployment method (helm-chart or helm-operator)"
+    required: true
+  cluster:
+    description: "Kubernetes cluster type (k3d, kind, or k0s)"
+    required: true
+  environment:
+    description: "Scenario environment (null, faiss, management, mirror, profile, failure, kill, partition, bandwidth)"
+    required: true
+  dataset:
+    description: "Benchmark dataset filename under hack/benchmark/assets/dataset"
+    required: false
+    default: ""
+  helm_extra_options:
+    description: "Extra Helm options passed to Vald deployment"
+    required: false
+    default: ""
+  image_tags:
+    description: "Space-separated component image tag assignments for ValdRelease merge"
+    required: false
+    default: ""
+  operator_helm_extra_options:
+    description: "Extra Helm options passed to vald-helm-operator deployment"
+    required: false
+    default: ""
+  version:
+    description: "Optional VERSION / .spec.defaults.image.tag override (e.g. latest or nightly in daily mode)"
+    required: false
+    default: ""
+  reset_cluster:
+    description: "Whether to delete and recreate the k3d cluster before deploying (used on retries)"
+    required: false
+    default: "false"
+  metrics_output:
+    description: "Optional output JSON path for E2E_METRICS_OUTPUT"
+    required: false
+    default: ""
+  scenario_name:
+    description: "Optional scenario key for E2E_SCENARIO_NAME"
+    required: false
+    default: ""
+  metrics_baseline:
+    description: "Optional baseline JSON path for E2E_METRICS_BASELINE"
+    required: false
+    default: ""
+outputs:
+  retry:
+    description: "Whether environmental noise detection requested a retry (true/false)"
+    value: ${{ steps.check_retry.outputs.retry }}
+runs:
+  using: "composite"
+  steps:
+    - name: Resolve scenario inputs
+      id: opts
+      shell: bash
+      env:
+        INPUT_HELM_EXTRA_OPTIONS: ${{ inputs.helm_extra_options }}
+        INPUT_OPERATOR_HELM_EXTRA_OPTIONS: ${{ inputs.operator_helm_extra_options }}
+      run: |
+        echo "helm_extra_options=${INPUT_HELM_EXTRA_OPTIONS:-${E2E_HELM_EXTRA_OPTIONS:-}}" >> "$GITHUB_OUTPUT"
+        echo "operator_helm_extra_options=${INPUT_OPERATOR_HELM_EXTRA_OPTIONS:-${E2E_OPERATOR_HELM_EXTRA_OPTIONS:-}}" >> "$GITHUB_OUTPUT"
+    - name: Delete existing k3d cluster before retry
+      if: ${{ inputs.reset_cluster == 'true' && inputs.cluster == 'k3d' }}
+      shell: bash
+      env:
+        INPUT_SCENARIO_NAME: ${{ inputs.scenario_name }}
+        INPUT_SCENARIO: ${{ inputs.scenario }}
+      run: |
+        SCENARIO_KEY="${INPUT_SCENARIO_NAME:-${E2E_SCENARIO_NAME:-${INPUT_SCENARIO}}}"
+        echo "::notice::Resetting k3d cluster for retry of ${SCENARIO_KEY}..."
+        k3d cluster delete vald || true
+    - name: Recreate k3d cluster before retry
+      if: ${{ inputs.reset_cluster == 'true' && inputs.cluster == 'k3d' }}
+      uses: ./.github/actions/setup-k3d
+      with:
+        agents: 3
+        ingress_port: "0"
+    - name: Deploy Vald by Helm Chart
+      if: ${{ inputs.deployment == 'helm-chart' && inputs.environment != 'mirror' && inputs.scenario != 'readreplica' }}
+      uses: ./.github/actions/e2e-deploy-vald
+      with:
+        # The FAISS scenario needs the Agent image switched from the
+        # default vdaas/vald-agent-ngt to vdaas/vald-agent-faiss; callers
+        # append that override last so it wins over k8s/vald/manifests' own
+        # `--set agent.image.repository=...-agent-ngt`.
+        helm_extra_options: ${{ steps.opts.outputs.helm_extra_options }}
+        values: .github/helm/values/values-${{ (inputs.environment == 'profile' || inputs.environment == 'faiss') && inputs.environment || 'lb' }}.yaml
+        wait_for_selector: "app=vald-lb-gateway"
+    - name: Deploy Vald Read Replica
+      if: ${{ inputs.scenario == 'readreplica' }}
+      uses: ./.github/actions/e2e-deploy-vald-readreplica
+      with:
+        helm_extra_options: ${{ steps.opts.outputs.helm_extra_options }}
+        values: .github/helm/values/values-readreplica.yaml
+        wait_for_selector: app=vald-lb-gateway
+    - name: Deploy Vald-01
+      if: ${{ inputs.environment == 'mirror' }}
+      uses: ./.github/actions/e2e-deploy-vald
+      with:
+        namespace: vald-01
+        helm_extra_options: ${{ steps.opts.outputs.helm_extra_options }}
+        values: .github/helm/values/values-mirror-01.yaml
+        wait_for_selector: app=vald-mirror-gateway
+    - name: Deploy Vald-02
+      if: ${{ inputs.environment == 'mirror' }}
+      uses: ./.github/actions/e2e-deploy-vald
+      with:
+        namespace: vald-02
+        helm_extra_options: ${{ steps.opts.outputs.helm_extra_options }}
+        values: .github/helm/values/values-mirror-02.yaml
+        wait_for_selector: app=vald-mirror-gateway
+    - name: Deploy Mirror Target
+      if: ${{ inputs.environment == 'mirror' }}
+      shell: bash
+      run: |
+        kubectl apply -f .github/helm/values/vald-mirror-target.yaml -n vald-01
+        sleep 5s
+        kubectl get pods -A && kubectl get vmt -o wide -A
+    - name: Merge Docker image tag
+      if: ${{ inputs.deployment == 'helm-operator' }}
+      shell: bash
+      env:
+        INPUT_IMAGE_TAGS: ${{ inputs.image_tags }}
+        INPUT_VERSION: ${{ inputs.version }}
+      run: |
+        IMAGE_TAGS_STR="${INPUT_IMAGE_TAGS:-${E2E_IMAGE_TAGS:-}}"
+        DEFAULT_TAG="${INPUT_VERSION:-${E2E_VERSION_OVERRIDE:-}}"
+        git checkout -- .github/valdrelease/valdrelease.yaml || true
+        read -r -a IMAGE_TAGS <<< "${IMAGE_TAGS_STR}"
+        for IMAGE_TAG in "${IMAGE_TAGS[@]}"; do
+          echo "IMAGE_TAG:${IMAGE_TAG}"
+          FIELD="${IMAGE_TAG%%=*}"
+          RAW_TAG="${IMAGE_TAG#*=}"
+          RAW_TAG="$(printf '%s' "${RAW_TAG}" | tr -d '"')"
+          if [ -n "${FIELD}" ] && [ -n "${RAW_TAG}" ]; then
+            yq e ".spec.${FIELD}=\"${RAW_TAG}\"" -i ./.github/valdrelease/valdrelease.yaml
+          fi
+        done
+        if [ -n "${DEFAULT_TAG}" ]; then
+          yq e ".spec.defaults.image.tag=\"${DEFAULT_TAG}\"" -i ./.github/valdrelease/valdrelease.yaml
+        fi
+    - name: Deploy Vald using Vald Helm Operator
+      if: ${{ inputs.deployment == 'helm-operator' }}
+      uses: ./.github/actions/e2e-deploy-vald-helm-operator
+      with:
+        helm_extra_options: ${{ steps.opts.outputs.operator_helm_extra_options }}
+        valdrelease: ./.github/valdrelease/valdrelease.yaml
+        wait_for_selector: app=vald-lb-gateway
+    - name: Restore valdrelease.yaml after operator deploy
+      if: ${{ inputs.deployment == 'helm-operator' }}
+      shell: bash
+      run: |
+        git checkout -- .github/valdrelease/valdrelease.yaml || true
+    - name: Deploy Chaos Mesh
+      if: ${{ contains(fromJson('["failure","kill","partition","bandwidth"]'), inputs.environment) }}
+      uses: ./.github/actions/deploy-chaos-mesh
+      with:
+        helm_extra_options: "--set networkChaos.${{ inputs.environment }}.enabled=true"
+    - name: Deploy profefe
+      if: ${{ inputs.environment == 'profile' }}
+      shell: bash
+      run: |
+        make GITFILES_CHECKED=1 k8s/metrics/profefe/deploy
+        kubectl patch cronjob kprofefe -p '{"spec": {"schedule": "*/1 * * * *"}}'
+        sleep 3
+        kubectl wait --for=condition=ready pod -l app=profefe --timeout=300s
+    - name: Run E2E CRUD
+      shell: bash
+      env:
+        INPUT_DATASET: ${{ inputs.dataset }}
+        SCENARIO: ${{ inputs.scenario }}
+        ENVIRONMENT: ${{ inputs.environment }}
+        INPUT_METRICS_OUTPUT: ${{ inputs.metrics_output }}
+        INPUT_SCENARIO_NAME: ${{ inputs.scenario_name }}
+        INPUT_METRICS_BASELINE: ${{ inputs.metrics_baseline }}
+      run: |
+        DATASET="${INPUT_DATASET:-${E2E_DATASET:-}}"
+        METRICS_OUTPUT="${INPUT_METRICS_OUTPUT:-${E2E_METRICS_OUTPUT:-}}"
+        SCENARIO_NAME="${INPUT_SCENARIO_NAME:-${E2E_SCENARIO_NAME:-}}"
+        METRICS_BASELINE="${INPUT_METRICS_BASELINE:-${E2E_METRICS_BASELINE:-}}"
+        make GITFILES_CHECKED=1 "hack/benchmark/assets/dataset/${DATASET}"
+        if [ "${ENVIRONMENT}" = "mirror" ]; then
+          export E2E_TARGET_NAMESPACE=vald-01
+        fi
+        if [ -n "${METRICS_OUTPUT}" ]; then
+          mkdir -p "$(dirname "${METRICS_OUTPUT}")"
+          export E2E_METRICS_OUTPUT="${METRICS_OUTPUT}"
+        fi
+        if [ -n "${SCENARIO_NAME}" ]; then
+          export E2E_SCENARIO_NAME="${SCENARIO_NAME}"
+        fi
+        if [ -n "${METRICS_BASELINE}" ]; then
+          export E2E_METRICS_BASELINE="${METRICS_BASELINE}"
+        fi
+        kubectl get pods
+        make GITFILES_CHECKED=1 e2e/v2 E2E_CONFIG="$(pwd)/tests/v2/e2e/assets/${SCENARIO}.yaml" \
+          E2E_PARALLELISM="4" \
+          E2E_INSERT_COUNT="10000" \
+          E2E_EXPECTED_INDEX="30000" \
+          E2E_QPS="30" \
+          E2E_SEARCH_COUNT="10" \
+          E2E_UPDATE_COUNT="100" \
+          E2E_BULK_SIZE="10"
+    - name: Check retry marker
+      id: check_retry
+      shell: bash
+      env:
+        INPUT_METRICS_OUTPUT: ${{ inputs.metrics_output }}
+      run: |
+        METRICS_OUTPUT="${INPUT_METRICS_OUTPUT:-${E2E_METRICS_OUTPUT:-}}"
+        if [ -n "${METRICS_OUTPUT}" ] && [ -f "${METRICS_OUTPUT}.retry" ]; then
+          reason="$(cat "${METRICS_OUTPUT}.retry")"
+          rm -f "${METRICS_OUTPUT}.retry"
+          echo "::warning::Environmental noise detected (${reason}); retry requested."
+          echo "retry=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "retry=false" >> "$GITHUB_OUTPUT"
+        fi

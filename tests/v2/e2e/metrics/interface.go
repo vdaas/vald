@@ -43,6 +43,7 @@ type Reporter interface {
 type CounterManager interface {
 	CounterHandle(name string) (*CounterHandle, error)
 	IncCounter(name string, val int64)
+	CountersSnapshot() map[string]int64
 }
 
 // Collector is the interface for the metrics collector.
