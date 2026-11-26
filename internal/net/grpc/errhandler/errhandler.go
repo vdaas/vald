@@ -46,12 +46,13 @@ import (
 // codes.Internal here and observe no change. Pass the code that reproduces the
 // call site's current attribute, not a "corrected" one, to preserve behavior.
 func RecordSpanError(span trace.Span, code codes.Code, err error) {
-	if span == nil {
+	if span == nil || err == nil || !span.IsRecording() {
 		return
 	}
+	msg := err.Error()
 	span.RecordError(err)
-	span.SetAttributes(trace.FromGRPCStatus(code, err.Error())...)
-	span.SetStatus(trace.StatusError, err.Error())
+	span.SetAttributes(trace.FromGRPCStatus(code, msg)...)
+	span.SetStatus(trace.StatusError, msg)
 }
 
 // RecordSpanStatus records err on span using the attributes derived from an
@@ -72,12 +73,24 @@ func RecordSpanError(span trace.Span, code codes.Code, err error) {
 // the same st (e.g. st.Proto()), so st stays owned by the caller and is passed
 // in rather than re-parsed here.
 func RecordSpanStatus(span trace.Span, st *status.Status, err error) {
-	if st == nil || span == nil {
+	if st == nil || span == nil || err == nil || !span.IsRecording() {
 		return
 	}
 	span.RecordError(err)
 	span.SetAttributes(trace.FromGRPCStatus(st.Code(), st.Message())...)
 	span.SetStatus(trace.StatusError, err.Error())
+}
+
+// RecordSpanFromError extracts the gRPC status from err, records it on span when
+// non-nil, and returns the resolved status so callers can inspect or embed its
+// proto without duplicating status.FromError calls.
+func RecordSpanFromError(span trace.Span, err error) *status.Status {
+	if err == nil {
+		return nil
+	}
+	st, _ := status.FromError(err)
+	RecordSpanStatus(span, st, err)
+	return st
 }
 
 // RecordSpanAttrs records err on span with a caller-prepared attribute set, then
@@ -94,7 +107,7 @@ func RecordSpanStatus(span trace.Span, st *status.Status, err error) {
 // recording is consolidated here; the caller keeps its classification and its
 // return decision, so this changes no control flow.
 func RecordSpanAttrs(span trace.Span, attrs trace.Attributes, err error) {
-	if span == nil {
+	if span == nil || err == nil || !span.IsRecording() {
 		return
 	}
 	span.RecordError(err)

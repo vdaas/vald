@@ -51,12 +51,12 @@ func TestNew(t *testing.T) {
 	tests := []test{
 		func() test {
 			var (
-				wantOu [slen]*sync.Map[uint32, valueStructOu]
-				wantUo [slen]*sync.Map[string, ValueStructUo]
+				wantOu [slen]*ouShard
+				wantUo [slen]*uoShard
 			)
 			for i := range slen {
-				wantOu[i] = new(sync.Map[uint32, valueStructOu])
-				wantUo[i] = new(sync.Map[string, ValueStructUo])
+				wantOu[i] = new(ouShard)
+				wantUo[i] = new(uoShard)
 			}
 			concurrency := runtime.GOMAXPROCS(-1) * 10
 			return test{
@@ -109,8 +109,8 @@ func Test_bidi_Get(t *testing.T) {
 		key string
 	}
 	type fields struct {
-		ou [slen]*sync.Map[uint32, valueStructOu]
-		uo [slen]*sync.Map[string, ValueStructUo]
+		ou [slen]*ouShard
+		uo [slen]*uoShard
 		l  uint64
 	}
 	type want struct {
@@ -149,8 +149,8 @@ func Test_bidi_Get(t *testing.T) {
 				l: 0,
 			}
 			for i := range slen {
-				fields.ou[i] = new(sync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(sync.Map[string, ValueStructUo])
+				fields.ou[i] = new(ouShard)
+				fields.uo[i] = new(uoShard)
 			}
 
 			var (
@@ -182,8 +182,8 @@ func Test_bidi_Get(t *testing.T) {
 				l: 100,
 			}
 			for i := range slen {
-				fields.ou[i] = new(sync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(sync.Map[string, ValueStructUo])
+				fields.ou[i] = new(ouShard)
+				fields.uo[i] = new(uoShard)
 			}
 
 			var (
@@ -215,8 +215,8 @@ func Test_bidi_Get(t *testing.T) {
 				l: math.MaxUint64,
 			}
 			for i := range slen {
-				fields.ou[i] = new(sync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(sync.Map[string, ValueStructUo])
+				fields.ou[i] = new(ouShard)
+				fields.uo[i] = new(uoShard)
 			}
 
 			var (
@@ -248,8 +248,8 @@ func Test_bidi_Get(t *testing.T) {
 				l: 0,
 			}
 			for i := range slen {
-				fields.ou[i] = new(sync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(sync.Map[string, ValueStructUo])
+				fields.ou[i] = new(ouShard)
+				fields.uo[i] = new(uoShard)
 			}
 
 			var (
@@ -281,8 +281,8 @@ func Test_bidi_Get(t *testing.T) {
 				l: 0,
 			}
 			for i := range slen {
-				fields.ou[i] = new(sync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(sync.Map[string, ValueStructUo])
+				fields.ou[i] = new(ouShard)
+				fields.uo[i] = new(uoShard)
 			}
 
 			var (
@@ -312,8 +312,8 @@ func Test_bidi_Get(t *testing.T) {
 				l: 0,
 			}
 			for i := range slen {
-				fields.ou[i] = new(sync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(sync.Map[string, ValueStructUo])
+				fields.ou[i] = new(ouShard)
+				fields.uo[i] = new(uoShard)
 			}
 
 			var (
@@ -376,8 +376,8 @@ func Test_bidi_GetInverse(t *testing.T) {
 		val uint32
 	}
 	type fields struct {
-		ou [slen]*sync.Map[uint32, valueStructOu]
-		uo [slen]*sync.Map[string, ValueStructUo]
+		ou [slen]*ouShard
+		uo [slen]*uoShard
 		l  uint64
 	}
 	type want struct {
@@ -416,8 +416,8 @@ func Test_bidi_GetInverse(t *testing.T) {
 				l: 0,
 			}
 			for i := range slen {
-				fields.ou[i] = new(sync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(sync.Map[string, ValueStructUo])
+				fields.ou[i] = new(ouShard)
+				fields.uo[i] = new(uoShard)
 			}
 
 			var (
@@ -449,8 +449,8 @@ func Test_bidi_GetInverse(t *testing.T) {
 				l: 100,
 			}
 			for i := range slen {
-				fields.ou[i] = new(sync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(sync.Map[string, ValueStructUo])
+				fields.ou[i] = new(ouShard)
+				fields.uo[i] = new(uoShard)
 			}
 
 			var (
@@ -482,8 +482,8 @@ func Test_bidi_GetInverse(t *testing.T) {
 				l: math.MaxUint64,
 			}
 			for i := range slen {
-				fields.ou[i] = new(sync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(sync.Map[string, ValueStructUo])
+				fields.ou[i] = new(ouShard)
+				fields.uo[i] = new(uoShard)
 			}
 
 			var (
@@ -515,8 +515,8 @@ func Test_bidi_GetInverse(t *testing.T) {
 				l: 0,
 			}
 			for i := range slen {
-				fields.ou[i] = new(sync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(sync.Map[string, ValueStructUo])
+				fields.ou[i] = new(ouShard)
+				fields.uo[i] = new(uoShard)
 			}
 
 			var (
@@ -548,8 +548,8 @@ func Test_bidi_GetInverse(t *testing.T) {
 				l: 0,
 			}
 			for i := range slen {
-				fields.ou[i] = new(sync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(sync.Map[string, ValueStructUo])
+				fields.ou[i] = new(ouShard)
+				fields.uo[i] = new(uoShard)
 			}
 
 			var (
@@ -579,8 +579,8 @@ func Test_bidi_GetInverse(t *testing.T) {
 				l: 0,
 			}
 			for i := range slen {
-				fields.ou[i] = new(sync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(sync.Map[string, ValueStructUo])
+				fields.ou[i] = new(ouShard)
+				fields.uo[i] = new(uoShard)
 			}
 
 			var (
@@ -646,8 +646,8 @@ func Test_bidi_Set(t *testing.T) {
 		ts  int64
 	}
 	type fields struct {
-		ou [slen]*sync.Map[uint32, valueStructOu]
-		uo [slen]*sync.Map[string, ValueStructUo]
+		ou [slen]*ouShard
+		uo [slen]*uoShard
 		l  uint64
 	}
 	type want struct {
@@ -694,8 +694,8 @@ func Test_bidi_Set(t *testing.T) {
 				l: 0,
 			}
 			for i := range slen {
-				fields.ou[i] = new(sync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(sync.Map[string, ValueStructUo])
+				fields.ou[i] = new(ouShard)
+				fields.uo[i] = new(uoShard)
 			}
 
 			var (
@@ -725,8 +725,8 @@ func Test_bidi_Set(t *testing.T) {
 				l: 100,
 			}
 			for i := range slen {
-				fields.ou[i] = new(sync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(sync.Map[string, ValueStructUo])
+				fields.ou[i] = new(ouShard)
+				fields.uo[i] = new(uoShard)
 			}
 
 			var (
@@ -756,8 +756,8 @@ func Test_bidi_Set(t *testing.T) {
 				l: math.MaxUint64,
 			}
 			for i := range slen {
-				fields.ou[i] = new(sync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(sync.Map[string, ValueStructUo])
+				fields.ou[i] = new(ouShard)
+				fields.uo[i] = new(uoShard)
 			}
 
 			var (
@@ -787,8 +787,8 @@ func Test_bidi_Set(t *testing.T) {
 				l: 0,
 			}
 			for i := range slen {
-				fields.ou[i] = new(sync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(sync.Map[string, ValueStructUo])
+				fields.ou[i] = new(ouShard)
+				fields.uo[i] = new(uoShard)
 			}
 
 			var (
@@ -827,8 +827,8 @@ func Test_bidi_Set(t *testing.T) {
 				l: 0,
 			}
 			for i := range slen {
-				fields.ou[i] = new(sync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(sync.Map[string, ValueStructUo])
+				fields.ou[i] = new(ouShard)
+				fields.uo[i] = new(uoShard)
 			}
 
 			var (
@@ -893,8 +893,8 @@ func Test_bidi_Set(t *testing.T) {
 				l: 0,
 			}
 			for i := range slen {
-				f.ou[i] = new(sync.Map[uint32, valueStructOu])
-				f.uo[i] = new(sync.Map[string, ValueStructUo])
+				f.ou[i] = new(ouShard)
+				f.uo[i] = new(uoShard)
 			}
 
 			key := "45637ec4-c85f-11ea-87d0"
@@ -918,8 +918,8 @@ func Test_bidi_Set(t *testing.T) {
 				l: 0,
 			}
 			for i := range slen {
-				fields.ou[i] = new(sync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(sync.Map[string, ValueStructUo])
+				fields.ou[i] = new(ouShard)
+				fields.uo[i] = new(uoShard)
 			}
 
 			var val uint32 = 14438
@@ -942,8 +942,8 @@ func Test_bidi_Set(t *testing.T) {
 				l: 0,
 			}
 			for i := range slen {
-				fields.ou[i] = new(sync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(sync.Map[string, ValueStructUo])
+				fields.ou[i] = new(ouShard)
+				fields.uo[i] = new(uoShard)
 			}
 
 			return test{
@@ -996,8 +996,8 @@ func Test_bidi_Delete(t *testing.T) {
 		key string
 	}
 	type fields struct {
-		ou [slen]*sync.Map[uint32, valueStructOu]
-		uo [slen]*sync.Map[string, ValueStructUo]
+		ou [slen]*ouShard
+		uo [slen]*uoShard
 		l  uint64
 	}
 	type want struct {
@@ -1029,8 +1029,8 @@ func Test_bidi_Delete(t *testing.T) {
 				l: 0,
 			}
 			for i := range slen {
-				fields.ou[i] = new(sync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(sync.Map[string, ValueStructUo])
+				fields.ou[i] = new(ouShard)
+				fields.uo[i] = new(uoShard)
 			}
 
 			var (
@@ -1076,8 +1076,8 @@ func Test_bidi_Delete(t *testing.T) {
 				l: 100,
 			}
 			for i := range slen {
-				fields.ou[i] = new(sync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(sync.Map[string, ValueStructUo])
+				fields.ou[i] = new(ouShard)
+				fields.uo[i] = new(uoShard)
 			}
 
 			var (
@@ -1123,8 +1123,8 @@ func Test_bidi_Delete(t *testing.T) {
 				l: math.MaxUint64,
 			}
 			for i := range slen {
-				fields.ou[i] = new(sync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(sync.Map[string, ValueStructUo])
+				fields.ou[i] = new(ouShard)
+				fields.uo[i] = new(uoShard)
 			}
 
 			var (
@@ -1170,8 +1170,8 @@ func Test_bidi_Delete(t *testing.T) {
 				l: 0,
 			}
 			for i := range slen {
-				fields.ou[i] = new(sync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(sync.Map[string, ValueStructUo])
+				fields.ou[i] = new(ouShard)
+				fields.uo[i] = new(uoShard)
 			}
 
 			var (
@@ -1214,8 +1214,8 @@ func Test_bidi_Delete(t *testing.T) {
 				l: 0,
 			}
 			for i := range slen {
-				fields.ou[i] = new(sync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(sync.Map[string, ValueStructUo])
+				fields.ou[i] = new(ouShard)
+				fields.uo[i] = new(uoShard)
 			}
 
 			var (
@@ -1278,8 +1278,8 @@ func Test_bidi_DeleteInverse(t *testing.T) {
 		val uint32
 	}
 	type fields struct {
-		ou [slen]*sync.Map[uint32, valueStructOu]
-		uo [slen]*sync.Map[string, ValueStructUo]
+		ou [slen]*ouShard
+		uo [slen]*uoShard
 		l  uint64
 	}
 	type want struct {
@@ -1311,8 +1311,8 @@ func Test_bidi_DeleteInverse(t *testing.T) {
 				l: 0,
 			}
 			for i := range slen {
-				fields.ou[i] = new(sync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(sync.Map[string, ValueStructUo])
+				fields.ou[i] = new(ouShard)
+				fields.uo[i] = new(uoShard)
 			}
 
 			var (
@@ -1358,8 +1358,8 @@ func Test_bidi_DeleteInverse(t *testing.T) {
 				l: 100,
 			}
 			for i := range slen {
-				fields.ou[i] = new(sync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(sync.Map[string, ValueStructUo])
+				fields.ou[i] = new(ouShard)
+				fields.uo[i] = new(uoShard)
 			}
 
 			var (
@@ -1405,8 +1405,8 @@ func Test_bidi_DeleteInverse(t *testing.T) {
 				l: math.MaxUint64,
 			}
 			for i := range slen {
-				fields.ou[i] = new(sync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(sync.Map[string, ValueStructUo])
+				fields.ou[i] = new(ouShard)
+				fields.uo[i] = new(uoShard)
 			}
 
 			var (
@@ -1452,8 +1452,8 @@ func Test_bidi_DeleteInverse(t *testing.T) {
 				l: 0,
 			}
 			for i := range slen {
-				fields.ou[i] = new(sync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(sync.Map[string, ValueStructUo])
+				fields.ou[i] = new(ouShard)
+				fields.uo[i] = new(uoShard)
 			}
 
 			var (
@@ -1496,8 +1496,8 @@ func Test_bidi_DeleteInverse(t *testing.T) {
 				l: 0,
 			}
 			for i := range slen {
-				fields.ou[i] = new(sync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(sync.Map[string, ValueStructUo])
+				fields.ou[i] = new(ouShard)
+				fields.uo[i] = new(uoShard)
 			}
 
 			var (
@@ -1561,8 +1561,8 @@ func Test_bidi_Range(t *testing.T) {
 		f func(string, uint32, int64) bool
 	}
 	type fields struct {
-		ou [slen]*sync.Map[uint32, valueStructOu]
-		uo [slen]*sync.Map[string, ValueStructUo]
+		ou [slen]*ouShard
+		uo [slen]*uoShard
 		l  uint64
 	}
 	type want struct {
@@ -1587,8 +1587,8 @@ func Test_bidi_Range(t *testing.T) {
 				l: 0,
 			}
 			for i := range slen {
-				fields.ou[i] = new(sync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(sync.Map[string, ValueStructUo])
+				fields.ou[i] = new(ouShard)
+				fields.uo[i] = new(uoShard)
 			}
 
 			var (
@@ -1639,8 +1639,8 @@ func Test_bidi_Range(t *testing.T) {
 				l: 100,
 			}
 			for i := range slen {
-				fields.ou[i] = new(sync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(sync.Map[string, ValueStructUo])
+				fields.ou[i] = new(ouShard)
+				fields.uo[i] = new(uoShard)
 			}
 
 			var (
@@ -1691,8 +1691,8 @@ func Test_bidi_Range(t *testing.T) {
 				l: math.MaxUint64,
 			}
 			for i := range slen {
-				fields.ou[i] = new(sync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(sync.Map[string, ValueStructUo])
+				fields.ou[i] = new(ouShard)
+				fields.uo[i] = new(uoShard)
 			}
 
 			var (
@@ -1773,8 +1773,8 @@ func Test_bidi_Range(t *testing.T) {
 func Test_bidi_Len(t *testing.T) {
 	t.Parallel()
 	type fields struct {
-		ou [slen]*sync.Map[uint32, valueStructOu]
-		uo [slen]*sync.Map[string, ValueStructUo]
+		ou [slen]*ouShard
+		uo [slen]*uoShard
 		l  uint64
 	}
 	type want struct {
@@ -1923,8 +1923,8 @@ func Test_bidi_SetTimestamp(t *testing.T) {
 //
 // func Test_bidi_Close(t *testing.T) {
 // 	type fields struct {
-// 		ou          [slen]*sync.Map[uint32, valueStructOu]
-// 		uo          [slen]*sync.Map[string, ValueStructUo]
+// 		ou          [slen]*ouShard
+// 		uo          [slen]*uoShard
 // 		concurrency int
 // 		l           uint64
 // 	}

@@ -18,6 +18,7 @@ import (
 	"testing"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
+	"github.com/vdaas/vald/internal/test/bench"
 	"google.golang.org/grpc/encoding"
 	"google.golang.org/grpc/mem"
 )
@@ -41,7 +42,10 @@ func BenchmarkCodec_Marshal_Unmarshal(b *testing.B) {
 		fallback: encoding.GetCodecV2(Name),
 	}
 
-	dims := []int{0, 16, 128, 512, 1536, 4096}
+	dims := []int{0, 128, 1536}
+	if bench.Full() {
+		dims = []int{0, 16, 128, 512, 1536, 4096}
+	}
 	for _, dim := range dims {
 		var msg any
 		if dim == 0 {

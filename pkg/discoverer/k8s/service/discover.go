@@ -313,7 +313,9 @@ func (d *discoverer) refreshSnapshots(ctx context.Context) {
 			}
 			for _, nodeApps := range nodeNs {
 				for _, p := range nodeApps {
-					slices.SortFunc(p, byMemoryUsage)
+					if len(p) > 1 {
+						slices.SortFunc(p, byMemoryUsage)
+					}
 				}
 			}
 		}
@@ -326,7 +328,9 @@ func (d *discoverer) refreshSnapshots(ctx context.Context) {
 		defer wg.Done()
 		for _, nsApps := range podsByNamespace {
 			for _, p := range nsApps {
-				slices.SortFunc(p, byMemoryUsage)
+				if len(p) > 1 {
+					slices.SortFunc(p, byMemoryUsage)
+				}
 			}
 		}
 		d.podsByNamespace.Store(&podsByNamespace)
@@ -336,7 +340,9 @@ func (d *discoverer) refreshSnapshots(ctx context.Context) {
 	d.eg.Go(safety.RecoverFunc(func() error {
 		defer wg.Done()
 		for _, p := range podsByName {
-			slices.SortFunc(p, byMemoryUsage)
+			if len(p) > 1 {
+				slices.SortFunc(p, byMemoryUsage)
+			}
 		}
 		d.podsByName.Store(&podsByName)
 		return nil
@@ -461,7 +467,9 @@ func (d *discoverer) GetPods(req *payload.Discoverer_Request) (pods *payload.Inf
 				}
 			}
 		}
-		slices.SortFunc(pods.Pods, byMemoryUsage)
+		if len(pods.Pods) > 1 {
+			slices.SortFunc(pods.Pods, byMemoryUsage)
+		}
 		return pods, nil
 	}
 	if podsByName == nil {
@@ -479,14 +487,16 @@ func (d *discoverer) GetPods(req *payload.Discoverer_Request) (pods *payload.Inf
 		for _, p := range group {
 			pods.Pods = append(pods.Pods, responsePod(p))
 		}
-	} else {
-		for _, ps := range podsByName {
-			for _, p := range ps {
-				pods.Pods = append(pods.Pods, responsePod(p))
-			}
+		return pods, nil
+	}
+	for _, ps := range podsByName {
+		for _, p := range ps {
+			pods.Pods = append(pods.Pods, responsePod(p))
 		}
 	}
-	slices.SortFunc(pods.Pods, byMemoryUsage)
+	if len(pods.Pods) > 1 {
+		slices.SortFunc(pods.Pods, byMemoryUsage)
+	}
 	return pods, nil
 }
 
@@ -538,9 +548,11 @@ func (d *discoverer) GetNodes(
 		}
 		nodes.Nodes = append(nodes.Nodes, rn)
 	}
-	slices.SortFunc(nodes.Nodes, func(left, right *payload.Info_Node) int {
-		return cmp.Compare(left.GetMemory().GetUsage(), right.GetMemory().GetUsage())
-	})
+	if len(nodes.Nodes) > 1 {
+		slices.SortFunc(nodes.Nodes, func(left, right *payload.Info_Node) int {
+			return cmp.Compare(left.GetMemory().GetUsage(), right.GetMemory().GetUsage())
+		})
+	}
 	return nodes, nil
 }
 

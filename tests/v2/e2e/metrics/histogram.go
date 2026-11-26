@@ -62,7 +62,7 @@ type histogramConfig struct {
 // Init initializes the histogram.
 func (h *histogram) Init() error {
 	var err error
-	h.digest, err = NewTDigest(defaultTDigestOpts...)
+	h.digest, err = NewTDigest(append(defaultTDigestOpts, WithTDigestNumShards(1))...)
 	if err != nil {
 		return err
 	}
@@ -478,8 +478,8 @@ func calculateBucketBoundaries(digest TDigest, minVal, maxVal float64, dst []flo
 		}
 	}
 
-	// Deduplicate bounds
-	validBounds := make([]float64, 0, len(bounds))
+	// Deduplicate bounds in place.
+	validBounds := bounds[:0]
 	prev := 0.0
 	for _, b := range bounds {
 		if b > prev {
@@ -492,22 +492,24 @@ func calculateBucketBoundaries(digest TDigest, minVal, maxVal float64, dst []flo
 
 // GetHistogramSnapshot returns a HistogramSnapshot from the pool.
 func GetHistogramSnapshot() *HistogramSnapshot {
-	val, ok := histogramSnapshotPool.Get().(*HistogramSnapshot)
-	if !ok {
-		return new(HistogramSnapshot)
+	if val := histogramSnapshotPool.Get(); val != nil {
+		return val
 	}
-	return val
+	return new(HistogramSnapshot)
 }
 
 // PutHistogramSnapshot returns a HistogramSnapshot to the pool.
 func PutHistogramSnapshot(hs *HistogramSnapshot) {
+	if hs == nil {
+		return
+	}
 	hs.Reset()
 	histogramSnapshotPool.Put(hs)
 }
 
 // nolint:gochecknoglobals
-var histogramSnapshotPool = sync.Pool{
-	New: func() any {
+var histogramSnapshotPool = sync.Pool[*HistogramSnapshot]{
+	New: func() *HistogramSnapshot {
 		return new(HistogramSnapshot)
 	},
 }
@@ -565,6 +567,48 @@ func (s *HistogramSnapshot) String() string {
 	)
 }
 
+func mergeSortedUniqueBounds(a, b []float64) []float64 {
+	if !slices.IsSorted(a) {
+		a = slices.Clone(a)
+		slices.Sort(a)
+	}
+	if !slices.IsSorted(b) {
+		b = slices.Clone(b)
+		slices.Sort(b)
+	}
+	out := make([]float64, 0, len(a)+len(b))
+	i, j := 0, 0
+	for i < len(a) && j < len(b) {
+		var v float64
+		switch {
+		case a[i] < b[j]:
+			v = a[i]
+			i++
+		case b[j] < a[i]:
+			v = b[j]
+			j++
+		default:
+			v = a[i]
+			i++
+			j++
+		}
+		if len(out) == 0 || v != out[len(out)-1] {
+			out = append(out, v)
+		}
+	}
+	for ; i < len(a); i++ {
+		if len(out) == 0 || a[i] != out[len(out)-1] {
+			out = append(out, a[i])
+		}
+	}
+	for ; j < len(b); j++ {
+		if len(out) == 0 || b[j] != out[len(out)-1] {
+			out = append(out, b[j])
+		}
+	}
+	return out
+}
+
 func (s *HistogramSnapshot) Merge(other *HistogramSnapshot) error {
 	if other == nil || other.Total == 0 {
 		return nil
@@ -575,24 +619,13 @@ func (s *HistogramSnapshot) Merge(other *HistogramSnapshot) error {
 			s.Counts = slices.Clone(other.Counts)
 			s.Bounds = slices.Clone(other.Bounds)
 		} else {
-			boundMap := make(map[float64]struct{}, len(s.Bounds)+len(other.Bounds))
-			for _, b := range s.Bounds {
-				boundMap[b] = struct{}{}
-			}
-			for _, b := range other.Bounds {
-				boundMap[b] = struct{}{}
-			}
-			newBounds := make([]float64, 0, len(boundMap))
-			for b := range boundMap {
-				newBounds = append(newBounds, b)
-			}
-			slices.Sort(newBounds)
-
+			newBounds := mergeSortedUniqueBounds(s.Bounds, other.Bounds)
 			newCounts := make([]float64, len(newBounds))
 
 			distribute := func(srcBounds []float64, srcCounts []uint64) {
+				j := 0
 				for i, count := range srcCounts {
-					if count == 0 {
+					if count == 0 || i >= len(srcBounds) {
 						continue
 					}
 					low := 0.0
@@ -604,20 +637,26 @@ func (s *HistogramSnapshot) Merge(other *HistogramSnapshot) error {
 					if width <= 0 {
 						width = 1.0
 					}
-
-					for j, nb := range newBounds {
+					for j > 0 && newBounds[j-1] > low {
+						j--
+					}
+					for j < len(newBounds) && newBounds[j] <= low {
+						j++
+					}
+					for k := j; k < len(newBounds); k++ {
 						nLow := 0.0
-						if j > 0 {
-							nLow = newBounds[j-1]
+						if k > 0 {
+							nLow = newBounds[k-1]
 						}
-						nHigh := nb
-
+						if nLow >= high {
+							break
+						}
+						nHigh := newBounds[k]
 						overlapStart := max(low, nLow)
 						overlapEnd := min(high, nHigh)
-
 						if overlapEnd > overlapStart {
 							fraction := (overlapEnd - overlapStart) / width
-							newCounts[j] += float64(count) * fraction
+							newCounts[k] += float64(count) * fraction
 						}
 					}
 				}

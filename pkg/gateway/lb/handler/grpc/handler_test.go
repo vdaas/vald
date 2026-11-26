@@ -29,10 +29,10 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/status"
+	"github.com/vdaas/vald/internal/observability/attribute"
 	lbmetrics "github.com/vdaas/vald/internal/observability/metrics/gateway/lb"
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/errgroup"
-	"go.opentelemetry.io/otel/attribute"
 )
 
 // extClient adds the agent calls okClient does not stub.

@@ -26,15 +26,17 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/attribute"
 	"github.com/vdaas/vald/internal/observability/trace"
-	"github.com/vdaas/vald/internal/sync/atomic"
 )
 
 // Flush removes all vectors that are indexed and uncommitted in the `vald-agent`.
 func (s *server) Flush(
 	ctx context.Context, req *payload.Flush_Request,
 ) (*payload.Info_Index_Count, error) {
-	_, span := trace.StartSpan(ctx, apiName+"/"+vald.FlushRPCName)
-	defer trace.End(span)
+	var span trace.Span
+	if trace.Enabled() {
+		_, span = trace.StartSpan(ctx, apiName+"/"+vald.FlushRPCName)
+		defer trace.End(span)
+	}
 	err := s.ngt.RegenerateIndexes(ctx)
 	if err != nil {
 		var attrs []attribute.KeyValue
@@ -45,7 +47,9 @@ func (s *server) Flush(
 				},
 				s.resourceInfo(ngtResourceType+"/ngt.Flush"))
 			log.Debug(err)
-			attrs = trace.StatusCodeAborted(err.Error())
+			if span != nil {
+				attrs = trace.StatusCodeAborted(err.Error())
+			}
 		} else if errors.Is(err, errors.ErrWriteOperationToReadReplica) {
 			err = status.WrapWithAborted("Flush API aborted due to agent is read only", err,
 				&errdetails.RequestInfo{
@@ -53,7 +57,9 @@ func (s *server) Flush(
 				},
 				s.resourceInfo(ngtResourceType+"/ngt.Flush"))
 			log.Debug(err)
-			attrs = trace.StatusCodeAborted(err.Error())
+			if span != nil {
+				attrs = trace.StatusCodeAborted(err.Error())
+			}
 
 		} else {
 			err = status.WrapWithInternal("Flush API failed", err,
@@ -62,29 +68,13 @@ func (s *server) Flush(
 				},
 				s.resourceInfo(ngtResourceType+"/ngt.Flush"), info.Get())
 			log.Error(err)
-			attrs = trace.StatusCodeInternal(err.Error())
+			if span != nil {
+				attrs = trace.StatusCodeInternal(err.Error())
+			}
 		}
 		errhandler.RecordSpanAttrs(span, attrs, err)
 		return nil, err
 	}
 
-	var (
-		stored      uint32
-		uncommitted uint32
-		indexing    atomic.Value
-		saving      atomic.Value
-	)
-	stored = 0
-	uncommitted = 0
-	indexing.Store(false)
-	saving.Store(false)
-
-	cnts := &payload.Info_Index_Count{
-		Stored:      atomic.LoadUint32(&stored),
-		Uncommitted: atomic.LoadUint32(&uncommitted),
-		Indexing:    indexing.Load().(bool),
-		Saving:      saving.Load().(bool),
-	}
-
-	return cnts, nil
+	return &payload.Info_Index_Count{}, nil
 }

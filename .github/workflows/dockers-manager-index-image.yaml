@@ -98,8 +98,10 @@ on:
       - internal/net/grpc/*.go
       - internal/net/grpc/admin/*.go
       - internal/net/grpc/codes/*.go
+      - internal/net/grpc/connectivity/*.go
       - internal/net/grpc/credentials/*.go
       - internal/net/grpc/errdetails/*.go
+      - internal/net/grpc/errhandler/*.go
       - internal/net/grpc/health/*.go
       - internal/net/grpc/interceptor/client/metric/*.go
       - internal/net/grpc/interceptor/client/trace/*.go
@@ -221,8 +223,10 @@ on:
       - internal/net/grpc/*.go
       - internal/net/grpc/admin/*.go
       - internal/net/grpc/codes/*.go
+      - internal/net/grpc/connectivity/*.go
       - internal/net/grpc/credentials/*.go
       - internal/net/grpc/errdetails/*.go
+      - internal/net/grpc/errhandler/*.go
       - internal/net/grpc/health/*.go
       - internal/net/grpc/interceptor/client/metric/*.go
       - internal/net/grpc/interceptor/client/trace/*.go

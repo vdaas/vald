@@ -191,11 +191,11 @@ func (r *runner) processSearch(
 	case config.OpSearchByID:
 		switch plan.Mode {
 		case config.OperationUnary, config.OperationOther:
-			return unary(t, ctx, train, plan, r.client.SearchByID, searchIDRequest, checkUnarySearchResponse(neighbors, plan))
+			return unary(t, ctx, train, plan, r.client.SearchByID, searchIDRequest, checkUnarySearchResponse(nil, plan))
 		case config.OperationMultiple:
-			return multi(t, ctx, train, plan, r.client.MultiSearchByID, searchIDRequest, searchMultiIDRequest, checkMultiSearchResponse(neighbors, plan))
+			return multi(t, ctx, train, plan, r.client.MultiSearchByID, searchIDRequest, searchMultiIDRequest, checkMultiSearchResponse(nil, plan))
 		case config.OperationStream:
-			stream(t, ctx, train, plan, r.client.StreamSearchByID, searchIDRequest, checkStreamSearchResponse(neighbors, plan))
+			stream(t, ctx, train, plan, r.client.StreamSearchByID, searchIDRequest, checkStreamSearchResponse(nil, plan))
 		}
 	case config.OpLinearSearch:
 		switch plan.Mode {
@@ -212,20 +212,20 @@ func (r *runner) processSearch(
 			// The train cycle is passed for consistency with the other ByID
 			// branches; searchIDRequest ignores the vector and derives the ID
 			// from the request index alone.
-			return unary(t, ctx, train, plan, r.client.LinearSearchByID, searchIDRequest, checkUnarySearchResponse(neighbors, plan))
+			return unary(t, ctx, train, plan, r.client.LinearSearchByID, searchIDRequest, checkUnarySearchResponse(nil, plan))
 		case config.OperationMultiple:
-			return multi(t, ctx, train, plan, r.client.MultiLinearSearchByID, searchIDRequest, searchMultiIDRequest, checkMultiSearchResponse(neighbors, plan))
+			return multi(t, ctx, train, plan, r.client.MultiLinearSearchByID, searchIDRequest, searchMultiIDRequest, checkMultiSearchResponse(nil, plan))
 		case config.OperationStream:
-			stream(t, ctx, train, plan, r.client.StreamLinearSearchByID, searchIDRequest, checkStreamSearchResponse(neighbors, plan))
+			stream(t, ctx, train, plan, r.client.StreamLinearSearchByID, searchIDRequest, checkStreamSearchResponse(nil, plan))
 		}
 	}
 	return nil
 }
 
-// checkUnarySearchResponse returns a callback that logs the recall@k of each
-// search response and, when plan.Metrics is enabled, records it into
-// plan.Collector via recordRecall (see recall_qps_test.go) so it can be
-// exposed alongside QPS once the strategy/operation/execution finishes.
+// checkUnarySearchResponse returns a callback that validates each search
+// response and, when neighbors is non-nil and plan.Metrics is enabled, records
+// recall@k into plan.Collector via recordRecall (see recall_qps_test.go) so it
+// can be exposed alongside QPS once the strategy/operation/execution finishes.
 func checkUnarySearchResponse(
 	neighbors iter.Cycle[[][]int, []int], plan *config.Execution,
 ) func(t testing.TB, idx uint64, res *payload.Search_Response, err error) bool {
@@ -236,11 +236,25 @@ func checkUnarySearchResponse(
 		// empty response masquerade as a recall-0 result.
 		if err != nil {
 			t.Errorf("%s request idx %d (type: %s, mode: %s) failed: %v", plan.Name, idx, plan.Type, plan.Mode, err)
-			recordRecall(plan, 0)
+			if neighbors != nil {
+				recordRecall(plan, 0)
+			}
+			return true
+		}
+		if neighbors == nil {
+			results := res.GetResults()
+			if len(results) == 0 {
+				t.Errorf("empty search result for request idx %d, request id %q, response: %s", idx, res.GetRequestId(), res.String())
+				return true
+			}
+			topKIDs := make([]string, 0, len(results))
+			for _, d := range results {
+				topKIDs = append(topKIDs, d.GetId())
+			}
+			_ = resultIDsToInts(t, topKIDs)
 			return true
 		}
 		rc := calculateRecall(t, idx, neighbors.At(idx), res)
-		t.Logf("request id %s searched recall: %f, payload %s", res.GetRequestId(), rc, res.String())
 		recordRecall(plan, rc)
 		return true
 	}
@@ -272,7 +286,9 @@ func checkStreamSearchResponse(
 			// A failed stream item has no payload to score; record it as
 			// recall 0 so it stays in the denominator (mirrors the unary
 			// path), otherwise dropped failures inflate the reported recall.
-			recordRecall(plan, 0)
+			if neighbors != nil {
+				recordRecall(plan, 0)
+			}
 			return true
 		}
 		r := res.GetResponse()
@@ -291,7 +307,9 @@ func checkStreamSearchResponse(
 					plan.Name, idx, plan.Type, plan.Mode)
 			}
 			// No scorable payload here either; count it as recall 0.
-			recordRecall(plan, 0)
+			if neighbors != nil {
+				recordRecall(plan, 0)
+			}
 			return true
 		}
 		return checkUnarySearchResponse(neighbors, plan)(t, getIndexFromSearchResponse(t, r), r, err)

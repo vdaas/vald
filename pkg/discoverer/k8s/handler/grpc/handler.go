@@ -103,10 +103,13 @@ func wrapDiscoverError(
 func (s *server) Pods(
 	ctx context.Context, req *payload.Discoverer_Request,
 ) (*payload.Info_Pods, error) {
-	ctx, span := trace.StartSpan(ctx, apiName+".Pods")
-	defer trace.End(span)
+	var span trace.Span
+	if trace.Enabled() {
+		ctx, span = trace.StartSpan(ctx, apiName+".Pods")
+		defer trace.End(span)
+	}
 	key := singleflightKey(podPrefix, req)
-	res, _, err := s.pgroup.Do(ctx, key, func(context.Context) (*payload.Info_Pods, error) {
+	res, shared, err := s.pgroup.Do(ctx, key, func(context.Context) (*payload.Info_Pods, error) {
 		return s.dsc.GetPods(req)
 	})
 	if err != nil {
@@ -140,6 +143,9 @@ func (s *server) Pods(
 		log.Warnf("Pods not found: %#v, error: %v", res, err)
 		return nil, err
 	}
+	if !shared {
+		return res, nil
+	}
 	cp := res.CloneVT()
 	if cp == nil {
 		err = status.WrapWithNotFound(fmt.Sprintf("Pods API request (name: %s, namespace: %s, node: %s) pods not found, cloned response is nil", req.GetName(), req.GetNamespace(), req.GetNode()), err,
@@ -162,11 +168,14 @@ func (s *server) Pods(
 func (s *server) Nodes(
 	ctx context.Context, req *payload.Discoverer_Request,
 ) (*payload.Info_Nodes, error) {
-	ctx, span := trace.StartSpan(ctx, apiName+".Nodes")
-	defer trace.End(span)
+	var span trace.Span
+	if trace.Enabled() {
+		ctx, span = trace.StartSpan(ctx, apiName+".Nodes")
+		defer trace.End(span)
+	}
 
 	key := singleflightKey(nodePrefix, req)
-	res, _, err := s.ngroup.Do(ctx, key, func(context.Context) (*payload.Info_Nodes, error) {
+	res, shared, err := s.ngroup.Do(ctx, key, func(context.Context) (*payload.Info_Nodes, error) {
 		return s.dsc.GetNodes(req)
 	})
 	if err != nil {
@@ -200,6 +209,9 @@ func (s *server) Nodes(
 		log.Warnf("Nodes not found: %#v, error: %v", res, err)
 		return nil, err
 	}
+	if !shared {
+		return res, nil
+	}
 	cn := res.CloneVT()
 	if cn == nil {
 		err = status.WrapWithNotFound(
@@ -226,8 +238,11 @@ func (s *server) Nodes(
 func (s *server) Services(
 	ctx context.Context, req *payload.Discoverer_Request,
 ) (*payload.Info_Services, error) {
-	ctx, span := trace.StartSpan(ctx, apiName+".Services")
-	defer trace.End(span)
+	var span trace.Span
+	if trace.Enabled() {
+		ctx, span = trace.StartSpan(ctx, apiName+".Services")
+		defer trace.End(span)
+	}
 
 	key := singleflightKeyForSvcs(svcPrefix, req)
 	res, _, err := s.sgroup.Do(ctx, key, func(context.Context) (*payload.Info_Services, error) {

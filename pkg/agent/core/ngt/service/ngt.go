@@ -52,16 +52,27 @@ import (
 )
 
 type (
+	//nolint:interfacebloat // NGT defines the full agent NGT service contract.
 	NGT interface {
 		Start(ctx context.Context) <-chan error
 		Search(ctx context.Context, vec []float32, size uint32, epsilon, radius float32, edgeSize int32) (*payload.Search_Response, error)
+		SearchValidated(ctx context.Context, vec []float32, size uint32, epsilon, radius float32, edgeSize int32) (*payload.Search_Response, error)
+		// SearchByID looks up uuid's vector and searches for its nearest neighbors.
+		// On success the returned vector slice is nil (pooled buffers are released);
+		// on error it returns a non-nil copy of the vector only when available for error diagnostics.
 		SearchByID(ctx context.Context, uuid string, size uint32, epsilon, radius float32, edgeSize int32) ([]float32, *payload.Search_Response, error)
 		LinearSearch(ctx context.Context, vec []float32, size uint32) (*payload.Search_Response, error)
+		LinearSearchValidated(ctx context.Context, vec []float32, size uint32) (*payload.Search_Response, error)
+		// LinearSearchByID looks up uuid's vector and performs linear nearest-neighbor search.
+		// On success the returned vector slice is nil (pooled buffers are released);
+		// on error it returns a non-nil copy of the vector only when available for error diagnostics.
 		LinearSearchByID(ctx context.Context, uuid string, size uint32) ([]float32, *payload.Search_Response, error)
 		Insert(uuid string, vec []float32) (err error)
 		InsertWithTime(uuid string, vec []float32, t int64) (err error)
+		InsertWithConfig(uuid string, vec []float32, t int64, skipStrictExistCheck bool) (err error)
 		InsertMultiple(vecs map[string][]float32) (err error)
 		InsertMultipleWithTime(vecs map[string][]float32, t int64) (err error)
+		InsertMultipleWithConfig(vecs map[string][]float32, t int64, skipStrictExistCheck bool) (err error)
 		Update(uuid string, vec []float32) (err error)
 		UpdateWithTime(uuid string, vec []float32, t int64) (err error)
 		UpdateMultiple(vecs map[string][]float32) (err error)
@@ -73,6 +84,7 @@ type (
 		DeleteMultipleWithTime(uuids []string, t int64) (err error)
 		RegenerateIndexes(ctx context.Context) (err error)
 		GetObject(uuid string) (vec []float32, timestamp int64, err error)
+		GetTimestamp(uuid string) (timestamp int64, err error)
 		ListObjectFunc(ctx context.Context, f func(uuid string, oid uint32, timestamp int64) bool)
 		Exists(uuid string) (uint32, bool)
 		CreateIndex(ctx context.Context, poolSize uint32) (err error)
@@ -99,10 +111,8 @@ type (
 		core                    core.NGT
 		tmpPath                 atomic.Value
 		kvs                     kvs.BidiMap
-		saving                  atomic.Value
 		eg                      errgroup.Group
 		vq                      vqueue.Queue
-		indexing                atomic.Value
 		patcher                 client.Patcher
 		fmap                    map[string]int64
 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
@@ -136,7 +146,11 @@ type (
 		smu                     sync.Mutex
 		cimu                    sync.Mutex
 		fmu                     sync.Mutex
+		vecPool                 sync.Pool[[]float32]
+		searchResPool           sync.Pool[[]algorithm.SearchResult]
 		flushing                atomic.Bool
+		indexing                atomic.Bool
+		saving                  atomic.Bool
 		poolSize                uint32
 		radius                  float32
 		epsilon                 float32
@@ -973,52 +987,58 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 func (n *ngt) Search(
 	ctx context.Context, vec []float32, size uint32, epsilon, radius float32, edgeSize int32,
 ) (res *payload.Search_Response, err error) {
-	if n.IsFlushing() {
-		return nil, errors.ErrFlushingIsInProgress
-	}
-	if n.IsIndexing() {
-		return nil, errors.ErrCreateIndexingIsInProgress
-	}
-	sr, err := n.core.Search(ctx, vec, int(size), epsilon, radius, edgeSize)
-	if err != nil {
-		if n.IsIndexing() {
-			return nil, errors.ErrCreateIndexingIsInProgress
-		}
-		if errors.Is(err, errors.ErrSearchResultEmptyButNoDataStored) && n.Len() == 0 {
-			return nil, nil
-		}
-		if errors.Is(err, errors.ErrNaNOrInfVector) {
-			return nil, err
-		}
-		log.Errorf("cgo error detected during search: ngt api returned error %v", err)
-		return nil, err
-	}
-
-	return n.toSearchResponse(sr)
+	return n.searchWithCore(ctx, vec, size, epsilon, radius, edgeSize, false)
 }
 
-func (n *ngt) SearchByID(
-	ctx context.Context, uuid string, size uint32, epsilon, radius float32, edgeSize int32,
-) (vec []float32, dst *payload.Search_Response, err error) {
-	if n.IsFlushing() {
-		return nil, nil, errors.ErrFlushingIsInProgress
-	}
-	if n.IsIndexing() {
-		return nil, nil, errors.ErrCreateIndexingIsInProgress
-	}
-	vec, _, err = n.GetObject(uuid)
-	if err != nil {
-		return nil, nil, err
-	}
-	dst, err = n.Search(ctx, vec, size, epsilon, radius, edgeSize)
-	if err != nil {
-		return vec, nil, err
-	}
-	return vec, dst, nil
+// SearchValidated searches assuming the caller has already validated vec for NaN/Inf.
+func (n *ngt) SearchValidated(
+	ctx context.Context, vec []float32, size uint32, epsilon, radius float32, edgeSize int32,
+) (res *payload.Search_Response, err error) {
+	return n.searchWithCore(ctx, vec, size, epsilon, radius, edgeSize, true)
 }
 
-func (n *ngt) LinearSearch(
-	ctx context.Context, vec []float32, size uint32,
+func (n *ngt) handleCoreSearchErr(op string, err error) error {
+	if n.IsIndexing() {
+		return errors.ErrCreateIndexingIsInProgress
+	}
+	if errors.Is(err, errors.ErrSearchResultEmptyButNoDataStored) && n.Len() == 0 {
+		return nil
+	}
+	if errors.Is(err, errors.ErrNaNOrInfVector) {
+		return err
+	}
+	log.Errorf("cgo error detected during %s: ngt api returned error %v", op, err)
+	return err
+}
+
+type coreFastPath interface {
+	SearchValidatedInto(ctx context.Context, vec []float32, size int, epsilon, radius float32, edgeSize int32, dst []algorithm.SearchResult) ([]algorithm.SearchResult, error)
+	LinearSearchValidatedInto(ctx context.Context, vec []float32, size int, dst []algorithm.SearchResult) ([]algorithm.SearchResult, error)
+	HasVector(id uint) (bool, error)
+}
+
+func (n *ngt) getSearchResBuf() []algorithm.SearchResult {
+	if b := n.searchResPool.Get(); b != nil {
+		return b[:0]
+	}
+	return nil
+}
+
+func (n *ngt) putSearchResBuf(sr []algorithm.SearchResult) {
+	if sr == nil || cap(sr) > 1024 {
+		return
+	}
+	clear(sr)
+	n.searchResPool.Put(sr[:0])
+}
+
+func (n *ngt) searchWithCore(
+	ctx context.Context,
+	vec []float32,
+	size uint32,
+	epsilon, radius float32,
+	edgeSize int32,
+	validated bool,
 ) (res *payload.Search_Response, err error) {
 	if n.IsFlushing() {
 		return nil, errors.ErrFlushingIsInProgress
@@ -1026,42 +1046,154 @@ func (n *ngt) LinearSearch(
 	if n.IsIndexing() {
 		return nil, errors.ErrCreateIndexingIsInProgress
 	}
-	sr, err := n.core.LinearSearch(ctx, vec, int(size))
+	var sr []algorithm.SearchResult
+	var pooled bool
+	if validated {
+		if fc, ok := n.core.(coreFastPath); ok {
+			buf := n.getSearchResBuf()
+			sr, err = fc.SearchValidatedInto(ctx, vec, int(size), epsilon, radius, edgeSize, buf)
+			pooled = err == nil
+		} else {
+			sr, err = n.core.SearchValidated(ctx, vec, int(size), epsilon, radius, edgeSize)
+		}
+	} else {
+		sr, err = n.core.Search(ctx, vec, int(size), epsilon, radius, edgeSize)
+	}
 	if err != nil {
-		if n.IsIndexing() {
-			return nil, errors.ErrCreateIndexingIsInProgress
-		}
-		if errors.Is(err, errors.ErrSearchResultEmptyButNoDataStored) && n.Len() == 0 {
-			return nil, nil
-		}
-		if errors.Is(err, errors.ErrNaNOrInfVector) {
-			return nil, err
-		}
-		log.Errorf("cgo error detected during linear search: ngt api returned error %v", err)
-		return nil, err
+		return nil, n.handleCoreSearchErr("search", err)
 	}
 
-	return n.toSearchResponse(sr)
+	res, err = n.toSearchResponse(sr)
+	if pooled {
+		n.putSearchResBuf(sr)
+	}
+	return res, err
 }
 
+func (n *ngt) getVecBuf() []float32 {
+	if b := n.vecPool.Get(); b != nil {
+		return b
+	}
+	return make([]float32, 0, max(n.dim, 0))
+}
+
+func (n *ngt) putVecBuf(buf, vec []float32, usedPool bool) {
+	if usedPool && n.dim > 0 && cap(vec) >= n.dim {
+		buf = vec[:0]
+	} else if buf == nil {
+		return
+	} else {
+		buf = buf[:0]
+	}
+	n.vecPool.Put(buf)
+}
+
+func (n *ngt) getPooledVecForSearch(uuid string) (vec, buf []float32, usedPool bool, err error) {
+	if n.IsFlushing() {
+		return nil, nil, false, errors.ErrFlushingIsInProgress
+	}
+	if n.IsIndexing() {
+		return nil, nil, false, errors.ErrCreateIndexingIsInProgress
+	}
+	buf = n.getVecBuf()
+	vec, _, err = memstore.GetObject(n.kvs, n.vq, uuid, func(oid uint32) ([]float32, error) {
+		usedPool = true
+		return n.core.GetVectorInto(uint(oid), buf)
+	})
+	if err != nil {
+		n.putVecBuf(buf, vec, usedPool)
+		return nil, nil, false, err
+	}
+	return vec, buf, usedPool, nil
+}
+
+func (n *ngt) finishPooledSearch(
+	buf, vec []float32, usedPool bool, dst *payload.Search_Response, err error,
+) ([]float32, *payload.Search_Response, error) {
+	if err != nil {
+		outVec := vec
+		if usedPool && vec != nil {
+			outVec = slices.Clone(vec)
+		}
+		n.putVecBuf(buf, vec, usedPool)
+		return outVec, nil, err
+	}
+	n.putVecBuf(buf, vec, usedPool)
+	return nil, dst, nil
+}
+
+// SearchByID looks up uuid's vector and searches for its nearest neighbors.
+// On success it returns a nil vector slice; on error it returns a non-nil copy
+// of the vector only when lookup succeeded before search failed.
+func (n *ngt) SearchByID(
+	ctx context.Context, uuid string, size uint32, epsilon, radius float32, edgeSize int32,
+) (vec []float32, dst *payload.Search_Response, err error) {
+	vec, buf, usedPool, err := n.getPooledVecForSearch(uuid)
+	if err != nil {
+		return nil, nil, err
+	}
+	dst, err = n.Search(ctx, vec, size, epsilon, radius, edgeSize)
+	return n.finishPooledSearch(buf, vec, usedPool, dst, err)
+}
+
+func (n *ngt) LinearSearch(
+	ctx context.Context, vec []float32, size uint32,
+) (res *payload.Search_Response, err error) {
+	return n.linearSearchWithCore(ctx, vec, size, false)
+}
+
+// LinearSearchValidated performs linear search assuming the caller has already validated vec for NaN/Inf.
+func (n *ngt) LinearSearchValidated(
+	ctx context.Context, vec []float32, size uint32,
+) (res *payload.Search_Response, err error) {
+	return n.linearSearchWithCore(ctx, vec, size, true)
+}
+
+func (n *ngt) linearSearchWithCore(
+	ctx context.Context, vec []float32, size uint32, validated bool,
+) (res *payload.Search_Response, err error) {
+	if n.IsFlushing() {
+		return nil, errors.ErrFlushingIsInProgress
+	}
+	if n.IsIndexing() {
+		return nil, errors.ErrCreateIndexingIsInProgress
+	}
+	var sr []algorithm.SearchResult
+	var pooled bool
+	if validated {
+		if fc, ok := n.core.(coreFastPath); ok {
+			buf := n.getSearchResBuf()
+			sr, err = fc.LinearSearchValidatedInto(ctx, vec, int(size), buf)
+			pooled = err == nil
+		} else {
+			sr, err = n.core.LinearSearchValidated(ctx, vec, int(size))
+		}
+	} else {
+		sr, err = n.core.LinearSearch(ctx, vec, int(size))
+	}
+	if err != nil {
+		return nil, n.handleCoreSearchErr("linear search", err)
+	}
+
+	res, err = n.toSearchResponse(sr)
+	if pooled {
+		n.putSearchResBuf(sr)
+	}
+	return res, err
+}
+
+// LinearSearchByID looks up uuid's vector and performs linear nearest-neighbor search.
+// On success it returns a nil vector slice; on error it returns a non-nil copy
+// of the vector only when lookup succeeded before search failed.
 func (n *ngt) LinearSearchByID(
 	ctx context.Context, uuid string, size uint32,
 ) (vec []float32, dst *payload.Search_Response, err error) {
-	if n.IsFlushing() {
-		return nil, nil, errors.ErrFlushingIsInProgress
-	}
-	if n.IsIndexing() {
-		return nil, nil, errors.ErrCreateIndexingIsInProgress
-	}
-	vec, _, err = n.GetObject(uuid)
+	vec, buf, usedPool, err := n.getPooledVecForSearch(uuid)
 	if err != nil {
 		return nil, nil, err
 	}
 	dst, err = n.LinearSearch(ctx, vec, size)
-	if err != nil {
-		return vec, nil, err
-	}
-	return vec, dst, nil
+	return n.finishPooledSearch(buf, vec, usedPool, dst, err)
 }
 
 func (n *ngt) Insert(uuid string, vec []float32) (err error) {
@@ -1072,13 +1204,19 @@ func (n *ngt) Insert(uuid string, vec []float32) (err error) {
 }
 
 func (n *ngt) InsertWithTime(uuid string, vec []float32, t int64) (err error) {
+	return n.InsertWithConfig(uuid, vec, t, false)
+}
+
+func (n *ngt) InsertWithConfig(
+	uuid string, vec []float32, t int64, skipStrictExistCheck bool,
+) (err error) {
 	if n.IsFlushing() {
 		return errors.ErrFlushingIsInProgress
 	}
 	if t <= 0 {
 		t = time.Now().UnixNano()
 	}
-	return n.insert(uuid, vec, t, true)
+	return n.insert(uuid, vec, t, !skipStrictExistCheck)
 }
 
 func (n *ngt) insert(uuid string, vec []float32, t int64, validation bool) (err error) {
@@ -1103,13 +1241,19 @@ func (n *ngt) InsertMultiple(vecs map[string][]float32) (err error) {
 }
 
 func (n *ngt) InsertMultipleWithTime(vecs map[string][]float32, t int64) (err error) {
+	return n.InsertMultipleWithConfig(vecs, t, false)
+}
+
+func (n *ngt) InsertMultipleWithConfig(
+	vecs map[string][]float32, t int64, skipStrictExistCheck bool,
+) (err error) {
 	if n.IsFlushing() {
 		return errors.ErrFlushingIsInProgress
 	}
 	if t <= 0 {
 		t = time.Now().UnixNano()
 	}
-	return n.insertMultiple(vecs, t, true)
+	return n.insertMultiple(vecs, t, !skipStrictExistCheck)
 }
 
 func (n *ngt) insertMultiple(vecs map[string][]float32, now int64, validation bool) (err error) {
@@ -1620,9 +1764,24 @@ func (n *ngt) removeInvalidIndex(ctx context.Context) {
 		return
 	}
 	var dcnt atomic.Uint32
+	fc, hasFastCore := n.core.(coreFastPath)
 	n.kvs.Range(ctx, func(uuid string, oid uint32, _ int64) bool {
-		vec, err := n.core.GetVector(uint(oid))
-		if err != nil || vec == nil || len(vec) != n.dim {
+		var (
+			invalid bool
+			err     error
+		)
+		if hasFastCore {
+			var exists bool
+			exists, err = fc.HasVector(uint(oid))
+			invalid = err != nil || !exists
+		} else {
+			buf := n.getVecBuf()
+			vec, getErr := n.core.GetVectorInto(uint(oid), buf)
+			invalid = getErr != nil || vec == nil || len(vec) != n.dim
+			err = getErr
+			n.putVecBuf(buf, vec, true)
+		}
+		if invalid {
 			log.Debugf("invalid index detected err: %v\tuuid: %s\toid: %d will remove", err, uuid, oid)
 			n.kvs.Delete(uuid)
 			n.fmu.Lock()
@@ -1763,9 +1922,9 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 				m[key] = id
 				mt[key] = ts
 				mu.Unlock()
-				atomic.AddUint64(&kvsLen, 1)
 				return true
 			})
+			kvsLen = uint64(len(m))
 
 			var wg sync.WaitGroup
 			wg.Add(1)
@@ -1985,9 +2144,20 @@ func (n *ngt) Exists(uuid string) (oid uint32, ok bool) {
 }
 
 func (n *ngt) GetObject(uuid string) (vec []float32, timestamp int64, err error) {
+	if n.IsFlushing() {
+		return nil, 0, errors.ErrFlushingIsInProgress
+	}
 	return memstore.GetObject(n.kvs, n.vq, uuid, func(oid uint32) ([]float32, error) {
 		return n.core.GetVector(uint(oid))
 	})
+}
+
+func (n *ngt) GetTimestamp(uuid string) (timestamp int64, err error) {
+	if n.IsFlushing() {
+		return 0, errors.ErrFlushingIsInProgress
+	}
+	_, timestamp, err = memstore.GetObject(n.kvs, n.vq, uuid, nil)
+	return timestamp, err
 }
 
 func (n *ngt) readyForUpdate(uuid string, vec []float32, ts int64) (err error) {
@@ -1997,13 +2167,21 @@ func (n *ngt) readyForUpdate(uuid string, vec []float32, ts int64) (err error) {
 	if len(vec) != n.GetDimensionSize() {
 		return errors.ErrInvalidDimensionSize(len(vec), n.GetDimensionSize())
 	}
-	ovec, ots, err := n.GetObject(uuid)
+	buf := n.getVecBuf()
+	var usedPool bool
+	ovec, ots, err := memstore.GetObject(n.kvs, n.vq, uuid, func(oid uint32) ([]float32, error) {
+		usedPool = true
+		return n.core.GetVectorInto(uint(oid), buf)
+	})
 	// if error (GetObject cannot find vector) return error
 	if err != nil {
+		n.putVecBuf(buf, ovec, usedPool)
 		return err
 	}
 	// if vector length is not equal or if some difference exists let's try update
-	if len(vec) != len(ovec) || conv.F32stos(vec) != conv.F32stos(ovec) {
+	diff := len(vec) != len(ovec) || conv.F32stos(vec) != conv.F32stos(ovec)
+	n.putVecBuf(buf, ovec, usedPool)
+	if diff {
 		return nil
 	}
 
@@ -2019,13 +2197,11 @@ func (n *ngt) readyForUpdate(uuid string, vec []float32, ts int64) (err error) {
 }
 
 func (n *ngt) IsSaving() bool {
-	s, ok := n.saving.Load().(bool)
-	return s && ok
+	return n.saving.Load()
 }
 
 func (n *ngt) IsIndexing() bool {
-	i, ok := n.indexing.Load().(bool)
-	return i && ok
+	return n.indexing.Load()
 }
 
 func (n *ngt) IsFlushing() bool {
@@ -2033,6 +2209,9 @@ func (n *ngt) IsFlushing() bool {
 }
 
 func (n *ngt) UUIDs(ctx context.Context) (uuids []string) {
+	if n.IsFlushing() {
+		return nil
+	}
 	return memstore.UUIDs(ctx, n.kvs, n.vq)
 }
 
@@ -2147,6 +2326,9 @@ func (n *ngt) BrokenIndexCount() uint64 {
 // Use this function for performing something on each object with caring about the memory usage.
 // If the vector exists in the vqueue, this vector is not indexed so the oid(object ID) is processed as 0.
 func (n *ngt) ListObjectFunc(ctx context.Context, f func(uuid string, oid uint32, ts int64) bool) {
+	if n.IsFlushing() {
+		return
+	}
 	memstore.ListObjectFunc(ctx, n.kvs, n.vq, f)
 }
 
@@ -2166,6 +2348,9 @@ func (n *ngt) IsStatisticsEnabled() bool {
 }
 
 func (n *ngt) IndexProperty() (*payload.Info_Index_Property, error) {
+	if n.IsFlushing() {
+		return nil, errors.ErrFlushingIsInProgress
+	}
 	p, err := n.core.GetProperty()
 	if err != nil {
 		return nil, err
@@ -2229,7 +2414,7 @@ func (n *ngt) toSearchResponse(
 			log.Warnf("an error occurred while searching: %v", err)
 			continue
 		}
-		if math.IsNaN(float64(d.Distance)) {
+		if d.Distance != d.Distance {
 			// same policy as the LB aggregation rankable: a NaN distance is not rankable
 			continue
 		}

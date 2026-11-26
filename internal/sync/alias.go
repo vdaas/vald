@@ -21,7 +21,6 @@ type (
 	Mutex     = sync.Mutex
 	RWMutex   = sync.RWMutex
 	Once      = sync.Once
-	Pool      = sync.Pool
 	WaitGroup = sync.WaitGroup
 )
 

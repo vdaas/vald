@@ -50,6 +50,8 @@ type Mirror interface {
 // block sending on ech.
 const startErrChanBufferSize = 100
 
+var errGRPCClientConnNotFoundStar = errors.ErrGRPCClientConnNotFound("*")
+
 type MirrorClient interface {
 	vald.Client
 	mirror.MirrorClient
@@ -115,12 +117,15 @@ func NewMirror(opts ...MirrorOption) (_ Mirror, err error) {
 // Start starts the mirroring service.
 // It returns a channel for receiving errors during the mirroring process.
 func (m *mirr) Start(ctx context.Context) <-chan error { // skipcq: GO-R1005
-	ctx, span := trace.StartSpan(ctx, "vald/gateway/mirror/service/Mirror.Start")
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	if trace.Enabled() {
+		var span trace.Span
+		ctx, span = trace.StartSpan(ctx, "vald/gateway/mirror/service/Mirror.Start")
+		defer func() {
+			if span != nil {
+				span.End()
+			}
+		}()
+	}
 	ech := make(chan error, startErrChanBufferSize)
 
 	m.eg.Go(func() error {
@@ -183,12 +188,16 @@ func (m *mirr) Start(ctx context.Context) <-chan error { // skipcq: GO-R1005
 func (m *mirr) registers(
 	ctx context.Context, tgts *payload.Mirror_Targets,
 ) ([]*payload.Mirror_Target, error) { // skipcq: GO-R1005
-	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+mirror.RPCServiceName+"/"+mirror.RegisterRPCName), "vald/gateway/mirror/service/Mirror.registers")
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	var span trace.Span
+	ctx = grpc.WithGRPCMethod(ctx, vald.PackageName+"."+mirror.RPCServiceName+"/"+mirror.RegisterRPCName)
+	if trace.Enabled() {
+		ctx, span = trace.StartSpan(ctx, "vald/gateway/mirror/service/Mirror.registers")
+		defer func() {
+			if span != nil {
+				span.End()
+			}
+		}()
+	}
 
 	resTgts := make([]*payload.Mirror_Target, 0, len(tgts.GetTargets()))
 	exists := make(map[string]bool)
@@ -196,12 +205,15 @@ func (m *mirr) registers(
 	var mu sync.Mutex
 
 	err := m.gateway.DoMulti(ctx, m.connectedOtherMirrorAddrs(ctx), func(ctx context.Context, target string, vc MirrorClient, copts ...grpc.CallOption) error {
-		ctx, tgtSpan := trace.StartSpan(ctx, "vald/gateway/mirror/service/Mirror.registers/"+target)
-		defer func() {
-			if tgtSpan != nil {
-				tgtSpan.End()
-			}
-		}()
+		var tgtSpan trace.Span
+		if trace.Enabled() {
+			ctx, tgtSpan = trace.StartSpan(ctx, "vald/gateway/mirror/service/Mirror.registers/"+target)
+			defer func() {
+				if tgtSpan != nil {
+					tgtSpan.End()
+				}
+			}()
+		}
 
 		res, err := vc.Register(ctx, tgts, copts...)
 		if err != nil {
@@ -217,7 +229,7 @@ func (m *mirr) registers(
 					mirror.RegisterRPCName+" API deadline exceeded", err,
 				)
 				attrs = trace.StatusCodeDeadlineExceeded(err.Error())
-			case errors.Is(err, errors.ErrGRPCClientConnNotFound("*")):
+			case errors.Is(err, errGRPCClientConnNotFoundStar):
 				err = status.WrapWithInternal(
 					mirror.RegisterRPCName+" API connection not found", err,
 				)
@@ -284,7 +296,7 @@ func (m *mirr) registers(
 		return true
 	})
 	if err != nil {
-		if errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) {
+		if errors.Is(err, errGRPCClientConnNotFoundStar) {
 			err = status.WrapWithInternal(
 				mirror.RegisterRPCName+" API connection not found", err,
 			)
@@ -350,12 +362,15 @@ func (m *mirr) Connect(ctx context.Context, targets ...*payload.Mirror_Target) e
 
 // Disconnect terminates gRPC connections to the specified Mirror targets.
 func (m *mirr) Disconnect(ctx context.Context, targets ...*payload.Mirror_Target) error {
-	ctx, span := trace.StartSpan(ctx, "vald/gateway/mirror/service/Mirror.Disconnect")
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	if trace.Enabled() {
+		var span trace.Span
+		ctx, span = trace.StartSpan(ctx, "vald/gateway/mirror/service/Mirror.Disconnect")
+		defer func() {
+			if span != nil {
+				span.End()
+			}
+		}()
+	}
 	if len(targets) == 0 {
 		return errors.ErrTargetNotFound
 	}

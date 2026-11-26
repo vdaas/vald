@@ -79,6 +79,7 @@ on:
       - internal/encoding/json/*.go
       - internal/errors/*.go
       - internal/file/*.go
+      - internal/hash/*.go
       - internal/info/*.go
       - internal/io/*.go
       - internal/k8s/*.go
@@ -99,6 +100,7 @@ on:
       - internal/net/grpc/*.go
       - internal/net/grpc/admin/*.go
       - internal/net/grpc/codes/*.go
+      - internal/net/grpc/connectivity/*.go
       - internal/net/grpc/credentials/*.go
       - internal/net/grpc/errdetails/*.go
       - internal/net/grpc/errhandler/*.go
@@ -208,6 +210,7 @@ on:
       - internal/encoding/json/*.go
       - internal/errors/*.go
       - internal/file/*.go
+      - internal/hash/*.go
       - internal/info/*.go
       - internal/io/*.go
       - internal/k8s/*.go
@@ -228,6 +231,7 @@ on:
       - internal/net/grpc/*.go
       - internal/net/grpc/admin/*.go
       - internal/net/grpc/codes/*.go
+      - internal/net/grpc/connectivity/*.go
       - internal/net/grpc/credentials/*.go
       - internal/net/grpc/errdetails/*.go
       - internal/net/grpc/errhandler/*.go

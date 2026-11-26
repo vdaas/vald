@@ -16,6 +16,8 @@
 defaults:
   image:
     tag: nightly
+  logging:
+    level: info
   server_config:
     metrics:
       pprof:
@@ -34,6 +36,16 @@ gateway:
       requests:
         cpu: 100m
         memory: 50Mi
+      limits:
+        cpu: 4000m
+        memory: 2Gi
+    gateway_config:
+      discoverer:
+        agent_client_options:
+          connection_pool:
+            size: 3
+          backoff:
+            enable_error_log: false
 agent:
   podAnnotations:
     profefe.com/enable: "true"
@@ -48,6 +60,10 @@ agent:
       memory: 50Mi
   ngt:
     dimension: 784
+    creation_edge_size: 35
+    search_edge_size: 35
+    default_epsilon: 0.04
+    error_buffer_limit: 64
     enable_statistics: true
 discoverer:
   podAnnotations:

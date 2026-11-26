@@ -21,14 +21,18 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/grpc/connectivity"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/strings"
+	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
 const (
 	// forwardedContextKey is the key used to store forwarding-related information in a context.
 	forwardedContextKey = "forwarded-for"
+
+	mirrorConnCachePruneMinSize = 8
 )
 
 // Gateway represents an interface for interacting with gRPC clients.
@@ -45,9 +49,11 @@ type Gateway interface {
 
 type gateway struct {
 	// client is the Mirror gateway client for other clusters and the Vald gateway (e.g. LB gateway) client for the own cluster.
-	client  mirror.Client
-	eg      errgroup.Group
-	podName string
+	client      mirror.Client
+	eg          errgroup.Group
+	podName     string
+	forwardedMD grpc.MD
+	mcCache     sync.Map[*grpc.ClientConn, MirrorClient]
 }
 
 // NewGateway returns Gateway object if no error occurs.
@@ -64,7 +70,30 @@ func NewGateway(opts ...Option) (Gateway, error) {
 			log.Warn(oerr)
 		}
 	}
+	g.forwardedMD = grpc.MD{
+		forwardedContextKey: []string{
+			g.podName,
+		},
+	}
 	return g, nil
+}
+
+func (g *gateway) getMirrorClient(conn *grpc.ClientConn) MirrorClient {
+	if conn == nil {
+		return NewMirrorClient(nil)
+	}
+	if cli, ok := g.mcCache.Load(conn); ok {
+		return cli
+	}
+	cli, loaded := g.mcCache.LoadOrCompute(conn, func() MirrorClient {
+		return NewMirrorClient(conn)
+	})
+	if !loaded && g.mcCache.Len() >= mirrorConnCachePruneMinSize {
+		g.mcCache.DeleteFunc(func(k *grpc.ClientConn, _ MirrorClient) bool {
+			return k != conn && k.Target() != "" && k.GetState() == connectivity.Shutdown
+		})
+	}
+	return cli
 }
 
 // GRPCClient returns the underlying gRPC client associated with this object.
@@ -75,7 +104,10 @@ func (g *gateway) GRPCClient() grpc.Client {
 
 // forwardedContext takes a context and a podName, returning a new context
 // with additional information related to forwarding.
-func (*gateway) forwardedContext(ctx context.Context, podName string) context.Context {
+func (g *gateway) forwardedContext(ctx context.Context, podName string) context.Context {
+	if g.forwardedMD != nil && len(g.forwardedMD[forwardedContextKey]) == 1 && g.forwardedMD[forwardedContextKey][0] == podName {
+		return grpc.NewOutgoingContext(ctx, g.forwardedMD)
+	}
 	return grpc.NewOutgoingContext(ctx, grpc.MD{
 		forwardedContextKey: []string{
 			podName,
@@ -107,12 +139,15 @@ func (g *gateway) BroadCast(
 	ctx context.Context,
 	f func(ctx context.Context, target string, vc MirrorClient, copts ...grpc.CallOption) error,
 ) (err error) {
-	ctx, span := trace.StartSpan(ctx, "vald/gateway/mirror/service/Gateway.BroadCast")
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	if trace.Enabled() {
+		var span trace.Span
+		ctx, span = trace.StartSpan(ctx, "vald/gateway/mirror/service/Gateway.BroadCast")
+		defer func() {
+			if span != nil {
+				span.End()
+			}
+		}()
+	}
 	return g.client.GRPCClient().RangeConcurrent(g.forwardedContext(ctx, g.podName), -1, func(ictx context.Context,
 		addr string, conn *grpc.ClientConn, copts ...grpc.CallOption,
 	) (err error) {
@@ -120,7 +155,7 @@ func (g *gateway) BroadCast(
 		case <-ictx.Done():
 			return nil
 		default:
-			return f(ictx, addr, NewMirrorClient(conn), copts...)
+			return f(ictx, addr, g.getMirrorClient(conn), copts...)
 		}
 	})
 }
@@ -133,12 +168,15 @@ func (g *gateway) Do(
 	target string,
 	f func(ctx context.Context, addr string, vc MirrorClient, copts ...grpc.CallOption) (any, error),
 ) (res any, err error) {
-	ctx, span := trace.StartSpan(ctx, "vald/gateway/mirror/service/Gateway.Do")
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	if trace.Enabled() {
+		var span trace.Span
+		ctx, span = trace.StartSpan(ctx, "vald/gateway/mirror/service/Gateway.Do")
+		defer func() {
+			if span != nil {
+				span.End()
+			}
+		}()
+	}
 
 	if target == "" {
 		return nil, errors.ErrTargetNotFound
@@ -146,7 +184,7 @@ func (g *gateway) Do(
 	fctx := g.forwardedContext(ctx, g.podName)
 	res, err = g.client.GRPCClient().Do(fctx, target,
 		func(ictx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (any, error) {
-			return f(ictx, target, NewMirrorClient(conn), copts...)
+			return f(ictx, target, g.getMirrorClient(conn), copts...)
 		},
 	)
 	if err != nil {
@@ -161,7 +199,7 @@ func (g *gateway) Do(
 			if strings.EqualFold(conn.Target(), target) {
 				return nil, errors.ErrTargetNotFound
 			}
-			return f(ictx, conn.Target(), NewMirrorClient(conn), copts...)
+			return f(ictx, conn.Target(), g.getMirrorClient(conn), copts...)
 		})
 	}
 	return res, nil
@@ -175,12 +213,15 @@ func (g *gateway) DoMulti(
 	targets []string,
 	f func(ctx context.Context, target string, vc MirrorClient, copts ...grpc.CallOption) error,
 ) error {
-	ctx, span := trace.StartSpan(ctx, "vald/gateway/mirror/service/Gateway.DoMulti")
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	if trace.Enabled() {
+		var span trace.Span
+		ctx, span = trace.StartSpan(ctx, "vald/gateway/mirror/service/Gateway.DoMulti")
+		defer func() {
+			if span != nil {
+				span.End()
+			}
+		}()
+	}
 
 	if len(targets) == 0 {
 		return errors.ErrTargetNotFound
@@ -191,7 +232,7 @@ func (g *gateway) DoMulti(
 			case <-ictx.Done():
 				return nil
 			default:
-				return f(ictx, addr, NewMirrorClient(conn), copts...)
+				return f(ictx, addr, g.getMirrorClient(conn), copts...)
 			}
 		},
 	)

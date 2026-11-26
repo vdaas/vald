@@ -29,11 +29,12 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/errhandler"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
-	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/atomic"
 	"github.com/vdaas/vald/pkg/gateway/lb/service"
 )
+
+var emptyPayload = new(payload.Empty) //nolint:gochecknoglobals // shared immutable empty protobuf request
 
 // handleIndexMethodError wraps a method-level index RPC error with the vald.v1.<rpc>
 // resource context, records it on the span, and returns the wrapped error (the
@@ -48,23 +49,33 @@ func (s *server) handleIndexMethodError(
 	}
 	var attrs trace.Attributes
 	switch {
-	case errors.Is(err, errors.ErrGRPCClientConnNotFound("*")):
+	case errors.Is(err, errGRPCClientConnNotFoundStar):
 		err = status.WrapWithInternal(rpcName+" API connection not found", err, resInfo)
-		attrs = trace.StatusCodeInternal(err.Error())
+		if span != nil {
+			attrs = trace.StatusCodeInternal(err.Error())
+		}
 	case errors.Is(err, context.Canceled):
 		err = status.WrapWithCanceled(rpcName+" API canceled", err, resInfo)
-		attrs = trace.StatusCodeCancelled(err.Error())
+		if span != nil {
+			attrs = trace.StatusCodeCancelled(err.Error())
+		}
 	case errors.Is(err, context.DeadlineExceeded):
 		err = status.WrapWithDeadlineExceeded(rpcName+" API deadline exceeded", err, resInfo)
-		attrs = trace.StatusCodeDeadlineExceeded(err.Error())
+		if span != nil {
+			attrs = trace.StatusCodeDeadlineExceeded(err.Error())
+		}
 	default:
-		st, _ := status.FromError(err)
-		if st != nil {
-			attrs = trace.FromGRPCStatus(st.Code(), st.Message())
+		if span != nil {
+			st, _ := status.FromError(err)
+			if st != nil {
+				attrs = trace.FromGRPCStatus(st.Code(), st.Message())
+			}
 		}
 	}
 	log.Debug(err)
-	errhandler.RecordSpanAttrs(span, attrs, err)
+	if span != nil {
+		errhandler.RecordSpanAttrs(span, attrs, err)
+	}
 	return err
 }
 
@@ -78,19 +89,21 @@ func (s *server) handleIndexBroadCastError(
 		code  codes.Code
 	)
 	switch {
-	case errors.Is(err, context.Canceled),
-		errors.Is(err, errors.ErrRPCCallFailed(target, context.Canceled)):
-		attrs = trace.StatusCodeCancelled(
-			errdetails.ValdGRPCResourceTypePrefix +
-				"/vald.v1." + rpcName + ".BroadCast/" +
-				target + " canceled: " + err.Error())
+	case errors.Is(err, context.Canceled):
+		if sspan != nil {
+			attrs = trace.StatusCodeCancelled(
+				errdetails.ValdGRPCResourceTypePrefix +
+					"/vald.v1." + rpcName + ".BroadCast/" +
+					target + " canceled: " + err.Error())
+		}
 		code = codes.Canceled
-	case errors.Is(err, context.DeadlineExceeded),
-		errors.Is(err, errors.ErrRPCCallFailed(target, context.DeadlineExceeded)):
-		attrs = trace.StatusCodeDeadlineExceeded(
-			errdetails.ValdGRPCResourceTypePrefix +
-				"/vald.v1." + rpcName + ".BroadCast/" +
-				target + " deadline_exceeded: " + err.Error())
+	case errors.Is(err, context.DeadlineExceeded):
+		if sspan != nil {
+			attrs = trace.StatusCodeDeadlineExceeded(
+				errdetails.ValdGRPCResourceTypePrefix +
+					"/vald.v1." + rpcName + ".BroadCast/" +
+					target + " deadline_exceeded: " + err.Error())
+		}
 		code = codes.DeadlineExceeded
 	default:
 		st, msg, err = status.ParseError(err, codes.NotFound, "error "+rpcName+" API",
@@ -103,9 +116,13 @@ func (s *server) handleIndexBroadCastError(
 		} else {
 			code = codes.NotFound
 		}
-		attrs = trace.FromGRPCStatus(code, msg)
+		if sspan != nil {
+			attrs = trace.FromGRPCStatus(code, msg)
+		}
 	}
-	errhandler.RecordSpanAttrs(sspan, attrs, err)
+	if sspan != nil {
+		errhandler.RecordSpanAttrs(sspan, attrs, err)
+	}
 	if err != nil && st != nil &&
 		code != codes.Canceled &&
 		code != codes.DeadlineExceeded &&
@@ -118,46 +135,62 @@ func (s *server) handleIndexBroadCastError(
 	return nil
 }
 
+func (s *server) broadcastIndex(
+	ctx context.Context,
+	rpcName string,
+	fn func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error,
+) error {
+	var span trace.Span
+	if trace.Enabled() {
+		ctx, span = trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.IndexRPCServiceName+"/"+rpcName), apiName+"/"+rpcName)
+		defer trace.End(span)
+	}
+	err := s.gateway.BroadCast(ctx, service.READ, func(bctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
+		sctx := bctx
+		var sspan trace.Span
+		if trace.Enabled() {
+			sctx, sspan = trace.StartSpan(grpc.WrapGRPCMethod(bctx, "BroadCast/"+target), apiName+"/"+rpcName+"/"+target)
+			defer trace.End(sspan)
+		}
+		if rerr := fn(sctx, target, vc, copts...); rerr != nil {
+			return s.handleIndexBroadCastError(sspan, target, rpcName, rerr)
+		}
+		return nil
+	})
+	if err == nil {
+		err = ctx.Err()
+	}
+	if err != nil {
+		return s.handleIndexMethodError(ctx, span, rpcName, err)
+	}
+	return nil
+}
+
 func (s *server) IndexInfo(
 	ctx context.Context, _ *payload.Empty,
 ) (vec *payload.Info_Index_Count, err error) {
-	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.IndexRPCServiceName+"/"+vald.IndexInfoRPCName), apiName+"/"+vald.IndexInfoRPCName)
-	defer trace.End(span)
-	ech := make(chan error, 1)
 	var (
 		stored, uncommitted atomic.Uint32
 		indexing, saving    atomic.Bool
 	)
-	s.eg.Go(safety.RecoverFunc(func() error {
-		defer close(ech)
-		ech <- s.gateway.BroadCast(ctx, service.READ, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
-			sctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+vald.IndexInfoRPCName+"/"+target)
-			defer trace.End(sspan)
-			info, err := vc.IndexInfo(sctx, new(payload.Empty), copts...)
-			if err != nil {
-				return s.handleIndexBroadCastError(sspan, target, vald.IndexInfoRPCName, err)
+	if err = s.broadcastIndex(ctx, vald.IndexInfoRPCName, func(ctx context.Context, _ string, vc vald.Client, copts ...grpc.CallOption) error {
+		info, rerr := vc.IndexInfo(ctx, emptyPayload, copts...)
+		if rerr != nil {
+			return rerr
+		}
+		if info != nil {
+			stored.Add(info.GetStored())
+			uncommitted.Add(info.GetUncommitted())
+			if info.GetIndexing() {
+				indexing.Store(true)
 			}
-			if info != nil {
-				stored.Add(info.GetStored())
-				uncommitted.Add(info.GetUncommitted())
-				if info.GetIndexing() {
-					indexing.Store(true)
-				}
-				if info.GetSaving() {
-					saving.Store(true)
-				}
+			if info.GetSaving() {
+				saving.Store(true)
 			}
-			return nil
-		})
+		}
 		return nil
-	}))
-	select {
-	case <-ctx.Done():
-		err = ctx.Err()
-	case err = <-ech:
-	}
-	if err != nil {
-		return nil, s.handleIndexMethodError(ctx, span, vald.IndexInfoRPCName, err)
+	}); err != nil {
+		return nil, err
 	}
 	return &payload.Info_Index_Count{
 		Stored:      stored.Load(),
@@ -170,9 +203,6 @@ func (s *server) IndexInfo(
 func (s *server) IndexDetail(
 	ctx context.Context, _ *payload.Empty,
 ) (vec *payload.Info_Index_Detail, err error) {
-	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.IndexRPCServiceName+"/"+vald.IndexDetailRPCName), apiName+"/"+vald.IndexDetailRPCName)
-	defer trace.End(span)
-	ech := make(chan error, 1)
 	var (
 		mu     sync.Mutex
 		detail = &payload.Info_Index_Detail{
@@ -181,31 +211,19 @@ func (s *server) IndexDetail(
 			LiveAgents: uint32(s.gateway.GetAgentCount(ctx)),
 		}
 	)
-	s.eg.Go(safety.RecoverFunc(func() error {
-		defer close(ech)
-		ech <- s.gateway.BroadCast(ctx, service.READ, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
-			sctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+vald.IndexDetailRPCName+"/"+target)
-			defer trace.End(sspan)
-			info, err := vc.IndexInfo(sctx, new(payload.Empty), copts...)
-			if err != nil {
-				return s.handleIndexBroadCastError(sspan, target, vald.IndexDetailRPCName, err)
-			}
-			if info != nil {
-				mu.Lock()
-				detail.Counts[target] = info
-				mu.Unlock()
-			}
-			return nil
-		})
+	if err = s.broadcastIndex(ctx, vald.IndexDetailRPCName, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
+		info, rerr := vc.IndexInfo(ctx, emptyPayload, copts...)
+		if rerr != nil {
+			return rerr
+		}
+		if info != nil {
+			mu.Lock()
+			detail.Counts[target] = info
+			mu.Unlock()
+		}
 		return nil
-	}))
-	select {
-	case <-ctx.Done():
-		err = ctx.Err()
-	case err = <-ech:
-	}
-	if err != nil {
-		return nil, s.handleIndexMethodError(ctx, span, vald.IndexDetailRPCName, err)
+	}); err != nil {
+		return nil, err
 	}
 	return detail, nil
 }
@@ -213,8 +231,11 @@ func (s *server) IndexDetail(
 func (s *server) IndexStatistics(
 	ctx context.Context, req *payload.Empty,
 ) (vec *payload.Info_Index_Statistics, err error) {
-	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.IndexRPCServiceName+"/"+vald.IndexStatisticsRPCName), apiName+"/"+vald.IndexStatisticsRPCName)
-	defer trace.End(span)
+	var span trace.Span
+	if trace.Enabled() {
+		ctx, span = trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.IndexRPCServiceName+"/"+vald.IndexStatisticsRPCName), apiName+"/"+vald.IndexStatisticsRPCName)
+		defer trace.End(span)
+	}
 	details, err := s.IndexStatisticsDetail(ctx, req)
 	if err != nil || details == nil {
 		return nil, s.handleIndexMethodError(ctx, span, vald.IndexStatisticsRPCName, err)
@@ -225,40 +246,25 @@ func (s *server) IndexStatistics(
 func (s *server) IndexStatisticsDetail(
 	ctx context.Context, _ *payload.Empty,
 ) (vec *payload.Info_Index_StatisticsDetail, err error) {
-	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.IndexRPCServiceName+"/"+vald.IndexStatisticsDetailRPCName), apiName+"/"+vald.IndexStatisticsDetailRPCName)
-	defer trace.End(span)
-	ech := make(chan error, 1)
 	var (
 		mu     sync.Mutex
 		detail = &payload.Info_Index_StatisticsDetail{
 			Details: make(map[string]*payload.Info_Index_Statistics, s.gateway.GetAgentCount(ctx)),
 		}
 	)
-	s.eg.Go(safety.RecoverFunc(func() error {
-		defer close(ech)
-		ech <- s.gateway.BroadCast(ctx, service.READ, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
-			sctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+vald.IndexStatisticsDetailRPCName+"/"+target)
-			defer trace.End(sspan)
-			stats, rerr := vc.IndexStatistics(sctx, new(payload.Empty), copts...)
-			if rerr != nil {
-				return s.handleIndexBroadCastError(sspan, target, vald.IndexStatisticsDetailRPCName, rerr)
-			}
-			if stats != nil {
-				mu.Lock()
-				detail.Details[target] = stats
-				mu.Unlock()
-			}
-			return nil
-		})
+	if err = s.broadcastIndex(ctx, vald.IndexStatisticsDetailRPCName, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
+		stats, rerr := vc.IndexStatistics(ctx, emptyPayload, copts...)
+		if rerr != nil {
+			return rerr
+		}
+		if stats != nil {
+			mu.Lock()
+			detail.Details[target] = stats
+			mu.Unlock()
+		}
 		return nil
-	}))
-	select {
-	case <-ctx.Done():
-		err = ctx.Err()
-	case err = <-ech:
-	}
-	if err != nil {
-		return nil, s.handleIndexMethodError(ctx, span, vald.IndexStatisticsDetailRPCName, err)
+	}); err != nil {
+		return nil, err
 	}
 	return detail, nil
 }
@@ -272,14 +278,16 @@ func calculateMedian(data []int32) int32 {
 	return data[n/2]
 }
 
-func sumHistograms(hist1, hist2 []uint64) []uint64 {
-	if len(hist1) < len(hist2) {
-		hist1, hist2 = hist2, hist1
+func sumHistograms(dst, src []uint64) []uint64 {
+	if len(src) > len(dst) {
+		grown := make([]uint64, len(src))
+		copy(grown, dst)
+		dst = grown
 	}
-	for i := range hist2 {
-		hist1[i] += hist2[i]
+	for i, v := range src {
+		dst[i] += v
 	}
-	return hist1
+	return dst
 }
 
 func mergeInfoIndexStatistics(
@@ -291,9 +299,12 @@ func mergeInfoIndexStatistics(
 		return merged
 	}
 
-	var indegrees, outdegrees []int32
-	var indegreeCounts [][]int64
-	var outdegreeHistograms, indegreeHistograms [][]uint64
+	indegrees := make([]int32, 0, len(stats))
+	outdegrees := make([]int32, 0, len(stats))
+	indegreeCounts := make([][]int64, 0, len(stats))
+	outdegreeHistograms := make([][]uint64, 0, len(stats))
+	indegreeHistograms := make([][]uint64, 0, len(stats))
+	var maxOutHistLen, maxInHistLen int
 	merged.Valid = true
 
 	// first marks the first valid entry: 0 is a legitimate Min*NumberOf*degree,
@@ -310,6 +321,8 @@ func mergeInfoIndexStatistics(
 		indegreeCounts = append(indegreeCounts, stat.IndegreeCount)
 		outdegreeHistograms = append(outdegreeHistograms, stat.OutdegreeHistogram)
 		indegreeHistograms = append(indegreeHistograms, stat.IndegreeHistogram)
+		maxOutHistLen = max(maxOutHistLen, len(stat.OutdegreeHistogram))
+		maxInHistLen = max(maxInHistLen, len(stat.IndegreeHistogram))
 
 		if stat.MaxNumberOfIndegree > merged.MaxNumberOfIndegree {
 			merged.MaxNumberOfIndegree = stat.MaxNumberOfIndegree
@@ -379,12 +392,18 @@ func mergeInfoIndexStatistics(
 		merged.IndegreeCount[i] = sum / alen
 	}
 
-	for _, hist := range outdegreeHistograms {
-		merged.OutdegreeHistogram = sumHistograms(merged.OutdegreeHistogram, hist)
+	if maxOutHistLen > 0 {
+		merged.OutdegreeHistogram = make([]uint64, maxOutHistLen)
+		for _, hist := range outdegreeHistograms {
+			merged.OutdegreeHistogram = sumHistograms(merged.OutdegreeHistogram, hist)
+		}
 	}
 
-	for _, hist := range indegreeHistograms {
-		merged.IndegreeHistogram = sumHistograms(merged.IndegreeHistogram, hist)
+	if maxInHistLen > 0 {
+		merged.IndegreeHistogram = make([]uint64, maxInHistLen)
+		for _, hist := range indegreeHistograms {
+			merged.IndegreeHistogram = sumHistograms(merged.IndegreeHistogram, hist)
+		}
 	}
 
 	// average over the valid entries only, the same population as the medians
@@ -408,41 +427,25 @@ func mergeInfoIndexStatistics(
 func (s *server) IndexProperty(
 	ctx context.Context, _ *payload.Empty,
 ) (detail *payload.Info_Index_PropertyDetail, err error) {
-	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.IndexRPCServiceName+"/"+vald.IndexPropertyRPCName), apiName+"/"+vald.IndexPropertyRPCName)
-	defer trace.End(span)
-	ech := make(chan error, 1)
 	var mu sync.Mutex
 	detail = &payload.Info_Index_PropertyDetail{
 		Details: make(map[string]*payload.Info_Index_Property, s.gateway.GetAgentCount(ctx)),
 	}
-
-	s.eg.Go(safety.RecoverFunc(func() error {
-		defer close(ech)
-		ech <- s.gateway.BroadCast(ctx, service.READ, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
-			sctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+vald.IndexPropertyRPCName+"/"+target)
-			defer trace.End(sspan)
-			prop, rerr := vc.IndexProperty(sctx, new(payload.Empty), copts...)
-			if rerr != nil {
-				return s.handleIndexBroadCastError(sspan, target, vald.IndexPropertyRPCName, rerr)
+	if err = s.broadcastIndex(ctx, vald.IndexPropertyRPCName, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
+		prop, rerr := vc.IndexProperty(ctx, emptyPayload, copts...)
+		if rerr != nil {
+			return rerr
+		}
+		if prop != nil {
+			mu.Lock()
+			for key, value := range prop.Details {
+				detail.Details[target+"-"+key] = value
 			}
-			if prop != nil {
-				mu.Lock()
-				for key, value := range prop.Details {
-					detail.Details[target+"-"+key] = value
-				}
-				mu.Unlock()
-			}
-			return nil
-		})
+			mu.Unlock()
+		}
 		return nil
-	}))
-	select {
-	case <-ctx.Done():
-		err = ctx.Err()
-	case err = <-ech:
-	}
-	if err != nil {
-		return nil, s.handleIndexMethodError(ctx, span, vald.IndexPropertyRPCName, err)
+	}); err != nil {
+		return nil, err
 	}
 	return detail, nil
 }

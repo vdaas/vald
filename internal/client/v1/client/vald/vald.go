@@ -17,6 +17,7 @@ package vald
 import (
 	"context"
 	"reflect"
+	"slices"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
@@ -33,8 +34,9 @@ type Client interface {
 }
 
 type client struct {
-	c     grpc.Client
-	addrs []string
+	c       grpc.Client
+	vcCache ConnCache
+	addrs   []string
 }
 
 type singleClient struct {
@@ -62,7 +64,12 @@ func New(opts ...Option) (Client, error) {
 	return c, nil
 }
 
+var nilSingleClient = &singleClient{} //nolint:gochecknoglobals // shared zero-allocation sentinel returned when ClientConn is nil
+
 func NewFromConn(cc *grpc.ClientConn) Client {
+	if cc == nil {
+		return nilSingleClient
+	}
 	return &singleClient{vc: vald.NewValdClient(cc)}
 }
 
@@ -78,647 +85,290 @@ func (c *client) GRPCClient() grpc.Client {
 	return c.c
 }
 
-func (c *client) Exists(
-	ctx context.Context, in *payload.Object_ID, opts ...grpc.CallOption,
-) (oid *payload.Object_ID, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.ExistsRPCName), apiName+"/"+vald.ExistsRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	oid, err = grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
+func mergeCallOpts(copts, opts []grpc.CallOption) []grpc.CallOption {
+	switch {
+	case len(opts) == 0:
+		return copts
+	case len(copts) == 0:
+		return opts
+	default:
+		return slices.Concat(copts, opts)
+	}
+}
+
+func roundRobinCall[Req, Res any](
+	ctx context.Context,
+	c *client,
+	rpcName string,
+	in Req,
+	fn func(vald.Client, context.Context, Req, ...grpc.CallOption) (Res, error),
+	opts ...grpc.CallOption,
+) (Res, error) {
+	if trace.Enabled() {
+		var span trace.Span
+		ctx, span = trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+rpcName), apiName+"/"+rpcName)
+		defer trace.End(span)
+	}
+	return grpc.RoundRobin(ctx, c.c, func(ictx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
-	) (*payload.Object_ID, error) {
-		return vald.NewValdClient(conn).Exists(ctx, in, append(copts, opts...)...)
+	) (Res, error) {
+		return fn(c.vcCache.Get(conn), ictx, in, mergeCallOpts(copts, opts)...)
 	})
-	if err != nil {
-		return nil, err
+}
+
+func roundRobinStream[Res any](
+	ctx context.Context,
+	c *client,
+	rpcName string,
+	fn func(vald.Client, context.Context, ...grpc.CallOption) (Res, error),
+	opts ...grpc.CallOption,
+) (Res, error) {
+	if trace.Enabled() {
+		var span trace.Span
+		ctx, span = trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+rpcName), apiName+"/"+rpcName)
+		defer trace.End(span)
 	}
-	return oid, nil
+	// the stream is opened with the method ctx: the per-attempt ctx is cancelled by backoff.Do on return.
+	return grpc.RoundRobin(ctx, c.c, func(_ context.Context,
+		conn *grpc.ClientConn,
+		copts ...grpc.CallOption,
+	) (Res, error) {
+		return fn(c.vcCache.Get(conn), ctx, mergeCallOpts(copts, opts)...)
+	})
+}
+
+func (c *client) Exists(
+	ctx context.Context, in *payload.Object_ID, opts ...grpc.CallOption,
+) (*payload.Object_ID, error) {
+	return roundRobinCall(ctx, c, vald.ExistsRPCName, in, vald.Client.Exists, opts...)
 }
 
 func (c *client) Search(
 	ctx context.Context, in *payload.Search_Request, opts ...grpc.CallOption,
-) (res *payload.Search_Response, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.SearchRPCName), apiName+"/"+vald.SearchRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption,
-	) (*payload.Search_Response, error) {
-		return vald.NewValdClient(conn).Search(ctx, in, append(copts, opts...)...)
-	})
+) (*payload.Search_Response, error) {
+	return roundRobinCall(ctx, c, vald.SearchRPCName, in, vald.Client.Search, opts...)
 }
 
 func (c *client) SearchByID(
 	ctx context.Context, in *payload.Search_IDRequest, opts ...grpc.CallOption,
-) (res *payload.Search_Response, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.SearchByIDRPCName), apiName+"/"+vald.SearchByIDRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption,
-	) (*payload.Search_Response, error) {
-		return vald.NewValdClient(conn).SearchByID(ctx, in, append(copts, opts...)...)
-	})
+) (*payload.Search_Response, error) {
+	return roundRobinCall(ctx, c, vald.SearchByIDRPCName, in, vald.Client.SearchByID, opts...)
 }
 
 func (c *client) StreamSearch(
 	ctx context.Context, opts ...grpc.CallOption,
-) (res vald.Search_StreamSearchClient, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.StreamSearchRPCName), apiName+"/"+vald.StreamSearchRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	// the stream is opened with the method ctx: the per-attempt ctx is cancelled by backoff.Do on return.
-	return grpc.RoundRobin(ctx, c.c, func(_ context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption,
-	) (vald.Search_StreamSearchClient, error) {
-		return vald.NewValdClient(conn).StreamSearch(ctx, append(copts, opts...)...)
-	})
+) (vald.Search_StreamSearchClient, error) {
+	return roundRobinStream(ctx, c, vald.StreamSearchRPCName, vald.Client.StreamSearch, opts...)
 }
 
 func (c *client) StreamSearchByID(
 	ctx context.Context, opts ...grpc.CallOption,
-) (res vald.Search_StreamSearchByIDClient, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.StreamSearchByIDRPCName), apiName+"/"+vald.StreamSearchByIDRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	// the stream is opened with the method ctx: the per-attempt ctx is cancelled by backoff.Do on return.
-	return grpc.RoundRobin(ctx, c.c, func(_ context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption,
-	) (vald.Search_StreamSearchByIDClient, error) {
-		return vald.NewValdClient(conn).StreamSearchByID(ctx, append(copts, opts...)...)
-	})
+) (vald.Search_StreamSearchByIDClient, error) {
+	return roundRobinStream(ctx, c, vald.StreamSearchByIDRPCName, vald.Client.StreamSearchByID, opts...)
 }
 
 func (c *client) MultiSearch(
 	ctx context.Context, in *payload.Search_MultiRequest, opts ...grpc.CallOption,
-) (res *payload.Search_Responses, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.MultiSearchRPCName), apiName+"/"+vald.MultiSearchRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption,
-	) (*payload.Search_Responses, error) {
-		return vald.NewValdClient(conn).MultiSearch(ctx, in, append(copts, opts...)...)
-	})
+) (*payload.Search_Responses, error) {
+	return roundRobinCall(ctx, c, vald.MultiSearchRPCName, in, vald.Client.MultiSearch, opts...)
 }
 
 func (c *client) MultiSearchByID(
 	ctx context.Context, in *payload.Search_MultiIDRequest, opts ...grpc.CallOption,
-) (res *payload.Search_Responses, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.MultiSearchByIDRPCName), apiName+"/"+vald.MultiSearchByIDRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption,
-	) (*payload.Search_Responses, error) {
-		return vald.NewValdClient(conn).MultiSearchByID(ctx, in, append(copts, opts...)...)
-	})
+) (*payload.Search_Responses, error) {
+	return roundRobinCall(ctx, c, vald.MultiSearchByIDRPCName, in, vald.Client.MultiSearchByID, opts...)
 }
 
 func (c *client) LinearSearch(
 	ctx context.Context, in *payload.Search_Request, opts ...grpc.CallOption,
-) (res *payload.Search_Response, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.LinearSearchRPCName), apiName+"/"+vald.LinearSearchRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption,
-	) (*payload.Search_Response, error) {
-		return vald.NewValdClient(conn).LinearSearch(ctx, in, append(copts, opts...)...)
-	})
+) (*payload.Search_Response, error) {
+	return roundRobinCall(ctx, c, vald.LinearSearchRPCName, in, vald.Client.LinearSearch, opts...)
 }
 
 func (c *client) LinearSearchByID(
 	ctx context.Context, in *payload.Search_IDRequest, opts ...grpc.CallOption,
-) (res *payload.Search_Response, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.LinearSearchByIDRPCName), apiName+"/"+vald.LinearSearchByIDRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption,
-	) (*payload.Search_Response, error) {
-		return vald.NewValdClient(conn).LinearSearchByID(ctx, in, append(copts, opts...)...)
-	})
+) (*payload.Search_Response, error) {
+	return roundRobinCall(ctx, c, vald.LinearSearchByIDRPCName, in, vald.Client.LinearSearchByID, opts...)
 }
 
 func (c *client) StreamLinearSearch(
 	ctx context.Context, opts ...grpc.CallOption,
-) (res vald.Search_StreamLinearSearchClient, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.StreamLinearSearchRPCName), apiName+"/"+vald.StreamLinearSearchRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	// the stream is opened with the method ctx: the per-attempt ctx is cancelled by backoff.Do on return.
-	return grpc.RoundRobin(ctx, c.c, func(_ context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption,
-	) (vald.Search_StreamLinearSearchClient, error) {
-		return vald.NewValdClient(conn).StreamLinearSearch(ctx, append(copts, opts...)...)
-	})
+) (vald.Search_StreamLinearSearchClient, error) {
+	return roundRobinStream(ctx, c, vald.StreamLinearSearchRPCName, vald.Client.StreamLinearSearch, opts...)
 }
 
 func (c *client) StreamLinearSearchByID(
 	ctx context.Context, opts ...grpc.CallOption,
-) (res vald.Search_StreamLinearSearchByIDClient, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.StreamLinearSearchByIDRPCName), apiName+"/"+vald.StreamLinearSearchByIDRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	// the stream is opened with the method ctx: the per-attempt ctx is cancelled by backoff.Do on return.
-	return grpc.RoundRobin(ctx, c.c, func(_ context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption,
-	) (vald.Search_StreamSearchByIDClient, error) {
-		return vald.NewValdClient(conn).StreamLinearSearchByID(ctx, append(copts, opts...)...)
-	})
+) (vald.Search_StreamLinearSearchByIDClient, error) {
+	return roundRobinStream(ctx, c, vald.StreamLinearSearchByIDRPCName, vald.Client.StreamLinearSearchByID, opts...)
 }
 
 func (c *client) MultiLinearSearch(
 	ctx context.Context, in *payload.Search_MultiRequest, opts ...grpc.CallOption,
-) (res *payload.Search_Responses, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.MultiLinearSearchRPCName), apiName+"/"+vald.MultiLinearSearchRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption,
-	) (*payload.Search_Responses, error) {
-		return vald.NewValdClient(conn).MultiLinearSearch(ctx, in, append(copts, opts...)...)
-	})
+) (*payload.Search_Responses, error) {
+	return roundRobinCall(ctx, c, vald.MultiLinearSearchRPCName, in, vald.Client.MultiLinearSearch, opts...)
 }
 
 func (c *client) MultiLinearSearchByID(
 	ctx context.Context, in *payload.Search_MultiIDRequest, opts ...grpc.CallOption,
-) (res *payload.Search_Responses, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.MultiLinearSearchByIDRPCName), apiName+"/"+vald.MultiLinearSearchByIDRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption,
-	) (*payload.Search_Responses, error) {
-		return vald.NewValdClient(conn).MultiLinearSearchByID(ctx, in, append(copts, opts...)...)
-	})
+) (*payload.Search_Responses, error) {
+	return roundRobinCall(ctx, c, vald.MultiLinearSearchByIDRPCName, in, vald.Client.MultiLinearSearchByID, opts...)
 }
 
 func (c *client) Insert(
 	ctx context.Context, in *payload.Insert_Request, opts ...grpc.CallOption,
-) (res *payload.Object_Location, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.InsertRPCName), apiName+"/"+vald.InsertRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption,
-	) (*payload.Object_Location, error) {
-		return vald.NewValdClient(conn).Insert(ctx, in, append(copts, opts...)...)
-	})
+) (*payload.Object_Location, error) {
+	return roundRobinCall(ctx, c, vald.InsertRPCName, in, vald.Client.Insert, opts...)
 }
 
 func (c *client) StreamInsert(
 	ctx context.Context, opts ...grpc.CallOption,
-) (res vald.Insert_StreamInsertClient, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.StreamInsertRPCName), apiName+"/"+vald.StreamInsertRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	// the stream is opened with the method ctx: the per-attempt ctx is cancelled by backoff.Do on return.
-	return grpc.RoundRobin(ctx, c.c, func(_ context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption,
-	) (vald.Insert_StreamInsertClient, error) {
-		return vald.NewValdClient(conn).StreamInsert(ctx, append(copts, opts...)...)
-	})
+) (vald.Insert_StreamInsertClient, error) {
+	return roundRobinStream(ctx, c, vald.StreamInsertRPCName, vald.Client.StreamInsert, opts...)
 }
 
 func (c *client) MultiInsert(
 	ctx context.Context, in *payload.Insert_MultiRequest, opts ...grpc.CallOption,
-) (res *payload.Object_Locations, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.MultiInsertRPCName), apiName+"/"+vald.MultiInsertRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption,
-	) (*payload.Object_Locations, error) {
-		return vald.NewValdClient(conn).MultiInsert(ctx, in, append(copts, opts...)...)
-	})
+) (*payload.Object_Locations, error) {
+	return roundRobinCall(ctx, c, vald.MultiInsertRPCName, in, vald.Client.MultiInsert, opts...)
 }
 
 func (c *client) Update(
 	ctx context.Context, in *payload.Update_Request, opts ...grpc.CallOption,
-) (res *payload.Object_Location, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.UpdateRPCName), apiName+"/"+vald.UpdateRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption,
-	) (*payload.Object_Location, error) {
-		return vald.NewValdClient(conn).Update(ctx, in, append(copts, opts...)...)
-	})
+) (*payload.Object_Location, error) {
+	return roundRobinCall(ctx, c, vald.UpdateRPCName, in, vald.Client.Update, opts...)
 }
 
 func (c *client) StreamUpdate(
 	ctx context.Context, opts ...grpc.CallOption,
-) (res vald.Update_StreamUpdateClient, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.StreamUpdateRPCName), apiName+"/"+vald.StreamUpdateRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	// the stream is opened with the method ctx: the per-attempt ctx is cancelled by backoff.Do on return.
-	return grpc.RoundRobin(ctx, c.c, func(_ context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption,
-	) (vald.Update_StreamUpdateClient, error) {
-		return vald.NewValdClient(conn).StreamUpdate(ctx, append(copts, opts...)...)
-	})
+) (vald.Update_StreamUpdateClient, error) {
+	return roundRobinStream(ctx, c, vald.StreamUpdateRPCName, vald.Client.StreamUpdate, opts...)
 }
 
 func (c *client) MultiUpdate(
 	ctx context.Context, in *payload.Update_MultiRequest, opts ...grpc.CallOption,
-) (res *payload.Object_Locations, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.MultiUpdateRPCName), apiName+"/"+vald.MultiUpdateRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption,
-	) (*payload.Object_Locations, error) {
-		return vald.NewValdClient(conn).MultiUpdate(ctx, in, append(copts, opts...)...)
-	})
+) (*payload.Object_Locations, error) {
+	return roundRobinCall(ctx, c, vald.MultiUpdateRPCName, in, vald.Client.MultiUpdate, opts...)
 }
 
 func (c *client) UpdateTimestamp(
 	ctx context.Context, in *payload.Update_TimestampRequest, opts ...grpc.CallOption,
-) (res *payload.Object_Location, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.UpdateTimestampRPCName), apiName+"/"+vald.UpdateTimestampRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption,
-	) (*payload.Object_Location, error) {
-		return vald.NewValdClient(conn).UpdateTimestamp(ctx, in, append(copts, opts...)...)
-	})
+) (*payload.Object_Location, error) {
+	return roundRobinCall(ctx, c, vald.UpdateTimestampRPCName, in, vald.Client.UpdateTimestamp, opts...)
 }
 
 func (c *client) Upsert(
 	ctx context.Context, in *payload.Upsert_Request, opts ...grpc.CallOption,
-) (res *payload.Object_Location, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.UpsertRPCName), apiName+"/"+vald.UpsertRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption,
-	) (*payload.Object_Location, error) {
-		return vald.NewValdClient(conn).Upsert(ctx, in, append(copts, opts...)...)
-	})
+) (*payload.Object_Location, error) {
+	return roundRobinCall(ctx, c, vald.UpsertRPCName, in, vald.Client.Upsert, opts...)
 }
 
 func (c *client) StreamUpsert(
 	ctx context.Context, opts ...grpc.CallOption,
-) (res vald.Upsert_StreamUpsertClient, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.StreamUpsertRPCName), apiName+"/"+vald.StreamUpsertRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	// the stream is opened with the method ctx: the per-attempt ctx is cancelled by backoff.Do on return.
-	return grpc.RoundRobin(ctx, c.c, func(_ context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption,
-	) (vald.Upsert_StreamUpsertClient, error) {
-		return vald.NewValdClient(conn).StreamUpsert(ctx, append(copts, opts...)...)
-	})
+) (vald.Upsert_StreamUpsertClient, error) {
+	return roundRobinStream(ctx, c, vald.StreamUpsertRPCName, vald.Client.StreamUpsert, opts...)
 }
 
 func (c *client) MultiUpsert(
 	ctx context.Context, in *payload.Upsert_MultiRequest, opts ...grpc.CallOption,
-) (res *payload.Object_Locations, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.MultiUpsertRPCName), apiName+"/"+vald.MultiUpsertRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption,
-	) (*payload.Object_Locations, error) {
-		return vald.NewValdClient(conn).MultiUpsert(ctx, in, append(copts, opts...)...)
-	})
+) (*payload.Object_Locations, error) {
+	return roundRobinCall(ctx, c, vald.MultiUpsertRPCName, in, vald.Client.MultiUpsert, opts...)
 }
 
 func (c *client) Remove(
 	ctx context.Context, in *payload.Remove_Request, opts ...grpc.CallOption,
-) (res *payload.Object_Location, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.RemoveRPCName), apiName+"/"+vald.RemoveRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption,
-	) (*payload.Object_Location, error) {
-		return vald.NewValdClient(conn).Remove(ctx, in, append(copts, opts...)...)
-	})
+) (*payload.Object_Location, error) {
+	return roundRobinCall(ctx, c, vald.RemoveRPCName, in, vald.Client.Remove, opts...)
 }
 
 func (c *client) StreamRemove(
 	ctx context.Context, opts ...grpc.CallOption,
-) (res vald.Remove_StreamRemoveClient, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.StreamRemoveRPCName), apiName+"/"+vald.StreamRemoveRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	// the stream is opened with the method ctx: the per-attempt ctx is cancelled by backoff.Do on return.
-	return grpc.RoundRobin(ctx, c.c, func(_ context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption,
-	) (vald.Remove_StreamRemoveClient, error) {
-		return vald.NewValdClient(conn).StreamRemove(ctx, append(copts, opts...)...)
-	})
+) (vald.Remove_StreamRemoveClient, error) {
+	return roundRobinStream(ctx, c, vald.StreamRemoveRPCName, vald.Client.StreamRemove, opts...)
 }
 
 func (c *client) MultiRemove(
 	ctx context.Context, in *payload.Remove_MultiRequest, opts ...grpc.CallOption,
-) (res *payload.Object_Locations, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.MultiRemoveRPCName), apiName+"/"+vald.MultiRemoveRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption,
-	) (*payload.Object_Locations, error) {
-		return vald.NewValdClient(conn).MultiRemove(ctx, in, append(copts, opts...)...)
-	})
+) (*payload.Object_Locations, error) {
+	return roundRobinCall(ctx, c, vald.MultiRemoveRPCName, in, vald.Client.MultiRemove, opts...)
 }
 
 func (c *client) Flush(
 	ctx context.Context, in *payload.Flush_Request, opts ...grpc.CallOption,
-) (res *payload.Info_Index_Count, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.FlushRPCName), apiName+"/"+vald.FlushRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption,
-	) (*payload.Info_Index_Count, error) {
-		return vald.NewValdClient(conn).Flush(ctx, in, append(copts, opts...)...)
-	})
+) (*payload.Info_Index_Count, error) {
+	return roundRobinCall(ctx, c, vald.FlushRPCName, in, vald.Client.Flush, opts...)
 }
 
 func (c *client) RemoveByTimestamp(
 	ctx context.Context, in *payload.Remove_TimestampRequest, opts ...grpc.CallOption,
-) (res *payload.Object_Locations, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.RemoveByTimestampRPCName), apiName+"/"+vald.RemoveByTimestampRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption,
-	) (*payload.Object_Locations, error) {
-		return vald.NewValdClient(conn).RemoveByTimestamp(ctx, in, append(copts, opts...)...)
-	})
+) (*payload.Object_Locations, error) {
+	return roundRobinCall(ctx, c, vald.RemoveByTimestampRPCName, in, vald.Client.RemoveByTimestamp, opts...)
 }
 
 func (c *client) GetObject(
 	ctx context.Context, in *payload.Object_VectorRequest, opts ...grpc.CallOption,
-) (res *payload.Object_Vector, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.GetObjectRPCName), apiName+"/"+vald.GetObjectRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption,
-	) (*payload.Object_Vector, error) {
-		return vald.NewValdClient(conn).GetObject(ctx, in, append(copts, opts...)...)
-	})
+) (*payload.Object_Vector, error) {
+	return roundRobinCall(ctx, c, vald.GetObjectRPCName, in, vald.Client.GetObject, opts...)
 }
 
 func (c *client) StreamGetObject(
 	ctx context.Context, opts ...grpc.CallOption,
-) (res vald.Object_StreamGetObjectClient, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.StreamGetObjectRPCName), apiName+"/"+vald.StreamGetObjectRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	// the stream is opened with the method ctx: the per-attempt ctx is cancelled by backoff.Do on return.
-	return grpc.RoundRobin(ctx, c.c, func(_ context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption,
-	) (vald.Object_StreamGetObjectClient, error) {
-		return vald.NewValdClient(conn).StreamGetObject(ctx, append(copts, opts...)...)
-	})
+) (vald.Object_StreamGetObjectClient, error) {
+	return roundRobinStream(ctx, c, vald.StreamGetObjectRPCName, vald.Client.StreamGetObject, opts...)
 }
 
 func (c *client) StreamListObject(
 	ctx context.Context, in *payload.Object_List_Request, opts ...grpc.CallOption,
-) (res vald.Object_StreamListObjectClient, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.StreamListObjectRPCName), apiName+"/"+vald.StreamListObjectRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+) (vald.Object_StreamListObjectClient, error) {
+	if trace.Enabled() {
+		var span trace.Span
+		ctx, span = trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.StreamListObjectRPCName), apiName+"/"+vald.StreamListObjectRPCName)
+		defer trace.End(span)
+	}
 	// the stream is opened with the method ctx: the per-attempt ctx is cancelled by backoff.Do on return.
 	return grpc.RoundRobin(ctx, c.c, func(_ context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (vald.Object_StreamListObjectClient, error) {
-		return vald.NewValdClient(conn).StreamListObject(ctx, in, append(copts, opts...)...)
+		return c.vcCache.Get(conn).StreamListObject(ctx, in, mergeCallOpts(copts, opts)...)
 	})
 }
 
 func (c *client) IndexInfo(
 	ctx context.Context, in *payload.Empty, opts ...grpc.CallOption,
-) (res *payload.Info_Index_Count, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.IndexInfoRPCName), apiName+"/"+vald.IndexInfoRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption,
-	) (*payload.Info_Index_Count, error) {
-		return vald.NewValdClient(conn).IndexInfo(ctx, in, append(copts, opts...)...)
-	})
+) (*payload.Info_Index_Count, error) {
+	return roundRobinCall(ctx, c, vald.IndexInfoRPCName, in, vald.Client.IndexInfo, opts...)
 }
 
 func (c *client) IndexDetail(
 	ctx context.Context, in *payload.Empty, opts ...grpc.CallOption,
-) (res *payload.Info_Index_Detail, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.IndexDetailRPCName), apiName+"/"+vald.IndexDetailRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption,
-	) (*payload.Info_Index_Detail, error) {
-		return vald.NewValdClient(conn).IndexDetail(ctx, in, append(copts, opts...)...)
-	})
+) (*payload.Info_Index_Detail, error) {
+	return roundRobinCall(ctx, c, vald.IndexDetailRPCName, in, vald.Client.IndexDetail, opts...)
 }
 
 func (c *client) IndexStatistics(
 	ctx context.Context, in *payload.Empty, opts ...grpc.CallOption,
-) (res *payload.Info_Index_Statistics, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.IndexStatisticsRPCName), apiName+"/"+vald.IndexStatisticsRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption,
-	) (*payload.Info_Index_Statistics, error) {
-		return vald.NewValdClient(conn).IndexStatistics(ctx, in, append(copts, opts...)...)
-	})
+) (*payload.Info_Index_Statistics, error) {
+	return roundRobinCall(ctx, c, vald.IndexStatisticsRPCName, in, vald.Client.IndexStatistics, opts...)
 }
 
 func (c *client) IndexStatisticsDetail(
 	ctx context.Context, in *payload.Empty, opts ...grpc.CallOption,
-) (res *payload.Info_Index_StatisticsDetail, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.IndexStatisticsDetailRPCName), apiName+"/"+vald.IndexStatisticsDetailRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption,
-	) (*payload.Info_Index_StatisticsDetail, error) {
-		return vald.NewValdClient(conn).IndexStatisticsDetail(ctx, in, append(copts, opts...)...)
-	})
+) (*payload.Info_Index_StatisticsDetail, error) {
+	return roundRobinCall(ctx, c, vald.IndexStatisticsDetailRPCName, in, vald.Client.IndexStatisticsDetail, opts...)
 }
 
 func (c *client) IndexProperty(
 	ctx context.Context, in *payload.Empty, opts ...grpc.CallOption,
-) (res *payload.Info_Index_PropertyDetail, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.IndexPropertyRPCName), apiName+"/"+vald.IndexPropertyRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption,
-	) (*payload.Info_Index_PropertyDetail, error) {
-		return vald.NewValdClient(conn).IndexProperty(ctx, in, append(copts, opts...)...)
-	})
+) (*payload.Info_Index_PropertyDetail, error) {
+	return roundRobinCall(ctx, c, vald.IndexPropertyRPCName, in, vald.Client.IndexProperty, opts...)
 }
 
 func (c *client) GetTimestamp(
 	ctx context.Context, in *payload.Object_TimestampRequest, opts ...grpc.CallOption,
-) (res *payload.Object_Timestamp, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.GetTimestampRPCName), apiName+"/"+vald.GetTimestampRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return grpc.RoundRobin(ctx, c.c, func(ctx context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption,
-	) (*payload.Object_Timestamp, error) {
-		return vald.NewValdClient(conn).GetTimestamp(ctx, in, append(copts, opts...)...)
-	})
+) (*payload.Object_Timestamp, error) {
+	return roundRobinCall(ctx, c, vald.GetTimestampRPCName, in, vald.Client.GetTimestamp, opts...)
 }
 
 func (*singleClient) Start(context.Context) (<-chan error, error) {
@@ -733,446 +383,282 @@ func (*singleClient) GRPCClient() grpc.Client {
 	return nil
 }
 
+func singleCall[Req, Res any](
+	ctx context.Context,
+	vc vald.Client,
+	rpcName string,
+	in Req,
+	fn func(vald.Client, context.Context, Req, ...grpc.CallOption) (Res, error),
+	opts ...grpc.CallOption,
+) (res Res, err error) {
+	if vc == nil {
+		return res, errors.ErrGRPCClientConnNotFound("*")
+	}
+	if !trace.Enabled() {
+		return fn(vc, ctx, in, opts...)
+	}
+	return singleCallSlow(ctx, vc, rpcName, in, fn, opts...)
+}
+
+func singleCallSlow[Req, Res any](
+	ctx context.Context,
+	vc vald.Client,
+	rpcName string,
+	in Req,
+	fn func(vald.Client, context.Context, Req, ...grpc.CallOption) (Res, error),
+	opts ...grpc.CallOption,
+) (Res, error) {
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+rpcName), apiName+"/"+rpcName)
+	defer trace.End(span)
+	return fn(vc, ctx, in, opts...)
+}
+
+func singleStream[Res any](
+	ctx context.Context,
+	vc vald.Client,
+	rpcName string,
+	fn func(vald.Client, context.Context, ...grpc.CallOption) (Res, error),
+	opts ...grpc.CallOption,
+) (res Res, err error) {
+	if vc == nil {
+		return res, errors.ErrGRPCClientConnNotFound("*")
+	}
+	if !trace.Enabled() {
+		return fn(vc, ctx, opts...)
+	}
+	return singleStreamSlow(ctx, vc, rpcName, fn, opts...)
+}
+
+func singleStreamSlow[Res any](
+	ctx context.Context,
+	vc vald.Client,
+	rpcName string,
+	fn func(vald.Client, context.Context, ...grpc.CallOption) (Res, error),
+	opts ...grpc.CallOption,
+) (Res, error) {
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+rpcName), apiName+"/"+rpcName)
+	defer trace.End(span)
+	return fn(vc, ctx, opts...)
+}
+
 func (c *singleClient) Exists(
 	ctx context.Context, in *payload.Object_ID, opts ...grpc.CallOption,
-) (oid *payload.Object_ID, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.ExistsRPCName), apiName+"/"+vald.ExistsRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return c.vc.Exists(ctx, in, opts...)
+) (*payload.Object_ID, error) {
+	return singleCall(ctx, c.vc, vald.ExistsRPCName, in, vald.Client.Exists, opts...)
 }
 
 func (c *singleClient) Search(
 	ctx context.Context, in *payload.Search_Request, opts ...grpc.CallOption,
-) (res *payload.Search_Response, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.SearchRPCName), apiName+"/"+vald.SearchRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return c.vc.Search(ctx, in, opts...)
+) (*payload.Search_Response, error) {
+	return singleCall(ctx, c.vc, vald.SearchRPCName, in, vald.Client.Search, opts...)
 }
 
 func (c *singleClient) SearchByID(
 	ctx context.Context, in *payload.Search_IDRequest, opts ...grpc.CallOption,
-) (res *payload.Search_Response, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.SearchByIDRPCName), apiName+"/"+vald.SearchByIDRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return c.vc.SearchByID(ctx, in, opts...)
+) (*payload.Search_Response, error) {
+	return singleCall(ctx, c.vc, vald.SearchByIDRPCName, in, vald.Client.SearchByID, opts...)
 }
 
 func (c *singleClient) StreamSearch(
 	ctx context.Context, opts ...grpc.CallOption,
-) (res vald.Search_StreamSearchClient, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.StreamSearchRPCName), apiName+"/"+vald.StreamSearchRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return c.vc.StreamSearch(ctx, opts...)
+) (vald.Search_StreamSearchClient, error) {
+	return singleStream(ctx, c.vc, vald.StreamSearchRPCName, vald.Client.StreamSearch, opts...)
 }
 
 func (c *singleClient) StreamSearchByID(
 	ctx context.Context, opts ...grpc.CallOption,
-) (res vald.Search_StreamSearchByIDClient, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.StreamSearchByIDRPCName), apiName+"/"+vald.StreamSearchByIDRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return c.vc.StreamSearchByID(ctx, opts...)
+) (vald.Search_StreamSearchByIDClient, error) {
+	return singleStream(ctx, c.vc, vald.StreamSearchByIDRPCName, vald.Client.StreamSearchByID, opts...)
 }
 
 func (c *singleClient) MultiSearch(
 	ctx context.Context, in *payload.Search_MultiRequest, opts ...grpc.CallOption,
-) (res *payload.Search_Responses, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.MultiSearchRPCName), apiName+"/"+vald.MultiSearchRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return c.vc.MultiSearch(ctx, in, opts...)
+) (*payload.Search_Responses, error) {
+	return singleCall(ctx, c.vc, vald.MultiSearchRPCName, in, vald.Client.MultiSearch, opts...)
 }
 
 func (c *singleClient) MultiSearchByID(
 	ctx context.Context, in *payload.Search_MultiIDRequest, opts ...grpc.CallOption,
-) (res *payload.Search_Responses, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.MultiSearchByIDRPCName), apiName+"/"+vald.MultiSearchByIDRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return c.vc.MultiSearchByID(ctx, in, opts...)
+) (*payload.Search_Responses, error) {
+	return singleCall(ctx, c.vc, vald.MultiSearchByIDRPCName, in, vald.Client.MultiSearchByID, opts...)
 }
 
 func (c *singleClient) LinearSearch(
 	ctx context.Context, in *payload.Search_Request, opts ...grpc.CallOption,
-) (res *payload.Search_Response, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.LinearSearchRPCName), apiName+"/"+vald.LinearSearchRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return c.vc.LinearSearch(ctx, in, opts...)
+) (*payload.Search_Response, error) {
+	return singleCall(ctx, c.vc, vald.LinearSearchRPCName, in, vald.Client.LinearSearch, opts...)
 }
 
 func (c *singleClient) LinearSearchByID(
 	ctx context.Context, in *payload.Search_IDRequest, opts ...grpc.CallOption,
-) (res *payload.Search_Response, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.LinearSearchByIDRPCName), apiName+"/"+vald.LinearSearchByIDRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return c.vc.LinearSearchByID(ctx, in, opts...)
+) (*payload.Search_Response, error) {
+	return singleCall(ctx, c.vc, vald.LinearSearchByIDRPCName, in, vald.Client.LinearSearchByID, opts...)
 }
 
 func (c *singleClient) StreamLinearSearch(
 	ctx context.Context, opts ...grpc.CallOption,
-) (res vald.Search_StreamLinearSearchClient, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.StreamLinearSearchRPCName), apiName+"/"+vald.StreamLinearSearchRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return c.vc.StreamLinearSearch(ctx, opts...)
+) (vald.Search_StreamLinearSearchClient, error) {
+	return singleStream(ctx, c.vc, vald.StreamLinearSearchRPCName, vald.Client.StreamLinearSearch, opts...)
 }
 
 func (c *singleClient) StreamLinearSearchByID(
 	ctx context.Context, opts ...grpc.CallOption,
-) (res vald.Search_StreamLinearSearchByIDClient, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.StreamLinearSearchByIDRPCName), apiName+"/"+vald.StreamLinearSearchByIDRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return c.vc.StreamLinearSearchByID(ctx, opts...)
+) (vald.Search_StreamLinearSearchByIDClient, error) {
+	return singleStream(ctx, c.vc, vald.StreamLinearSearchByIDRPCName, vald.Client.StreamLinearSearchByID, opts...)
 }
 
 func (c *singleClient) MultiLinearSearch(
 	ctx context.Context, in *payload.Search_MultiRequest, opts ...grpc.CallOption,
-) (res *payload.Search_Responses, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.MultiLinearSearchRPCName), apiName+"/"+vald.MultiLinearSearchRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return c.vc.MultiLinearSearch(ctx, in, opts...)
+) (*payload.Search_Responses, error) {
+	return singleCall(ctx, c.vc, vald.MultiLinearSearchRPCName, in, vald.Client.MultiLinearSearch, opts...)
 }
 
 func (c *singleClient) MultiLinearSearchByID(
 	ctx context.Context, in *payload.Search_MultiIDRequest, opts ...grpc.CallOption,
-) (res *payload.Search_Responses, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.MultiLinearSearchByIDRPCName), apiName+"/"+vald.MultiLinearSearchByIDRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return c.vc.MultiLinearSearchByID(ctx, in, opts...)
+) (*payload.Search_Responses, error) {
+	return singleCall(ctx, c.vc, vald.MultiLinearSearchByIDRPCName, in, vald.Client.MultiLinearSearchByID, opts...)
 }
 
 func (c *singleClient) Insert(
 	ctx context.Context, in *payload.Insert_Request, opts ...grpc.CallOption,
-) (res *payload.Object_Location, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.InsertRPCName), apiName+"/"+vald.InsertRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return c.vc.Insert(ctx, in, opts...)
+) (*payload.Object_Location, error) {
+	return singleCall(ctx, c.vc, vald.InsertRPCName, in, vald.Client.Insert, opts...)
 }
 
 func (c *singleClient) StreamInsert(
 	ctx context.Context, opts ...grpc.CallOption,
-) (res vald.Insert_StreamInsertClient, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.StreamInsertRPCName), apiName+"/"+vald.StreamInsertRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return c.vc.StreamInsert(ctx, opts...)
+) (vald.Insert_StreamInsertClient, error) {
+	return singleStream(ctx, c.vc, vald.StreamInsertRPCName, vald.Client.StreamInsert, opts...)
 }
 
 func (c *singleClient) MultiInsert(
 	ctx context.Context, in *payload.Insert_MultiRequest, opts ...grpc.CallOption,
-) (res *payload.Object_Locations, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.MultiInsertRPCName), apiName+"/"+vald.MultiInsertRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return c.vc.MultiInsert(ctx, in, opts...)
+) (*payload.Object_Locations, error) {
+	return singleCall(ctx, c.vc, vald.MultiInsertRPCName, in, vald.Client.MultiInsert, opts...)
 }
 
 func (c *singleClient) Update(
 	ctx context.Context, in *payload.Update_Request, opts ...grpc.CallOption,
-) (res *payload.Object_Location, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.UpdateRPCName), apiName+"/"+vald.UpdateRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return c.vc.Update(ctx, in, opts...)
+) (*payload.Object_Location, error) {
+	return singleCall(ctx, c.vc, vald.UpdateRPCName, in, vald.Client.Update, opts...)
 }
 
 func (c *singleClient) UpdateTimestamp(
 	ctx context.Context, in *payload.Update_TimestampRequest, opts ...grpc.CallOption,
-) (res *payload.Object_Location, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.UpdateTimestampRPCName), apiName+"/"+vald.UpdateTimestampRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return c.vc.UpdateTimestamp(ctx, in, opts...)
+) (*payload.Object_Location, error) {
+	return singleCall(ctx, c.vc, vald.UpdateTimestampRPCName, in, vald.Client.UpdateTimestamp, opts...)
 }
 
 func (c *singleClient) StreamUpdate(
 	ctx context.Context, opts ...grpc.CallOption,
-) (res vald.Update_StreamUpdateClient, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.StreamUpdateRPCName), apiName+"/"+vald.StreamUpdateRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return c.vc.StreamUpdate(ctx, opts...)
+) (vald.Update_StreamUpdateClient, error) {
+	return singleStream(ctx, c.vc, vald.StreamUpdateRPCName, vald.Client.StreamUpdate, opts...)
 }
 
 func (c *singleClient) MultiUpdate(
 	ctx context.Context, in *payload.Update_MultiRequest, opts ...grpc.CallOption,
-) (res *payload.Object_Locations, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.MultiUpdateRPCName), apiName+"/"+vald.MultiUpdateRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return c.vc.MultiUpdate(ctx, in, opts...)
+) (*payload.Object_Locations, error) {
+	return singleCall(ctx, c.vc, vald.MultiUpdateRPCName, in, vald.Client.MultiUpdate, opts...)
 }
 
 func (c *singleClient) Upsert(
 	ctx context.Context, in *payload.Upsert_Request, opts ...grpc.CallOption,
-) (res *payload.Object_Location, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.UpsertRPCName), apiName+"/"+vald.UpsertRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return c.vc.Upsert(ctx, in, opts...)
+) (*payload.Object_Location, error) {
+	return singleCall(ctx, c.vc, vald.UpsertRPCName, in, vald.Client.Upsert, opts...)
 }
 
 func (c *singleClient) StreamUpsert(
 	ctx context.Context, opts ...grpc.CallOption,
-) (res vald.Upsert_StreamUpsertClient, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.StreamUpsertRPCName), apiName+"/"+vald.StreamUpsertRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return c.vc.StreamUpsert(ctx, opts...)
+) (vald.Upsert_StreamUpsertClient, error) {
+	return singleStream(ctx, c.vc, vald.StreamUpsertRPCName, vald.Client.StreamUpsert, opts...)
 }
 
 func (c *singleClient) MultiUpsert(
 	ctx context.Context, in *payload.Upsert_MultiRequest, opts ...grpc.CallOption,
-) (res *payload.Object_Locations, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.MultiUpsertRPCName), apiName+"/"+vald.MultiUpsertRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return c.vc.MultiUpsert(ctx, in, opts...)
+) (*payload.Object_Locations, error) {
+	return singleCall(ctx, c.vc, vald.MultiUpsertRPCName, in, vald.Client.MultiUpsert, opts...)
 }
 
 func (c *singleClient) Remove(
 	ctx context.Context, in *payload.Remove_Request, opts ...grpc.CallOption,
-) (res *payload.Object_Location, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.RemoveRPCName), apiName+"/"+vald.RemoveRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return c.vc.Remove(ctx, in, opts...)
+) (*payload.Object_Location, error) {
+	return singleCall(ctx, c.vc, vald.RemoveRPCName, in, vald.Client.Remove, opts...)
 }
 
 func (c *singleClient) StreamRemove(
 	ctx context.Context, opts ...grpc.CallOption,
-) (res vald.Remove_StreamRemoveClient, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.StreamRemoveRPCName), apiName+"/"+vald.StreamRemoveRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return c.vc.StreamRemove(ctx, opts...)
+) (vald.Remove_StreamRemoveClient, error) {
+	return singleStream(ctx, c.vc, vald.StreamRemoveRPCName, vald.Client.StreamRemove, opts...)
 }
 
 func (c *singleClient) MultiRemove(
 	ctx context.Context, in *payload.Remove_MultiRequest, opts ...grpc.CallOption,
-) (res *payload.Object_Locations, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.MultiRemoveRPCName), apiName+"/"+vald.MultiRemoveRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return c.vc.MultiRemove(ctx, in, opts...)
+) (*payload.Object_Locations, error) {
+	return singleCall(ctx, c.vc, vald.MultiRemoveRPCName, in, vald.Client.MultiRemove, opts...)
 }
 
 func (c *singleClient) Flush(
 	ctx context.Context, in *payload.Flush_Request, opts ...grpc.CallOption,
-) (res *payload.Info_Index_Count, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.FlushRPCName), apiName+"/"+vald.FlushRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return c.vc.Flush(ctx, in, opts...)
+) (*payload.Info_Index_Count, error) {
+	return singleCall(ctx, c.vc, vald.FlushRPCName, in, vald.Client.Flush, opts...)
 }
 
 func (c *singleClient) RemoveByTimestamp(
 	ctx context.Context, in *payload.Remove_TimestampRequest, opts ...grpc.CallOption,
-) (res *payload.Object_Locations, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.RemoveByTimestampRPCName), apiName+"/"+vald.RemoveByTimestampRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return c.vc.RemoveByTimestamp(ctx, in, opts...)
+) (*payload.Object_Locations, error) {
+	return singleCall(ctx, c.vc, vald.RemoveByTimestampRPCName, in, vald.Client.RemoveByTimestamp, opts...)
 }
 
 func (c *singleClient) GetObject(
 	ctx context.Context, in *payload.Object_VectorRequest, opts ...grpc.CallOption,
-) (res *payload.Object_Vector, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.GetObjectRPCName), apiName+"/"+vald.GetObjectRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return c.vc.GetObject(ctx, in, opts...)
+) (*payload.Object_Vector, error) {
+	return singleCall(ctx, c.vc, vald.GetObjectRPCName, in, vald.Client.GetObject, opts...)
 }
 
 func (c *singleClient) StreamGetObject(
 	ctx context.Context, opts ...grpc.CallOption,
-) (res vald.Object_StreamGetObjectClient, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.StreamGetObjectRPCName), apiName+"/"+vald.StreamGetObjectRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return c.vc.StreamGetObject(ctx, opts...)
+) (vald.Object_StreamGetObjectClient, error) {
+	return singleStream(ctx, c.vc, vald.StreamGetObjectRPCName, vald.Client.StreamGetObject, opts...)
 }
 
 func (c *singleClient) StreamListObject(
 	ctx context.Context, in *payload.Object_List_Request, opts ...grpc.CallOption,
-) (res vald.Object_StreamListObjectClient, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.StreamListObjectRPCName), apiName+"/"+vald.StreamListObjectRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return c.vc.StreamListObject(ctx, in, opts...)
+) (vald.Object_StreamListObjectClient, error) {
+	return singleCall(ctx, c.vc, vald.StreamListObjectRPCName, in, vald.Client.StreamListObject, opts...)
 }
 
 func (c *singleClient) IndexInfo(
 	ctx context.Context, in *payload.Empty, opts ...grpc.CallOption,
-) (res *payload.Info_Index_Count, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.IndexInfoRPCName), apiName+"/"+vald.IndexInfoRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return c.vc.IndexInfo(ctx, in, opts...)
+) (*payload.Info_Index_Count, error) {
+	return singleCall(ctx, c.vc, vald.IndexInfoRPCName, in, vald.Client.IndexInfo, opts...)
 }
 
 func (c *singleClient) IndexDetail(
 	ctx context.Context, in *payload.Empty, opts ...grpc.CallOption,
-) (res *payload.Info_Index_Detail, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.IndexDetailRPCName), apiName+"/"+vald.IndexDetailRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return c.vc.IndexDetail(ctx, in, opts...)
+) (*payload.Info_Index_Detail, error) {
+	return singleCall(ctx, c.vc, vald.IndexDetailRPCName, in, vald.Client.IndexDetail, opts...)
 }
 
 func (c *singleClient) IndexStatistics(
 	ctx context.Context, in *payload.Empty, opts ...grpc.CallOption,
-) (res *payload.Info_Index_Statistics, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.IndexStatisticsRPCName), apiName+"/"+vald.IndexStatisticsRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return c.vc.IndexStatistics(ctx, in, opts...)
+) (*payload.Info_Index_Statistics, error) {
+	return singleCall(ctx, c.vc, vald.IndexStatisticsRPCName, in, vald.Client.IndexStatistics, opts...)
 }
 
 func (c *singleClient) IndexStatisticsDetail(
 	ctx context.Context, in *payload.Empty, opts ...grpc.CallOption,
-) (res *payload.Info_Index_StatisticsDetail, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.IndexStatisticsDetailRPCName), apiName+"/"+vald.IndexStatisticsDetailRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return c.vc.IndexStatisticsDetail(ctx, in, opts...)
+) (*payload.Info_Index_StatisticsDetail, error) {
+	return singleCall(ctx, c.vc, vald.IndexStatisticsDetailRPCName, in, vald.Client.IndexStatisticsDetail, opts...)
 }
 
 func (c *singleClient) IndexProperty(
 	ctx context.Context, in *payload.Empty, opts ...grpc.CallOption,
-) (res *payload.Info_Index_PropertyDetail, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.IndexPropertyRPCName), apiName+"/"+vald.IndexPropertyRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return c.vc.IndexProperty(ctx, in, opts...)
+) (*payload.Info_Index_PropertyDetail, error) {
+	return singleCall(ctx, c.vc, vald.IndexPropertyRPCName, in, vald.Client.IndexProperty, opts...)
 }
 
 func (c *singleClient) GetTimestamp(
 	ctx context.Context, in *payload.Object_TimestampRequest, opts ...grpc.CallOption,
-) (res *payload.Object_Timestamp, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.GetTimestampRPCName), apiName+"/"+vald.GetTimestampRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return c.vc.GetTimestamp(ctx, in, opts...)
+) (*payload.Object_Timestamp, error) {
+	return singleCall(ctx, c.vc, vald.GetTimestampRPCName, in, vald.Client.GetTimestamp, opts...)
 }

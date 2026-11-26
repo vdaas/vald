@@ -238,8 +238,12 @@ func New(opts ...Option) vald.ServerWithFilter {
 func (s *server) SearchObject(
 	ctx context.Context, req *payload.Search_ObjectRequest,
 ) (res *payload.Search_Response, err error) {
-	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.SearchObjectRPCName), apiName+"/"+vald.SearchObjectRPCName)
-	defer trace.End(span)
+	ctx = grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.SearchObjectRPCName)
+	var span trace.Span
+	if trace.Enabled() {
+		ctx, span = trace.StartSpan(ctx, apiName+"/"+vald.SearchObjectRPCName)
+		defer trace.End(span)
+	}
 	target := s.vectorizerAddr(req.GetVectorizer())
 	if target == "" {
 		err = errors.ErrFilterNotFound
@@ -377,8 +381,12 @@ func (s *server) StreamSearchObject(stream vald.Filter_StreamSearchObjectServer)
 func (s *server) LinearSearchObject(
 	ctx context.Context, req *payload.Search_ObjectRequest,
 ) (*payload.Search_Response, error) {
-	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.LinearSearchObjectRPCName), apiName+"/"+vald.LinearSearchObjectRPCName)
-	defer trace.End(span)
+	ctx = grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.LinearSearchObjectRPCName)
+	var span trace.Span
+	if trace.Enabled() {
+		ctx, span = trace.StartSpan(ctx, apiName+"/"+vald.LinearSearchObjectRPCName)
+		defer trace.End(span)
+	}
 	target := s.vectorizerAddr(req.GetVectorizer())
 	if target == "" {
 		err := errors.ErrInvalidAPIConfig
@@ -525,8 +533,12 @@ func (s *server) StreamLinearSearchObject(stream vald.Filter_StreamSearchObjectS
 func (s *server) InsertObject(
 	ctx context.Context, req *payload.Insert_ObjectRequest,
 ) (*payload.Object_Location, error) {
-	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.InsertObjectRPCName), apiName+"/"+vald.InsertObjectRPCName)
-	defer trace.End(span)
+	ctx = grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.InsertObjectRPCName)
+	var span trace.Span
+	if trace.Enabled() {
+		ctx, span = trace.StartSpan(ctx, apiName+"/"+vald.InsertObjectRPCName)
+		defer trace.End(span)
+	}
 	target := s.vectorizerAddr(req.GetVectorizer())
 	if target == "" {
 		err := errors.ErrFilterNotFound
@@ -997,8 +1009,12 @@ func (s *server) Search(
 func (s *server) SearchByID(
 	ctx context.Context, req *payload.Search_IDRequest,
 ) (res *payload.Search_Response, err error) {
-	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.SearchByIDRPCName), apiName+"/"+vald.SearchByIDRPCName)
-	defer trace.End(span)
+	ctx = grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.SearchByIDRPCName)
+	var span trace.Span
+	if trace.Enabled() {
+		ctx, span = trace.StartSpan(ctx, apiName+"/"+vald.SearchByIDRPCName)
+		defer trace.End(span)
+	}
 	res, err = s.gateway.SearchByID(ctx, req)
 	if err != nil {
 		st, _ := status.FromError(err)
@@ -1174,53 +1190,17 @@ func (s *server) LinearSearch(
 func (s *server) LinearSearchByID(
 	ctx context.Context, req *payload.Search_IDRequest,
 ) (res *payload.Search_Response, err error) {
-	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.LinearSearchByIDRPCName)
-	defer trace.End(span)
+	var span trace.Span
+	if trace.Enabled() {
+		ctx, span = trace.StartSpan(ctx, apiName+"/"+vald.LinearSearchByIDRPCName)
+		defer trace.End(span)
+	}
 	res, err = s.gateway.LinearSearchByID(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	targets := req.GetConfig().GetEgressFilters().GetTargets()
-	if len(targets) > 0 || len(s.DistanceFilters) > 0 {
-		addrs := filterAddrs(s.DistanceFilters, targets)
-		c, err := s.egress.Target(ctx, addrs...)
-		if err != nil {
-			err = status.WrapWithUnavailable(
-				fmt.Sprintf(vald.LinearSearchByIDRPCName+" API egress filter targets %v not found", addrs),
-				err,
-				&errdetails.RequestInfo{
-					RequestId:   req.GetConfig().GetRequestId(),
-					ServingData: errdetails.Serialize(req),
-				},
-				&errdetails.BadRequest{
-					FieldViolations: []*errdetails.BadRequestFieldViolation{
-						{
-							Field:       filterTargetsField,
-							Description: err.Error(),
-						},
-					},
-				},
-				s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.LinearSearchByIDRPCName), info.Get())
-			log.Warn(err)
-			return errhandler.HandleError[payload.Search_Response](span, codes.Unavailable, err)
-		}
-		defer s.egress.Release(ctx, addrs...)
-		for i, dist := range res.GetResults() {
-			d, err := c.FilterDistance(ctx, dist)
-			if err != nil {
-				err = status.WrapWithInternal(
-					fmt.Sprintf(vald.LinearSearchByIDRPCName+" API egress filter request to %v failure on id %s", addrs, dist.GetId()),
-					err,
-					&errdetails.RequestInfo{
-						RequestId:   dist.GetId(),
-						ServingData: errdetails.Serialize(req),
-					},
-					s.resourceInfo(errdetails.ValdGRPCResourceTypePrefix+"/vald.v1."+vald.LinearSearchByIDRPCName), info.Get())
-				log.Warn(err)
-				return errhandler.HandleError[payload.Search_Response](span, codes.Internal, err)
-			}
-			res.Results[i] = d
-		}
+	if err = s.filterSearchDistances(ctx, span, vald.LinearSearchByIDRPCName, req.GetConfig(), req, res); err != nil {
+		return nil, err
 	}
 	return res, nil
 }

@@ -15,10 +15,13 @@
 package errors
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
+	"maps"
 	"reflect"
 	"runtime"
+	"slices"
 
 	"github.com/vdaas/vald/internal/strings"
 )
@@ -72,85 +75,128 @@ var (
 		return Wrapf(err, "failed to output %s logs", str)
 	}
 
+	// ErrUnimplemented represents a function to generate an error that feature is unimplemented.
 	ErrUnimplemented = func(name string) error {
 		return Errorf("%s is unimplemented", name)
 	}
+)
 
-	// New represents a function to generate the new error with a message.
-	// When the message is nil, it will return nil instead of an error.
-	New = func(msg string) error {
-		if msg == "" {
-			return nil
-		}
-		return errors.New(msg)
-	}
+// errExpectedErrIsNil generates an error indicating the given name's error object is nil.
+func errExpectedErrIsNil(n string) error {
+	return Errorf("expected err is nil: %s", n)
+}
 
-	// Wrap represents a function to generate an error that is used by input error and message.
-	// When both of the input are nil, it will return an error when the error message is not empty.
-	// When the input error is not nil, it will return the error based on the input error.
-	Wrap = func(err error, msg string) error {
-		if err != nil {
-			if msg != "" && !Is(err, New(msg)) {
-				return Errorf("%s: %w", msg, err)
-			}
-			return err
-		}
-		return New(msg)
-	}
-
-	// Wrapf represents a function to generate an error that is used by input error, format, and args.
-	// When all of the input is nil, it will return a new error based on format and args even these are nil.
-	// When the input error is not nil, it will return the input error wrapped with the formatted message,
-	// or the input error itself when format is empty.
-	Wrapf = func(err error, format string, args ...any) error {
-		if err != nil {
-			if format == "" {
-				return err
-			}
-			if len(args) == 0 {
-				return Wrap(err, format)
-			}
-			return Wrap(err, fmt.Sprintf(format, args...))
-		}
-		return Errorf(format, args...)
-	}
-
-	// Cause represents a function to generate an error when the input error is not nil.
-	// When the input is nil, it will return nil.
-	Cause = func(err error) error {
-		if err != nil {
-			return Unwrap(err)
-		}
+// New generates a new error with a message, or nil if msg is empty.
+func New(msg string) error {
+	if msg == "" {
 		return nil
 	}
+	return errors.New(msg)
+}
 
-	// Errorf represents a function to generate an error based on format and args.
-	// When format and args do not satisfy the condition, it will return nil.
-	Errorf = func(format string, args ...any) error {
-		const delim = " "
-		if format == "" && len(args) == 0 {
-			return nil
+type wrapError struct {
+	err error
+	msg string
+}
+
+func (e *wrapError) Error() string {
+	return e.msg + ": " + e.err.Error()
+}
+
+func (e *wrapError) Unwrap() error {
+	return e.err
+}
+
+// Wrap wraps err with msg unless msg is empty or err already contains msg.
+// When err is nil it returns New(msg).
+func Wrap(err error, msg string) error {
+	if err != nil {
+		if msg != "" && !hasMessage(err, msg) {
+			return &wrapError{msg: msg, err: err}
 		}
-		if len(args) != 0 {
-			if format == "" {
-				for range args {
-					format += "%v" + delim
-				}
-				format = strings.TrimSuffix(format, delim)
+		return err
+	}
+	return New(msg)
+}
+
+func hasMessage(err error, msg string) bool {
+	for {
+		emsg := err.Error()
+		if emsg == msg || strings.EqualFold(emsg, msg) {
+			return true
+		}
+		if x, ok := err.(interface{ Is(error) bool }); ok {
+			if x.Is(errors.New(msg)) {
+				return true
 			}
-			return fmt.Errorf(format, args...)
 		}
-		return New(format)
+		{
+			var x interface{ Unwrap() error }
+			var x1 interface{ Unwrap() []error }
+			switch {
+			case errors.As(err, &x):
+				err = x.Unwrap()
+				if err == nil {
+					return false
+				}
+			case errors.As(err, &x1):
+				for _, e := range x1.Unwrap() {
+					if e != nil && hasMessage(e, msg) {
+						return true
+					}
+				}
+				return false
+			default:
+				return false
+			}
+		}
 	}
+}
 
-	// As represents errors.As.
-	As = errors.As
-
-	// errExpectedErrIsNil represents a function to generate an error that given name's error object is nil.
-	errExpectedErrIsNil = func(n string) error {
-		return Errorf("expected err is nil: %s", n)
+// Wrapf wraps err with the formatted message, returning New/Errorf when err is nil.
+func Wrapf(err error, format string, args ...any) error {
+	if err != nil {
+		if format == "" {
+			return err
+		}
+		if len(args) == 0 {
+			return Wrap(err, format)
+		}
+		return Wrap(err, fmt.Sprintf(format, args...))
 	}
-)
+	return Errorf(format, args...)
+}
+
+// Cause unwraps err once when non-nil.
+func Cause(err error) error {
+	if err != nil {
+		return Unwrap(err)
+	}
+	return nil
+}
+
+// Errorf formats an error, returning nil when both format and args are empty.
+func Errorf(format string, args ...any) error {
+	const delim = " "
+	if format == "" && len(args) == 0 {
+		return nil
+	}
+	if len(args) != 0 {
+		if format == "" {
+			for range args {
+				format += "%v" + delim
+			}
+			format = strings.TrimSuffix(format, delim)
+		}
+		return fmt.Errorf(format, args...)
+	}
+	return New(format)
+}
+
+// As delegates to stdlib errors.As.
+func As(err error, target any) bool {
+	return errors.As(err, target)
+}
 
 // Is represents a function to check whether err and the target is the same or not.
 func Is(err, target error) (same bool) {
@@ -193,36 +239,31 @@ func IsNot(err error, targets ...error) (same bool) {
 
 func is(err, target error) (same bool) {
 	targetComparable := reflect.TypeOf(target).Comparable()
-	// target.Error() is computed lazily (only once the identity check has
-	// failed, as before) and then reused for every layer; err.Error() is
-	// computed once per layer. Error() may rebuild the whole message.
+	// target.Error() is computed lazily (only once identity and custom Is checks
+	// have failed) and reused across layers and joined children.
 	var (
 		tmsg   string
 		hasMsg bool
 	)
+	return isRec(err, target, targetComparable, &tmsg, &hasMsg)
+}
+
+func isRec(err, target error, targetComparable bool, tmsg *string, hasMsg *bool) bool {
 	for {
-		// Only the pointer/value == comparison must be gated on comparability
-		// (comparing an uncomparable target panics); the message comparisons
-		// are always safe. The terminal fallbacks below already gate only ==
-		// via && / || precedence, so mirror that here — otherwise a
-		// non-comparable target never message-matches an intermediate wrap
-		// layer (it did at the innermost layer only), an inconsistency with
-		// how a comparable target of the same message resolves.
-		//nolint:errorlint // is() is the Is primitive itself; the == identity check on a comparable target is intentional (mirrors the terminal fallbacks below and stdlib errors.Is).
+		//nolint:errorlint // isRec is the Is primitive itself; direct == identity check on comparable target is intentional.
 		if targetComparable && err == target {
 			return true
 		}
-		emsg := err.Error()
-		if !hasMsg {
-			tmsg, hasMsg = target.Error(), true
-		}
-		if emsg == tmsg || strings.EqualFold(emsg, tmsg) {
-			return true
-		}
-
 		if x, ok := err.(interface {
 			Is(error) bool
 		}); ok && x.Is(target) {
+			return true
+		}
+		emsg := err.Error()
+		if !*hasMsg {
+			*tmsg, *hasMsg = target.Error(), true
+		}
+		if emsg == *tmsg || strings.EqualFold(emsg, *tmsg) {
 			return true
 		}
 		switch x := err.(type) {
@@ -233,17 +274,13 @@ func is(err, target error) (same bool) {
 			}
 		case interface{ Unwrap() []error }:
 			for _, e := range x.Unwrap() {
-				if e != nil && is(e, target) {
+				if e != nil && isRec(e, target, targetComparable, tmsg, hasMsg) {
 					return true
 				}
 			}
-			// err itself was already compared at the top of the loop and every
-			// non-nil child has just been checked recursively.
 			return false
 		default:
-			return targetComparable && err == target ||
-				emsg == tmsg ||
-				strings.EqualFold(emsg, tmsg)
+			return false
 		}
 	}
 }
@@ -279,7 +316,7 @@ func Join(errs ...error) error {
 		return nil
 	case 1:
 		return errs[0]
-	case 2:
+	case 2: //nolint:mnd // fast path for 2 errors without allocating a map
 		switch {
 		case errs[0] != nil && errs[1] != nil:
 			// is() already short-circuits on identity, but only when the type
@@ -293,8 +330,6 @@ func Join(errs ...error) error {
 				es = x.errs
 			case interface{ Unwrap() []error }:
 				es = x.Unwrap()
-			default:
-				es = []error{errs[1]}
 			}
 			switch x := errs[0].(type) {
 			case *joinError:
@@ -302,11 +337,22 @@ func Join(errs ...error) error {
 				// returning the existing *joinError: error values are expected
 				// to be immutable once returned, and a retained reference to
 				// errs[0] must not gain the newly joined errors.
-				return &joinError{errs: RemoveDuplicates(append(append(make([]error, 0, len(x.errs)+len(es)), x.errs...), es...))}
+				if es != nil {
+					return &joinError{errs: RemoveDuplicates(append(append(make([]error, 0, len(x.errs)+len(es)), x.errs...), es...))}
+				}
+				return &joinError{errs: RemoveDuplicates(append(append(make([]error, 0, len(x.errs)+1), x.errs...), errs[1]))}
 			case interface{ Unwrap() []error }:
 				u := x.Unwrap()
-				return &joinError{errs: RemoveDuplicates(append(append(make([]error, 0, len(u)+len(es)), u...), es...))}
+				if es != nil {
+					return &joinError{errs: RemoveDuplicates(append(append(make([]error, 0, len(u)+len(es)), u...), es...))}
+				}
+				return &joinError{errs: RemoveDuplicates(append(append(make([]error, 0, len(u)+1), u...), errs[1]))}
 			default:
+				if es != nil {
+					list := make([]error, 0, 1+len(es))
+					list = append(list, errs[0])
+					return &joinError{errs: RemoveDuplicates(append(list, es...))}
+				}
 				return &joinError{errs: []error{errs[0], errs[1]}}
 			}
 		case errs[0] != nil:
@@ -350,11 +396,44 @@ func Join(errs ...error) error {
 	return e
 }
 
+// JoinMap joins all non-nil errors in errs ordered by their sorted map keys so
+// the leading error (whose status code a joined error reports) is deterministic.
+func JoinMap[K cmp.Ordered](errs map[K]error) error {
+	switch len(errs) {
+	case 0:
+		return nil
+	case 1:
+		for _, err := range errs {
+			return err
+		}
+	}
+	list := make([]error, 0, len(errs))
+	for _, k := range slices.Sorted(maps.Keys(errs)) {
+		list = append(list, errs[k])
+	}
+	return Join(list...)
+}
+
 func RemoveDuplicates(errs []error) []error {
 	switch len(errs) {
 	case 0:
 		return nil
 	case 1:
+		return errs
+	case 2: //nolint:mnd // fast path for 2 errors without allocating a map
+		if errs[0] == nil {
+			if errs[1] == nil {
+				clear(errs)
+				return errs[:0]
+			}
+			errs[0] = errs[1]
+			errs[1] = nil
+			return errs[:1]
+		}
+		if errs[1] == nil || errs[0].Error() == errs[1].Error() {
+			errs[1] = nil
+			return errs[:1]
+		}
 		return errs
 	}
 	// Two and more elements are deduplicated uniformly by their message: the
@@ -362,18 +441,19 @@ func RemoveDuplicates(errs []error) []error {
 	// fold) while length>=3 used an exact-string map, so whether two errors were
 	// treated as duplicates depended on the argument count rather than the errors
 	// themselves. The exact-string map below is the consistent rule.
-	seen := make(map[string]bool, len(errs))
+	seen := make(map[string]struct{}, len(errs))
 	var idx uint64
 	for _, err := range errs {
 		if err != nil {
 			key := err.Error()
-			if !seen[key] {
-				seen[key] = true
+			if _, ok := seen[key]; !ok {
+				seen[key] = struct{}{}
 				errs[idx] = err
 				idx++
 			}
 		}
 	}
+	clear(errs[idx:])
 	return errs[:idx]
 }
 

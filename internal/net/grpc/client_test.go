@@ -109,7 +109,7 @@ func TestGRPCClient_Connect_concurrentDisconnect(t *testing.T) {
 					return hc, nil
 				},
 			}
-			g.conns.Store(addr, old)
+			g.storeConn(addr, old)
 			atomic.AddUint64(&g.clientCount, 1)
 
 			if _, err := g.Connect(ctx, addr); err != nil {
@@ -322,7 +322,7 @@ func Test_gRPCClient_do_circuitBreakerWithoutBackoff(t *testing.T) {
 			})
 			p := plainConnPool{fixedConnPool{conn: conn}}
 			// The breaker applies only to a pool that is still connected.
-			g.conns.Store(addr, p)
+			g.storeConn(addr, p)
 			got, err := g.do(t.Context(), p, addr, tc.f)
 			if tc.wantErr == nil {
 				if err != nil {
@@ -390,7 +390,7 @@ func Test_gRPCClient_do_skipsBreakerForDisconnectedPool(t *testing.T) {
 			})
 			p := plainConnPool{fixedConnPool{conn: conn}}
 			if cur := tc.stored(p); cur != nil {
-				g.conns.Store(addr, cur)
+				g.storeConn(addr, cur)
 			}
 			got, err := g.do(t.Context(), p, addr, func(context.Context, *ClientConn, ...CallOption) (any, error) {
 				return "ok", nil
@@ -473,7 +473,7 @@ func Test_gRPCClient_Disconnect_evictsAddrState(t *testing.T) {
 				}
 			}
 			if test.stored {
-				g.conns.Store(addr, &hookConn{})
+				g.storeConn(addr, &hookConn{})
 				g.clientCount = 1
 			}
 
@@ -648,14 +648,17 @@ func TestGRPCClient_StartConnectionMonitor_concurrentFailure(t *testing.T) {
 func Test_gRPCClient_executeRPC_noResourceExhaustedRetry(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
-		name          string
-		code          codes.Code
-		marked        bool
-		wantRetryable bool
+		name           string
+		code           codes.Code
+		marked         bool
+		combinedPolicy bool
+		wantRetryable  bool
 	}{
 		{name: "ResourceExhausted is retried by default", code: codes.ResourceExhausted, wantRetryable: true},
 		{name: "ResourceExhausted is not retried when marked", code: codes.ResourceExhausted, marked: true},
+		{name: "ResourceExhausted is not retried under combined search policy", code: codes.ResourceExhausted, combinedPolicy: true},
 		{name: "Unavailable is still retried when marked", code: codes.Unavailable, marked: true, wantRetryable: true},
+		{name: "Unavailable is still retried under combined search policy", code: codes.Unavailable, combinedPolicy: true, wantRetryable: true},
 		{name: "Internal is still retried when marked", code: codes.Internal, marked: true, wantRetryable: true},
 		{name: "InvalidArgument is never retried", code: codes.InvalidArgument, marked: true},
 	}
@@ -677,9 +680,14 @@ func Test_gRPCClient_executeRPC_noResourceExhaustedRetry(t *testing.T) {
 				}
 			})
 			rpcErr := status.Error(tc.code, "rpc failed")
-			ctx := WithQuietErrorLog(t.Context())
-			if tc.marked {
-				ctx = WithoutResourceExhaustedRetry(ctx)
+			var ctx context.Context
+			if tc.combinedPolicy {
+				ctx = WithSearchBroadcastPolicy(t.Context())
+			} else {
+				ctx = WithQuietErrorLog(t.Context())
+				if tc.marked {
+					ctx = WithoutResourceExhaustedRetry(ctx)
+				}
 			}
 			_, retryable, err := g.executeRPC(ctx, healthyConnPool{fixedConnPool{conn: conn}}, "10.0.0.1:8081",
 				func(context.Context, *ClientConn, ...CallOption) (any, error) { return nil, rpcErr })
@@ -703,6 +711,8 @@ type recordingSpan struct {
 	status int
 	code   ocodes.Code
 }
+
+func (*recordingSpan) IsRecording() bool { return true }
 
 func (s *recordingSpan) RecordError(err error, _ ...otrace.EventOption) {
 	s.errs = append(s.errs, err)
@@ -811,8 +821,8 @@ func TestStartAddrSpan_TracingDisabled(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want, Client) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -926,9 +936,9 @@ func TestStartAddrSpan_TracingDisabled(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, <-chan error, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -1124,9 +1134,9 @@ func TestStartAddrSpan_TracingDisabled(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -1322,9 +1332,9 @@ func TestStartAddrSpan_TracingDisabled(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -1522,9 +1532,9 @@ func TestStartAddrSpan_TracingDisabled(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -1723,9 +1733,9 @@ func TestStartAddrSpan_TracingDisabled(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -1899,8 +1909,8 @@ func TestStartAddrSpan_TracingDisabled(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		want       want
+// 		args
+// 		want
 // 		checkFunc  func(want, R, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -2020,9 +2030,9 @@ func TestStartAddrSpan_TracingDisabled(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, any, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -2222,9 +2232,9 @@ func TestStartAddrSpan_TracingDisabled(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, any, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -2428,9 +2438,9 @@ func TestStartAddrSpan_TracingDisabled(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, any, bool, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -2638,9 +2648,9 @@ func TestStartAddrSpan_TracingDisabled(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, any, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -2838,8 +2848,8 @@ func TestStartAddrSpan_TracingDisabled(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, []DialOption) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -3022,8 +3032,8 @@ func TestStartAddrSpan_TracingDisabled(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, []CallOption) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -3206,8 +3216,8 @@ func TestStartAddrSpan_TracingDisabled(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
-// 		want       want
+// 		fields
+// 		want
 // 		checkFunc  func(want, backoff.Backoff) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
@@ -3392,9 +3402,9 @@ func TestStartAddrSpan_TracingDisabled(t *testing.T) {
 // 	type want struct{}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -3588,9 +3598,9 @@ func TestStartAddrSpan_TracingDisabled(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, pool.Conn, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -3790,9 +3800,9 @@ func TestStartAddrSpan_TracingDisabled(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, bool) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -3987,9 +3997,9 @@ func TestStartAddrSpan_TracingDisabled(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -4183,9 +4193,9 @@ func TestStartAddrSpan_TracingDisabled(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, []string) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -4377,9 +4387,9 @@ func TestStartAddrSpan_TracingDisabled(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
@@ -4572,9 +4582,9 @@ func TestStartAddrSpan_TracingDisabled(t *testing.T) {
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
+// 		args
+// 		fields
+// 		want
 // 		checkFunc  func(want, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)

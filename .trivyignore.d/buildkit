@@ -14,47 +14,36 @@
 # limitations under the License.
 #
 
-# Reason: BuildKit v0.32.2 embeds github.com/moby/go-archive v0.2.0. The fixed
-# module version is not independently replaceable in the upstream binary.
-CVE-2026-17106 exp:2026-11-19
+# Reason: BuildKit v0.35.1 embeds github.com/moby/go-archive v0.2.0 in usr/bin/buildkitd
+# (rechecked 2026-11-24). The fixed module version is not independently replaceable
+# in the upstream binary.
+CVE-2026-17106 exp:2026-12-24
 
-# Reason: these Go standard-library findings are embedded in the official
-# BuildKit v0.32.2 binaries. Vald cannot replace them independently; remove
-# these exceptions when upstream publishes binaries built with a fixed Go.
-CVE-2026-25679 exp:2026-11-19
-CVE-2026-25681 exp:2026-11-19
-CVE-2026-27136 exp:2026-11-19
-CVE-2026-27145 exp:2026-11-19
-CVE-2026-32280 exp:2026-11-19
-CVE-2026-32281 exp:2026-11-19
-CVE-2026-32283 exp:2026-11-19
-CVE-2026-33811 exp:2026-11-19
-CVE-2026-33814 exp:2026-11-19
-CVE-2026-33818 exp:2026-11-19
-CVE-2026-39820 exp:2026-11-19
-CVE-2026-39821 exp:2026-11-19
-CVE-2026-39822 exp:2026-11-19
-CVE-2026-39836 exp:2026-11-19
-CVE-2026-42499 exp:2026-11-19
-CVE-2026-42504 exp:2026-11-19
-CVE-2026-46600 exp:2026-11-19
-CVE-2026-56853 exp:2026-11-19
-CVE-2026-56858 exp:2026-11-19
-CVE-2026-56859 exp:2026-11-19
-CVE-2026-56860 exp:2026-11-19
-CVE-2026-56862 exp:2026-11-19
-CVE-2026-56864 exp:2026-11-19
-CVE-2026-56865 exp:2026-11-19
-
-# Reason: Trivy compares BuildKit's 2026-08-21 pseudo-version as older than
-# fixed SemVer releases even though the embedded source is newer. These are
-# scanner version-comparison false positives; remove when Trivy recognizes
-# BuildKit pseudo-versions correctly.
-CVE-2024-23651 exp:2026-11-24
-CVE-2024-23652 exp:2026-11-24
-CVE-2024-23653 exp:2026-11-24
-CVE-2026-33747 exp:2026-11-24
-CVE-2026-33748 exp:2026-11-24
+# Reason: these Go stdlib (v1.25.7) findings in usr/bin/buildkit-cni-* and
+# golang.org/x/net v0.55.0 finding (CVE-2026-46600) in usr/bin/buildkit-runc are
+# embedded in the upstream moby/buildkit:v0.35.1 binaries (rechecked 2026-11-24).
+# Vald cannot replace them independently; remove when upstream publishes binaries
+# built with fixed Go and x/net.
+CVE-2026-25679 exp:2026-12-24
+CVE-2026-27145 exp:2026-12-24
+CVE-2026-32280 exp:2026-12-24
+CVE-2026-32281 exp:2026-12-24
+CVE-2026-32283 exp:2026-12-24
+CVE-2026-33811 exp:2026-12-24
+CVE-2026-33814 exp:2026-12-24
+CVE-2026-33818 exp:2026-12-24
+CVE-2026-39820 exp:2026-12-24
+CVE-2026-39821 exp:2026-12-24
+CVE-2026-39822 exp:2026-12-24
+CVE-2026-39836 exp:2026-12-24
+CVE-2026-42499 exp:2026-12-24
+CVE-2026-42504 exp:2026-12-24
+CVE-2026-46600 exp:2026-12-24
+CVE-2026-56853 exp:2026-12-24
+CVE-2026-56858 exp:2026-12-24
+CVE-2026-56859 exp:2026-12-24
+CVE-2026-56860 exp:2026-12-24
+CVE-2026-56862 exp:2026-12-24
 
 # Reason: upstream moby/buildkit:master still ships buildkit-runc with
 # golang.org/x/net v0.55.0 and CNI plugins built with Go 1.25.7 (rechecked
