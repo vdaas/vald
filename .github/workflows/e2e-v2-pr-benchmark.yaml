@@ -239,22 +239,29 @@ jobs:
             const pollIntervalMs = 30 * 1000;
 
             while (true) {
+              // Restrict to pull_request runs because non-fork PRs also trigger no-op
+              // pull_request_target image workflows that immediately conclude "success"
+              // while skipping prepare/build/scan/merge, which would otherwise shadow real builds.
               const runs = await github.paginate(github.rest.actions.listWorkflowRunsForRepo, {
                 owner,
                 repo,
                 head_sha: headSha,
+                event: "pull_request",
                 per_page: 100
               });
               const latestByWorkflow = new Map();
               for (const run of runs) {
-                if (!Object.prototype.hasOwnProperty.call(workflowToImage, run.name)) {
+                if (run.event !== "pull_request" || !Object.prototype.hasOwnProperty.call(workflowToImage, run.name)) {
                   continue;
                 }
                 const prev = latestByWorkflow.get(run.name);
+                const runAttempt = run.run_attempt || 1;
+                const prevAttempt = prev ? (prev.run_attempt || 1) : 0;
                 if (
                   !prev ||
                   run.run_number > prev.run_number ||
-                  (run.run_number === prev.run_number && new Date(run.created_at) > new Date(prev.created_at))
+                  (run.run_number === prev.run_number && runAttempt > prevAttempt) ||
+                  (run.run_number === prev.run_number && runAttempt === prevAttempt && new Date(run.created_at) > new Date(prev.created_at))
                 ) {
                   latestByWorkflow.set(run.name, run);
                 }

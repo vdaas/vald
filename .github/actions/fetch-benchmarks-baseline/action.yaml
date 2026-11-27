@@ -52,19 +52,30 @@ runs:
           base_dir="${EXISTING_DIR}"
         else
           base_dir="${DEST_DIR:-${RUNNER_TEMP}/benchmarks-baseline}"
-          rm -rf "${base_dir}"
-          if [ -n "${SPARSE_PATHS}" ]; then
-            read -r -a SPARSE_LIST <<< "${SPARSE_PATHS}"
-            if git clone --depth 1 --filter=blob:none --no-checkout --branch "${BENCHMARKS_BRANCH}" "https://github.com/${GITHUB_REPOSITORY}.git" "${base_dir}"; then
-              git -C "${base_dir}" sparse-checkout init --no-cone
-              git -C "${base_dir}" sparse-checkout set "${SPARSE_LIST[@]}"
-              git -C "${base_dir}" checkout
-            else
-              echo "::warning::Could not clone branch ${BENCHMARKS_BRANCH}; proceeding without existing baselines."
-              mkdir -p "${base_dir}"
+          cloned=0
+          for attempt in 1 2 3; do
+            rm -rf "${base_dir}"
+            if [ -n "${SPARSE_PATHS}" ]; then
+              read -r -a SPARSE_LIST <<< "${SPARSE_PATHS}"
+              if git clone --depth 1 --filter=blob:none --no-checkout --branch "${BENCHMARKS_BRANCH}" "https://github.com/${GITHUB_REPOSITORY}.git" "${base_dir}" && \
+                 git -C "${base_dir}" sparse-checkout init --no-cone && \
+                 git -C "${base_dir}" sparse-checkout set "${SPARSE_LIST[@]}" && \
+                 git -C "${base_dir}" checkout; then
+                cloned=1
+                break
+              fi
+            elif git clone --depth 1 --branch "${BENCHMARKS_BRANCH}" "https://github.com/${GITHUB_REPOSITORY}.git" "${base_dir}"; then
+              cloned=1
+              break
             fi
-          elif ! git clone --depth 1 --branch "${BENCHMARKS_BRANCH}" "https://github.com/${GITHUB_REPOSITORY}.git" "${base_dir}"; then
-            echo "::warning::Could not clone branch ${BENCHMARKS_BRANCH}; proceeding without existing baselines."
+            if [ "${attempt}" -lt 3 ]; then
+              echo "::warning::git clone of branch ${BENCHMARKS_BRANCH} failed on attempt ${attempt}; retrying..."
+              sleep $((attempt * 2))
+            fi
+          done
+          if [ "${cloned}" -ne 1 ]; then
+            echo "::warning::Could not clone branch ${BENCHMARKS_BRANCH} after 3 attempts; proceeding without existing baselines."
+            rm -rf "${base_dir}"
             mkdir -p "${base_dir}"
           fi
         fi

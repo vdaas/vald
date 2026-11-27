@@ -147,12 +147,28 @@ runs:
         BENCH_DIR="$(mktemp -d)"
         trap 'rm -rf "${BENCH_DIR}"' EXIT
 
-        git_auth clone --depth 1 --filter=blob:none --no-checkout --branch "${BENCHMARKS_BRANCH}" \
-          "${remote_url}" \
-          "${BENCH_DIR}"
-        git -C "${BENCH_DIR}" sparse-checkout init --no-cone
-        git -C "${BENCH_DIR}" sparse-checkout set "${sparse_patterns[@]}"
-        git -C "${BENCH_DIR}" checkout
+        cloned=0
+        for clone_attempt in 1 2 3; do
+          rm -rf "${BENCH_DIR}"
+          mkdir -p "${BENCH_DIR}"
+          if git_auth clone --depth 1 --filter=blob:none --no-checkout --branch "${BENCHMARKS_BRANCH}" \
+            "${remote_url}" \
+            "${BENCH_DIR}" && \
+            git -C "${BENCH_DIR}" sparse-checkout init --no-cone && \
+            git -C "${BENCH_DIR}" sparse-checkout set "${sparse_patterns[@]}" && \
+            git -C "${BENCH_DIR}" checkout; then
+            cloned=1
+            break
+          fi
+          if [ "${clone_attempt}" -lt 3 ]; then
+            echo "::warning::git clone of ${BENCHMARKS_BRANCH} failed on attempt ${clone_attempt}; retrying..."
+            sleep $((clone_attempt * 2))
+          fi
+        done
+        if [ "${cloned}" -ne 1 ]; then
+          echo "::error::Failed to clone ${BENCHMARKS_BRANCH} after 3 attempts."
+          exit 1
+        fi
 
         for attempt in $(seq 1 "${MAX_RETRIES}"); do
           if [ "${attempt}" -gt 1 ]; then

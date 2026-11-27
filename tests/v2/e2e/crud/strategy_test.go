@@ -286,6 +286,7 @@ func exportMetricsReport(
 
 	baselinePath := strings.TrimSpace(os.Getenv(envMetricsBaseline))
 	if baselinePath == "" {
+		removeStaleRetry()
 		return
 	}
 	noiseCfg := metrics.DefaultNoiseConfig()

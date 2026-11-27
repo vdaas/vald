@@ -233,19 +233,83 @@ runs:
       if: ${{ inputs.upload_images == 'true' || (inputs.upload_images == '' && inputs.post_comment == 'true' && github.event_name == 'pull_request') }}
       shell: bash
       run: |
-        CLONE_DIR=$(mktemp -d)
-        trap 'rm -rf "$CLONE_DIR"' EXIT
-        git clone --depth 1 "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/vdaas-ci/vald-ci-images.git" "$CLONE_DIR"
-        rm -rf "$CLONE_DIR/${GITHUB_SHA::6}"
-        cp -r graphs "$CLONE_DIR/${GITHUB_SHA::6}"
-        cd "$CLONE_DIR"
-        git config user.email "vald@vdaas.org"
-        git config user.name "vdaas-ci"
-        git add .
-        if [ -n "$(git status --porcelain)" ]; then
-          git commit -m ":robot: Add ${GITHUB_SHA::6}"
-          git push "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/vdaas-ci/vald-ci-images.git" --set-upstream main
+        if [ -z "${GITHUB_USER}" ] || [ -z "${GITHUB_TOKEN}" ]; then
+          echo "::error::dispatch_user and dispatch_token are required to upload profile graphs."
+          exit 1
         fi
+        if [ ! -d graphs ] || [ -z "$(ls -A graphs)" ]; then
+          echo "::warning::No profile graphs found to upload to vdaas-ci/vald-ci-images."
+          exit 0
+        fi
+
+        auth_header="AUTHORIZATION: basic $(printf '%s:%s' "${GITHUB_USER}" "${GITHUB_TOKEN}" | base64 | tr -d '\r\n')"
+        echo "::add-mask::${auth_header}"
+        remote_url="https://github.com/vdaas-ci/vald-ci-images.git"
+        git_auth() {
+          git -c "http.https://github.com/.extraheader=${auth_header}" "$@"
+        }
+
+        sha6="${GITHUB_SHA::6}"
+        CLONE_DIR="$(mktemp -d)"
+        trap 'rm -rf "$CLONE_DIR"' EXIT
+
+        cloned=0
+        for clone_attempt in 1 2 3; do
+          rm -rf "$CLONE_DIR"
+          mkdir -p "$CLONE_DIR"
+          if git_auth clone --depth 1 "${remote_url}" "$CLONE_DIR"; then
+            cloned=1
+            break
+          fi
+          if [ "${clone_attempt}" -lt 3 ]; then
+            echo "::warning::git clone of vdaas-ci/vald-ci-images failed on attempt ${clone_attempt}; retrying..."
+            sleep $((clone_attempt * 2))
+          fi
+        done
+        if [ "${cloned}" -ne 1 ]; then
+          echo "::error::Failed to clone vdaas-ci/vald-ci-images after 3 attempts."
+          exit 1
+        fi
+
+        git -C "$CLONE_DIR" config user.email "vald@vdaas.org"
+        git -C "$CLONE_DIR" config user.name "vdaas-ci"
+
+        max_retries=5
+        for attempt in $(seq 1 "${max_retries}"); do
+          if [ "${attempt}" -gt 1 ]; then
+            sleep $(( (attempt - 1) * 3 ))
+            if ! git_auth -C "$CLONE_DIR" fetch --depth 1 origin main; then
+              if [ "${attempt}" -lt "${max_retries}" ]; then
+                echo "::warning::git fetch failed on attempt ${attempt}; retrying..."
+              else
+                echo "::warning::git fetch failed on final attempt ${attempt}."
+              fi
+              continue
+            fi
+            git -C "$CLONE_DIR" reset --hard FETCH_HEAD
+            git -C "$CLONE_DIR" clean -fd
+          fi
+
+          rm -rf "${CLONE_DIR}/${sha6}"
+          cp -r graphs "${CLONE_DIR}/${sha6}"
+          git -C "$CLONE_DIR" add -- "${sha6}"
+          if git -C "$CLONE_DIR" diff --cached --quiet; then
+            echo "No profile graph changes to push for ${sha6}."
+            exit 0
+          fi
+
+          git -C "$CLONE_DIR" commit -m ":robot: Add ${sha6}"
+          if git_auth -C "$CLONE_DIR" push origin HEAD:refs/heads/main; then
+            echo "Uploaded profile graphs for ${sha6} on attempt ${attempt}."
+            exit 0
+          fi
+          if [ "${attempt}" -lt "${max_retries}" ]; then
+            echo "::warning::git push to vdaas-ci/vald-ci-images failed on attempt ${attempt}; retrying..."
+          fi
+        done
+
+        echo "::error::Failed to push profile graphs to vdaas-ci/vald-ci-images after ${max_retries} attempts."
+        exit 1
       env:
         GITHUB_USER: ${{ inputs.dispatch_user }}
         GITHUB_TOKEN: ${{ inputs.dispatch_token }}
