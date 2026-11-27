@@ -684,7 +684,7 @@ func (t *tdigest) compress() {
 		// Maximum allowed weight for this quantile (shared with Add.tryMerge).
 		k := t.maxWeightForQuantile(q, total)
 
-		if mergedWeight <= k || len(out) == 0 {
+		if mergedWeight <= k {
 			current.Mean = mergedMean
 			current.Weight = mergedWeight
 		} else {

@@ -48,6 +48,14 @@ inputs:
     description: 'If it is not "0", ingress will be exposed to the specified port'
     required: false
     default: "0"
+  tag:
+    description: "Optional explicit Docker image tag override forwarded to determine-docker-image-tag (e.g. latest, nightly)"
+    required: false
+    default: ""
+  detect_tags:
+    description: "Whether to resolve Docker Hub tags for target_images"
+    required: false
+    default: "true"
   target_images:
     description: "Image names"
     required: false
@@ -75,14 +83,18 @@ runs:
       if: ${{ inputs.require_helm == 'true' }}
       uses: ./.github/actions/setup-helm
     - name: Wait for target Docker images
-      if: startsWith( github.ref, 'refs/tags/')
+      if: ${{ inputs.detect_tags == 'true' && startsWith(github.ref, 'refs/tags/') }}
       uses: ./.github/actions/wait-for-docker-image
       with:
         images: ${{ inputs.target_images }}
     - name: Determine Docker image tag
+      if: ${{ inputs.detect_tags == 'true' }}
       id: determine_tag_name
       uses: ./.github/actions/determine-docker-image-tag
+      with:
+        tag: ${{ inputs.tag }}
     - name: Specify container versions
+      if: ${{ inputs.detect_tags == 'true' }}
       id: specify_container_versions
       uses: ./.github/actions/detect-docker-image-tags
       with:
@@ -111,6 +123,7 @@ runs:
       run: |
         make k0s/vs/start
     - name: Check Kubernetes cluster
+      if: ${{ inputs.require_k3d == 'true' || inputs.require_minikube == 'true' || inputs.require_kind == 'true' || inputs.require_k0s == 'true' }}
       shell: bash
       run: |
         kubectl cluster-info dump

@@ -18,8 +18,10 @@ import (
 	"encoding/json"
 	"math"
 	"testing"
+	"time"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/test"
 )
@@ -228,12 +230,19 @@ func TestTDigest_Compression(t *testing.T) {
 				// Compression 20 means each shard should have ~20 centroids or less.
 				// 16 * 20 = 320 max centroids total.
 
+				if totalCentroids <= 1 {
+					return errors.Errorf("total centroids = %v, want > 1 after compression", totalCentroids)
+				}
 				if totalCentroids > 500 {
 					return errors.Errorf("total centroids = %v, want <= 500 (approx)", totalCentroids)
 				}
-				q := got.Val.Quantile(0.5)
-				if math.Abs(q-500) > 50 {
-					return errors.Errorf("Quantile(0.5) after compression = %v, want ~500", q)
+				q50 := got.Val.Quantile(0.5)
+				q99 := got.Val.Quantile(0.99)
+				if math.Abs(q50-500) > 50 {
+					return errors.Errorf("Quantile(0.5) after compression = %v, want ~500", q50)
+				}
+				if q99 <= q50 {
+					return errors.Errorf("expected Quantile(0.99)=%v > Quantile(0.5)=%v after compression", q99, q50)
 				}
 				return nil
 			},
@@ -444,6 +453,70 @@ func TestTDigest_MarshalJSON(t *testing.T) {
 	}
 	if q := td2.Quantile(0.5); q != 15 {
 		t.Errorf("Quantile(0.5) = %v, want 15", q)
+	}
+}
+
+func TestTDigest_MergeIntoGlobalSnapshotPreservesPercentiles(t *testing.T) {
+	t.Parallel()
+
+	colA, err := NewCollector()
+	if err != nil {
+		t.Fatalf("NewCollector(colA) failed: %v", err)
+	}
+	colB, err := NewCollector()
+	if err != nil {
+		t.Fatalf("NewCollector(colB) failed: %v", err)
+	}
+	parent, err := NewCollector()
+	if err != nil {
+		t.Fatalf("NewCollector(parent) failed: %v", err)
+	}
+
+	base := time.Date(2026, 11, 24, 21, 0, 0, 0, time.UTC)
+	for i := range 2000 {
+		lat := time.Duration(100+(i%10)*50) * time.Microsecond
+		if i%20 == 0 {
+			lat = 5 * time.Millisecond
+		}
+		if i%100 == 0 {
+			lat = 20 * time.Millisecond
+		}
+		colA.Record(t.Context(), uint64(i+1), &RequestResult{
+			StartedAt: base,
+			EndedAt:   base.Add(lat),
+			Latency:   lat,
+			Status:    codes.OK,
+		})
+	}
+	colB.Record(t.Context(), 1, &RequestResult{
+		StartedAt: base,
+		EndedAt:   base.Add(30 * time.Millisecond),
+		Latency:   30 * time.Millisecond,
+		Status:    codes.OK,
+	})
+
+	if err := colA.MergeInto(parent); err != nil {
+		t.Fatalf("colA.MergeInto(parent) failed: %v", err)
+	}
+	if err := colB.MergeInto(parent); err != nil {
+		t.Fatalf("colB.MergeInto(parent) failed: %v", err)
+	}
+
+	snap := parent.GlobalSnapshot()
+	minNS := snap.LatencyMinNS()
+	p50 := snap.LatencyQuantileNS(0.50)
+	p90 := snap.LatencyQuantileNS(0.90)
+	p95 := snap.LatencyQuantileNS(0.95)
+	p99 := snap.LatencyP99NS()
+	maxNS := snap.LatencyMaxNS()
+	meanNS := snap.LatencyMeanNS()
+
+	if minNS > p50 || p50 >= p90 || p90 > p95 || p95 > p99 || p99 > maxNS {
+		t.Fatalf("expected distinct monotonic percentiles Min<=P50<P90<=P95<=P99<=Max, got min=%v p50=%v p90=%v p95=%v p99=%v max=%v",
+			minNS, p50, p90, p95, p99, maxNS)
+	}
+	if math.Abs(p99-meanNS) < 1e3 {
+		t.Fatalf("expected P99 (%v) not collapsed to Mean (%v)", p99, meanNS)
 	}
 }
 

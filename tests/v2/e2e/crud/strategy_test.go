@@ -20,17 +20,23 @@ package crud
 import (
 	"context"
 	"fmt"
+	"math"
+	"path/filepath"
+	"strconv"
 	"testing"
 	"time"
 
 	agent "github.com/vdaas/vald/internal/client/v1/client/agent/core"
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/file"
 	k8s "github.com/vdaas/vald/internal/k8s/client"
 	"github.com/vdaas/vald/internal/k8s/portforward"
 	"github.com/vdaas/vald/internal/k8s/resource"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/os"
+	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/test"
 	"github.com/vdaas/vald/internal/test/retry"
@@ -48,6 +54,9 @@ type runner struct {
 }
 
 func TestE2EStrategy(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping e2e test in -short mode")
+	}
 	runE2EStrategy(test.NewNode(t))
 }
 
@@ -60,6 +69,9 @@ func TestE2EStrategy(t *testing.T) {
 // -benchtime 1x (or a small fixed count) since one iteration already
 // performs the execution's full configured request load.
 func BenchmarkE2EStrategy(b *testing.B) {
+	if testing.Short() {
+		b.Skip("skipping e2e test in -short mode")
+	}
 	runE2EStrategy(test.NewNode(b))
 }
 
@@ -174,7 +186,139 @@ func runE2EStrategy(t test.Node) {
 			snapshot := cfg.Collector.GlobalSnapshot()
 			log.Infof("Global Metrics for %s:\n%s", cfg.FilePath, snapshot)
 		}
+		exportMetricsReport(ctx, tt, cfg, os.Getenv(envMetricsOutput))
 	})
+}
+
+const (
+	retryFileSuffix = ".retry"
+	floatBitSize64  = 64
+)
+
+func resolveScenarioName(envName, configPath string) string {
+	if trimmed := strings.TrimSpace(envName); trimmed != "" {
+		return trimmed
+	}
+	trimmedPath := strings.TrimSpace(configPath)
+	if trimmedPath == "" {
+		return ""
+	}
+	base := filepath.Base(trimmedPath)
+	return strings.TrimSuffix(base, filepath.Ext(base))
+}
+
+func buildMetricsReport(cfgData *config.Data, scenario string) *metrics.Report {
+	report := &metrics.Report{
+		SchemaVersion: metrics.ReportSchemaVersion,
+		Scenario:      scenario,
+		Timestamp:     time.Now().UTC().Format(time.RFC3339),
+		Summary:       &metrics.GlobalSnapshot{},
+		Strategies:    make([]metrics.StrategyReport, 0),
+	}
+	if cfgData == nil {
+		return report
+	}
+	report.Summary = metrics.SnapshotFromCollector(cfgData.Collector)
+	report.Strategies = make([]metrics.StrategyReport, 0, len(cfgData.Strategies))
+	for _, st := range cfgData.Strategies {
+		if st == nil {
+			continue
+		}
+		ops := make([]metrics.OperationReport, 0, len(st.Operations))
+		for _, op := range st.Operations {
+			if op == nil {
+				continue
+			}
+			execs := make([]metrics.ExecutionReport, 0, len(op.Executions))
+			for idx, e := range op.Executions {
+				if e == nil {
+					continue
+				}
+				execs = append(execs, metrics.ExecutionReport{
+					Index:   idx,
+					Name:    e.Name,
+					Type:    string(e.Type),
+					Mode:    string(e.Mode),
+					Summary: metrics.SnapshotFromCollector(e.Collector),
+				})
+			}
+			ops = append(ops, metrics.OperationReport{
+				Name:       op.Name,
+				Summary:    metrics.SnapshotFromCollector(op.Collector),
+				Executions: execs,
+			})
+		}
+		report.Strategies = append(report.Strategies, metrics.StrategyReport{
+			Name:       st.Name,
+			Summary:    metrics.SnapshotFromCollector(st.Collector),
+			Operations: ops,
+		})
+	}
+	return report
+}
+
+func exportMetricsReport(
+	ctx context.Context, tb testing.TB, cfgData *config.Data, outputPath string,
+) {
+	tb.Helper()
+	outPath := strings.TrimSpace(outputPath)
+	if outPath == "" {
+		return
+	}
+	var filePath string
+	if cfgData != nil {
+		filePath = cfgData.FilePath
+	}
+	scenario := resolveScenarioName(os.Getenv(envScenarioName), filePath)
+	report := buildMetricsReport(cfgData, scenario)
+	if err := metrics.WriteReport(ctx, outPath, report); err != nil {
+		tb.Errorf("failed to export e2e metrics report to %s: %v", outPath, err)
+		return
+	}
+	log.Infof("exported structured e2e metrics report to %s", outPath)
+
+	retryPath := outPath + retryFileSuffix
+	removeStaleRetry := func() {
+		if err := os.Remove(retryPath); err != nil && !errors.Is(err, os.ErrNotExist) {
+			tb.Errorf("failed to remove stale noise retry marker %s: %v", retryPath, err)
+		}
+	}
+
+	baselinePath := strings.TrimSpace(os.Getenv(envMetricsBaseline))
+	if baselinePath == "" {
+		removeStaleRetry()
+		return
+	}
+	noiseCfg := metrics.DefaultNoiseConfig()
+	if raw := strings.TrimSpace(os.Getenv(envNoiseThreshold)); raw != "" {
+		threshold, err := strconv.ParseFloat(raw, floatBitSize64)
+		if err != nil {
+			tb.Errorf("invalid %s %q: %v", envNoiseThreshold, raw, err)
+			removeStaleRetry()
+			return
+		}
+		if math.IsNaN(threshold) || math.IsInf(threshold, 0) || threshold <= 0 {
+			tb.Errorf("invalid %s %q: must be finite and > 0", envNoiseThreshold, raw)
+			removeStaleRetry()
+			return
+		}
+		noiseCfg.Threshold = threshold
+	}
+	retryNeeded, reason, err := metrics.CheckNoiseBaselineFile(report, baselinePath, noiseCfg)
+	if err != nil {
+		tb.Errorf("failed to check metrics noise against baseline %s: %v", baselinePath, err)
+		removeStaleRetry()
+		return
+	}
+	if retryNeeded {
+		if _, err := file.OverWriteFile(ctx, retryPath, strings.NewReader(reason+"\n"), defaultMetricsFilePerm); err != nil {
+			tb.Errorf("failed to write noise retry marker %s: %v", retryPath, err)
+			return
+		}
+		log.Warnf("e2e metrics noise detected (%s); wrote retry marker %s", reason, retryPath)
+		return
+	}
+	removeStaleRetry()
 }
 
 func (r *runner) processStrategy(

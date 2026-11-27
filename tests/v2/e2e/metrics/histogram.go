@@ -19,6 +19,7 @@ import (
 	"math"
 	"slices"
 
+	"github.com/vdaas/vald/internal/encoding/json"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/sync"
@@ -551,6 +552,27 @@ type HistogramSnapshot struct {
 	StdDev float64   `json:"std_dev"`
 	Min    float64   `json:"min"`
 	Max    float64   `json:"max"`
+}
+
+// MarshalJSON implements json.Marshaler while sanitizing non-finite floats (such as ±Inf on empty snapshots) to 0.
+func (s HistogramSnapshot) MarshalJSON() ([]byte, error) {
+	type alias HistogramSnapshot
+	a := alias(s)
+	a.Sum = finiteOrZero(a.Sum)
+	a.SumSq = finiteOrZero(a.SumSq)
+	a.M2 = finiteOrZero(a.M2)
+	a.Mean = finiteOrZero(a.Mean)
+	a.StdDev = finiteOrZero(a.StdDev)
+	a.Min = finiteOrZero(a.Min)
+	a.Max = finiteOrZero(a.Max)
+	if len(a.Bounds) > 0 {
+		bounds := make([]float64, len(a.Bounds))
+		for i, b := range a.Bounds {
+			bounds[i] = finiteOrZero(b)
+		}
+		a.Bounds = bounds
+	}
+	return json.Marshal(a)
 }
 
 func (s *HistogramSnapshot) String() string {

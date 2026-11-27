@@ -1,0 +1,82 @@
+#
+# Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+name: "Fetch benchmarks baseline"
+description: "Clone or reuse a shallow checkout of the benchmarks baseline branch"
+inputs:
+  branch:
+    description: "Branch storing Daily benchmark and profile baselines"
+    required: false
+    default: "benchmarks"
+  dest:
+    description: "Destination directory when cloning (defaults to RUNNER_TEMP/benchmarks-baseline)"
+    required: false
+    default: ""
+  existing_dir:
+    description: "Optional pre-cloned directory to reuse instead of cloning"
+    required: false
+    default: ""
+  sparse_paths:
+    description: "Optional space-separated sparse-checkout paths (--no-cone) to minimize transfer"
+    required: false
+    default: ""
+outputs:
+  dir:
+    description: "Resolved baseline root directory"
+    value: ${{ steps.fetch.outputs.dir }}
+runs:
+  using: "composite"
+  steps:
+    - name: Clone or reuse benchmarks branch
+      id: fetch
+      shell: bash
+      env:
+        BENCHMARKS_BRANCH: ${{ inputs.branch }}
+        DEST_DIR: ${{ inputs.dest }}
+        EXISTING_DIR: ${{ inputs.existing_dir }}
+        SPARSE_PATHS: ${{ inputs.sparse_paths }}
+      run: |
+        if [ -n "${EXISTING_DIR}" ] && [ -d "${EXISTING_DIR}" ]; then
+          base_dir="${EXISTING_DIR}"
+        else
+          base_dir="${DEST_DIR:-${RUNNER_TEMP}/benchmarks-baseline}"
+          cloned=0
+          for attempt in 1 2 3; do
+            rm -rf "${base_dir}"
+            if [ -n "${SPARSE_PATHS}" ]; then
+              read -r -a SPARSE_LIST <<< "${SPARSE_PATHS}"
+              if git clone --depth 1 --filter=blob:none --no-checkout --branch "${BENCHMARKS_BRANCH}" "https://github.com/${GITHUB_REPOSITORY}.git" "${base_dir}" && \
+                 git -C "${base_dir}" sparse-checkout init --no-cone && \
+                 git -C "${base_dir}" sparse-checkout set "${SPARSE_LIST[@]}" && \
+                 git -C "${base_dir}" checkout; then
+                cloned=1
+                break
+              fi
+            elif git clone --depth 1 --branch "${BENCHMARKS_BRANCH}" "https://github.com/${GITHUB_REPOSITORY}.git" "${base_dir}"; then
+              cloned=1
+              break
+            fi
+            if [ "${attempt}" -lt 3 ]; then
+              echo "::warning::git clone of branch ${BENCHMARKS_BRANCH} failed on attempt ${attempt}; retrying..."
+              sleep $((attempt * 2))
+            fi
+          done
+          if [ "${cloned}" -ne 1 ]; then
+            echo "::warning::Could not clone branch ${BENCHMARKS_BRANCH} after 3 attempts; proceeding without existing baselines."
+            rm -rf "${base_dir}"
+            mkdir -p "${base_dir}"
+          fi
+        fi
+        echo "dir=${base_dir}" >> "$GITHUB_OUTPUT"

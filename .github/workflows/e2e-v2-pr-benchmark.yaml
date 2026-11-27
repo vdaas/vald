@@ -1,0 +1,456 @@
+#
+# Copyright (C) 2019-2026 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+name: "Run E2E V2 PR Benchmark"
+on:
+  pull_request:
+    types:
+      - "labeled"
+concurrency:
+  group: >-
+    ${{ github.event.label.name == 'actions/benchmark' &&
+        format('e2e-v2-pr-benchmark-{0}', github.event.pull_request.number) ||
+        format('e2e-v2-pr-benchmark-skip-{0}-{1}', github.event.pull_request.number, github.run_id) }}
+  cancel-in-progress: true
+defaults:
+  run:
+    shell: bash
+jobs:
+  dump-contexts-to-log:
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    runs-on: ubuntu-slim
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/dump-context
+  wait-pr-images:
+    if: ${{ github.event.pull_request.head.repo.fork == false && github.event.action == 'labeled' && github.event.label.name == 'actions/benchmark' }}
+    timeout-minutes: 70
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: read
+    runs-on: ubuntu-latest
+    outputs:
+      required_pr_images: ${{ steps.wait_builds.outputs.required_pr_images }}
+      pr_base_sha: ${{ steps.wait_builds.outputs.pr_base_sha }}
+      missing_targets_json: ${{ steps.wait_builds.outputs.missing_targets_json }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Wait for PR Docker image builds
+        id: wait_builds
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          result-encoding: string
+          script: |
+            const fs = require("fs");
+            const { execFileSync } = require("child_process");
+            const headSha = process.env.HEAD_SHA;
+            const baseSha = process.env.BASE_SHA;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const prNumber = context.issue.number;
+
+            const { data: cmp } = await github.rest.repos.compareCommitsWithBasehead({
+              owner,
+              repo,
+              basehead: `${baseSha}...${headSha}`
+            });
+            const mergeBaseSha = cmp && cmp.merge_base_commit && cmp.merge_base_commit.sha;
+            if (!mergeBaseSha) {
+              core.setFailed(`Unable to resolve merge-base commit for ${baseSha}...${headSha}.`);
+              return;
+            }
+            core.info(`Resolved PR merge-base commit: ${mergeBaseSha}`);
+            const targets = [
+              { target: "agent-ngt", workflow: "Build docker image: agent-ngt", file: ".github/workflows/dockers-agent-ngt-image.yaml", image: "vdaas/vald-agent-ngt" },
+              { target: "agent-faiss", workflow: "Build docker image: agent-faiss", file: ".github/workflows/dockers-agent-faiss-image.yaml", image: "vdaas/vald-agent-faiss" },
+              { target: "agent-sidecar", workflow: "Build docker image: agent-sidecar", file: ".github/workflows/dockers-agent-sidecar-image.yaml", image: "vdaas/vald-agent-sidecar" },
+              { target: "discoverer-k8s", workflow: "Build docker image: discoverer-k8s", file: ".github/workflows/dockers-discoverer-k8s-image.yaml", image: "vdaas/vald-discoverer-k8s" },
+              { target: "gateway-lb", workflow: "Build docker image: gateway-lb", file: ".github/workflows/dockers-gateway-lb-image.yaml", image: "vdaas/vald-lb-gateway" },
+              { target: "gateway-filter", workflow: "Build docker image: gateway-filter", file: ".github/workflows/dockers-gateway-filter-image.yaml", image: "vdaas/vald-filter-gateway" },
+              { target: "gateway-mirror", workflow: "Build docker image: gateway-mirror", file: ".github/workflows/dockers-gateway-mirror-image.yaml", image: "vdaas/vald-mirror-gateway" },
+              { target: "manager-index", workflow: "Build docker image: manager-index", file: ".github/workflows/dockers-manager-index-image.yaml", image: "vdaas/vald-manager-index" },
+              { target: "index-operator", workflow: "Build docker image: index-operator", file: ".github/workflows/dockers-index-operator-image.yaml", image: "vdaas/vald-index-operator" },
+              { target: "readreplica-rotate", workflow: "Build docker image: readreplica-rotate", file: ".github/workflows/dockers-readreplica-rotate-image.yaml", image: "vdaas/vald-readreplica-rotate" },
+              { target: "index-correction", workflow: "Build docker image: index-correction", file: ".github/workflows/dockers-index-correction-image.yaml", image: "vdaas/vald-index-correction" },
+              { target: "index-creation", workflow: "Build docker image: index-creation", file: ".github/workflows/dockers-index-creation-image.yaml", image: "vdaas/vald-index-creation" },
+              { target: "index-deletion", workflow: "Build docker image: index-deletion", file: ".github/workflows/dockers-index-deletion-image.yaml", image: "vdaas/vald-index-deletion" },
+              { target: "helm-operator", workflow: "Build docker image: helm-operator", file: ".github/workflows/dockers-helm-operator-image.yaml", image: "vdaas/vald-helm-operator" }
+            ];
+            const workflowToImage = Object.fromEntries(targets.map((t) => [t.workflow, t.image]));
+
+            function parsePullRequestPaths(filePath) {
+              const lines = fs.readFileSync(filePath, "utf8").split(/\r?\n/);
+              let inOn = false;
+              let inPR = false;
+              let inPaths = false;
+              const patterns = [];
+              for (const raw of lines) {
+                if (/^\s*(#.*)?$/.test(raw)) {
+                  continue;
+                }
+                if (/^[^\s#]/.test(raw)) {
+                  inOn = /^on:\s*(#.*)?$/.test(raw);
+                  inPR = false;
+                  inPaths = false;
+                  continue;
+                }
+                if (!inOn) {
+                  continue;
+                }
+                if (/^  [a-zA-Z0-9_-]+:/.test(raw)) {
+                  inPR = /^  pull_request:\s*(#.*)?$/.test(raw);
+                  inPaths = false;
+                  continue;
+                }
+                if (!inPR) {
+                  continue;
+                }
+                if (/^    [a-zA-Z0-9_-]+:/.test(raw)) {
+                  inPaths = /^    paths:\s*(#.*)?$/.test(raw);
+                  continue;
+                }
+                if (inPaths) {
+                  const m = raw.match(/^\s+-\s+(.+)$/);
+                  if (!m) {
+                    inPaths = false;
+                    continue;
+                  }
+                  let val = m[1].trim();
+                  if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+                    val = val.slice(1, -1);
+                  } else {
+                    val = val.replace(/\s+#.*$/, "").trim();
+                  }
+                  if (val) {
+                    patterns.push(val);
+                  }
+                }
+              }
+              return patterns;
+            }
+
+            function globToRegex(pattern) {
+              let out = "^";
+              for (let i = 0; i < pattern.length; i++) {
+                const c = pattern[i];
+                if (c === "*" && pattern[i + 1] === "*") {
+                  if (pattern[i + 2] === "/") {
+                    out += "(?:.+/)?";
+                    i += 2;
+                  } else {
+                    out += ".*";
+                    i += 1;
+                  }
+                } else if (c === "*") {
+                  out += "[^/]*";
+                } else if (c === "?") {
+                  out += "[^/]";
+                } else if (/[.+^${}()|[\]\\]/.test(c)) {
+                  out += "\\" + c;
+                } else {
+                  out += c;
+                }
+              }
+              out += "$";
+              return new RegExp(out);
+            }
+
+            function matchesPaths(changedFiles, patterns) {
+              const positives = [];
+              const negatives = [];
+              for (const p of patterns) {
+                if (p.startsWith("!")) {
+                  negatives.push(globToRegex(p.slice(1)));
+                } else {
+                  positives.push(globToRegex(p));
+                }
+              }
+              for (const file of changedFiles) {
+                if (positives.some((rx) => rx.test(file)) && !negatives.some((rx) => rx.test(file))) {
+                  return true;
+                }
+              }
+              return false;
+            }
+
+            // Diff against the pinned merge-base rather than GitHub's PR files API so large
+            // PRs (>3000 files) are completely evaluated. Any expected builds that GitHub's
+            // 3,000-file path filter skipped will be built explicitly by build-missing-pr-images.
+            const authHeader = "AUTHORIZATION: basic " + Buffer.from(`x-access-token:${process.env.GITHUB_TOKEN || ""}`).toString("base64");
+            core.setSecret(authHeader);
+            execFileSync(
+              "git",
+              ["-c", `http.https://github.com/.extraheader=${authHeader}`, "fetch", "--no-tags", "--filter=blob:none", "--depth=1", "origin", mergeBaseSha],
+              { stdio: "pipe" }
+            );
+            const diffBuf = execFileSync("git", ["diff", "--name-status", "-z", mergeBaseSha, headSha]);
+            const tokens = diffBuf.toString("utf8").split("\0");
+            const changedFiles = [];
+            for (let i = 0; i < tokens.length; ) {
+              const status = tokens[i++];
+              if (!status) break;
+              if (status.startsWith("R") || status.startsWith("C")) {
+                const oldPath = tokens[i++];
+                const newPath = tokens[i++];
+                if (oldPath) changedFiles.push(oldPath);
+                if (newPath) changedFiles.push(newPath);
+              } else {
+                const filePath = tokens[i++];
+                if (filePath) changedFiles.push(filePath);
+              }
+            }
+
+            const expectedTargets = [];
+            for (const t of targets) {
+              const patterns = parsePullRequestPaths(t.file);
+              if (matchesPaths(changedFiles, patterns)) {
+                expectedTargets.push(t);
+              }
+            }
+            core.info(`Changed files (${changedFiles.length}): expected image build workflows = ${expectedTargets.map((t) => t.workflow).join(", ") || "<none>"}`);
+
+            const startTime = Date.now();
+            const registrationGraceMs = 2 * 60 * 1000;
+            const deadline = startTime + 60 * 60 * 1000;
+            const pollIntervalMs = 30 * 1000;
+
+            while (true) {
+              // Restrict to pull_request runs because non-fork PRs also trigger no-op
+              // pull_request_target image workflows that immediately conclude "success"
+              // while skipping prepare/build/scan/merge, which would otherwise shadow real builds.
+              const runs = await github.paginate(github.rest.actions.listWorkflowRunsForRepo, {
+                owner,
+                repo,
+                head_sha: headSha,
+                event: "pull_request",
+                per_page: 100
+              });
+              const latestByWorkflow = new Map();
+              for (const run of runs) {
+                if (run.event !== "pull_request" || !Object.prototype.hasOwnProperty.call(workflowToImage, run.name)) {
+                  continue;
+                }
+                const prev = latestByWorkflow.get(run.name);
+                const runAttempt = run.run_attempt || 1;
+                const prevAttempt = prev ? (prev.run_attempt || 1) : 0;
+                if (
+                  !prev ||
+                  run.run_number > prev.run_number ||
+                  (run.run_number === prev.run_number && runAttempt > prevAttempt) ||
+                  (run.run_number === prev.run_number && runAttempt === prevAttempt && new Date(run.created_at) > new Date(prev.created_at))
+                ) {
+                  latestByWorkflow.set(run.name, run);
+                }
+              }
+
+              const inGrace = Date.now() - startTime < registrationGraceMs;
+              const pending = [];
+              if (inGrace) {
+                for (const t of expectedTargets) {
+                  if (!latestByWorkflow.has(t.workflow)) {
+                    pending.push(`${t.workflow} (not started)`);
+                  }
+                }
+              }
+              for (const [name, run] of latestByWorkflow.entries()) {
+                if (run.status !== "completed") {
+                  pending.push(`${name} (${run.status})`);
+                }
+              }
+
+              if (pending.length === 0) {
+                const failed = [];
+                const builtImages = new Set();
+                for (const [name, run] of latestByWorkflow.entries()) {
+                  if (run.conclusion === "success") {
+                    builtImages.add(workflowToImage[name]);
+                  } else {
+                    failed.push(`${name}: ${run.conclusion} (${run.html_url})`);
+                  }
+                }
+                if (failed.length > 0) {
+                  core.setFailed(`PR Docker image build(s) did not succeed for ${headSha}:\n${failed.join("\n")}`);
+                  return;
+                }
+                // Guard against force-pushes or new commits arriving while the build gate waited.
+                const { data: currentPR } = await github.rest.pulls.get({
+                  owner,
+                  repo,
+                  pull_number: prNumber
+                });
+                if (!currentPR || !currentPR.head || currentPR.head.sha !== headSha) {
+                  core.setFailed(
+                    `PR #${prNumber} head changed during build gate (expected ${headSha}, current ${currentPR && currentPR.head ? currentPR.head.sha : "<unknown>"}). Re-run benchmark on the latest commit.`
+                  );
+                  return;
+                }
+                const missingTargets = expectedTargets.filter((t) => !latestByWorkflow.has(t.workflow));
+                for (const t of missingTargets) {
+                  builtImages.add(t.image);
+                }
+                const required = [...builtImages].sort().join(" ");
+                const missingTargetNames = missingTargets.map((t) => t.target);
+                if (missingTargetNames.length > 0) {
+                  core.info(
+                    `Expected image build workflow(s) did not appear for ${headSha} (e.g., >3,000-file PR path filter limit); will build explicitly: ${missingTargetNames.join(", ")}`
+                  );
+                }
+                if (required) {
+                  core.info(`All PR Docker image builds accounted for (${headSha}). Required PR images: ${required}`);
+                } else {
+                  core.info(`No E2E application image paths changed in PR #${prNumber}; unchanged components will be pinned to PR merge-base commit ${mergeBaseSha} by digest.`);
+                }
+                core.setOutput("required_pr_images", required);
+                core.setOutput("pr_base_sha", mergeBaseSha);
+                core.setOutput("missing_targets_json", JSON.stringify(missingTargetNames));
+                return;
+              }
+
+              if (Date.now() >= deadline) {
+                core.setFailed(`Timed out waiting for PR Docker image builds (${headSha}): ${pending.join(", ")}`);
+                return;
+              }
+              core.info(`Waiting for PR Docker image builds (${headSha}): ${pending.join(", ")}`);
+              await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));
+            }
+  build-missing-pr-images:
+    if: ${{ needs.wait-pr-images.result == 'success' && needs.wait-pr-images.outputs.missing_targets_json != '' && needs.wait-pr-images.outputs.missing_targets_json != '[]' }}
+    needs: [wait-pr-images]
+    permissions:
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        target: ${{ fromJson(needs.wait-pr-images.outputs.missing_targets_json) }}
+    uses: ./.github/workflows/_docker-image.yaml
+    with:
+      target: ${{ matrix.target }}
+    secrets:
+      DOCKERHUB_PASS: ${{ secrets.DOCKERHUB_PASS }}
+      DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
+      PACKAGE_TOKEN: ${{ secrets.PACKAGE_TOKEN }}
+      PACKAGE_USER: ${{ secrets.PACKAGE_USER }}
+      SLACK_NOTIFY_WEBHOOK_URL: ${{ secrets.SLACK_NOTIFY_WEBHOOK_URL }}
+  benchmark:
+    if: ${{ !failure() && !cancelled() && needs.wait-pr-images.result == 'success' && (needs.build-missing-pr-images.result == 'success' || needs.build-missing-pr-images.result == 'skipped') }}
+    needs: [wait-pr-images, build-missing-pr-images]
+    permissions:
+      contents: read
+    uses: ./.github/workflows/_e2e-v2.yaml
+    with:
+      mode: pr
+      channels_json: '["pr"]'
+      benchmarks_branch: benchmarks
+      required_pr_images: ${{ needs.wait-pr-images.outputs.required_pr_images }}
+      pr_base_sha: ${{ needs.wait-pr-images.outputs.pr_base_sha }}
+    secrets:
+      PACKAGE_USER: ${{ secrets.PACKAGE_USER }}
+      PACKAGE_TOKEN: ${{ secrets.PACKAGE_TOKEN }}
+      DISPATCH_USER: ${{ secrets.DISPATCH_USER }}
+      DISPATCH_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+  comment:
+    if: ${{ !cancelled() && (needs.benchmark.result == 'success' || needs.benchmark.result == 'failure') }}
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      pull-requests: write
+    needs: [benchmark]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-go
+      - name: Download PR benchmark metrics
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: e2e-metrics-*
+          merge-multiple: true
+          path: pr-metrics
+      - name: Fetch benchmarks baseline
+        id: fetch_baselines
+        uses: ./.github/actions/fetch-benchmarks-baseline
+        with:
+          branch: benchmarks
+          sparse_paths: "e2e/v2/latest/*.json e2e/v2/nightly/*.json"
+      - name: Generate Benchmark Diff table
+        id: generate_diff
+        env:
+          BENCH_DIR: ${{ steps.fetch_baselines.outputs.dir }}
+          BENCHMARK_RESULT: ${{ needs.benchmark.result }}
+        run: |
+          mkdir -p pr-metrics/pr
+          if ! compgen -G "pr-metrics/pr/*.json" >/dev/null; then
+            echo "::warning::No PR benchmark metrics artifacts were produced; skipping Benchmark Diff comment."
+            echo "has_metrics=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          make GITFILES_CHECKED=1 e2e/v2/diff \
+            E2E_BENCH_DIFF_OUTPUT=benchmark-diff.md \
+            E2E_PR_METRICS_DIR=pr-metrics/pr \
+            E2E_LATEST_METRICS_DIR="${BENCH_DIR}/e2e/v2/latest" \
+            E2E_NIGHTLY_METRICS_DIR="${BENCH_DIR}/e2e/v2/nightly"
+          if [ "${BENCHMARK_RESULT}" = "failure" ]; then
+            awk 'NR==1{print; print "\n> [!WARNING]\n> Some E2E V2 benchmark scenarios failed in this run; the table below shows partial results from completed scenarios only."; next} {print}' benchmark-diff.md > benchmark-diff.md.tmp
+            mv benchmark-diff.md.tmp benchmark-diff.md
+          fi
+          echo "has_metrics=true" >> "$GITHUB_OUTPUT"
+      - name: Upload Benchmark Diff Markdown
+        if: ${{ steps.generate_diff.outputs.has_metrics == 'true' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: benchmark-diff
+          path: benchmark-diff.md
+      - name: Upsert PR Benchmark Diff comment
+        if: ${{ steps.generate_diff.outputs.has_metrics == 'true' }}
+        uses: ./.github/actions/upsert-pr-comment
+        with:
+          marker: "<!-- e2e-v2-benchmark-diff -->"
+          body_path: benchmark-diff.md
+  publish:
+    if: ${{ !cancelled() && (needs.benchmark.result == 'success' || needs.benchmark.result == 'failure') }}
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    needs: [benchmark]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Publish PR results to benchmarks branch
+        uses: ./.github/actions/publish-benchmarks
+        with:
+          branch: benchmarks
+          github_user: ${{ secrets.DISPATCH_USER }}
+          github_token: ${{ secrets.DISPATCH_TOKEN }}
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          benchmark_result: ${{ needs.benchmark.result }}
+          commit_message: ":robot: Archive E2E V2 PR #${{ github.event.pull_request.number }} (${{ github.event.pull_request.head.sha }}) benchmark results and profiles"
+          mappings: |
+            pr:e2e/v2/prs/pr-${{ github.event.pull_request.number }}/${{ github.event.pull_request.head.sha }}

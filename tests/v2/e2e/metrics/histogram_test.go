@@ -19,6 +19,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/vdaas/vald/internal/encoding/json"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/test"
@@ -504,5 +505,70 @@ func TestHistogram_BucketsValidation(t *testing.T) {
 		t.Log("Data is in the last bucket, confirming unit mismatch (nanoseconds vs small bounds)")
 	} else {
 		t.Log("Data is distributed properly?")
+	}
+}
+
+func TestHistogramSnapshot_MarshalJSON(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		setupSnap func(t *testing.T) *HistogramSnapshot
+		name      string
+		wantTotal uint64
+		wantMin   float64
+		wantMax   float64
+	}{
+		{
+			name: "empty snapshot with +/-Inf min/max marshals and round-trips to zero",
+			setupSnap: func(t *testing.T) *HistogramSnapshot {
+				t.Helper()
+				h, err := NewHistogram(WithHistogramNumShards(1))
+				if err != nil {
+					t.Fatalf("NewHistogram failed: %v", err)
+				}
+				snap := h.Snapshot()
+				if !math.IsInf(snap.Min, 1) || !math.IsInf(snap.Max, -1) {
+					t.Fatalf("expected +/-Inf sentinels on empty Snapshot, got min=%v max=%v", snap.Min, snap.Max)
+				}
+				return snap
+			},
+			wantTotal: 0,
+			wantMin:   0,
+			wantMax:   0,
+		},
+		{
+			name: "non-empty snapshot preserves finite statistics on round-trip",
+			setupSnap: func(t *testing.T) *HistogramSnapshot {
+				t.Helper()
+				h, err := NewHistogram(WithHistogramNumShards(2))
+				if err != nil {
+					t.Fatalf("NewHistogram failed: %v", err)
+				}
+				h.Record(100)
+				h.Record(500)
+				return h.Snapshot()
+			},
+			wantTotal: 2,
+			wantMin:   100,
+			wantMax:   500,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			snap := tc.setupSnap(t)
+			raw, err := json.Marshal(snap)
+			if err != nil {
+				t.Fatalf("json.Marshal failed: %v", err)
+			}
+			var decoded HistogramSnapshot
+			if err := json.Unmarshal(raw, &decoded); err != nil {
+				t.Fatalf("json.Unmarshal failed: %v", err)
+			}
+			if decoded.Total != tc.wantTotal || decoded.Min != tc.wantMin || decoded.Max != tc.wantMax {
+				t.Fatalf("decoded = %+v, want total=%d min=%v max=%v", decoded, tc.wantTotal, tc.wantMin, tc.wantMax)
+			}
+		})
 	}
 }

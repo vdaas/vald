@@ -113,7 +113,7 @@ runs:
         PLATFORM: ${{ steps.determine_build_platform.outputs.PLATFORM }}
         ARCH: ${{ steps.determine_build_platform.outputs.ARCH }}
         BUILDER: ${{ inputs.builder }}
-        LABEL_OPTS: "--label org.opencontainers.image.url=${{ github.event.repository.html_url }} --label org.opencontainers.image.source=${{ github.event.repository.html_url }} --label org.opencontainers.image.revision=${{ github.sha }}"
+        LABEL_OPTS: "--label org.opencontainers.image.url=${{ github.event.repository.html_url }} --label org.opencontainers.image.source=${{ github.event.repository.html_url }} --label org.opencontainers.image.revision=${{ github.event.pull_request.head.sha || github.sha }}"
         IMAGE_NAME: ${{ inputs.image_name }}
         ALTER_IMAGE_NAME: ${{ inputs.alter_image_name }}
         PRIMARY_TAG: ${{ inputs.primary_tag }}

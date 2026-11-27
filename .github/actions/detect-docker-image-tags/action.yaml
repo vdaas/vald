@@ -48,7 +48,7 @@ runs:
           ["vdaas/vald-mirror-gateway"]="gateway.mirror.image.tag"
           ["vdaas/vald-manager-index"]="manager.index.image.tag"
           ["vdaas/vald-index-creation"]="manager.index.creator.image.tag"
-          ["vdaas/vald-index-deletion"]="manager.index.delete.image.tag"
+          ["vdaas/vald-index-deletion"]="manager.index.deleter.image.tag"
           ["vdaas/vald-index-save"]="manager.index.saver.image.tag"
           ["vdaas/vald-readreplica-rotate"]="manager.index.readreplica.rotator.image.tag"
           ["vdaas/vald-helm-operator"]="image.tag"
@@ -57,16 +57,74 @@ runs:
           ["vdaas/vald-index-correction"]="manager.index.corrector.image.tag"
         )
 
-        for image in ${IMAGES}; do
+        tmpdir="$(mktemp -d)"
+        trap 'rm -rf "${tmpdir}"' EXIT
+
+        read -r -a IMAGES_ARR <<< "${IMAGES//$'\n'/ }"
+        read -r -a TAGS_ARR <<< "${TAGS//$'\n'/ }"
+
+        for idx in "${!IMAGES_ARR[@]}"; do
+          image="${IMAGES_ARR[$idx]}"
           echo "check for ${image}"
-          for tag in ${TAGS}; do
-            if curl -s "https://registry.hub.docker.com/v2/repositories/${image}/tags/${tag}" | jq '.name' | grep -v "null"; then
-              echo "${image}:${tag} exists. adding a helm option '--set ${m[${image}]}=${tag}'."
-              export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set ${m[${image}]}=${tag}"
-              export IMAGE_TAGS="${IMAGE_TAGS} ${m[${image}]}=\"${tag}\""
-              break
-            fi
-          done
+          (
+            body_file="${tmpdir}/${idx}.body"
+            for tag in "${TAGS_ARR[@]}"; do
+              found=0
+              not_found=0
+              last_err=""
+              for attempt in 1 2 3 4 5; do
+                if status="$(curl -sS --max-time 15 -w '%{http_code}' -o "${body_file}" "https://registry.hub.docker.com/v2/repositories/${image}/tags/${tag}" 2>&1)"; then
+                  if [ "${status}" = "200" ] && jq -e '.name != null' "${body_file}" >/dev/null 2>&1; then
+                    found=1
+                    break
+                  elif [ "${status}" = "404" ]; then
+                    not_found=1
+                    break
+                  else
+                    last_err="unexpected HTTP ${status}"
+                  fi
+                else
+                  last_err="${status}"
+                fi
+                if [ "${attempt}" -lt 5 ]; then
+                  sleep $((attempt * 2))
+                fi
+              done
+              if [ "${found}" -eq 1 ]; then
+                printf '%s\n' "${tag}" > "${tmpdir}/${idx}"
+                break
+              fi
+              if [ "${not_found}" -eq 0 ]; then
+                printf 'Failed to query %s:%s after 5 attempts (%s)\n' "${image}" "${tag}" "${last_err}" > "${tmpdir}/${idx}.err"
+                break
+              fi
+            done
+          ) &
+        done
+        wait || true
+
+        has_err=0
+        for err_file in "${tmpdir}"/*.err; do
+          if [ -f "${err_file}" ]; then
+            echo "::error::$(cat "${err_file}")"
+            has_err=1
+          fi
+        done
+        if [ "${has_err}" -eq 1 ]; then
+          exit 1
+        fi
+
+        HELM_EXTRA_OPTIONS=""
+        IMAGE_TAGS=""
+        for idx in "${!IMAGES_ARR[@]}"; do
+          if [ -f "${tmpdir}/${idx}" ]; then
+            read -r tag < "${tmpdir}/${idx}"
+            image="${IMAGES_ARR[$idx]}"
+            key="${m[${image}]:-}"
+            echo "${image}:${tag} exists. adding a helm option '--set ${key}=${tag}'."
+            HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set ${key}=${tag}"
+            IMAGE_TAGS="${IMAGE_TAGS} ${key}=\"${tag}\""
+          fi
         done
 
         echo "HELM_EXTRA_OPTIONS=${HELM_EXTRA_OPTIONS}"

@@ -32,12 +32,56 @@ import (
 	"github.com/vdaas/vald/tests/v2/e2e/hdf5"
 )
 
+const (
+	envMetricsOutput   = "E2E_METRICS_OUTPUT"
+	envScenarioName    = "E2E_SCENARIO_NAME"
+	envMetricsBaseline = "E2E_METRICS_BASELINE"
+	envNoiseThreshold  = "E2E_NOISE_THRESHOLD"
+
+	defaultMetricsFilePerm = os.FileMode(0o644)
+)
+
 var (
 	cfg *config.Data
 	ds  *hdf5.Dataset
 )
 
+func hasParamsFlag(args []string) bool {
+	for _, arg := range args {
+		if arg == "--" {
+			break
+		}
+		if !strings.HasPrefix(arg, "-") {
+			continue
+		}
+		name := strings.TrimPrefix(arg, "-")
+		name = strings.TrimPrefix(name, "-")
+		if key, _, ok := strings.Cut(name, "="); ok {
+			name = key
+		}
+		switch name {
+		case "c", "config", "f", "file", "v", "ver", "version", "h", "help":
+			return true
+		}
+	}
+	return false
+}
+
 func TestMain(m *testing.M) {
+	testArgs := make([]string, 0, len(os.Args[1:]))
+	for _, arg := range os.Args[1:] {
+		if strings.HasPrefix(arg, "-test.") {
+			testArgs = append(testArgs, arg)
+		}
+	}
+
+	if !hasParamsFlag(os.Args[1:]) {
+		if err := flag.CommandLine.Parse(testArgs); err != nil {
+			log.Fatalf("failed to parse -test.* flags: %v", err)
+		}
+		os.Exit(m.Run())
+	}
+
 	var err error
 	p, fail, err := params.New(
 		params.WithName("vald/e2e"),
@@ -59,16 +103,10 @@ func TestMain(m *testing.M) {
 	// flag.CommandLine for params' already-parsed set, which silently left
 	// every -test.* flag at its zero value (all tests always ran, no
 	// benchmark could ever be selected and -timeout was never applied).
-	testArgs := make([]string, 0, len(os.Args[1:]))
-	for _, arg := range os.Args[1:] {
-		if strings.HasPrefix(arg, "-test.") {
-			testArgs = append(testArgs, arg)
-		}
-	}
 	// flag.CommandLine uses flag.ExitOnError, so a malformed -test.* flag
 	// exits inside Parse itself; this branch only fires for flag.ErrHelp.
-	if err := flag.CommandLine.Parse(testArgs); err != nil {
-		log.Fatalf("failed to parse -test.* flags: %v", err)
+	if parseErr := flag.CommandLine.Parse(testArgs); parseErr != nil {
+		log.Fatalf("failed to parse -test.* flags: %v", parseErr)
 	}
 	if p.ShowVersion() {
 		log.Info(info.Version)

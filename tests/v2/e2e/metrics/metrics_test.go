@@ -15,10 +15,12 @@
 package metrics
 
 import (
+	"math"
 	"testing"
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/test"
 )
 
@@ -376,6 +378,109 @@ func TestCounterHandle_Value_NilSafety(t *testing.T) {
 		h := &CounterHandle{}
 		if got := h.Value(); got != 0 {
 			t.Errorf("Value() on zero-value handle = %d, want 0", got)
+		}
+	})
+}
+
+func TestCountersSnapshotAndMergeSnapshots(t *testing.T) {
+	t.Parallel()
+
+	t.Run("CountersSnapshot nil and populated", func(t *testing.T) {
+		t.Parallel()
+		var nilCol *collector
+		if got := nilCol.CountersSnapshot(); got != nil {
+			t.Fatalf("nil collector CountersSnapshot = %v, want nil", got)
+		}
+
+		col, err := NewCollector(WithCustomCounters("hits", "misses"))
+		if err != nil {
+			t.Fatalf("NewCollector failed: %v", err)
+		}
+		if got := col.CountersSnapshot(); got != nil {
+			t.Fatalf("zero counters CountersSnapshot = %v, want nil", got)
+		}
+
+		col.IncCounter("hits", 7)
+		got := col.CountersSnapshot()
+		if len(got) != 1 || got["hits"] != 7 {
+			t.Fatalf("CountersSnapshot = %v, want map[hits:7]", got)
+		}
+	})
+
+	t.Run("saturateAddInt64", func(t *testing.T) {
+		t.Parallel()
+		tests := []struct {
+			name string
+			a, b int64
+			want int64
+		}{
+			{name: "normal addition", a: 10, b: 25, want: 35},
+			{name: "zero b", a: 42, b: 0, want: 42},
+			{name: "negative b", a: 42, b: -5, want: 37},
+			{name: "overflow saturates to MaxInt64", a: math.MaxInt64 - 5, b: 10, want: math.MaxInt64},
+		}
+		for _, tc := range tests {
+			t.Run(tc.name, func(t *testing.T) {
+				t.Parallel()
+				if got := saturateAddInt64(tc.a, tc.b); got != tc.want {
+					t.Fatalf("saturateAddInt64(%d, %d) = %d, want %d", tc.a, tc.b, got, tc.want)
+				}
+			})
+		}
+	})
+
+	t.Run("MergeSnapshots custom counter saturation and errors", func(t *testing.T) {
+		t.Parallel()
+		if _, err := MergeSnapshots(); err == nil {
+			t.Fatalf("expected error merging 0 snapshots")
+		}
+		single := &GlobalSnapshot{Total: 1}
+		if got, err := MergeSnapshots(single); err != nil || got != single {
+			t.Fatalf("MergeSnapshots(single) = (%v, %v), want (%v, nil)", got, err, single)
+		}
+
+		if _, err := MergeSnapshots(&GlobalSnapshot{BoundsHash: 1}, &GlobalSnapshot{BoundsHash: 2}); err == nil {
+			t.Fatalf("expected error on BoundsHash mismatch")
+		}
+		if _, err := MergeSnapshots(&GlobalSnapshot{SketchKind: "a"}, &GlobalSnapshot{SketchKind: "b"}); err == nil {
+			t.Fatalf("expected error on SketchKind mismatch")
+		}
+
+		c1, err := NewCollector(WithCustomCounters("c_sat", "c_sum"))
+		if err != nil {
+			t.Fatalf("NewCollector(c1) failed: %v", err)
+		}
+		c2, err := NewCollector(WithCustomCounters("c_sat", "c_sum"))
+		if err != nil {
+			t.Fatalf("NewCollector(c2) failed: %v", err)
+		}
+		base := time.Date(2026, 11, 24, 21, 0, 0, 0, time.UTC)
+		c1.Record(t.Context(), 1, &RequestResult{StartedAt: base, EndedAt: base.Add(10 * time.Millisecond), Latency: 10 * time.Millisecond, Status: codes.OK})
+		c2.Record(t.Context(), 2, &RequestResult{StartedAt: base.Add(100 * time.Millisecond), EndedAt: base.Add(120 * time.Millisecond), Latency: 20 * time.Millisecond, Status: codes.OK})
+
+		s1 := c1.GlobalSnapshot()
+		s2 := c2.GlobalSnapshot()
+		s1.CustomCounters = map[string]int64{"c_sat": math.MaxInt64 - 5, "c_sum": 100, "ignored_zero": 0, "ignored_neg": -3}
+		s2.CustomCounters = map[string]int64{"c_sat": 10, "c_sum": 250}
+
+		merged, err := MergeSnapshots(s1, s2)
+		if err != nil {
+			t.Fatalf("MergeSnapshots failed: %v", err)
+		}
+		if merged.Total != 2 {
+			t.Fatalf("merged.Total = %d, want 2", merged.Total)
+		}
+		if merged.CustomCounters["c_sat"] != math.MaxInt64 {
+			t.Fatalf("merged c_sat = %d, want MaxInt64", merged.CustomCounters["c_sat"])
+		}
+		if merged.CustomCounters["c_sum"] != 350 {
+			t.Fatalf("merged c_sum = %d, want 350", merged.CustomCounters["c_sum"])
+		}
+		if _, ok := merged.CustomCounters["ignored_zero"]; ok {
+			t.Fatalf("expected non-positive custom counter ignored_zero to be omitted")
+		}
+		if _, ok := merged.CustomCounters["ignored_neg"]; ok {
+			t.Fatalf("expected non-positive custom counter ignored_neg to be omitted")
 		}
 	})
 }
