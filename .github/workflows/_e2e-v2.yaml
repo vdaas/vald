@@ -225,7 +225,7 @@ jobs:
     timeout-minutes: ${{ (inputs.mode == 'main' || startsWith(github.ref, 'refs/tags/')) && 90 || 15 }}
     permissions:
       contents: read
-    runs-on: ${{ inputs.mode == 'pr' && 'ubuntu-latest' || 'ubuntu-slim' }}
+    runs-on: ${{ (inputs.mode == 'pr' || inputs.mode == 'main' || startsWith(github.ref, 'refs/tags/')) && 'ubuntu-latest' || 'ubuntu-slim' }}
     env:
       SHARED_IMAGES: "vdaas/vald-agent-sidecar vdaas/vald-discoverer-k8s vdaas/vald-lb-gateway vdaas/vald-filter-gateway vdaas/vald-mirror-gateway vdaas/vald-manager-index vdaas/vald-index-operator vdaas/vald-readreplica-rotate vdaas/vald-index-correction vdaas/vald-index-creation vdaas/vald-index-deletion"
       STANDARD_WAIT_IMAGES: "vdaas/vald-agent-ngt vdaas/vald-agent-faiss vdaas/vald-agent-sidecar vdaas/vald-discoverer-k8s vdaas/vald-lb-gateway vdaas/vald-filter-gateway vdaas/vald-mirror-gateway vdaas/vald-manager-index vdaas/vald-index-operator vdaas/vald-readreplica-rotate"

@@ -45,10 +45,11 @@ jobs:
       contents: read
       actions: read
       pull-requests: read
-    runs-on: ubuntu-slim
+    runs-on: ubuntu-latest
     outputs:
       required_pr_images: ${{ steps.wait_builds.outputs.required_pr_images }}
       pr_base_sha: ${{ steps.wait_builds.outputs.pr_base_sha }}
+      missing_targets_json: ${{ steps.wait_builds.outputs.missing_targets_json }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -84,20 +85,20 @@ jobs:
             }
             core.info(`Resolved PR merge-base commit: ${mergeBaseSha}`);
             const targets = [
-              { workflow: "Build docker image: agent-ngt", file: ".github/workflows/dockers-agent-ngt-image.yaml", image: "vdaas/vald-agent-ngt" },
-              { workflow: "Build docker image: agent-faiss", file: ".github/workflows/dockers-agent-faiss-image.yaml", image: "vdaas/vald-agent-faiss" },
-              { workflow: "Build docker image: agent-sidecar", file: ".github/workflows/dockers-agent-sidecar-image.yaml", image: "vdaas/vald-agent-sidecar" },
-              { workflow: "Build docker image: discoverer-k8s", file: ".github/workflows/dockers-discoverer-k8s-image.yaml", image: "vdaas/vald-discoverer-k8s" },
-              { workflow: "Build docker image: gateway-lb", file: ".github/workflows/dockers-gateway-lb-image.yaml", image: "vdaas/vald-lb-gateway" },
-              { workflow: "Build docker image: gateway-filter", file: ".github/workflows/dockers-gateway-filter-image.yaml", image: "vdaas/vald-filter-gateway" },
-              { workflow: "Build docker image: gateway-mirror", file: ".github/workflows/dockers-gateway-mirror-image.yaml", image: "vdaas/vald-mirror-gateway" },
-              { workflow: "Build docker image: manager-index", file: ".github/workflows/dockers-manager-index-image.yaml", image: "vdaas/vald-manager-index" },
-              { workflow: "Build docker image: index-operator", file: ".github/workflows/dockers-index-operator-image.yaml", image: "vdaas/vald-index-operator" },
-              { workflow: "Build docker image: readreplica-rotate", file: ".github/workflows/dockers-readreplica-rotate-image.yaml", image: "vdaas/vald-readreplica-rotate" },
-              { workflow: "Build docker image: index-correction", file: ".github/workflows/dockers-index-correction-image.yaml", image: "vdaas/vald-index-correction" },
-              { workflow: "Build docker image: index-creation", file: ".github/workflows/dockers-index-creation-image.yaml", image: "vdaas/vald-index-creation" },
-              { workflow: "Build docker image: index-deletion", file: ".github/workflows/dockers-index-deletion-image.yaml", image: "vdaas/vald-index-deletion" },
-              { workflow: "Build docker image: helm-operator", file: ".github/workflows/dockers-helm-operator-image.yaml", image: "vdaas/vald-helm-operator" }
+              { target: "agent-ngt", workflow: "Build docker image: agent-ngt", file: ".github/workflows/dockers-agent-ngt-image.yaml", image: "vdaas/vald-agent-ngt" },
+              { target: "agent-faiss", workflow: "Build docker image: agent-faiss", file: ".github/workflows/dockers-agent-faiss-image.yaml", image: "vdaas/vald-agent-faiss" },
+              { target: "agent-sidecar", workflow: "Build docker image: agent-sidecar", file: ".github/workflows/dockers-agent-sidecar-image.yaml", image: "vdaas/vald-agent-sidecar" },
+              { target: "discoverer-k8s", workflow: "Build docker image: discoverer-k8s", file: ".github/workflows/dockers-discoverer-k8s-image.yaml", image: "vdaas/vald-discoverer-k8s" },
+              { target: "gateway-lb", workflow: "Build docker image: gateway-lb", file: ".github/workflows/dockers-gateway-lb-image.yaml", image: "vdaas/vald-lb-gateway" },
+              { target: "gateway-filter", workflow: "Build docker image: gateway-filter", file: ".github/workflows/dockers-gateway-filter-image.yaml", image: "vdaas/vald-filter-gateway" },
+              { target: "gateway-mirror", workflow: "Build docker image: gateway-mirror", file: ".github/workflows/dockers-gateway-mirror-image.yaml", image: "vdaas/vald-mirror-gateway" },
+              { target: "manager-index", workflow: "Build docker image: manager-index", file: ".github/workflows/dockers-manager-index-image.yaml", image: "vdaas/vald-manager-index" },
+              { target: "index-operator", workflow: "Build docker image: index-operator", file: ".github/workflows/dockers-index-operator-image.yaml", image: "vdaas/vald-index-operator" },
+              { target: "readreplica-rotate", workflow: "Build docker image: readreplica-rotate", file: ".github/workflows/dockers-readreplica-rotate-image.yaml", image: "vdaas/vald-readreplica-rotate" },
+              { target: "index-correction", workflow: "Build docker image: index-correction", file: ".github/workflows/dockers-index-correction-image.yaml", image: "vdaas/vald-index-correction" },
+              { target: "index-creation", workflow: "Build docker image: index-creation", file: ".github/workflows/dockers-index-creation-image.yaml", image: "vdaas/vald-index-creation" },
+              { target: "index-deletion", workflow: "Build docker image: index-deletion", file: ".github/workflows/dockers-index-deletion-image.yaml", image: "vdaas/vald-index-deletion" },
+              { target: "helm-operator", workflow: "Build docker image: helm-operator", file: ".github/workflows/dockers-helm-operator-image.yaml", image: "vdaas/vald-helm-operator" }
             ];
             const workflowToImage = Object.fromEntries(targets.map((t) => [t.workflow, t.image]));
 
@@ -197,7 +198,8 @@ jobs:
             }
 
             // Diff against the pinned merge-base rather than GitHub's PR files API so large
-            // PRs (>3000 files) never truncate and advancing base commits cannot skew path detection.
+            // PRs (>3000 files) are completely evaluated. Any expected builds that GitHub's
+            // 3,000-file path filter skipped will be built explicitly by build-missing-pr-images.
             const authHeader = "AUTHORIZATION: basic " + Buffer.from(`x-access-token:${process.env.GITHUB_TOKEN || ""}`).toString("base64");
             core.setSecret(authHeader);
             execFileSync(
@@ -222,16 +224,18 @@ jobs:
               }
             }
 
-            const expectedWorkflows = new Set();
+            const expectedTargets = [];
             for (const t of targets) {
               const patterns = parsePullRequestPaths(t.file);
               if (matchesPaths(changedFiles, patterns)) {
-                expectedWorkflows.add(t.workflow);
+                expectedTargets.push(t);
               }
             }
-            core.info(`Changed files (${changedFiles.length}): expected image build workflows = ${[...expectedWorkflows].join(", ") || "<none>"}`);
+            core.info(`Changed files (${changedFiles.length}): expected image build workflows = ${expectedTargets.map((t) => t.workflow).join(", ") || "<none>"}`);
 
-            const deadline = Date.now() + 60 * 60 * 1000;
+            const startTime = Date.now();
+            const registrationGraceMs = 2 * 60 * 1000;
+            const deadline = startTime + 60 * 60 * 1000;
             const pollIntervalMs = 30 * 1000;
 
             while (true) {
@@ -256,10 +260,13 @@ jobs:
                 }
               }
 
+              const inGrace = Date.now() - startTime < registrationGraceMs;
               const pending = [];
-              for (const expName of expectedWorkflows) {
-                if (!latestByWorkflow.has(expName)) {
-                  pending.push(`${expName} (not started)`);
+              if (inGrace) {
+                for (const t of expectedTargets) {
+                  if (!latestByWorkflow.has(t.workflow)) {
+                    pending.push(`${t.workflow} (not started)`);
+                  }
                 }
               }
               for (const [name, run] of latestByWorkflow.entries()) {
@@ -270,10 +277,10 @@ jobs:
 
               if (pending.length === 0) {
                 const failed = [];
-                const builtImages = [];
+                const builtImages = new Set();
                 for (const [name, run] of latestByWorkflow.entries()) {
                   if (run.conclusion === "success") {
-                    builtImages.push(workflowToImage[name]);
+                    builtImages.add(workflowToImage[name]);
                   } else {
                     failed.push(`${name}: ${run.conclusion} (${run.html_url})`);
                   }
@@ -294,14 +301,25 @@ jobs:
                   );
                   return;
                 }
-                const required = builtImages.sort().join(" ");
+                const missingTargets = expectedTargets.filter((t) => !latestByWorkflow.has(t.workflow));
+                for (const t of missingTargets) {
+                  builtImages.add(t.image);
+                }
+                const required = [...builtImages].sort().join(" ");
+                const missingTargetNames = missingTargets.map((t) => t.target);
+                if (missingTargetNames.length > 0) {
+                  core.info(
+                    `Expected image build workflow(s) did not appear for ${headSha} (e.g., >3,000-file PR path filter limit); will build explicitly: ${missingTargetNames.join(", ")}`
+                  );
+                }
                 if (required) {
-                  core.info(`All PR Docker image builds succeeded for ${headSha}. Required PR images: ${required}`);
+                  core.info(`All PR Docker image builds accounted for (${headSha}). Required PR images: ${required}`);
                 } else {
                   core.info(`No E2E application image paths changed in PR #${prNumber}; unchanged components will be pinned to PR merge-base commit ${mergeBaseSha} by digest.`);
                 }
                 core.setOutput("required_pr_images", required);
                 core.setOutput("pr_base_sha", mergeBaseSha);
+                core.setOutput("missing_targets_json", JSON.stringify(missingTargetNames));
                 return;
               }
 
@@ -312,9 +330,28 @@ jobs:
               core.info(`Waiting for PR Docker image builds (${headSha}): ${pending.join(", ")}`);
               await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));
             }
-  benchmark:
-    if: ${{ github.event.pull_request.head.repo.fork == false && github.event.action == 'labeled' && github.event.label.name == 'actions/benchmark' }}
+  build-missing-pr-images:
+    if: ${{ needs.wait-pr-images.result == 'success' && needs.wait-pr-images.outputs.missing_targets_json != '' && needs.wait-pr-images.outputs.missing_targets_json != '[]' }}
     needs: [wait-pr-images]
+    permissions:
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        target: ${{ fromJson(needs.wait-pr-images.outputs.missing_targets_json) }}
+    uses: ./.github/workflows/_docker-image.yaml
+    with:
+      target: ${{ matrix.target }}
+    secrets:
+      DOCKERHUB_PASS: ${{ secrets.DOCKERHUB_PASS }}
+      DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
+      PACKAGE_TOKEN: ${{ secrets.PACKAGE_TOKEN }}
+      PACKAGE_USER: ${{ secrets.PACKAGE_USER }}
+      SLACK_NOTIFY_WEBHOOK_URL: ${{ secrets.SLACK_NOTIFY_WEBHOOK_URL }}
+  benchmark:
+    if: ${{ !failure() && !cancelled() && needs.wait-pr-images.result == 'success' && (needs.build-missing-pr-images.result == 'success' || needs.build-missing-pr-images.result == 'skipped') }}
+    needs: [wait-pr-images, build-missing-pr-images]
     permissions:
       contents: read
     uses: ./.github/workflows/_e2e-v2.yaml
