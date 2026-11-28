@@ -4,14 +4,14 @@ go 1.27.4
 
 replace (
 	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go => buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.12-20260825204119-511051f7f437.2
-	cloud.google.com/go/storage => cloud.google.com/go/storage v1.71.0
+	cloud.google.com/go/storage => cloud.google.com/go/storage v1.71.1
 	code.cloudfoundry.org/bytefmt => code.cloudfoundry.org/bytefmt v0.100.0
 	github.com/akrylysov/pogreb => github.com/akrylysov/pogreb v0.10.2
 	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.55.8
 	github.com/felixge/fgprof => github.com/felixge/fgprof v0.9.5
 	github.com/fsnotify/fsnotify => github.com/fsnotify/fsnotify v1.10.1
 	github.com/go-redis/redis/v8 => github.com/go-redis/redis/v8 v8.11.5
-	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql v1.10.2
+	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql v1.11.0
 	github.com/goccy/go-json => github.com/goccy/go-json v0.12.0
 	github.com/gocql/gocql => github.com/gocql/gocql v1.7.0
 	github.com/gocraft/dbr/v2 => github.com/gocraft/dbr/v2 v2.7.7
@@ -77,38 +77,38 @@ replace (
 )
 
 require (
-	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v0.0.0-00010101000000-000000000000
-	cloud.google.com/go/storage v1.69.0
-	code.cloudfoundry.org/bytefmt v0.0.0-20190710193110-1eb035ffe2b6
-	github.com/akrylysov/pogreb v0.0.0-00010101000000-000000000000
-	github.com/aws/aws-sdk-go v1.27.0
-	github.com/felixge/fgprof v0.0.0-00010101000000-000000000000
+	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.12-20260825204119-511051f7f437.2
+	cloud.google.com/go/storage v1.71.1
+	code.cloudfoundry.org/bytefmt v0.100.0
+	github.com/akrylysov/pogreb v0.10.2
+	github.com/aws/aws-sdk-go v1.55.8
+	github.com/felixge/fgprof v0.9.5
 	github.com/fsnotify/fsnotify v1.10.1
 	github.com/go-logr/logr v1.4.4
-	github.com/go-redis/redis/v8 v8.0.0-00010101000000-000000000000
-	github.com/go-sql-driver/mysql v1.10.1
+	github.com/go-redis/redis/v8 v8.11.5
+	github.com/go-sql-driver/mysql v1.11.0
 	github.com/goccy/go-json v0.12.0
-	github.com/gocql/gocql v0.0.0-20200131111108-92af2e088537
-	github.com/gocraft/dbr/v2 v2.0.0-00010101000000-000000000000
+	github.com/gocql/gocql v1.7.0
+	github.com/gocraft/dbr/v2 v2.7.7
 	github.com/google/go-cmp v0.7.0
 	github.com/google/uuid v1.6.0
-	github.com/gorilla/mux v1.7.3
-	github.com/grafana/grafana-foundation-sdk/go v0.0.0-00010101000000-000000000000
-	github.com/grafana/promql-builder/go v0.0.0-00010101000000-000000000000
-	github.com/grafana/pyroscope-go/godeltaprof v0.0.0-00010101000000-000000000000
-	github.com/hashicorp/go-version v1.2.0
-	github.com/klauspost/compress v1.20.3
+	github.com/gorilla/mux v1.8.1
+	github.com/grafana/grafana-foundation-sdk/go v0.0.22
+	github.com/grafana/promql-builder/go v0.0.6
+	github.com/grafana/pyroscope-go/godeltaprof v0.1.12
+	github.com/hashicorp/go-version v1.9.0
+	github.com/klauspost/compress v1.20.5
 	github.com/kpango/fastime v1.1.10
-	github.com/kpango/gache/v2 v2.0.0-00010101000000-000000000000
+	github.com/kpango/gache/v2 v2.2.0
 	github.com/kpango/glg v1.6.15
-	github.com/kubernetes-csi/external-snapshotter/client/v6 v6.0.0-00010101000000-000000000000
+	github.com/kubernetes-csi/external-snapshotter/client/v6 v6.3.0
 	github.com/leanovate/gopter v0.0.0-00010101000000-000000000000
-	github.com/pierrec/lz4/v3 v3.0.0-00010101000000-000000000000
+	github.com/pierrec/lz4/v3 v3.3.6
 	github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10
 	github.com/quasilyte/go-ruleguard v0.0.0-00010101000000-000000000000
-	github.com/quasilyte/go-ruleguard/dsl v0.3.22
-	github.com/quic-go/quic-go v0.0.0-00010101000000-000000000000
-	github.com/scylladb/gocqlx v0.0.0-00010101000000-000000000000
+	github.com/quasilyte/go-ruleguard/dsl v0.3.23
+	github.com/quic-go/quic-go v0.66.0
+	github.com/scylladb/gocqlx v1.5.0
 	github.com/stretchr/testify v1.12.1
 	github.com/zeebo/xxh3 v1.1.0
 	go.etcd.io/bbolt v1.5.0
@@ -121,20 +121,20 @@ require (
 	go.opentelemetry.io/otel/sdk v1.47.0
 	go.opentelemetry.io/otel/sdk/metric v1.47.0
 	go.opentelemetry.io/otel/trace v1.47.0
-	go.uber.org/automaxprocs v0.0.0-00010101000000-000000000000
+	go.uber.org/automaxprocs v1.6.0
 	go.uber.org/goleak v1.3.0
-	go.uber.org/ratelimit v0.0.0-00010101000000-000000000000
+	go.uber.org/ratelimit v0.3.1
 	go.uber.org/zap v1.28.0
-	gocloud.dev v0.0.0-00010101000000-000000000000
+	gocloud.dev v0.49.0
 	golang.org/x/net v0.63.0
 	golang.org/x/oauth2 v0.38.0
 	golang.org/x/sys v0.50.0
 	golang.org/x/text v0.44.0
 	golang.org/x/time v0.16.0
 	golang.org/x/tools v0.53.0
-	gonum.org/v1/hdf5 v0.0.0-00010101000000-000000000000
-	google.golang.org/genproto/googleapis/api v0.0.0-20261118221215-c8830f628b3f
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20261118221215-c8830f628b3f
+	gonum.org/v1/hdf5 v0.0.0-20210714002203-8c5d23bc6946
+	google.golang.org/genproto/googleapis/api v0.0.0-20261123191846-1e707ab9fbc2
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20261123191846-1e707ab9fbc2
 	google.golang.org/grpc v1.85.0
 	google.golang.org/protobuf v1.36.12
 	gopkg.in/yaml.v2 v2.4.0
@@ -143,9 +143,9 @@ require (
 	k8s.io/apiextensions-apiserver v0.37.3
 	k8s.io/apimachinery v0.37.3
 	k8s.io/client-go v0.37.3
-	k8s.io/metrics v0.0.0-00010101000000-000000000000
+	k8s.io/metrics v0.37.3
 	k8s.io/streaming v0.37.3
-	sigs.k8s.io/controller-runtime v0.0.0-00010101000000-000000000000
+	sigs.k8s.io/controller-runtime v0.25.3
 	sigs.k8s.io/yaml v1.6.0
 )
 
@@ -218,7 +218,7 @@ require (
 	github.com/quasilyte/stdinfo v0.0.0-20220114132959-f7386bf02567 // indirect
 	github.com/scylladb/go-reflectx v1.0.1 // indirect
 	github.com/spf13/pflag v1.1.0 // indirect
-	github.com/spiffe/go-spiffe/v2 v2.9.0 // indirect
+	github.com/spiffe/go-spiffe/v2 v2.10.0 // indirect
 	github.com/stretchr/objx v0.8.0 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.2 // indirect
@@ -241,7 +241,7 @@ require (
 	gopkg.in/evanphx/json-patch.v4 v4.13.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	k8s.io/klog/v2 v2.140.0 // indirect
-	k8s.io/kube-openapi v0.0.0-20260721132016-d427ff9ee9ad // indirect
+	k8s.io/kube-openapi v0.0.0-20261124193638-7c5f465a2be7 // indirect
 	k8s.io/utils v0.0.0-20261023123148-ca04ba58ecab // indirect
 	sigs.k8s.io/json v0.0.0-20260909141634-11ed52e25bc5 // indirect
 	sigs.k8s.io/randfill v1.0.0 // indirect

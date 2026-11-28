@@ -73,7 +73,7 @@ jobs:
           git push origin ${VERSION}
           echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
       - name: Create release
-        uses: softprops/action-gh-release@8a0cd651e5b2365bd640854a3fa5dfc70e4875f3 # v3.0.4
+        uses: softprops/action-gh-release@v3
         with:
           token: ${{ secrets.DISPATCH_TOKEN }}
           tag_name: ${{ steps.create_release_tag.outputs.VERSION }}
